@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 7.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Glulxe", "Glulxe.vcproj", "{9AE2DE87-B817-45F6-AEEF-D180B27BE454}"
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = Debug
+		ConfigName.1 = Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{9AE2DE87-B817-45F6-AEEF-D180B27BE454}.Debug.ActiveCfg = Debug|Win32
+		{9AE2DE87-B817-45F6-AEEF-D180B27BE454}.Debug.Build.0 = Debug|Win32
+		{9AE2DE87-B817-45F6-AEEF-D180B27BE454}.Release.ActiveCfg = Release|Win32
+		{9AE2DE87-B817-45F6-AEEF-D180B27BE454}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

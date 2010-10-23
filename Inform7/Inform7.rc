@@ -1,0 +1,808 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.K.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 2\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\Inform7.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""        // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New Project...\tCtrl+N",     ID_FILE_NEW
+        MENUITEM "&Open Project...\tCtrl+O",    ID_FILE_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "&Close\tAlt+F4",              ID_FILE_CLOSE
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "&Install Extension...",       ID_FILE_INSTALL_EXT
+        MENUITEM "Ne&w Extension...",           ID_FILE_NEW_EXT
+        POPUP "Open &Extension"
+        BEGIN
+          MENUITEM SEPARATOR
+        END
+        MENUITEM "Import into S&kein...",       ID_FILE_IMPORT_SKEIN
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit Inform",                ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM "&Redo\tCtrl+Y",               ID_EDIT_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECT_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
+        MENUITEM "R&eplace...\tCtrl+H",         ID_EDIT_REPLACE
+        MENUITEM "&Spelling...\tCtrl+G",        ID_EDIT_SPELLING
+        MENUITEM SEPARATOR
+        MENUITEM "Prefere&nces...",             ID_APP_PREFS
+    END
+    POPUP "F&ormat"
+    BEGIN
+        MENUITEM "Shift Selection &Right\tCtrl+7",      ID_FORMAT_SHIFT_RIGHT
+        MENUITEM "Shift Selection &Left\tCtrl+8",       ID_FORMAT_SHIFT_LEFT
+        MENUITEM "&Comment Out Selection\tCtrl+9",      ID_FORMAT_COMMENT
+        MENUITEM "&Uncomment Selection\tCtrl+0",        ID_FORMAT_UNCOMMENT
+        MENUITEM SEPARATOR
+        MENUITEM "Renu&mber All Sections\tCtrl+M",      ID_FORMAT_RENUMBER
+    END
+    POPUP "&Play"
+    BEGIN
+        MENUITEM "&Go\tF5",                     ID_PLAY_GO
+        MENUITEM "&Test Me",                    ID_PLAY_TEST
+        MENUITEM "&Stop",                       ID_PLAY_STOP
+        MENUITEM SEPARATOR
+        MENUITEM "Refresh Inde&x\tF7",          ID_PLAY_REFRESH
+        MENUITEM "&Load Game...",               ID_PLAY_LOAD
+    END
+    POPUP "Repl&ay"
+    BEGIN
+        MENUITEM "&Replay Last Commands\tF9",   ID_REPLAY_LAST
+        MENUITEM "Replay Commands Blessed in &Transcript", ID_REPLAY_BLESSED
+        MENUITEM SEPARATOR
+        MENUITEM "Show &Last Command",          ID_REPLAY_SHOW_LAST
+        MENUITEM "Show Last &Command in Skein", ID_REPLAY_SHOW_LAST_SKEIN
+        MENUITEM SEPARATOR
+        MENUITEM "Find &Previous Changed Command", 234
+        MENUITEM "Find &Next Changed Command",  235
+        MENUITEM "Find Previous Di&fference",   236
+        MENUITEM "Find Next &Difference",       237
+        MENUITEM "Show Ne&xt Difference in Skein", 238
+    END
+    POPUP "&Release"
+    BEGIN
+        MENUITEM "&Release",                    ID_RELEASE_GAME
+        MENUITEM "Release for &Testing",        ID_RELEASE_TEST
+        MENUITEM SEPARATOR
+        MENUITEM "Open &Materials Folder",      ID_RELEASE_MATERIALS
+        MENUITEM SEPARATOR
+        MENUITEM "&Export iFiction Record...",  ID_RELEASE_IFICTION
+    END
+    POPUP "&Window"
+    BEGIN
+        POPUP "Show &Tab"
+        BEGIN
+            MENUITEM "&Source\tCtrl+Shift+S",       ID_WINDOW_TAB_SOURCE
+            MENUITEM "&Errors\tCtrl+Shift+E",       ID_WINDOW_TAB_ERRORS
+            MENUITEM "Inde&x\tCtrl+Shift+X",        ID_WINDOW_TAB_INDEX
+            MENUITEM "Skei&n\tCtrl+Shift+N",        ID_WINDOW_TAB_SKEIN
+            MENUITEM "&Transcript\tCtrl+Shift+T",   ID_WINDOW_TAB_TRANSCRIPT
+            MENUITEM "&Game\tCtrl+Shift+G",         ID_WINDOW_TAB_GAME
+            MENUITEM "&Documentation\tCtrl+Shift+D", 
+                                                    ID_WINDOW_TAB_DOCUMENTATION
+
+            MENUITEM "Setti&ngs",                   ID_WINDOW_TAB_SETTINGS
+            MENUITEM SEPARATOR
+            MENUITEM "Go to &Left Pane",            ID_WINDOW_LEFTPANE
+            MENUITEM "Go to &Right Pane",           ID_WINDOW_RIGHTPANE
+            MENUITEM "S&witch Panes\tF6",           ID_WINDOW_SWITCH
+        END
+        POPUP "Show Inde&x"
+        BEGIN
+            MENUITEM "C&ontents\tCtrl+Shift+O",     ID_WINDOW_INDEX_CONTENTS
+            MENUITEM "&Actions\tCtrl+Shift+A",      ID_WINDOW_INDEX_ACTIONS
+            MENUITEM "&Kinds\tCtrl+Shift+K",        ID_WINDOW_INDEX_KINDS
+            MENUITEM "&Phrases\tCtrl+Shift+P",      ID_WINDOW_INDEX_PHRASES
+            MENUITEM "&Rules\tCtrl+Shift+R",        ID_WINDOW_INDEX_RULES
+            MENUITEM "S&cenes\tCtrl+Shift+C",       ID_WINDOW_INDEX_SCENES
+            MENUITEM "&World\tCtrl+Shift+W",        ID_WINDOW_INDEX_WORLD
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Window List",                 ID_WINDOW_LIST
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "Inform &Help\tF1",            ID_HELP_INDEX
+        MENUITEM "&Windows Inform Notes",       ID_HELP_WINDOWS
+        MENUITEM "&Licence",                    ID_HELP_LICENCE
+        MENUITEM SEPARATOR
+        MENUITEM "Help on Installed E&xtensions", ID_HELP_EXTENSIONS
+        MENUITEM "&Recipe Book",                ID_HELP_RECIPES
+        MENUITEM SEPARATOR
+        MENUITEM "&About Inform",               ID_APP_ABOUT
+        MENUITEM "Visit inform7.com",           ID_APP_WEBPAGE
+    END
+END
+
+IDR_HTMLMENU MENU 
+BEGIN
+    POPUP ""
+    BEGIN
+        MENUITEM "&Back",                       ID_NAVIGATE_BACK
+        MENUITEM "F&orward",                    ID_NAVIGATE_FORE
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy",                       ID_EDIT_COPY
+        MENUITEM "Select &All",                 ID_EDIT_SELECT_ALL
+        MENUITEM SEPARATOR
+        POPUP "Text Si&ze"
+        BEGIN
+            MENUITEM "Lar&gest",                    ID_ZOOM_LARGEST
+            MENUITEM "&Larger",                     ID_ZOOM_LARGER
+            MENUITEM "&Medium",                     ID_ZOOM_MEDIUM
+            MENUITEM "&Smaller",                    ID_ZOOM_SMALLER
+            MENUITEM "Smalles&t",                   ID_ZOOM_SMALLEST
+        END
+        MENUITEM "Pr&int",                      ID_FILE_PRINT
+        MENUITEM "&Properties",                 ID_MENU_PROPERTIES
+    END
+END
+
+IDR_SKEIN MENU 
+BEGIN
+    POPUP ""
+    BEGIN
+        MENUITEM "&Play to here",               ID_SKEIN_PLAY
+        MENUITEM SEPARATOR
+        MENUITEM "&Edit knot",                  ID_SKEIN_EDIT
+        MENUITEM "Add la&bel",                  ID_SKEIN_ADD_LABEL
+        MENUITEM "Edit la&bel",                 ID_SKEIN_EDIT_LABEL
+        MENUITEM "Show in &transcript",         ID_SKEIN_TRANSCRIPT
+        MENUITEM "&Lock",                       ID_SKEIN_LOCK
+        MENUITEM "Un&lock",                     ID_SKEIN_UNLOCK
+        MENUITEM "Lo&ck this thread",           ID_SKEIN_LOCK_THREAD
+        MENUITEM "Unlo&ck this thread",         ID_SKEIN_UNLOCK_THREAD
+        MENUITEM SEPARATOR
+        MENUITEM "&New thread",                 ID_SKEIN_NEW_THREAD
+        MENUITEM "Insert &knot",                ID_SKEIN_INSERT_KNOT
+        MENUITEM "&Delete",                     ID_SKEIN_DELETE
+        MENUITEM "Delete all belo&w",           ID_SKEIN_DELETE_BELOW
+        MENUITEM "Delete all in t&hread",       ID_SKEIN_DELETE_THREAD
+        MENUITEM SEPARATOR
+        MENUITEM "Sa&ve transcript",            ID_SKEIN_SAVE_TRANSCRIPT
+    END
+END
+
+IDR_EXTFRAME MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Close\tAlt+F4",              ID_FILE_CLOSE
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit Inform",                ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM "&Redo\tCtrl+Y",               ID_EDIT_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECT_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
+        MENUITEM "R&eplace...\tCtrl+H",         ID_EDIT_REPLACE
+        MENUITEM "&Spelling...\tCtrl+G",        ID_EDIT_SPELLING
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "Window List",                 ID_WINDOW_LIST
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS 
+BEGIN
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_BACK,        ID_EDIT_REDO,           VIRTKEY, SHIFT, ALT, NOINVERT
+    "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_EDIT_REPLACE,        VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_EDIT_SPELLING,       VIRTKEY, CONTROL, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_F1,          ID_HELP_INDEX,          VIRTKEY, NOINVERT
+    VK_F5,          ID_PLAY_GO,             VIRTKEY, NOINVERT
+    VK_F7,          ID_PLAY_REFRESH,        VIRTKEY, NOINVERT
+    VK_F9,          ID_REPLAY_LAST,         VIRTKEY, NOINVERT
+    VK_F3,          ID_SEARCH_DOCS,         VIRTKEY, NOINVERT
+    VK_F2,          ID_SEARCH_SOURCE,       VIRTKEY, NOINVERT
+    "A",            ID_WINDOW_INDEX_ACTIONS, VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "O",            ID_WINDOW_INDEX_CONTENTS, VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "K",            ID_WINDOW_INDEX_KINDS,  VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "P",            ID_WINDOW_INDEX_PHRASES, VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "R",            ID_WINDOW_INDEX_RULES,  VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "C",            ID_WINDOW_INDEX_SCENES, VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "W",            ID_WINDOW_INDEX_WORLD,  VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_F6,          ID_WINDOW_SWITCH,       VIRTKEY, NOINVERT
+    "D",            ID_WINDOW_TAB_DOCUMENTATION, VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "E",            ID_WINDOW_TAB_ERRORS,   VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "G",            ID_WINDOW_TAB_GAME,     VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "X",            ID_WINDOW_TAB_INDEX,    VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "N",            ID_WINDOW_TAB_SKEIN,    VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "S",            ID_WINDOW_TAB_SOURCE,   VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "T",            ID_WINDOW_TAB_TRANSCRIPT, VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_F4,          ID_SOURCE_ALL,          VIRTKEY, NOINVERT
+    "7",            ID_FORMAT_SHIFT_RIGHT,  VIRTKEY, CONTROL, NOINVERT
+    "8",            ID_FORMAT_SHIFT_LEFT,   VIRTKEY, CONTROL, NOINVERT
+    "9",            ID_FORMAT_COMMENT,      VIRTKEY, CONTROL, NOINVERT
+    "0",            ID_FORMAT_UNCOMMENT,    VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_FORMAT_RENUMBER,     VIRTKEY, CONTROL, NOINVERT
+END
+
+IDR_EXTFRAME ACCELERATORS 
+BEGIN
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_BACK,        ID_EDIT_REDO,           VIRTKEY, SHIFT, ALT, NOINVERT
+    "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_EDIT_REPLACE,        VIRTKEY, CONTROL, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_EDIT_SPELLING,       VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 206, 203
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
+    WS_THICKFRAME
+CAPTION "Inform 7 for Windows"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_CREDITS,"RichEdit20A",ES_MULTILINE | ES_READONLY | 
+                    WS_VSCROLL | WS_TABSTOP,1,53,203,120,WS_EX_STATICEDGE
+    CTEXT           "Copyright 2006-2010 David Kinder (front end), Graham Nelson et al (compiler).",
+                    IDC_COPYRIGHT,25,182,156,17
+    CTEXT           "Inform",IDC_TITLE,23,22,159,15,SS_CENTERIMAGE
+    CONTROL         "",IDC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,79,1,48,
+                    18
+    CTEXT           "Inform 7 for Windows (%s; %s)",IDC_VERSION,1,42,203,9
+END
+
+IDD_SETTINGS DIALOGEX 0, 0, 261, 227
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Story File Format",IDC_STORY_BOX,7,7,247,122
+    CONTROL         "Z-Code version 5 (small textual projects only)",
+                    IDC_OUTPUT_Z5,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    15,45,175,10
+    CONTROL         "Z-Code version 8 (medium-sized textual projects: most portable)",
+                    IDC_OUTPUT_Z8,"Button",BS_AUTORADIOBUTTON,15,56,229,10
+    CONTROL         "Glulx (large and multimedia projects: most capable)",
+                    IDC_OUTPUT_GLULX,"Button",BS_AUTORADIOBUTTON,15,66,197,
+                    10
+    CONTROL         "Bind up into a Blorb file on release",IDC_BLORB,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,112,131,8
+    GROUPBOX        "Randomness",IDC_RANDOM_BOX,7,134,247,78
+    CONTROL         "Make random outcomes predictable when testing",
+                    IDC_PREDICTABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
+                    196,184,8
+END
+
+IDD_SPLASH DIALOGEX 0, 0, 330, 192
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Welcome to Inform 7"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Start a &new project...",IDC_NEW_PROJECT,213,125,112,14
+    PUSHBUTTON      "&Reopen last project",IDC_REOPEN_LAST,213,148,112,14
+    DEFPUSHBUTTON   "&Open an existing project...",IDC_OPEN_PROJECT,213,171,
+                    112,14
+    LTEXT           "",IDC_INTRO,15,14,177,157
+END
+
+IDD_SEARCH DIALOGEX 0, 0, 174, 18
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_SEARCH_SOURCE,3,3,81,12,ES_MULTILINE | 
+                    ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
+    EDITTEXT        IDC_SEARCH_DOCS,91,3,81,12,ES_MULTILINE | ES_AUTOHSCROLL | 
+                    NOT WS_BORDER,WS_EX_STATICEDGE
+END
+
+IDD_NEWPROJECT DIALOGEX 0, 0, 291, 123
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Start a new %s"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "The na&me of the new %s",IDC_NAME_TEXT,8,36,135,8
+    EDITTEXT        IDC_NAME,7,46,277,12,ES_AUTOHSCROLL
+    LTEXT           "The &author's name",IDC_STATIC,7,65,102,8
+    EDITTEXT        IDC_AUTHOR,7,75,277,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Start",IDOK,177,101,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,234,101,50,14
+    LTEXT           "The &directory in which the new %s will be created",
+                    IDC_DIR_TEXT,7,7,199,8
+    EDITTEXT        IDC_DIR,7,17,265,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_DIRPOPUP,272,17,12,12
+END
+
+IDD_SPELLING DIALOGEX 0, 0, 299, 139
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Check spelling"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Not in the dictionary",IDC_STATIC,7,7,66,8
+    EDITTEXT        IDC_BADWORD,7,19,200,12,ES_AUTOHSCROLL
+    LTEXT           "&Suggestions",IDC_STATIC,7,36,40,8
+    LISTBOX         IDC_SUGGESTIONS,7,47,200,67,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Dictionary language",IDC_STATIC,7,122,72,8
+    COMBOBOX        IDC_LANGUAGE,80,120,127,87,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "&Ignore word",IDC_IGNORE,216,19,76,14
+    PUSHBUTTON      "&Replace word",IDC_REPLACE,216,38,76,14
+    PUSHBUTTON      "&Add to dictionary",IDC_ADD_DICTIONARY,216,57,76,14
+    PUSHBUTTON      "Cancel",IDCANCEL,216,100,76,14
+END
+
+IDD_PREFERENCES DIALOGEX 0, 0, 203, 178
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Preferences"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Source",IDC_STATIC,7,7,189,68
+    LTEXT           "&Tab width (in spaces)",IDC_STATIC,14,19,73,8
+    EDITTEXT        IDC_TABSIZE,93,17,37,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "&Indent wrapped lines",IDC_INDENT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,33,95,10
+    CONTROL         "A&uto-indent after newline",IDC_AUTO_INDENT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,46,107,10
+    CONTROL         "&Start by loading the last opened project",
+                    IDC_STARTLAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,
+                    59,149,10
+    GROUPBOX        "Cleaning",IDC_STATIC,7,78,189,40
+    CONTROL         "&Clean build files from projects before closing",
+                    IDC_CLEANFILES,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | 
+                    WS_TABSTOP,14,90,163,10
+    CONTROL         "&Also clean out index files",IDC_CLEANINDEX,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,103,126,10
+    GROUPBOX        "Interpreters",IDC_STATIC,7,121,189,30
+    LTEXT           "Glul&x interpreter",IDC_STATIC,15,134,56,8
+    COMBOBOX        IDC_GLULX,73,132,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,89,157,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,146,157,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 7,0,0,0
+ PRODUCTVERSION 7,0,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080904e4"
+        BEGIN
+            VALUE "Comments", "Front-end for Inform 7"
+            VALUE "FileDescription", "Inform 7 for Windows"
+            VALUE "FileVersion", "7.0"
+            VALUE "InternalName", "Inform7"
+            VALUE "LegalCopyright", "(c) 2006-2010 David Kinder"
+            VALUE "OriginalFilename", "Inform7.exe"
+            VALUE "ProductName", "Inform"
+            VALUE "ProductVersion", "7.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x809, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 1
+        RIGHTMARGIN, 204
+        TOPMARGIN, 1
+    END
+
+    IDD_SETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 254
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 220
+    END
+
+    IDD_SPLASH, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 325
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 185
+    END
+
+    IDD_NEWPROJECT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 284
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 116
+    END
+
+    IDD_SPELLING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 292
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 132
+    END
+
+    IDD_PREFERENCES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 196
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 171
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// RT_MANIFEST
+//
+
+IDR_MANIFEST            RT_MANIFEST             "res\\Inform7.manifest"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_BIG_LOGO            ICON                    "res\\BigLogo.ico"
+IDR_SMALL_LOGO          ICON                    "res\\SmallLogo.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_TBAR_ENABLED        BITMAP                  "res\\Toolbar.bmp"
+IDR_TBAR_DISABLED       BITMAP                  "res\\ToolbarGrey.bmp"
+IDR_TAB_SELECT          BITMAP                  "res\\TabSelect.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_PREFERENCES DLGINIT
+BEGIN
+    IDC_GLULX, 0x403, 7, 0
+0x6c47, 0x6c75, 0x6578, "\000" 
+    IDC_GLULX, 0x403, 4, 0
+0x6947, 0x0074, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDR_MAINFRAME           "Inform"
+    IDR_EXTFRAME            "Inform"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_INSTALL_EXT     "Install an extension for use in Inform projects"
+    ID_FILE_NEW_EXT         "Start a new extension"
+    ID_FILE_IMPORT_SKEIN    "Import game commands into the skein from a text file"
+    ID_EDIT_DELETE          "Delete the selected text"
+    ID_EDIT_SPELLING        "Spell check the source"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FORMAT_SHIFT_RIGHT   "Shift the selected lines one tab to the right"
+    ID_FORMAT_SHIFT_LEFT    "Shift the selected lines one tab to the left"
+    ID_FORMAT_COMMENT       "Comment out the selected lines"
+    ID_FORMAT_UNCOMMENT     "Uncomment the selected lines"
+    ID_FORMAT_RENUMBER      "Renumber all section headings in the source"
+    ID_PLAY_GO              "Build the game and run it\nGo!"
+    ID_PLAY_STOP            "Stop the currently running game\nStop"
+    ID_PLAY_TEST            "Build the game and run the ""test me"" command"
+    ID_PLAY_REFRESH         "Build the game and refresh the index\nRefresh"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_PLAY_LOAD            "Load and play a game"
+    ID_REPLAY_LAST          "Build the game and replay the last played thread in the skein\nReplay"
+    ID_REPLAY_BLESSED       "Play in sequence all threads in the skein that lead to a blessed knot"
+    ID_REPLAY_SHOW_LAST     "Show the last game command in the transcript"
+    ID_REPLAY_SHOW_LAST_SKEIN "Show the last game command in the skein"
+    ID_REPLAY_CHANGED_PREV  "Find the previous command in the transcript with changed text"
+    ID_REPLAY_CHANGED_NEXT  "Find the next command in the transcript with changed text"
+    ID_REPLAY_DIFF_PREV     "Find the previous command in the transcript for which the transcript and blessed text do not match"
+    ID_REPLAY_DIFF_NEXT     "Find the next command in the transcript for which the transcript and blessed text do not match"
+    ID_REPLAY_DIFF_NEXT_SKEIN 
+                            "Show the next command in the whole skein for which the transcript and blessed text do not match"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_RELEASE_GAME         "Build the game for release\nRelease"
+    ID_RELEASE_TEST         "Build the game for a test release"
+    ID_RELEASE_MATERIALS    "Open an Explorer window in the materials folder"
+    ID_RELEASE_IFICTION     "Export the iFiction record for this game"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_SWITCH        "Switch the input cursor to the pane on the other side"
+    ID_WINDOW_LEFTPANE      "Switch the input cursor to the left hand pane"
+    ID_WINDOW_RIGHTPANE     "Switch the input cursor to the right hand pane"
+    ID_HELP_LICENCE         "Show the licensing help page"
+    ID_HELP_WINDOWS         "Show notes specific to this Windows version of Inform"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_HELP_EXTENSIONS      "Show the page listing installed extensions"
+    ID_HELP_RECIPES         "Show the recipe book page, listing all the examples"
+    ID_APP_PREFS            "Change the application preferences"
+    ID_APP_WEBPAGE          "Go to the Inform 7 web site"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "Inform"
+    AFX_IDS_IDLEMESSAGE     "Inform 7 for Windows"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCCLOSE         "Close the window"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_NEW             "Start a new project"
+    ID_FILE_OPEN            "Open an existing project"
+    ID_FILE_CLOSE           "Close this project window"
+    ID_FILE_SAVE            "Save this project"
+    ID_FILE_SAVE_AS         "Save this project under a new name"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_APP_ABOUT            "Show the about dialog"
+    ID_APP_EXIT             "Close all windows and exit"
+    ID_HELP_INDEX           "Show the contents page of the documentation\nHelp"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_COPY            "Copy the selected text to the clipboard"
+    ID_EDIT_CUT             "Cut the selected text to the clipboard"
+    ID_EDIT_FIND            "Open the find dialog"
+    ID_EDIT_PASTE           "Paste text from the clipboard"
+    ID_EDIT_REPLACE         "Open the replace dialog"
+    ID_EDIT_SELECT_ALL      "Select all text in the current panel"
+    ID_EDIT_UNDO            "Undo the last change"
+    ID_EDIT_REDO            "Redo the last undone change"
+END
+
+STRINGTABLE 
+BEGIN
+    IDC_SEARCH_SOURCE       "Search the source code"
+    IDC_SEARCH_DOCS         "Search the documentation"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_SKEIN_PLAY           "Play the game to this knot in the skein, restarting if necessary"
+    ID_SKEIN_EDIT           "Edit the text for this knot"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_SKEIN_ADD_LABEL      "Add a label to this knot"
+    ID_SKEIN_EDIT_LABEL     "Edit the label for this knot"
+    ID_SKEIN_TRANSCRIPT     "Show this knot in the transcript tab"
+    ID_SKEIN_LOCK           "Lock this knot and all its parent knots"
+    ID_SKEIN_UNLOCK         "Unlock this knot and all its children"
+    ID_SKEIN_LOCK_THREAD    "Lock this knot and all knots in the same thread"
+    ID_SKEIN_UNLOCK_THREAD  "Unlock this knot and all knots in the same thread"
+    ID_SKEIN_NEW_THREAD     "Create a new knot below this knot"
+    ID_SKEIN_INSERT_KNOT    "Create a new knot above this knot"
+    ID_SKEIN_DELETE         "Delete this knot"
+    ID_SKEIN_DELETE_BELOW   "Delete this knot and all its children"
+    ID_SKEIN_DELETE_THREAD  "Delete this knot and all knots in the same thread"
+    ID_SKEIN_SAVE_TRANSCRIPT 
+                            "Save the transcript of play from the start down to this knot"
+END
+
+#endif    // English (U.K.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 2
+#pragma code_page(1252)
+#include "res\Inform7.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"        // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

@@ -1,0 +1,551 @@
+!% -G
+include "infglk";
+
+Array event --> 4;
+Array input -> 100;
+Array args buffer 28;
+
+[ Main win1 key;
+
+  @setiosys 2 0;
+
+  while (1)
+  {
+    win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+    glk_set_window(win1);
+
+    print "I7 Glulx interpreter test^^";
+    print "1) Windows^";
+    print "2) Style hints^";
+    print "3) Text input^";
+    print "4) Mouse input^";
+    print "5) Hyperlink input^";
+    print "6) File output^";
+    key = waitForKey(win1);
+    glk_window_close(win1,GLK_NULL);
+
+    switch (key)
+    {
+     49: windows();
+     50: styleHints();
+     51: textInput();
+     52: mouseInput();
+     53: linkInput();
+     54: fileOutput();
+    }
+  }
+];
+
+[ styleHints win1 win2;
+
+  glk_stylehint_set(wintype_TextBuffer,style_User1,stylehint_Size,4);
+  glk_stylehint_set(wintype_TextBuffer,style_User1,stylehint_Weight,1);
+  glk_stylehint_set(wintype_TextBuffer,style_User1,stylehint_Oblique,1);
+  glk_stylehint_set(wintype_TextBuffer,style_User1,stylehint_Proportional,0);
+  glk_stylehint_set(wintype_TextBuffer,style_User1,stylehint_TextColor,$00FF0000);
+  glk_stylehint_set(wintype_TextBuffer,style_User1,stylehint_BackColor,$0000FF00);
+  glk_stylehint_set(wintype_TextBuffer,style_User1,stylehint_ReverseColor,1);
+  glk_stylehint_clear(wintype_TextBuffer,style_User1,stylehint_ReverseColor);
+
+  glk_stylehint_set(wintype_TextGrid,style_User1,stylehint_Size,4);
+  glk_stylehint_set(wintype_TextGrid,style_User1,stylehint_Weight,1);
+  glk_stylehint_set(wintype_TextGrid,style_User1,stylehint_Oblique,1);
+  glk_stylehint_set(wintype_TextGrid,style_User1,stylehint_Proportional,1);
+  glk_stylehint_set(wintype_TextGrid,style_User1,stylehint_TextColor,$0000FF00);
+  glk_stylehint_set(wintype_TextGrid,style_User1,stylehint_BackColor,$000000FF);
+  glk_stylehint_set(wintype_TextGrid,style_User1,stylehint_ReverseColor,1);
+
+  win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  win2 = glk_window_open(win1,winmethod_Above|winmethod_Fixed,3,wintype_TextGrid,2);
+
+  glk_set_window(win2);
+  print "This is a test. ";
+  glk_set_style(style_User1);
+  print "This is a test. ";
+  glk_set_style(style_Normal);
+  print "This is a test. ";
+  new_line;
+
+  glk_set_window(win1);
+  print "This is a test. ";
+  glk_set_style(style_User1);
+  print "This is a test. ";
+  glk_set_style(style_Normal);
+  print "This is a test. ";
+  new_line;
+
+  print "^Press any key... ";
+  waitForKey(win1);
+  glk_window_close(glk_window_get_root(),GLK_NULL);
+];
+
+[ windows win1 win2 win3 win4 win5;
+
+  win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  win2 = glk_window_open(win1,winmethod_Below|winmethod_Fixed,1,wintype_TextGrid,2);
+  win3 = glk_window_open(win1,winmethod_Left|winmethod_Fixed,2,wintype_TextGrid,3);
+  win4 = glk_window_open(win1,winmethod_Right|winmethod_Fixed,2,wintype_TextGrid,4);
+  glk_set_window(win2);
+  glk_set_style(style_User1);
+  print "X2";
+  glk_set_window(win3);
+  glk_set_style(style_User1);
+  print "X3";
+  glk_set_window(win4);
+  glk_set_style(style_User1);
+  print "X4";
+  glk_set_window(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_close(win4,GLK_NULL);
+  win4 = glk_window_open(win1,winmethod_Right|winmethod_Proportional,20,wintype_TextGrid,4);
+  glk_set_window(win4);
+  glk_set_style(style_User1);
+  print "X4";
+  glk_set_window(win1);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_close(win4,GLK_NULL);
+  win4 = glk_window_open(win1,winmethod_Left|winmethod_Proportional,20,wintype_TextGrid,4);
+  glk_set_window(win4);
+  glk_set_style(style_User1);
+  print "X4";
+  glk_set_window(win1);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_close(win4,GLK_NULL);
+  win4 = glk_window_open(win1,winmethod_Above|winmethod_Proportional,20,wintype_TextGrid,4);
+  glk_set_window(win4);
+  glk_set_style(style_User1);
+  print "X4";
+  glk_set_window(win1);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_close(win4,GLK_NULL);
+  win4 = glk_window_open(win1,winmethod_Below|winmethod_Proportional,20,wintype_TextGrid,4);
+  glk_set_window(win4);
+  glk_set_style(style_User1);
+  print "X4";
+  glk_set_window(win1);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_close(win4,GLK_NULL);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  win4 = glk_window_open(win1,winmethod_Right|winmethod_Fixed,2,wintype_TextGrid,4);
+  win5 = glk_window_open(win4,winmethod_Below|winmethod_Proportional,50,wintype_TextGrid,5);
+  glk_set_window(win4);
+  glk_set_style(style_User1);
+  print "X4";
+  glk_set_window(win5);
+  glk_set_style(style_User1);
+  print "X5";
+  glk_set_window(win1);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_close(glk_window_get_parent(win4),GLK_NULL);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  win4 = glk_window_open(win1,winmethod_Right|winmethod_Fixed,2,wintype_TextGrid,4);
+  win5 = glk_window_open(win4,winmethod_Below|winmethod_Proportional,50,wintype_TextGrid,5);
+  glk_set_window(win4);
+  glk_set_style(style_User1);
+  print "X4";
+  glk_set_window(win5);
+  glk_set_style(style_User1);
+  print "X5";
+  glk_set_window(win1);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_close(win4,GLK_NULL);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_close(glk_window_get_root(),GLK_NULL);
+  win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  win2 = glk_window_open(win1,winmethod_Above|winmethod_Fixed,1,wintype_TextGrid,2);
+  glk_set_window(win2);
+  glk_set_style(style_User1);
+  print "X2";
+  glk_set_window(win1);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Left|winmethod_Fixed,1,GLK_NULL);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Below|winmethod_Proportional,80,GLK_NULL);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_close(win2,GLK_NULL);
+  win2 = glk_window_open(win1,winmethod_Left|winmethod_Fixed,1,wintype_TextGrid,2);
+  glk_set_window(win2);
+  glk_set_style(style_User1);
+  print "X2";
+  glk_set_window(win1);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Above|winmethod_Fixed,1,GLK_NULL);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Right|winmethod_Proportional,80,GLK_NULL);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Right|winmethod_Proportional,70,win1);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+  waitForKey(win1);
+
+  win3 = glk_window_open(win1,winmethod_Left|winmethod_Proportional,25,wintype_Blank,4);
+  glk_window_clear(win1);
+  printWindowTree(glk_window_get_root());
+
+  print "^Press any key... ";
+  waitForKey(win1);
+  glk_window_close(glk_window_get_root(),GLK_NULL);
+];
+
+[ printWindowTree win depth lines i win1 child1 child2;
+
+  for (i = 0 : i < depth : i++)
+    print (char)' ';
+  switch (glk_window_get_type(win))
+  {
+  wintype_Blank:
+    print "Blank";
+  wintype_Pair:
+    print "Pair";
+  wintype_TextBuffer:
+    print "TextBuffer";
+  wintype_TextGrid:
+    print "TextGrid";
+  wintype_Graphics:
+    print "Graphics";
+  default:
+    print "???";
+  }
+  print " id=", win;
+  print " parent=", glk_window_get_parent(win);
+  print " sib=", glk_window_get_sibling(win);
+
+  if (glk_window_get_type(win) == wintype_Pair)
+  {
+    glk_window_get_arrangement(win,args,args+4,args+8);
+    print " method=";
+    switch (args-->0 & winmethod_DirMask)
+    {
+    winmethod_Left:  print "left";
+    winmethod_Right: print "right";
+    winmethod_Above: print "above";
+    winmethod_Below: print "below";
+    }
+    print ",";
+    switch (args-->0 & winmethod_DivisionMask)
+    {
+    winmethod_Fixed:        print "fix";
+    winmethod_Proportional: print "prop";
+    }
+    print " size=", args-->1, " key=", args-->2;
+  }
+  else
+  {
+    glk_window_get_size(win,args,args+4);
+    print " w=", args-->0, " h=", args-->1;
+  }
+  new_line;
+  lines = lines+1;
+
+  if (glk_window_get_type(win) == wintype_Pair)
+  {
+    win1 = glk_window_iterate(GLK_NULL,GLK_NULL);
+    while (win1)
+    {
+      if (glk_window_get_parent(win1) == win)
+      {
+        if (child1 == 0)
+          child1 = win1;
+        else
+          child2 = win1;
+      }
+      win1 = glk_window_iterate(win1,GLK_NULL);
+    }
+    lines = lines + printWindowTree(child1,depth+1);
+    lines = lines + printWindowTree(child2,depth+1);
+  }
+
+  if (depth == 0)
+    print "Tree contains ", lines, " windows.^";
+  return lines;
+];
+
+[ textInput win1 i;
+
+  win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  glk_set_window(win1);
+
+  print "^Input single key: ";
+  waitForKey(win1);
+  print (char)event-->2;
+  new_line;
+
+  print "^Input line: ";
+  glk_request_line_event(win1,input,100,0);
+  while (true)
+  {
+    glk_select(event);
+    if (event-->0 == evtype_LineInput && event-->1 == win1)
+      break;
+  }
+  print "You entered ";
+  for (i = 0 : i < event-->2 : i++)
+    print (char)input->i;
+  new_line;
+
+  print "^Input line (preload): ";
+  input->0 = 't';
+  input->1 = 'e';
+  input->2 = 's';
+  input->3 = 't';
+  glk_request_line_event(win1,input,100,4);
+  while (true)
+  {
+    glk_select(event);
+    if (event-->0 == evtype_LineInput && event-->1 == win1)
+      break;
+  }
+  print "You entered ";
+  for (i = 0 : i < event-->2 : i++)
+    print (char)input->i;
+  new_line;
+
+  print "^Press any key... ";
+  waitForKey(win1);
+  glk_window_close(glk_window_get_root(),GLK_NULL);
+];
+
+[ mouseInput win1 win2 win3;
+
+  win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  win2 = glk_window_open(win1,winmethod_Above|winmethod_Proportional,50,wintype_TextGrid,2);
+  win3 = glk_window_open(win2,winmethod_Left|winmethod_Proportional,50,wintype_Graphics,3);
+
+  glk_window_set_background_color(win3,$ff0000);
+  glk_window_clear(win3);
+
+  glk_set_window(win1);
+  print "^Press any key... ";
+
+  glk_request_char_event(win1);
+  glk_request_mouse_event(win2);
+  glk_request_mouse_event(win3);
+  while (true)
+  {
+    glk_select(event);
+    if (event-->0 == evtype_CharInput && event-->1 == win1)
+    {
+      glk_window_close(glk_window_get_root(),GLK_NULL);
+      return;
+    }
+    else if (event-->0 == evtype_MouseInput && event-->1 == win2)
+    {
+      print "^Mouse clicked in text grid window at (",event-->2,",",event-->3,")";
+      glk_request_mouse_event(win2);
+    }
+    else if (event-->0 == evtype_MouseInput && event-->1 == win3)
+    {
+      print "^Mouse clicked in graphics window at (",event-->2,",",event-->3,")";
+      glk_request_mouse_event(win3);
+    }
+  }
+];
+
+[ linkInput win1 win2;
+
+  win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  win2 = glk_window_open(win1,winmethod_Above|winmethod_Proportional,30,wintype_TextGrid,2);
+  glk_set_window(win1);
+
+  print "Checking auto URL detection: http://foo.com/bar/ (hopefully not hyperlinked...)^^";
+
+  glk_set_hyperlink(1);
+  print "Link1";
+  glk_set_hyperlink(0);
+
+  print " ";
+  glk_set_hyperlink(2);
+  print "Link 2";
+
+  glk_set_hyperlink(3);
+  print "Link3";
+  glk_set_hyperlink(0);
+
+  print " [Not a link] ";
+  glk_set_hyperlink(4);
+  print "Link4^Link4";
+  glk_set_hyperlink(0);
+
+  glk_set_window(win2);
+  glk_set_hyperlink(5);
+  print "Link5";
+  glk_set_hyperlink(0);
+
+  print " [Not a link] ";
+  glk_set_hyperlink(6);
+  print "Link6";
+  glk_set_hyperlink(0);
+
+  glk_set_window(win1);
+  print "^^Press any key... ";
+
+  glk_request_char_event(win1);
+  glk_request_hyperlink_event(win1);
+  glk_request_hyperlink_event(win2);
+  while (true)
+  {
+    glk_select(event);
+    if (event-->0 == evtype_CharInput && event-->1 == win1)
+    {
+      glk_window_close(glk_window_get_root(),GLK_NULL);
+      return;
+    }
+    else if (event-->0 == evtype_Hyperlink && event-->1 == win1)
+    {
+      print "^Hyperlink ",event-->2," in text buffer window selected";
+      glk_request_hyperlink_event(win1);
+    }
+    else if (event-->0 == evtype_Hyperlink && event-->1 == win2)
+    {
+      print "^Hyperlink ",event-->2," in text grid window selected";
+      glk_request_hyperlink_event(win2);
+    }
+  }
+];
+
+[ fileOutput fref fstr;
+
+  fref = glk_fileref_create_by_name(fileusage_Data|fileusage_BinaryMode,ChangeAnyToCString("..@@92test.dat"),0);
+  fstr = glk_stream_open_file(fref,filemode_Write,0);
+  glk_stream_set_current(fstr);
+  print "Hello!";
+  glk_stream_close(fstr,GLK_NULL);
+  glk_fileref_destroy(fref);
+];
+
+[ waitForKey win;
+
+  glk_request_char_event(win);
+  while (true)
+  {
+    glk_select(event);
+    if (event-->0 == evtype_CharInput && event-->1 == win)
+      return event-->2;
+  }
+];
+
+! From verblibm ...
+
+Constant GG_ANYTOSTRING_LEN 66;
+Array AnyToStrArr -> GG_ANYTOSTRING_LEN+1;
+
+[ ChangeAnyToCString _vararg_count ix len;
+    ix = GG_ANYTOSTRING_LEN-2;
+    @copy ix sp;
+    ix = AnyToStrArr+1;
+    @copy ix sp;
+    ix = _vararg_count+2;
+    @call PrintAnyToArray ix len;
+    AnyToStrArr->0 = $E0;
+    if (len >= GG_ANYTOSTRING_LEN)
+        len = GG_ANYTOSTRING_LEN-1;
+    AnyToStrArr->(len+1) = 0;
+    return AnyToStrArr;
+];
+
+[ PrintAnyToArray _vararg_count arr arrlen str oldstr len;
+    @copy sp arr;
+    @copy sp arrlen;
+    _vararg_count = _vararg_count - 2;
+
+    oldstr = glk($0048); ! stream_get_current
+    str = glk($0043, arr, arrlen, 1, 0); ! stream_open_memory
+    if (str == 0) return 0;
+
+    glk($0047, str); ! stream_set_current
+
+    @call PrintAnything _vararg_count 0;
+
+    glk($0047, oldstr); ! stream_set_current
+    @copy $ffffffff sp;
+    @copy str sp;
+    @glk $0044 2 0; ! stream_close
+    @copy sp len;
+    @copy sp 0;
+
+    return len;
+];
+
+Global print_anything_result;       ! Return value from a PrintAny() routine
+
+[ PrintAnything _vararg_count obj mclass;
+    print_anything_result = 0;
+    if (_vararg_count == 0) return;
+    @copy sp obj;
+    _vararg_count--;
+    if (obj == 0) return;
+
+    if (obj->0 == $60) {
+        ! Dictionary word. Metaclass() can't catch this case, so we do
+        ! it manually.
+        print (address) obj;
+        return;
+    }
+
+    mclass = metaclass(obj);
+    switch (mclass) {
+      nothing:
+        return;
+      String:
+        print (string) obj;
+        return;
+      Routine:
+        ! Call the function with all the arguments which are already
+        ! on the stack.
+        @call obj _vararg_count print_anything_result;
+        return;
+      Object:
+        if (_vararg_count == 0) {
+            print (name) obj;
+        }
+        return;
+    }
+];
+

@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 7.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Frotz", "Frotz.vcproj", "{29C4300B-B857-4808-A8A1-64B0E6B03E09}"
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = Debug
+		ConfigName.1 = Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{29C4300B-B857-4808-A8A1-64B0E6B03E09}.Debug.ActiveCfg = Debug|Win32
+		{29C4300B-B857-4808-A8A1-64B0E6B03E09}.Debug.Build.0 = Debug|Win32
+		{29C4300B-B857-4808-A8A1-64B0E6B03E09}.Release.ActiveCfg = Release|Win32
+		{29C4300B-B857-4808-A8A1-64B0E6B03E09}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

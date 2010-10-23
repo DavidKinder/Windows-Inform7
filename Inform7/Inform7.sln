@@ -1,0 +1,28 @@
+Microsoft Visual Studio Solution File, Format Version 7.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Inform7", "Inform7.vcproj", "{9B6F4174-A3CE-4559-887E-FD4A2CF2CC38}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BuildDate", "..\BuildDate\BuildDate.vcproj", "{A4D14F1A-BDC8-431B-82AF-3CEB1FAE2474}"
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = Debug
+		ConfigName.1 = Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+		{9B6F4174-A3CE-4559-887E-FD4A2CF2CC38}.0 = {A4D14F1A-BDC8-431B-82AF-3CEB1FAE2474}
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{9B6F4174-A3CE-4559-887E-FD4A2CF2CC38}.Debug.ActiveCfg = Debug|Win32
+		{9B6F4174-A3CE-4559-887E-FD4A2CF2CC38}.Debug.Build.0 = Debug|Win32
+		{9B6F4174-A3CE-4559-887E-FD4A2CF2CC38}.Release.ActiveCfg = Release|Win32
+		{9B6F4174-A3CE-4559-887E-FD4A2CF2CC38}.Release.Build.0 = Release|Win32
+		{A4D14F1A-BDC8-431B-82AF-3CEB1FAE2474}.Debug.ActiveCfg = Debug|Win32
+		{A4D14F1A-BDC8-431B-82AF-3CEB1FAE2474}.Debug.Build.0 = Debug|Win32
+		{A4D14F1A-BDC8-431B-82AF-3CEB1FAE2474}.Release.ActiveCfg = Release|Win32
+		{A4D14F1A-BDC8-431B-82AF-3CEB1FAE2474}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

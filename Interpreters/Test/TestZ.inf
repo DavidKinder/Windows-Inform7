@@ -1,0 +1,139 @@
+[ main;
+
+  interpreter();
+  styles();
+  fonts();
+  split();
+  input();
+  beep();
+];
+
+[ interpreter major minor;
+
+  major = $32-->0 / 256;
+  minor = $32-->0 % 256;
+
+  print "^^^^Interpreter: Z-Machine spec ", major, ".", minor, ", ";
+  print "display is ", 0->$21, "x", 0->$20, ".^";
+];
+
+[ styles;
+
+  print "^Styles: ";
+
+  @set_text_style 0;
+  print "Normal, ";
+  @set_text_style 0;
+  @set_text_style 2;
+  print "Bold, ";
+  @set_text_style 0;
+  @set_text_style 4;
+  print "Italic, ";
+  @set_text_style 0;
+  @set_text_style 1;
+  print "Reversed, ";
+  @set_text_style 0;
+  @set_text_style 8;
+  print "Fixed width, ";
+  @set_text_style 0;
+  @set_text_style 6;
+  print "Bold and italic, ";
+  @set_text_style 0;
+  @set_text_style 9;
+  print "Reversed and fixed width.^";
+  @set_text_style 0;
+];
+
+[ fonts result;
+
+  print "^Fonts: ";
+
+  @set_font 1 -> result;
+  print "Roman, ";
+  @set_font 3 -> result;
+  print "character graphics, ";
+  @set_font 4 -> result;
+  print "fixed width. ";
+
+  @set_font 1 -> result;
+  print "Roman, ";
+  @set_text_style 8;
+  print "Roman with fixed width style, ";
+  @set_font 4 -> result;
+  print "fixed width font too, ";
+  @set_text_style 0;
+  print "style back to normal, ";
+  @set_font 1 -> result;
+  print "font back to roman.^";
+];
+
+[ split;
+
+  @split_window 2;
+  @set_window 1;
+
+  @set_cursor 1 5;
+  @set_text_style 0;
+  @set_text_style 2;
+  print "Bold, ";
+  @set_text_style 0;
+  @set_text_style 4;
+  print "Italic.";
+
+  @set_cursor 2 5;
+  @set_text_style 0;
+  @set_text_style 7;
+  print "Reversed Bold and Italic, ";
+  @set_text_style 0;
+  print "Normal.";
+
+  @set_cursor 1 1;
+  print "?";
+
+  @set_window 0;
+];
+
+Array buffer -> 63;
+Array parse buffer 63;
+
+[ input result i;
+
+  print "^Input single key: ";
+  @read_char -> i;
+  print (char)i;
+  new_line;
+
+  print "^Input line: ";
+  buffer->0 = 60;
+  buffer->1 = 0;
+  @aread buffer parse -> result;
+  print "You entered ";
+  for (i = 0: i < buffer->1: i++)
+    print (char)(buffer->(i+2));
+  new_line;
+
+  print "^Input line (preload): test";
+  buffer->0 = 60;
+  buffer->1 = 4;
+  buffer->2 = 't';
+  buffer->3 = 'e';
+  buffer->4 = 's';
+  buffer->5 = 't';
+  @aread buffer parse -> result;
+  print "You entered ";
+  for (i = 0: i < buffer->1: i++)
+    print (char)(buffer->(i+2));
+  new_line;
+];
+
+[ beep i;
+
+  print "^Press a key for sound_effect(1)";
+  @read_char -> i;
+  @sound_effect 1;
+
+  print "^Press a key for sound_effect(2)";
+  @read_char -> i;
+  @sound_effect 2;
+];
+
