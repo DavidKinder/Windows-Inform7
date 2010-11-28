@@ -1410,7 +1410,7 @@ void ProjectFrame::OnHelpWindows()
 {
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
   ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(
-    theApp.GetAppDir()+"\\Documentation\\windows\\windows.html");
+    theApp.GetAppDir()+"\\Documentation\\windows\\Windows.html");
   panel->SetActiveTab(Panel::Tab_Doc);
 }
 
