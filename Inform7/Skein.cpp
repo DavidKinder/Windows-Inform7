@@ -228,9 +228,11 @@ void Skein::Reset(bool current)
   NotifyChange(ThreadChanged);
 }
 
-void Skein::Layout(CDC& dc, CFont* labelFont, int spacing)
+void Skein::Layout(CDC& dc, CFont* labelFont, int spacing, bool force)
 {
-  if (m_layout == false)
+  if (force)
+    m_root->ClearWidths();
+  if (force || (m_layout == false))
     m_root->Layout(dc,labelFont,0,spacing);
   m_layout = true;
 }
@@ -916,6 +918,16 @@ int Skein::Node::GetTreeWidth(CDC& dc, CFont* labelFont, int spacing)
   // and the width of this node's label
   int width = max(total,GetLineWidth(dc,labelFont));
   return max(width,GetLabelTextWidth());
+}
+
+void Skein::Node::ClearWidths(void)
+{
+  m_width = -1;
+  m_lineWidth = -1;
+  m_labelWidth = -1;
+
+  for (int i = 0; i < m_children.GetSize(); i++)
+    m_children[i]->ClearWidths();
 }
 
 int Skein::Node::GetDepth(void)

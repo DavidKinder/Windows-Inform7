@@ -37,6 +37,7 @@ public:
   bool IsRunning(void);
   bool IsWaiting(void);
   void InputFromSkein(void);
+  void PrefsChanged(void);
 
   bool GameKeyEvent(CWnd* wnd, WPARAM wParam, LPARAM lParam);
   void GameMouseEvent(GameBase* wnd, int x, int y);
@@ -87,7 +88,7 @@ private:
   void CommandSetParagraph(int wndId, TerpJustify justify);
   void CommandCancelLine(int wndId);
 
-  void Resize(void);
+  void Resize(bool send);
   void SendReturn(int returnCommand, int dataLength, const void* data);
   void SendInputLine(int wndId, const CStringW& line);
   void SendInputKey(int key);

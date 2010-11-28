@@ -28,14 +28,12 @@ void TabBase::Create(CWnd* parent)
   CWnd::Create(NULL,NULL,WS_CHILD,CRect(0,0,0,0),parent,0);
   EnableToolTips();
 
-  // Create the font for buttons
-  m_font.CreatePointFont(theApp.GetDialogFontSize(),theApp.GetFontName());
-
   // Create the navigation buttons
+  CFont* font = theApp.GetFont(InformApp::FontSystem);
   m_navigate[0].Create("<",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_NAVIGATE_BACK);
-  m_navigate[0].SetFont(&m_font);
+  m_navigate[0].SetFont(font);
   m_navigate[1].Create(">",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_NAVIGATE_FORE);
-  m_navigate[1].SetFont(&m_font);
+  m_navigate[1].SetFont(font);
 }
 
 void TabBase::SizeTab(CRect& client, CSize& fontSize, int& heading, int& h)
@@ -113,6 +111,10 @@ void TabBase::LoadSettings(CRegKey& key)
 }
 
 void TabBase::SaveSettings(CRegKey& key)
+{
+}
+
+void TabBase::PrefsChanged(CRegKey& key)
 {
 }
 

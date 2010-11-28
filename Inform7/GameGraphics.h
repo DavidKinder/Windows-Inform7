@@ -17,6 +17,7 @@ public:
   HWND GetSafeHwnd(void) const;
 
   void Layout(const CRect& r);
+  void FontChanged(void);
   void GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r);
   void AddText(const CStringW& text, bool fromSkein);
   void ClearText(bool styles, bool reverse);

@@ -53,9 +53,6 @@ int TranscriptWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
   if (CView::OnCreate(lpCreateStruct) == -1)
     return -1;
 
-  // Create the font for buttons
-  m_btnFont.CreatePointFont(theApp.GetDialogFontSize(),theApp.GetFontName());
-
   // Turn the vertical scrollbar off
   EnableScrollBar(SB_VERT,ESB_DISABLE_BOTH);
 
@@ -89,7 +86,7 @@ void TranscriptWindow::OnDraw(CDC* pDC)
 
   dc.SetBkMode(TRANSPARENT);
   dc.FillSolidRect(clientRect,theApp.GetColour(InformApp::ColourBack));
-  CFont* oldFont = dc.SelectObject(&(theApp.GetFont()));
+  CFont* oldFont = dc.SelectObject(theApp.GetFont(InformApp::FontDisplay));
   CPen linePen(PS_SOLID,1,theApp.GetColour(InformApp::ColourBorder));
   CPen* oldPen = dc.SelectObject(&linePen);
 
@@ -472,7 +469,7 @@ void TranscriptWindow::Layout(void)
   m_layout.clientSize = clientRect.Size();
   m_layout.columnWidth = clientRect.Width()/2;
 
-  m_layout.font = &(theApp.GetFont());
+  m_layout.font = theApp.GetFont(InformApp::FontDisplay);
   m_layout.fontSize = theApp.MeasureFont(m_layout.font);
   m_layout.margin = CSize(m_layout.fontSize.cx,m_layout.fontSize.cy/3);
   m_layout.centreMargin = m_layout.margin.cx*4;
@@ -543,6 +540,14 @@ void TranscriptWindow::Layout(void)
     scroll.cbSize = sizeof scroll;
     SetScrollInfo(SB_VERT,&scroll);
   }
+}
+
+void TranscriptWindow::PrefsChanged(void)
+{
+  m_draw.FontChanged();
+  m_edit.FontChanged();
+  Layout();
+  Invalidate();
 }
 
 void TranscriptWindow::BlessAll(void)
@@ -846,7 +851,7 @@ CRect TranscriptWindow::DrawButton(
   CDC& dc, CRect& rect, bool centre, const char* text, Button button, bool enable)
 {
   // Select the font and measure the text in it
-  CFont* oldFont = dc.SelectObject(&m_btnFont);
+  CFont* oldFont = dc.SelectObject(theApp.GetFont(InformApp::FontDisplay));
   CSize size = dc.GetTextExtent(text);
 
   // Adjust the width of the button

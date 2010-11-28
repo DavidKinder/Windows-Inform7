@@ -14,6 +14,7 @@ public:
   HWND GetSafeHwnd(void) const;
 
   void Layout(const CRect& r);
+  void FontChanged(void);
   void GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r);
   void AddText(const CStringW& text, bool fromSkein);
   void ClearText(bool styles, bool reverse);
@@ -77,7 +78,7 @@ private:
   CArray<GridString> m_grid;
   GridInfo m_current;
 
-  CFont m_font, m_currentFont;
+  CFont m_currentFont;
   int m_charWidth, m_charHeight;
   int m_topMargin;
 };

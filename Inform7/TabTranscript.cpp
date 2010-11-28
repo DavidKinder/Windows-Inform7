@@ -38,14 +38,15 @@ void TabTranscript::CreateTab(CWnd* parent)
   Create(parent);
 
   // Create the command buttons
+  CFont* font = theApp.GetFont(InformApp::FontSystem);
   m_nextSkein.Create("Next in skein",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_REPLAY_DIFF_NEXT_SKEIN);
-  m_nextSkein.SetFont(&m_font);
+  m_nextSkein.SetFont(font);
   m_nextDiff.Create("Next diff",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_REPLAY_DIFF_NEXT);
-  m_nextDiff.SetFont(&m_font);
+  m_nextDiff.SetFont(font);
   m_prevDiff.Create("Prev diff",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_REPLAY_DIFF_PREV);
-  m_prevDiff.SetFont(&m_font);
+  m_prevDiff.SetFont(font);
   m_blessAll.Create("Bless all",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_TRANSCRIPT_BLESS_ALL);
-  m_blessAll.SetFont(&m_font);
+  m_blessAll.SetFont(font);
 
   // Create the window containing the actual transcript
   m_window.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,CRect(0,0,0,0),this,1);
@@ -86,6 +87,11 @@ BOOL TabTranscript::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERIN
 void TabTranscript::OpenProject(const char* path, bool primary)
 {
   m_window.Layout();
+}
+
+void TabTranscript::PrefsChanged(CRegKey& key)
+{
+  m_window.PrefsChanged();
 }
 
 void TabTranscript::SetSkein(Skein* skein)

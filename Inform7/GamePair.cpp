@@ -138,6 +138,10 @@ void GamePair::Layout(const CRect& r)
   m_main->Layout(m_child2,r2);
 }
 
+void GamePair::FontChanged(void)
+{
+}
+
 void GamePair::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r)
 {
 }

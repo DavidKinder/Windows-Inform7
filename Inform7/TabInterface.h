@@ -72,6 +72,8 @@ public:
   virtual void LoadSettings(CRegKey& key) = 0;
   // Save settings to the registry
   virtual void SaveSettings(CRegKey& key) = 0;
+  // Notification that the user preferences have changed
+  virtual void PrefsChanged(CRegKey& key) = 0;
 
   class LinkNotify
   {

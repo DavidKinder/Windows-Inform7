@@ -219,16 +219,20 @@ bool RichEdit::Setup(void)
   SendMessage(EM_EXLIMITTEXT,0,1024*1024*16);
 
   // Set font and colour
+  FontChanged();
+  SendMessage(EM_SETBKGNDCOLOR,FALSE,theApp.GetColour(InformApp::ColourBack));
+  return true;
+}
+
+void RichEdit::FontChanged(void)
+{
   CHARFORMAT format;
   ::ZeroMemory(&format,sizeof format);
   format.cbSize = sizeof format;
   format.dwMask = CFM_FACE|CFM_SIZE|CFM_EFFECTS;
-  format.yHeight = 20*theApp.GetFontPointSize();
-  strcpy(format.szFaceName,theApp.GetFontName());
+  format.yHeight = 20*theApp.GetFontSize(InformApp::FontDisplay);
+  strcpy(format.szFaceName,theApp.GetFontName(InformApp::FontDisplay));
   SetDefaultCharFormat(format);
-  SendMessage(EM_SETBKGNDCOLOR,FALSE,theApp.GetColour(InformApp::ColourBack));
-
-  return true;
 }
 
 bool RichEdit::RejectKey(MSG* msg)
@@ -274,10 +278,10 @@ RichDrawText::RichDrawText()
   m_charFormat.cbSize = sizeof m_charFormat;
   m_charFormat.dwMask = CFM_BOLD|CFM_CHARSET|CFM_COLOR|CFM_FACE|CFM_ITALIC|CFM_OFFSET|
     CFM_PROTECTED|CFM_SIZE|CFM_STRIKEOUT|CFM_UNDERLINE;
-  m_charFormat.yHeight = 20 * theApp.GetFontPointSize();
+  m_charFormat.yHeight = 20 * theApp.GetFontSize(InformApp::FontDisplay);
   m_charFormat.crTextColor = theApp.GetColour(InformApp::ColourText);
   m_charFormat.bPitchAndFamily = DEFAULT_PITCH|FF_DONTCARE;
-  CStringW fontName(theApp.GetFontName());
+  CStringW fontName(theApp.GetFontName(InformApp::FontDisplay));
   wcscpy(m_charFormat.szFaceName,fontName);
 
   ::ZeroMemory(&m_paraFormat,sizeof m_paraFormat);
@@ -329,6 +333,15 @@ void RichDrawText::DrawText(CDC& dc, const CRect& rect)
   RECTL rc = { rect.left, rect.top, rect.right, rect.bottom };
   HRESULT hr = m_textServ->TxDraw(DVASPECT_CONTENT,0,NULL,NULL,dc.GetSafeHdc(),0,
     &rc,NULL,NULL,NULL,0,0);
+  ASSERT(SUCCEEDED(hr));
+}
+
+void RichDrawText::FontChanged(void)
+{
+  m_charFormat.yHeight = 20 * theApp.GetFontSize(InformApp::FontDisplay);
+  CStringW fontName(theApp.GetFontName(InformApp::FontDisplay));
+  wcscpy(m_charFormat.szFaceName,fontName);
+  HRESULT hr = m_textServ->OnTxPropertyBitsChange(TXTBIT_CHARFORMATCHANGE,TXTBIT_CHARFORMATCHANGE);
   ASSERT(SUCCEEDED(hr));
 }
 

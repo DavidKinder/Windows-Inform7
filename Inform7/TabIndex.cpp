@@ -119,6 +119,11 @@ void TabIndex::CompileProject(CompileStage stage, int code)
   }
 }
 
+void TabIndex::PrefsChanged(CRegKey& key)
+{
+  m_index->Refresh();
+}
+
 void TabIndex::SetLinkNotify(LinkNotify* notify)
 {
   m_notify = notify;

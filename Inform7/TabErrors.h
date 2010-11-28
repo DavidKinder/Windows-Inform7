@@ -24,6 +24,7 @@ public:
   bool SaveProject(const char* path, bool primary);
   void CompileProject(CompileStage stage, int code);
   void Progress(const char* msg);
+  void PrefsChanged(CRegKey& key);
 
   // Implementation of ReportHtml::LinkConsumer
   void SourceLink(const char* url);

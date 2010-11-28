@@ -40,6 +40,10 @@ void GameBlank::Layout(const CRect& r)
   m_main->DeferMoveWindow(GetSafeHwnd(),r);
 }
 
+void GameBlank::FontChanged(void)
+{
+}
+
 void GameBlank::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r)
 {
   w = 0;

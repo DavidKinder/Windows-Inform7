@@ -594,11 +594,11 @@ void ExtensionFrame::SendChanged(InformApp::Changed changed, int value)
     {
       CRegKey registryKey;
       if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
-        m_edit.LoadSettings(registryKey,true);
+      {
+        m_edit.LoadSettings(registryKey);
+        m_edit.PrefsChanged();
+      }
     }
-    break;
-  case InformApp::SourceTextSize:
-    m_edit.SetTextSize(value);
     break;
   case InformApp::Spelling:
     m_edit.UpdateSpellCheck();
@@ -632,7 +632,7 @@ void ExtensionFrame::SetFromRegistryPath(const char* path)
       SetWindowPlacement(&place);
 
     // Allow the source editor to load settings
-    m_edit.LoadSettings(registryKey,false);
+    m_edit.LoadSettings(registryKey);
   }
 }
 

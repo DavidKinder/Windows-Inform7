@@ -22,6 +22,7 @@ public:
   void OpenProject(const char* path, bool primary);
   bool SaveProject(const char* path, bool primary);
   bool IsProjectEdited(void);
+  void PrefsChanged(CRegKey& key);
 
   void SetSkein(Skein* skein);
   void ShowNode(Skein::Node* node, Skein::Show why);

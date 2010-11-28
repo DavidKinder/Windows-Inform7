@@ -7,7 +7,7 @@ extern "C" __declspec(dllimport) void ScaleGfx(COLORREF*, UINT, UINT, COLORREF*,
 
 IMPLEMENT_DYNAMIC(SplashScreen, I7BaseDialog)
 
-SplashScreen::SplashScreen(CWnd* pParent) : I7BaseDialog(SplashScreen::IDD,TRUE,pParent)
+SplashScreen::SplashScreen(CWnd* pParent) : I7BaseDialog(SplashScreen::IDD,pParent)
 {
 }
 

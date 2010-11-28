@@ -15,6 +15,7 @@ public:
   HWND GetSafeHwnd(void) const;
 
   void Layout(const CRect& r);
+  void FontChanged(void);
   void GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r);
   void AddText(const CStringW& text, bool fromSkein);
   void ClearText(bool styles, bool reverse);
@@ -49,6 +50,7 @@ private:
   bool GetLineFromHistory(int history);
   void ReplaceInputLine(LPCWSTR line);
   void CaretToEnd(void);
+  void CreateFonts(void);
 
   CComPtr<ITextFont> m_defaultFont, m_currentFont, m_skeinFont;
   CComPtr<ITextPara> m_defaultPara, m_currentPara;

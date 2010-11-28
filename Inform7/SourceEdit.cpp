@@ -43,7 +43,6 @@ BEGIN_MESSAGE_MAP(SourceEdit, CWnd)
   ON_COMMAND_RANGE(ID_FORMAT_SHIFT_RIGHT, ID_FORMAT_SHIFT_LEFT, OnFormatShift)
   ON_COMMAND_RANGE(ID_FORMAT_COMMENT, ID_FORMAT_UNCOMMENT, OnFormatComment)
   ON_COMMAND(ID_FORMAT_RENUMBER, OnFormatRenumber)
-  ON_COMMAND_RANGE(IDC_TEXT_SMALLEST, IDC_TEXT_SMALLEST+4, OnTextSize)
 
   ON_NOTIFY_REFLECT(SCN_SAVEPOINTREACHED, OnSavePointReached)
   ON_NOTIFY_REFLECT(SCN_SAVEPOINTLEFT, OnSavePointLeft)
@@ -63,7 +62,6 @@ SourceEdit::SourceEdit() : m_spell(this)
   m_markSel.cpMax = -1;
 
   // Default preferences values
-  m_textSize = 1;
   m_autoIndent = true;
 }
 
@@ -92,7 +90,7 @@ BOOL SourceEdit::Create(CWnd* parent, UINT id)
   if (!SubclassWindow(wnd))
     return FALSE;
 
-  CSize fontSize = theApp.MeasureFont(&(theApp.GetFont()));
+  CSize fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontDisplay));
   m_editPtr = (sptr_t)SendMessage(SCI_GETDIRECTPOINTER);
 
   CallEdit(SCI_SETKEYSUNICODE,isUnicode);
@@ -108,21 +106,10 @@ BOOL SourceEdit::Create(CWnd* parent, UINT id)
   CallEdit(SCI_SETSELBACK,TRUE,::GetSysColor(COLOR_HIGHLIGHT));
   CallEdit(SCI_MARKERDEFINE,m_marker,SC_MARK_BACKGROUND);
   CallEdit(SCI_SETLEXER,SCLEX_CONTAINER);
-
-  CallEdit(SCI_STYLESETFONT,STYLE_DEFAULT,(sptr_t)(LPCSTR)theApp.GetFontName());
-  CallEdit(SCI_STYLESETSIZE,STYLE_DEFAULT,theApp.GetFontPointSize());
-  CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,theApp.GetColour(InformApp::ColourText));
-  CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,theApp.GetColour(InformApp::ColourBack));
-  CallEdit(SCI_STYLECLEARALL);
-  CallEdit(SCI_STYLESETFORE,STYLE_QUOTE,theApp.GetColour(InformApp::ColourQuote));
-  CallEdit(SCI_STYLESETFORE,STYLE_QUOTEBRACKET,theApp.GetColour(InformApp::ColourQuoteBracket));
-  CallEdit(SCI_STYLESETFORE,STYLE_INFORM6,theApp.GetColour(InformApp::ColourInform6Code));
-  CallEdit(SCI_STYLESETBOLD,STYLE_HEADING,1);
-  for (int i = 0; i < NEST_COMMENTS; i++)
-    CallEdit(SCI_STYLESETFORE,STYLE_COMMENT+i,theApp.GetColour(InformApp::ColourComment));
   CallEdit(SCI_INDICSETSTYLE,0,INDIC_SQUIGGLE);
   CallEdit(SCI_INDICSETFORE,0,theApp.GetColour(InformApp::ColourError));
   CallEdit(SCI_SETINDICATORCURRENT,0);
+  SetStyles();
 
   // Change the bindings for the Home and End keys
   CallEdit(SCI_ASSIGNCMDKEY,SCK_HOME,SCI_HOMEDISPLAY);
@@ -155,7 +142,6 @@ void SourceEdit::OnContextMenu(CWnd* pWnd, CPoint point)
 {
   CMenu menu;
   menu.CreatePopupMenu();
-
   menu.AppendMenu(MF_STRING,ID_EDIT_UNDO,"&Undo");
   menu.AppendMenu(MF_SEPARATOR,0,(LPCSTR)NULL);
   menu.AppendMenu(MF_STRING,ID_EDIT_CUT,"Cu&t");
@@ -164,18 +150,6 @@ void SourceEdit::OnContextMenu(CWnd* pWnd, CPoint point)
   menu.AppendMenu(MF_STRING,ID_EDIT_DELETE,"&Delete");
   menu.AppendMenu(MF_SEPARATOR,0,(LPCSTR)NULL);
   menu.AppendMenu(MF_STRING,ID_EDIT_SELECT_ALL,"Select &All");
-
-  CMenu sizeMenu;
-  sizeMenu.CreateMenu();
-  sizeMenu.AppendMenu(MF_STRING,IDC_TEXT_LARGEST,"Lar&gest");
-  sizeMenu.AppendMenu(MF_STRING,IDC_TEXT_LARGER,"&Larger");
-  sizeMenu.AppendMenu(MF_STRING,IDC_TEXT_MEDIUM,"&Medium");
-  sizeMenu.AppendMenu(MF_STRING,IDC_TEXT_SMALLER,"&Smaller");
-  sizeMenu.AppendMenu(MF_STRING,IDC_TEXT_SMALLEST,"Smalles&t");
-  sizeMenu.CheckMenuItem(IDC_TEXT_SMALLEST+m_textSize,MF_CHECKED|MF_BYCOMMAND);
-  menu.AppendMenu(MF_SEPARATOR,0,(LPCSTR)NULL);
-  menu.AppendMenu(MF_POPUP,(UINT_PTR)sizeMenu.GetSafeHmenu(),"Text Si&ze");
-
   menu.TrackPopupMenu(TPM_LEFTALIGN,point.x,point.y,GetParentFrame(),NULL);
 }
 
@@ -265,13 +239,6 @@ void SourceEdit::OnEditSpelling()
 void SourceEdit::OnEditDelete()
 {
   CallEdit(SCI_REPLACESEL,0,(sptr_t)"");
-}
-
-void SourceEdit::OnTextSize(UINT nID)
-{
-  int size = nID - IDC_TEXT_SMALLEST;
-  if ((size >= 0) && (size <= 4))
-    theApp.SendAllFrames(InformApp::SourceTextSize,size);
 }
 
 void SourceEdit::OnFormatShift(UINT id)
@@ -574,6 +541,21 @@ BOOL SourceEdit::PreTranslateMessage(MSG* pMsg)
   return CWnd::PreTranslateMessage(pMsg);
 }
 
+void SourceEdit::SetStyles(void)
+{
+  CallEdit(SCI_STYLESETFONT,STYLE_DEFAULT,(sptr_t)(LPCSTR)theApp.GetFontName(InformApp::FontDisplay));
+  CallEdit(SCI_STYLESETSIZE,STYLE_DEFAULT,theApp.GetFontSize(InformApp::FontDisplay));
+  CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,theApp.GetColour(InformApp::ColourText));
+  CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,theApp.GetColour(InformApp::ColourBack));
+  CallEdit(SCI_STYLECLEARALL);
+  CallEdit(SCI_STYLESETFORE,STYLE_QUOTE,theApp.GetColour(InformApp::ColourQuote));
+  CallEdit(SCI_STYLESETFORE,STYLE_QUOTEBRACKET,theApp.GetColour(InformApp::ColourQuoteBracket));
+  CallEdit(SCI_STYLESETFORE,STYLE_INFORM6,theApp.GetColour(InformApp::ColourInform6Code));
+  CallEdit(SCI_STYLESETBOLD,STYLE_HEADING,1);
+  for (int i = 0; i < NEST_COMMENTS; i++)
+    CallEdit(SCI_STYLESETFORE,STYLE_COMMENT+i,theApp.GetColour(InformApp::ColourComment));
+}
+
 void SourceEdit::SetDocument(SourceEdit* master)
 {
   sptr_t doc = master->CallEdit(SCI_GETDOCPOINTER);
@@ -773,35 +755,6 @@ void SourceEdit::PasteCode(const wchar_t* code)
   CallEdit(SCI_REPLACESEL,0,(sptr_t)(LPCSTR)theCodeUtf);
 }
 
-void SourceEdit::SetTextSize(int size)
-{
-  if (m_textSize != size)
-  {
-    m_textSize = size;
-    switch (m_textSize)
-    {
-    case 0:
-      CallEdit(SCI_SETZOOM,-1);
-      break;
-    case 1:
-      CallEdit(SCI_SETZOOM,0);
-      break;
-    case 2:
-      CallEdit(SCI_SETZOOM,1);
-      break;
-    case 3:
-      CallEdit(SCI_SETZOOM,2);
-      break;
-    case 4:
-      CallEdit(SCI_SETZOOM,4);
-      break;
-    default:
-      ASSERT(FALSE);
-      break;
-    }
-  }
-}
-
 void SourceEdit::UpdateSpellCheck(void)
 {
   m_spell.SettingsChanged();
@@ -941,12 +894,9 @@ CHARRANGE SourceEdit::FindText(LPCWSTR text, bool fromSelect, bool down, bool ma
   return result;
 }
 
-void SourceEdit::LoadSettings(CRegKey& key, bool prefsChange)
+void SourceEdit::LoadSettings(CRegKey& key)
 {
   DWORD value;
-  if (key.QueryDWORDValue("Source Text Size",value) == ERROR_SUCCESS)
-    SetTextSize(value);
-
   if (key.QueryDWORDValue("Source Tab Size Chars",value) == ERROR_SUCCESS)
   {
     if (value > 0)
@@ -973,9 +923,14 @@ void SourceEdit::LoadSettings(CRegKey& key, bool prefsChange)
   }
 }
 
-void SourceEdit::SaveSettings(CRegKey& key)
+void SourceEdit::PrefsChanged(void)
 {
-  key.SetDWORDValue("Source Text Size",m_textSize);
+  SetStyles();
+  Invalidate();
+
+  // Somewhat tortuously, this causes Scintilla to update its internal style state, so
+  // that any calls before the next re-paint get the correct style or sizing information
+  CallEdit(WM_QUERYNEWPALETTE);
 }
 
 void SourceEdit::GetAllHeadings(CArray<SourceLexer::Heading>& headings)

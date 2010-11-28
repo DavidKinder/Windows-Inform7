@@ -27,7 +27,7 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
   ON_MESSAGE(WM_LABELNODE, OnLabelNode)
 END_MESSAGE_MAP()
 
-SkeinWindow::SkeinWindow() : m_skein(NULL), m_font(NULL)
+SkeinWindow::SkeinWindow() : m_skein(NULL)
 {
 }
 
@@ -36,35 +36,11 @@ int SkeinWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
   if (CScrollView::OnCreate(lpCreateStruct) == -1)
     return -1;
 
-  if (m_font == NULL)
-  {
-    // Store the font to use
-    m_font = &(theApp.GetFont());
-
-    // Create a font for labels
-    LOGFONT fontInfo;
-    ::ZeroMemory(&fontInfo,sizeof fontInfo);
-    m_font->GetLogFont(&fontInfo);
-    fontInfo.lfWeight = FW_BOLD;
-    m_labelFont.CreateFontIndirect(&fontInfo);
-
-    // Work out the size of the font
-    m_fontSize = theApp.MeasureFont(m_font);
-
-    // Load bitmaps
-    m_bitmaps[BackPlayed] = GetImage("Skein-played",false,true);
-    m_bitmaps[BackPlayedDark] = GetImage("Skein-played",true,true);
-    m_bitmaps[BackUnplayed] = GetImage("Skein-unplayed",false,true);
-    m_bitmaps[BackUnplayedDark] = GetImage("Skein-unplayed",true,true);
-    m_bitmaps[BackAnnotate] = GetImage("Skein-annotation",false,true);
-    m_bitmaps[DiffersBadge] = GetImage("SkeinDiffersBadge",false,false);
-  }
-
   // Control for editing text
   if (m_edit.Create(ES_CENTER|ES_AUTOHSCROLL|WS_CHILD,this,0) == FALSE)
     return -1;
-  m_edit.SetFont(m_font);
 
+  SetFontsBitmaps();
   return 0;
 }
 
@@ -73,7 +49,7 @@ void SkeinWindow::OnSize(UINT nType, int cx, int cy)
   CScrollView::OnSize(nType,cx,cy);
 
   if (m_skein != NULL)
-    Layout();
+    Layout(false);
 }
 
 void SkeinWindow::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
@@ -351,13 +327,13 @@ void SkeinWindow::OnDraw(CDC* pDC)
   if (bitmap.CreateBitmap(pDC->GetSafeHdc(),client.Width(),client.Height()) == FALSE)
     return;
   CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&bitmap);
-  CFont* oldFont = dc.SelectObject(m_font);
+  CFont* oldFont = dc.SelectObject(theApp.GetFont(InformApp::FontDisplay));
 
   // Clear the background
   dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourBack));
 
   // Redo the layout if needed
-  m_skein->Layout(dc,&m_labelFont,m_fontSize.cx*10);
+  m_skein->Layout(dc,&m_labelFont,m_fontSize.cx*10,false);
 
   // Work out the position of the centre of the root node
   CPoint origin = pDC->GetViewportOrg();
@@ -407,14 +383,30 @@ void SkeinWindow::SetSkein(Skein* skein)
 {
   m_skein = skein;
   m_skein->AddListener(this);
-  Layout();
+  Layout(false);
 }
 
-void SkeinWindow::Layout(void)
+void SkeinWindow::Layout(bool force)
 {
   CRect client;
   GetClientRect(client);
-  SetScrollSizes(MM_TEXT,GetLayoutSize(),client.Size());
+  SetScrollSizes(MM_TEXT,GetLayoutSize(force),client.Size());
+}
+
+void SkeinWindow::PrefsChanged(void)
+{
+  // Discard previous fonts and bitmaps
+  m_labelFont.DeleteObject();
+  theApp.CacheImage("Skein-played-scaled",NULL);
+  theApp.CacheImage("Skein-played-scaled-dark",NULL);
+  theApp.CacheImage("Skein-unplayed-scaled",NULL);
+  theApp.CacheImage("Skein-unplayed-scaled-dark",NULL);
+  theApp.CacheImage("Skein-annotation-scaled",NULL);
+  theApp.CacheImage("SkeinDiffersBadge-scaled",NULL);
+
+  SetFontsBitmaps();
+  Layout(true);
+  Invalidate();
 }
 
 void SkeinWindow::SkeinChanged(Skein::Change change)
@@ -426,7 +418,7 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
   {
   case Skein::TreeChanged:
   case Skein::NodeTextChanged:
-    Layout();
+    Layout(false);
     Invalidate();
     break;
   case Skein::ThreadChanged:
@@ -488,15 +480,15 @@ void SkeinWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
   }
 }
 
-CSize SkeinWindow::GetLayoutSize(void)
+CSize SkeinWindow::GetLayoutSize(bool force)
 {
   CDC* dc = AfxGetMainWnd()->GetDC();
-  CFont* font = dc->SelectObject(m_font);
+  CFont* font = dc->SelectObject(theApp.GetFont(InformApp::FontDisplay));
 
   CSize size;
 
   // Redo the layout if needed
-  m_skein->Layout(*dc,&m_labelFont,m_fontSize.cx*10);
+  m_skein->Layout(*dc,&m_labelFont,m_fontSize.cx*10,force);
 
   // The width is the width of all nodes below the root
   size.cx = m_skein->GetRoot()->GetTreeWidth(*dc,&m_labelFont,m_fontSize.cx*10)+
@@ -509,6 +501,31 @@ CSize SkeinWindow::GetLayoutSize(void)
   AfxGetMainWnd()->ReleaseDC(dc);
 
   return size;
+}
+
+void SkeinWindow::SetFontsBitmaps(void)
+{
+  // Set the edit control's font
+  CFont* font = theApp.GetFont(InformApp::FontDisplay);
+  m_edit.SetFont(font);
+
+  // Create a font for labels
+  LOGFONT fontInfo;
+  ::ZeroMemory(&fontInfo,sizeof fontInfo);
+  font->GetLogFont(&fontInfo);
+  fontInfo.lfWeight = FW_BOLD;
+  m_labelFont.CreateFontIndirect(&fontInfo);
+
+  // Work out the size of the font
+  m_fontSize = theApp.MeasureFont(font);
+
+  // Load bitmaps
+  m_bitmaps[BackPlayed] = GetImage("Skein-played",false,true);
+  m_bitmaps[BackPlayedDark] = GetImage("Skein-played",true,true);
+  m_bitmaps[BackUnplayed] = GetImage("Skein-unplayed",false,true);
+  m_bitmaps[BackUnplayedDark] = GetImage("Skein-unplayed",true,true);
+  m_bitmaps[BackAnnotate] = GetImage("Skein-annotation",false,true);
+  m_bitmaps[DiffersBadge] = GetImage("SkeinDiffersBadge",false,false);
 }
 
 void SkeinWindow::DrawNodeTree(Skein::Node* node, Skein::Node* transcriptEnd, CDC& dc,
@@ -1024,7 +1041,7 @@ void SkeinWindow::StartEdit(Skein::Node* node, bool label)
       nodeRect.top -= (int)(0.12*m_fontSize.cy);
       nodeRect.top -= (int)(0.5*m_fontSize.cy);
       nodeRect.bottom = nodeRect.top + m_fontSize.cy+1;
-      m_edit.SetFont(m_font);
+      m_edit.SetFont(theApp.GetFont(InformApp::FontDisplay));
     }
 
     m_edit.StartEdit(node,nodeRect,label);

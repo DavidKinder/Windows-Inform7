@@ -89,6 +89,10 @@ void GameGraphics::Layout(const CRect& r)
   ReleaseDC(dcWnd);
 }
 
+void GameGraphics::FontChanged(void)
+{
+}
+
 void GameGraphics::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r)
 {
   w = size;

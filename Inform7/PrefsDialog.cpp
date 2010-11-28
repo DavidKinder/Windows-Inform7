@@ -6,9 +6,12 @@
 #define new DEBUG_NEW
 #endif
 
-PrefsDialog::PrefsDialog() : I7BaseDialog(PrefsDialog::IDD,FALSE)
+PrefsDialog::PrefsDialog() : I7BaseDialog(PrefsDialog::IDD)
 {
   // Set the default preferences values
+  m_fontName = theApp.GetFontName(InformApp::FontDisplay);
+  m_fixedFontName = theApp.GetFontName(InformApp::FontFixedWidth);
+  m_fontSize.Format("%d",theApp.GetFontSize(InformApp::FontDisplay));
   m_tabSize = 8;
   m_indentWrapped = TRUE;
   m_autoIndent = TRUE;
@@ -25,6 +28,9 @@ END_MESSAGE_MAP()
 void PrefsDialog::DoDataExchange(CDataExchange* pDX)
 {
   I7BaseDialog::DoDataExchange(pDX);
+  DDX_Control(pDX, IDC_FONT, m_font);
+  DDX_Control(pDX, IDC_FIXEDFONT, m_fixedFont);
+  DDX_CBString(pDX, IDC_FONTSIZE, m_fontSize);
   DDX_Text(pDX, IDC_TABSIZE, m_tabSize);
   DDX_Check(pDX, IDC_INDENT, m_indentWrapped);
   DDX_Check(pDX, IDC_AUTO_INDENT, m_autoIndent);
@@ -42,8 +48,29 @@ BOOL PrefsDialog::OnInitDialog()
   I7BaseDialog::OnInitDialog();
   theApp.SetIcon(this);
 
+  // Get all the possible fonts
+  CDC* dc = GetDC();
+  LOGFONT font;
+  ::ZeroMemory(&font,sizeof font);
+  font.lfCharSet = ANSI_CHARSET;
+  ::EnumFontFamiliesEx(dc->GetSafeHdc(),&font,(FONTENUMPROC)ListFonts,(LPARAM)this,0);
+  ReleaseDC(dc);
+
+  // Initialize the font controls
+  if (m_font.SelectString(-1,m_fontName) == CB_ERR)
+    m_font.SetCurSel(0);
+  if (m_fixedFont.SelectString(-1,m_fixedFontName) == CB_ERR)
+    m_fixedFont.SetCurSel(0);
+
   UpdateControlStates();
   return TRUE;
+}
+
+void PrefsDialog::OnOK()
+{
+  m_font.GetWindowText(m_fontName);
+  m_fixedFont.GetWindowText(m_fixedFontName);
+  I7BaseDialog::OnOK();
 }
 
 INT_PTR PrefsDialog::DoModal()
@@ -53,7 +80,16 @@ INT_PTR PrefsDialog::DoModal()
     CRegKey registryKey;
     if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
     {
-      DWORD value;
+      char fontName[MAX_PATH];
+      DWORD value = sizeof fontName;
+      if (registryKey.QueryStringValue("Font Name",fontName,&value) == ERROR_SUCCESS)
+        m_fontName = fontName;
+      value = sizeof fontName;
+      if (registryKey.QueryStringValue("Fixed Font Name",fontName,&value) == ERROR_SUCCESS)
+        m_fixedFontName = fontName;
+      if (registryKey.QueryDWORDValue("Font Size",value) == ERROR_SUCCESS)
+        m_fontSize.Format("%d",value);
+
       if (registryKey.QueryDWORDValue("Source Tab Size Chars",value) == ERROR_SUCCESS)
         m_tabSize = value;
       if (registryKey.QueryDWORDValue("Indent Wrapped Lines",value) == ERROR_SUCCESS)
@@ -79,6 +115,12 @@ INT_PTR PrefsDialog::DoModal()
     CRegKey registryKey;
     if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
     {
+      registryKey.SetStringValue("Font Name",m_fontName);
+      registryKey.SetStringValue("Fixed Font Name",m_fixedFontName);
+      int fontSize = 0;
+      if (sscanf(m_fontSize,"%d",&fontSize) == 1)
+        registryKey.SetDWORDValue("Font Size",fontSize);
+
       registryKey.SetDWORDValue("Source Tab Size Chars",m_tabSize);
       registryKey.SetDWORDValue("Indent Wrapped Lines",m_indentWrapped);
       registryKey.SetDWORDValue("Auto Indent",m_autoIndent);
@@ -103,4 +145,17 @@ void PrefsDialog::UpdateControlStates(void)
 {
   bool cleanFiles = (m_cleanFilesCheck.GetCheck() == BST_CHECKED);
   m_cleanIndexCheck.EnableWindow(cleanFiles);
+}
+
+// Called when enumerating fonts, populates the font drop down lists in the dialog
+int CALLBACK PrefsDialog::ListFonts(ENUMLOGFONTEX *font, NEWTEXTMETRICEX *metric, DWORD fontType, LPARAM param)
+{
+  PrefsDialog* dialog = (PrefsDialog*)param;
+  if (font->elfLogFont.lfFaceName[0] != '@')
+  {
+    dialog->m_font.AddString(font->elfLogFont.lfFaceName);
+    if (font->elfLogFont.lfPitchAndFamily & FIXED_PITCH)
+      dialog->m_fixedFont.AddString(font->elfLogFont.lfFaceName);
+  }
+  return 1;
 }

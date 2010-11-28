@@ -71,16 +71,22 @@ public:
     ColourContentsBelow,
   };
 
-  CFont& GetFont(void);
-  const char* GetFontName(void);
-  const char* GetFixedFontName(void);
-  int GetFontPointSize(void);
-  int GetDialogFontSize(void);
-  CSize MeasureFont(CFont* font);
-  CSize MeasureText(CWnd* button);
   COLORREF GetColour(Colours colour);
   COLORREF BlendedColour(COLORREF col1, int rel1, COLORREF col2, int rel2);
   void SetIcon(CWnd* wnd);
+
+  enum Fonts
+  {
+    FontSystem = 0,
+    FontDisplay = 1,
+    FontFixedWidth = 2,
+  };
+
+  CFont* GetFont(Fonts font);
+  const char* GetFontName(Fonts font);
+  int GetFontSize(Fonts font);
+  CSize MeasureFont(CFont* font);
+  CSize MeasureText(CWnd* button);
 
   CString GetAppDir(void);
   CString GetLastProjectDir(void);
@@ -95,7 +101,6 @@ public:
   {
     Extensions,
     Preferences,
-    SourceTextSize,
     Spelling,
   };
   void SendAllFrames(Changed changed, int value);
@@ -143,10 +148,9 @@ protected:
   bool CreateHomeDirs(void);
   void SetFonts(void);
 
-  CString m_fontName;
-  CString m_fixedFontName;
-  int m_fontSize;
-  CFont m_font;
+  CString m_fontNames[3];
+  int m_fontSizes[3];
+  CFont m_fonts[3];
 
   CArray<CFrameWnd*> m_frames;
   std::map<std::string,CDibSection*> m_bitmaps;

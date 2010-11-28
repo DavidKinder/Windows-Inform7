@@ -47,18 +47,28 @@ void ContentsPane::UpdateSmallest(Level smallest)
   Invalidate();
 }
 
+void ContentsPane::PrefsChanged(void)
+{
+  CreateFonts();
+
+  // Remove previously cached images
+  for (int i = 0; i < 3; i++)
+  {
+    CString circleName;
+    circleName.Format("Contents-circle-scaled-%d",i);
+    theApp.CacheImage(circleName,NULL);
+  }
+
+  SetScrollSize();
+  Invalidate();
+}
+
 int ContentsPane::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
   if (CWnd::OnCreate(lpCreateStruct) == -1)
     return -1;
 
-  // Set up the fonts
-  LOGFONT fontInfo;
-  ::ZeroMemory(&fontInfo,sizeof fontInfo);
-  theApp.GetFont().GetLogFont(&fontInfo);
-  m_font.CreateFontIndirect(&fontInfo);
-  fontInfo.lfWeight = FW_BOLD;
-  m_boldFont.CreateFontIndirect(&fontInfo);
+  CreateFonts();
   return 0;
 }
 
@@ -258,15 +268,22 @@ void ContentsPane::DrawNode(CDC* dc, Node* node, bool& title, int& h, int origin
         if (node->GetLevel() != SourceLexer::Title)
         {
           COLORREF back = theApp.GetColour(InformApp::ColourContents);
+          int backIndex = 0;
           if (node->selected == Node::NodeSelected)
+          {
             back = theApp.GetColour(InformApp::ColourContentsSelect);
+            backIndex = 1;
+          }
           else if (node->selected == Node::NodeBelowSelection)
+          {
             back = theApp.GetColour(InformApp::ColourContentsBelow);
+            backIndex = 2;
+          }
 
           // Draw a circle to the left of the heading
           CDC dcFrom;
           dcFrom.CreateCompatibleDC(dc);
-          CBitmap* fromBitmap = CDibSection::SelectDibSection(dcFrom,GetCircle(back));
+          CBitmap* fromBitmap = CDibSection::SelectDibSection(dcFrom,GetCircle(back,backIndex));
           dc->BitBlt(x-fs.cy,y,fs.cy,fs.cy,&dcFrom,0,0,SRCCOPY);
           dcFrom.SelectObject(fromBitmap);
         }
@@ -431,11 +448,11 @@ void ContentsPane::SetScrollSize(void)
   }
 }
 
-CDibSection* ContentsPane::GetCircle(COLORREF back)
+CDibSection* ContentsPane::GetCircle(COLORREF back, int index)
 {
   // Is the image in the cache?
   CString circleName;
-  circleName.Format("Contents-circle-scaled-%x",(int)back);
+  circleName.Format("Contents-circle-scaled-%d",index);
   CDibSection* circleDib = theApp.GetCachedImage(circleName);
   if (circleDib != NULL)
     return circleDib;
@@ -445,7 +462,7 @@ CDibSection* ContentsPane::GetCircle(COLORREF back)
   CSize dibSize = dib->GetSize();
 
   // Work out the scaled image size
-  CSize circleDibSize = theApp.MeasureFont(&(theApp.GetFont()));
+  CSize circleDibSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontDisplay));
   circleDibSize.cx = circleDibSize.cy;
 
   // Create a scaled image
@@ -504,6 +521,20 @@ void ContentsPane::SetSelectedNode(const SourceHeading& selected)
     selIndex--;
     node = newNode;
   }
+}
+
+void ContentsPane::CreateFonts(void)
+{
+  m_font.DeleteObject();
+  m_boldFont.DeleteObject();
+
+  // Set up the fonts
+  LOGFONT fontInfo;
+  ::ZeroMemory(&fontInfo,sizeof fontInfo);
+  theApp.GetFont(InformApp::FontDisplay)->GetLogFont(&fontInfo);
+  m_font.CreateFontIndirect(&fontInfo);
+  fontInfo.lfWeight = FW_BOLD;
+  m_boldFont.CreateFontIndirect(&fontInfo);
 }
 
 ContentsPane::Node::Node(const Item* item_, Node* parent_, UINT id_, int indent_)
@@ -662,6 +693,11 @@ void ContentsWindow::SaveSettings(CRegKey& key)
   key.SetDWORDValue("Contents Depth",m_depth.GetPos());
 }
 
+void ContentsWindow::PrefsChanged(void)
+{
+  m_contents.PrefsChanged();
+}
+
 int ContentsWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
   if (CWnd::OnCreate(lpCreateStruct) == -1)
@@ -719,7 +755,7 @@ void ContentsWindow::OnSize(UINT nType, int cx, int cy)
 {
   CWnd::OnSize(nType,cx,cy);
 
-  CSize fs = theApp.MeasureFont(&(theApp.GetFont()));
+  CSize fs = theApp.MeasureFont(theApp.GetFont(InformApp::FontSystem));
   m_contents.MoveWindow(0,0,cx,cy-fs.cy*2);
   m_depth.MoveWindow(cx/3,(cy-fs.cy*2)+4,cx/3,fs.cy*3/2);
 }
@@ -744,7 +780,7 @@ void ContentsWindow::Draw(CDC* dc)
   CRect client, contents;
   GetClientRect(client);
   m_contents.GetClientRect(contents);
-  CSize fs = theApp.MeasureFont(&(theApp.GetFont()));
+  CSize fs = theApp.MeasureFont(theApp.GetFont(InformApp::FontSystem));
 
   // Only draw the space under the contents pane
   client.top = contents.Height();
@@ -752,7 +788,7 @@ void ContentsWindow::Draw(CDC* dc)
   dc->DrawEdge(client,EDGE_ETCHED,BF_TOP);
 
   // Draw the label for the control
-  CFont* oldFont = dc->SelectObject(&(theApp.GetFont()));
+  CFont* oldFont = dc->SelectObject(theApp.GetFont(InformApp::FontSystem));
   dc->SetTextColor(theApp.GetColour(InformApp::ColourText));
   dc->SetBkMode(TRANSPARENT);
   CRect labelRect(0,client.top+4,(client.Width()/3)-fs.cx,client.top+(fs.cy*3/2));

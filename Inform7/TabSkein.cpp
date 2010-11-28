@@ -36,12 +36,13 @@ void TabSkein::CreateTab(CWnd* parent)
   Create(parent);
 
   // Create the command buttons
+  CFont* font = theApp.GetFont(InformApp::FontSystem);
   m_label.Create("Labels",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_LABEL);
-  m_label.SetFont(&m_font);
+  m_label.SetFont(font);
   m_trim.Create("Trim",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_TRIM);
-  m_trim.SetFont(&m_font);
+  m_trim.SetFont(font);
   m_play.Create("Play all",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_PLAY_ALL);
-  m_play.SetFont(&m_font);
+  m_play.SetFont(font);
 
   // Create the window containing the actual skein
   m_window.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,CRect(0,0,0,0),this,1);
@@ -90,7 +91,7 @@ void TabSkein::OpenProject(const char* path, bool primary)
       }
     }
   }
-  m_window.Layout();
+  m_window.Layout(false);
 }
 
 bool TabSkein::SaveProject(const char* path, bool primary)
@@ -103,6 +104,11 @@ bool TabSkein::SaveProject(const char* path, bool primary)
 bool TabSkein::IsProjectEdited(void)
 {
   return m_skein->IsEdited();
+}
+
+void TabSkein::PrefsChanged(CRegKey& key)
+{
+  m_window.PrefsChanged();
 }
 
 void TabSkein::SetSkein(Skein* skein)

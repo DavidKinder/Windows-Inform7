@@ -13,6 +13,7 @@ public:
 
   void Create(CWnd* parent);
   SourceEdit& GetEdit(void);
+  void PrefsChanged(void);
 
   const SourceHeading& GetHeading(void);
   void GetAllHeadings(CArray<SourceLexer::Heading>& headings);

@@ -98,12 +98,7 @@
 #define ID_NAVIGATE_BACK                400
 #define ID_NAVIGATE_FORE                401
 #define ID_MENU_PROPERTIES              450
-#define ID_ZOOM_SMALLEST                500
-#define ID_ZOOM_SMALLER                 501
-#define ID_ZOOM_MEDIUM                  502
-#define ID_ZOOM_LARGER                  503
-#define ID_ZOOM_LARGEST                 504
-#define ID_EXTENSIONS_LIST              600
+#define ID_EXTENSIONS_LIST              500
 #define IDC_CREDITS                     1000
 #define IDC_OUTPUT_Z5                   1001
 #define IDC_OUTPUT_Z8                   1002
@@ -129,26 +124,24 @@
 #define IDC_TRANSCRIPT_EDIT             1026
 #define IDC_DIR_TEXT                    1027
 #define IDC_NAME_TEXT                   1028
-#define IDC_TEXT_SMALLEST               1029
-#define IDC_TEXT_SMALLER                1030
-#define IDC_TEXT_MEDIUM                 1031
-#define IDC_TEXT_LARGER                 1032
-#define IDC_TEXT_LARGEST                1033
-#define IDC_BADWORD                     1034
-#define IDC_SUGGESTIONS                 1035
-#define IDC_ADD_DICTIONARY              1036
-#define IDC_IGNORE                      1037
-#define IDC_REPLACE                     1038
-#define IDC_TABSIZE                     1039
-#define IDC_CLEANFILES                  1040
-#define IDC_CLEANINDEX                  1041
-#define IDC_LANGUAGE                    1042
-#define IDC_STARTLAST                   1043
-#define IDC_GLULX                       1044
-#define IDC_INDENT                      1045
-#define IDC_AUTO_INDENT                 1046
-#define IDC_STORY_BOX                   1047
-#define IDC_RANDOM_BOX                  1048
+#define IDC_BADWORD                     1029
+#define IDC_SUGGESTIONS                 1030
+#define IDC_ADD_DICTIONARY              1031
+#define IDC_IGNORE                      1032
+#define IDC_REPLACE                     1033
+#define IDC_TABSIZE                     1034
+#define IDC_CLEANFILES                  1035
+#define IDC_CLEANINDEX                  1036
+#define IDC_LANGUAGE                    1037
+#define IDC_STARTLAST                   1038
+#define IDC_GLULX                       1039
+#define IDC_INDENT                      1040
+#define IDC_AUTO_INDENT                 1041
+#define IDC_STORY_BOX                   1042
+#define IDC_RANDOM_BOX                  1043
+#define IDC_FONT                        1044
+#define IDC_FONTSIZE                    1045
+#define IDC_FIXEDFONT                   1046
 
 // Next default values for new objects
 // 
@@ -156,7 +149,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        276
 #define _APS_NEXT_COMMAND_VALUE         282
-#define _APS_NEXT_CONTROL_VALUE         1048
+#define _APS_NEXT_CONTROL_VALUE         1047
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif

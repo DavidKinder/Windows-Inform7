@@ -35,6 +35,7 @@ public:
   };
 
   virtual void Layout(const CRect& r) = 0;
+  virtual void FontChanged(void) = 0;
   virtual void GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r) = 0;
   virtual void AddText(const CStringW& text, bool fromSkein) = 0;
   virtual void ClearText(bool styles, bool reverse) = 0;

@@ -41,8 +41,7 @@ int FlatTab::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
   if (CTabCtrl::OnCreate(lpCreateStruct) == -1)
     return -1;
-  m_font.CreatePointFont(theApp.GetDialogFontSize(),theApp.GetFontName());
-  SetFont(&m_font);
+  SetFont(theApp.GetFont(InformApp::FontSystem));
   return 0;
 }
 

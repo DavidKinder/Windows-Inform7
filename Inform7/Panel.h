@@ -53,6 +53,7 @@ public:
   void Progress(const char* msg);
   void LoadSettings(CRegKey& key);
   void SaveSettings(CRegKey& key);
+  void PrefsChanged(CRegKey& key);
 
   virtual bool IsTabEnabled(int tab);
   virtual COLORREF GetTabColour(int tab);

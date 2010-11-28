@@ -39,7 +39,7 @@ void TabDoc::CreateTab(CWnd* parent)
 
   // Create the command button
   m_contents.Create("Contents",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_DOC_CONTENTS);
-  m_contents.SetFont(&m_font);
+  m_contents.SetFont(theApp.GetFont(InformApp::FontSystem));
 
   // Create the HTML control window
   m_html = (ReportHtml*)(RUNTIME_CLASS(ReportHtml)->CreateObject());
@@ -90,6 +90,11 @@ void TabDoc::CompileProject(CompileStage stage, int code)
       m_html->Refresh();
     }
   }
+}
+
+void TabDoc::PrefsChanged(CRegKey& key)
+{
+  m_html->Refresh();
 }
 
 void TabDoc::Show(const char* url)

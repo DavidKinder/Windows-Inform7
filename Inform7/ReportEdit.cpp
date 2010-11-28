@@ -25,27 +25,28 @@ BOOL ReportEdit::Create(CWnd* parent, UINT id)
   if (!CWnd::Create("Scintilla",NULL,WS_CHILD|WS_CLIPCHILDREN,CRect(0,0,0,0),parent,id))
     return FALSE;
 
-  CSize fontSize = theApp.MeasureFont(&(theApp.GetFont()));
   m_editPtr = (sptr_t)SendMessage(SCI_GETDIRECTPOINTER);
-
   CallEdit(SCI_SETREADONLY,TRUE);
   CallEdit(SCI_SETSCROLLWIDTH,100);
   CallEdit(SCI_SETSCROLLWIDTHTRACKING,TRUE);
   CallEdit(SCI_SETSELFORE,TRUE,::GetSysColor(COLOR_HIGHLIGHTTEXT));
   CallEdit(SCI_SETSELBACK,TRUE,::GetSysColor(COLOR_HIGHLIGHT));
-  CallEdit(SCI_STYLESETFONT,STYLE_DEFAULT,(sptr_t)(LPCSTR)theApp.GetFontName());
-  CallEdit(SCI_STYLESETSIZE,STYLE_DEFAULT,theApp.GetFontPointSize());
   CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,theApp.GetColour(InformApp::ColourText));
   CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,theApp.GetColour(InformApp::ColourBack));
-  CallEdit(SCI_STYLECLEARALL);
-  CallEdit(SCI_STYLESETFONT,1,(sptr_t)(LPCSTR)theApp.GetFixedFontName());
   for (int i = 0; i < 5; i++)
     CallEdit(SCI_SETMARGINWIDTHN,i,0);
   CallEdit(SCI_SETMARGINLEFT,0,0);
   CallEdit(SCI_SETMARGINRIGHT,0,0);
   CallEdit(SCI_SETCARETSTYLE,CARETSTYLE_INVISIBLE,0);
+  SetFonts();
 
   return TRUE;
+}
+
+void ReportEdit::FontChanged(void)
+{
+  SetFonts();
+  Invalidate();
 }
 
 void ReportEdit::OnUpdateNeedSel(CCmdUI* pCmdUI)
@@ -90,6 +91,14 @@ void ReportEdit::ClearText(void)
 void ReportEdit::SetFormat(bool fixed)
 {
   m_fixed = fixed;
+}
+
+void ReportEdit::SetFonts(void)
+{
+  CallEdit(SCI_STYLESETFONT,STYLE_DEFAULT,(sptr_t)(LPCSTR)theApp.GetFontName(InformApp::FontDisplay));
+  CallEdit(SCI_STYLESETSIZE,STYLE_DEFAULT,theApp.GetFontSize(InformApp::FontDisplay));
+  CallEdit(SCI_STYLECLEARALL);
+  CallEdit(SCI_STYLESETFONT,1,(sptr_t)(LPCSTR)theApp.GetFontName(InformApp::FontFixedWidth));
 }
 
 extern "C" sptr_t __stdcall Scintilla_DirectFunction(sptr_t, UINT, uptr_t, sptr_t);

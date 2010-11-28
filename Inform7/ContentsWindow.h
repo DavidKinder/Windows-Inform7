@@ -18,6 +18,7 @@ public:
 
   void SetHeadings(const CArray<Item>& headings, const SourceHeading& selected);
   void UpdateSmallest(Level smallest);
+  void PrefsChanged(void);
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -66,8 +67,9 @@ private:
   Node* NodeAtPoint(const CPoint& point, Node* node = NULL);
   CWnd* GetParentTab(CWnd* wnd = NULL);
   void SetScrollSize(void);
-  CDibSection* GetCircle(COLORREF back);
+  CDibSection* GetCircle(COLORREF back, int index);
   void SetSelectedNode(const SourceHeading& selected);
+  void CreateFonts(void);
 
   CArray<Item> m_items;
   std::auto_ptr<Node> m_tree;
@@ -91,6 +93,7 @@ public:
 
   void LoadSettings(CRegKey& key);
   void SaveSettings(CRegKey& key);
+  void PrefsChanged(void);
 
 protected:
   DECLARE_MESSAGE_MAP()
