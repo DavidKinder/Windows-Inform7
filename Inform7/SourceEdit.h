@@ -41,7 +41,6 @@ protected:
   afx_msg void OnFormatShift(UINT id);
   afx_msg void OnFormatComment(UINT id);
   afx_msg void OnFormatRenumber();
-  afx_msg void OnTextSize(UINT id);
 
   afx_msg void OnSavePointReached(NMHDR*, LRESULT*);
   afx_msg void OnSavePointLeft(NMHDR*, LRESULT*);
@@ -55,6 +54,8 @@ protected:
   virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 public:
+  void SetStyles(void);
+
   void SetDocument(SourceEdit* master);
   void OpenFile(CFile* file);
   bool SaveFile(CFile* file);
@@ -67,8 +68,6 @@ public:
   bool IsLineShown(int line);
 
   void PasteCode(const wchar_t* code);
-  void SetTextSize(int size);
-
   void UpdateSpellCheck(void);
   void MoveShowSelect(CWnd* child);
 
@@ -81,8 +80,8 @@ public:
   CStringW GetTextRange(int cpMin, int cpMax, int len = -1);
   CHARRANGE FindText(LPCWSTR text, bool fromSelect, bool down, bool matchCase, bool wholeWord);
 
-  void LoadSettings(CRegKey& key, bool prefsChange);
-  void SaveSettings(CRegKey& key);
+  void LoadSettings(CRegKey& key);
+  void PrefsChanged(void);
 
   void GetAllHeadings(CArray<SourceLexer::Heading>& headings);
   int GetLineHeight(void);
@@ -102,7 +101,6 @@ private:
   int m_marker;
   CHARRANGE m_markSel;
 
-  int m_textSize;
   bool m_autoIndent;
 
   EditFind m_find;

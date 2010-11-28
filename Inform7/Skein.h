@@ -19,7 +19,7 @@ public:
   bool NeedSaveWarn(int& maxTemp);
 
   void Reset(bool current);
-  void Layout(CDC& dc, CFont* labelFont, int spacing);
+  void Layout(CDC& dc, CFont* labelFont, int spacing, bool force);
 
   void NewLine(const CStringW& line);
   bool NextLine(CStringW& line);
@@ -83,6 +83,7 @@ public:
     int GetLineTextWidth(void);
     int GetLabelTextWidth(void);
     int GetTreeWidth(CDC& dc, CFont* labelFont, int spacing);
+    void ClearWidths(void);
 
     int GetDepth(void);
     int GetMaxDepth(void);

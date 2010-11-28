@@ -18,10 +18,9 @@ protected:
 
   ReportHtml* m_html;
   HMENU m_menu;
-  UINT m_zoomId;
 
 public:
-  IEWnd(ReportHtml* html, HMENU menu, UINT zoomId);
+  IEWnd(ReportHtml* html, HMENU menu);
 
   afx_msg LRESULT OnInitMenuPopup(WPARAM, LPARAM);
 };
@@ -165,18 +164,15 @@ HRESULT ReportHtml::OnShowContextMenu(DWORD dwID,  LPPOINT ppt, LPUNKNOWN pcmdTa
 
   // Get the window to use as the menu's parent
   HWND window;
-  oleWindow->GetWindow(&window);
+  if (FAILED(oleWindow->GetWindow(&window)))
+    return S_FALSE;
 
   // Get the context menu
   CMenu menu;
   menu.LoadMenu(IDR_HTMLMENU);
 
-  // Get the current zoom value
-  CComVariant zoom;
-  ExecWB(OLECMDID_ZOOM,OLECMDEXECOPT_DONTPROMPTUSER,NULL,&zoom); 
-
   // Subclass the IE window to catch menu messages
-  IEWnd ieWnd(this,menu,zoom.lVal+ID_ZOOM_SMALLEST);
+  IEWnd ieWnd(this,menu);
   ieWnd.SubclassWindow(window);
 
   // Show the menu
@@ -203,14 +199,6 @@ HRESULT ReportHtml::OnShowContextMenu(DWORD dwID,  LPPOINT ppt, LPUNKNOWN pcmdTa
     break;
   case ID_MENU_PROPERTIES:
     ExecWB(OLECMDID_PROPERTIES,OLECMDEXECOPT_DODEFAULT,NULL,NULL); 
-    break;
-  default:
-    if ((select >= ID_ZOOM_SMALLEST) && (select <= ID_ZOOM_LARGEST))
-    {
-      // Change the text size
-      zoom = (int)(select-ID_ZOOM_SMALLEST);
-      ExecWB(OLECMDID_ZOOM,OLECMDEXECOPT_DONTPROMPTUSER,&zoom,NULL); 
-    }
     break;
   }
   return S_OK;
@@ -270,18 +258,17 @@ void ReportHtml::OnUpdateEditFind(CCmdUI* pCmdUI)
 
 CString ReportHtml::m_registryPath;
 
-void ReportHtml::SetRegistryPath(const char* path)
+void ReportHtml::SetIEPreferences(const char* path)
 {
-  m_registryPath = path;
+  if (path != NULL)
+    m_registryPath = path;
 
   // Open the web browser registry key
   CRegKey webKey;
   DWORD disposition;
-  LONG result = webKey.Create(HKEY_CURRENT_USER,path,
+  LONG result = webKey.Create(HKEY_CURRENT_USER,m_registryPath,
     REG_NONE,REG_OPTION_NON_VOLATILE,KEY_READ|KEY_WRITE,NULL,&disposition);
-
-  // If the key already exists, don't create any settings under it
-  if ((result == ERROR_SUCCESS) && (disposition == REG_CREATED_NEW_KEY))
+  if (result == ERROR_SUCCESS)
   {
     CRegKey webSettingsKey;
     if (webSettingsKey.Create(webKey,"Settings") == ERROR_SUCCESS)
@@ -299,34 +286,44 @@ void ReportHtml::SetRegistryPath(const char* path)
       // Use Windows colours
       webMainKey.SetStringValue("Use_DlgBox_Colors","no");
     }
+
+    CRegKey scriptsKey;
+    if (scriptsKey.Create(webKey,"International\\Scripts\\3") == ERROR_SUCCESS)
+    {
+      // Set the font names
+      scriptsKey.SetStringValue("IEPropFontName",theApp.GetFontName(InformApp::FontDisplay));
+      scriptsKey.SetStringValue("IEFixedFontName",theApp.GetFontName(InformApp::FontFixedWidth));
+
+      // Set the approximate font size
+      int ptSize = theApp.GetFontSize(InformApp::FontDisplay);
+      if (ptSize >= 14)
+        scriptsKey.SetDWORDValue("IEFontSize",4);
+      else if (ptSize >= 12)
+        scriptsKey.SetDWORDValue("IEFontSize",3);
+      else if (ptSize >= 10)
+        scriptsKey.SetDWORDValue("IEFontSize",2);
+      else if (ptSize >= 9)
+        scriptsKey.SetDWORDValue("IEFontSize",1);
+      else
+        scriptsKey.SetDWORDValue("IEFontSize",0);
+    }
   }
 
-  // Update font keys as necessary
+  // Force the use of the latest IE version
+  CRegKey featureKey;
+  result = featureKey.Create(HKEY_CURRENT_USER,
+    "Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION",
+    REG_NONE,REG_OPTION_NON_VOLATILE,KEY_READ|KEY_WRITE,NULL,&disposition);
   if (result == ERROR_SUCCESS)
-  {
-    CRegKey internationalKey;
-    if (internationalKey.Create(webKey,"International") == ERROR_SUCCESS)
-    {
-      CRegKey scriptsKey;
-      if (scriptsKey.Create(internationalKey,"Scripts") == ERROR_SUCCESS)
-      {
-        CRegKey script3Key;
-        if (script3Key.Create(scriptsKey,"3") == ERROR_SUCCESS)
-        {
-          // Only set font size if not already set
-          ULONG len;
-          if (script3Key.QueryBinaryValue("IEFontSize",NULL,&len) != ERROR_SUCCESS)
-          {
-            INT32 size = (theApp.GetFontPointSize() > 9) ? 2 : 1;
-            script3Key.SetBinaryValue("IEFontSize",&size,sizeof size);
-          }
+    featureKey.SetDWORDValue("Inform7.exe",8888);
 
-          // Always update font names
-          script3Key.SetStringValue("IEPropFontName",theApp.GetFontName());
-          script3Key.SetStringValue("IEFixedFontName",theApp.GetFixedFontName());
-        }
-      }
-    }
+  // If the registry path hasn't been changed, this is a preferences update,
+  // so cause all Internet Explorer windows to update
+  if (path == NULL)
+  {
+    DWORD result;
+    SendMessageTimeout(HWND_BROADCAST,
+      WM_SETTINGCHANGE,0x1F,(LPARAM)"Software\\Microsoft\\Internet Explorer",SMTO_BLOCK,1000,&result);
   }
 }
 
@@ -481,8 +478,7 @@ BEGIN_MESSAGE_MAP(IEWnd, CWnd)
   ON_MESSAGE(WM_INITMENUPOPUP, OnInitMenuPopup)
 END_MESSAGE_MAP()
 
-IEWnd::IEWnd(ReportHtml* html, HMENU menu, UINT zoomId)
-  : m_html(html), m_menu(menu), m_zoomId(zoomId)
+IEWnd::IEWnd(ReportHtml* html, HMENU menu) : m_html(html), m_menu(menu)
 {
 }
 
@@ -500,15 +496,6 @@ LRESULT IEWnd::OnInitMenuPopup(WPARAM, LPARAM)
   ::EnableMenuItem(m_menu,ID_EDIT_COPY,
     ((cmdf & OLECMDF_ENABLED) ? MF_ENABLED : MF_GRAYED)|MF_BYCOMMAND);
   ::EnableMenuItem(m_menu,ID_EDIT_SELECT_ALL,MF_ENABLED|MF_BYCOMMAND);
-
-  for (UINT id = ID_ZOOM_SMALLEST; id <= ID_ZOOM_LARGEST; id++)
-  {
-    ::EnableMenuItem(m_menu,id,MF_ENABLED|MF_BYCOMMAND);
-    if (id == m_zoomId)
-      ::CheckMenuItem(m_menu,id,MF_CHECKED|MF_BYCOMMAND);
-    else
-      ::CheckMenuItem(m_menu,id,MF_UNCHECKED|MF_BYCOMMAND);
-  }
 
   ::EnableMenuItem(m_menu,ID_FILE_PRINT,MF_ENABLED|MF_BYCOMMAND);
   ::EnableMenuItem(m_menu,ID_MENU_PROPERTIES,MF_ENABLED|MF_BYCOMMAND);

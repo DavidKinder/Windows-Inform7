@@ -65,10 +65,8 @@ void GameWindow::ExitInstance(void)
 void GameWindow::Create(CWnd* parent)
 {
   // Create the containing window
-  if (!CWnd::Create(NULL,"",0,CRect(0,0,0,0),parent,0))
-  {
+  if (!CWnd::Create(NULL,"",WS_CLIPCHILDREN,CRect(0,0,0,0),parent,0))
     TRACE("Failed to create game display\n");
-  }
 }
 
 void GameWindow::ShowWindow(LPRECT rect, void* owner)
@@ -146,9 +144,7 @@ void GameWindow::RunInterpreter(const char* dir, const char* file, bool glulx)
   // Get screen properties to send to the interpreter
   CRect screen;
   GetClientRect(screen);
-  CFont font;
-  font.CreatePointFont(10*theApp.GetFontPointSize(),theApp.GetFixedFontName());
-  m_fontSize = theApp.MeasureFont(&font);
+  m_fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontFixedWidth));
 
   // Work out the interpreter to run
   CString terp;
@@ -275,6 +271,16 @@ void GameWindow::InputFromSkein(void)
     CommandReadKey(true);
     break;
   }
+}
+
+void GameWindow::PrefsChanged(void)
+{
+  WindowMapIt it(m_windows);
+  while (it.Iterate())
+    it.Value()->FontChanged();
+
+  m_fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontFixedWidth));
+  Resize(true);
 }
 
 bool GameWindow::ReadFromPipe(LPBYTE data, DWORD length)
@@ -454,7 +460,7 @@ void GameWindow::CommandCreateWindow(int wndId, int splitId, int pairId, int met
     else
       m_mainWndId = pairId;
   }
-  Resize();
+  Resize(false);
 }
 
 void GameWindow::CommandDestroyWindow(int wndId)
@@ -486,7 +492,7 @@ void GameWindow::CommandDestroyWindow(int wndId)
 
   // Delete this window and rebuild remaining windows
   DeleteWindow(wndId);
-  Resize();
+  Resize(false);
 }
 
 void GameWindow::CommandPrintOutput(int wndId, wchar_t* text, int textLength)
@@ -662,7 +668,7 @@ void GameWindow::CommandArrange(int wndId, int method, int size, int keyId, bool
   if (wnd->IsKindOf(RUNTIME_CLASS(GamePair)))
   {
     ((GamePair*)wnd)->SetArrangement(method,size,keyId,swap);
-    Resize();
+    Resize(false);
   }
 }
 
@@ -979,10 +985,6 @@ void GameWindow::OnPaint()
 {
   CPaintDC dc(this);
 
-  // If there are game windows open, there is no need to paint this window
-  if (m_windows.GetSize() > 0)
-    return;
-
   CRect client;
   GetClientRect(client);
   dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourBack));
@@ -991,15 +993,7 @@ void GameWindow::OnPaint()
 void GameWindow::OnSize(UINT nType, int cx, int cy)
 {
   CWnd::OnSize(nType,cx,cy);
-  Resize();
-
-  // Send back the size of the display
-  CRect screen;
-  GetClientRect(screen);
-  int size[2];
-  size[0] = screen.Width();
-  size[1] = screen.Height();
-  SendReturn(Return_Size,sizeof size,size);
+  Resize(true);
 }
 
 void GameWindow::OnTimer(UINT nIDEvent)
@@ -1150,15 +1144,28 @@ LRESULT GameWindow::OnEndCharInput(WPARAM wParam, LPARAM)
   return 0;
 }
 
-void GameWindow::Resize(void)
+void GameWindow::Resize(bool send)
 {
   GameBase* mainWnd = NULL;
-  if (m_windows.Lookup(m_mainWndId,mainWnd) == FALSE)
-    return;
+  if (m_windows.Lookup(m_mainWndId,mainWnd))
+  {
+    CRect client;
+    GetClientRect(client);
+    mainWnd->Layout(client);
+  }
 
-  CRect client;
-  GetClientRect(client);
-  mainWnd->Layout(client);
+  if (send)
+  {
+    // Send back the size of the display
+    CRect screen;
+    GetClientRect(screen);
+    int size[4];
+    size[0] = screen.Width();
+    size[1] = screen.Height();
+    size[2] = m_fontSize.cx;
+    size[3] = m_fontSize.cy;
+    SendReturn(Return_Size,sizeof size,size);
+  }
 }
 
 void GameWindow::SendReturn(int returnCommand, int dataLength, const void* data)

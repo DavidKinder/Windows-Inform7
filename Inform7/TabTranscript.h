@@ -20,6 +20,7 @@ public:
   BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 
   void OpenProject(const char* path, bool primary);
+  void PrefsChanged(CRegKey& key);
 
   void SetSkein(Skein* skein);
   void ShowNode(Skein::Node* node, Skein::Show why);

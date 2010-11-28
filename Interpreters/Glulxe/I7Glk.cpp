@@ -894,11 +894,13 @@ extern "C" void glk_select(event_t *event)
 
       case Return_Size:
         {
-          int size[2];
+          int size[4];
           readReturnData(size,sizeof size);
 
           displayWidth = size[0];
           displayHeight = size[1];
+          charWidth = size[2];
+          charHeight = size[3];
           if (mainWindow != NULL)
           {
             mainWindow->layout(I7Rect(0,0,displayWidth,displayHeight));

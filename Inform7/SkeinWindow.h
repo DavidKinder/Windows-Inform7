@@ -15,7 +15,8 @@ public:
   SkeinWindow();
 
   void SetSkein(Skein* skein);
-  void Layout(void);
+  void Layout(bool force);
+  void PrefsChanged(void);
 
   void SkeinChanged(Skein::Change change);
   void SkeinEdited(bool edited);
@@ -41,7 +42,8 @@ protected:
   virtual void PostNcDestroy();
 
 private:
-  CSize GetLayoutSize(void);
+  CSize GetLayoutSize(bool force);
+  void SetFontsBitmaps(void);
 
   void DrawNodeTree(Skein::Node* node, Skein::Node* transcriptEnd, CDC& dc,
     CDibSection& bitmap, const CRect& client, const CPoint& parentCentre,
@@ -81,7 +83,6 @@ private:
   std::map<Skein::Node*,CRect> m_nodes;
   CDibSection* m_bitmaps[Number_Bitmaps];
 
-  CFont* m_font;
   CSize m_fontSize;
   CFont m_labelFont;
   SkeinEdit m_edit;

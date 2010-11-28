@@ -18,7 +18,7 @@ BEGIN_MESSAGE_MAP(AbstractNewDialog, I7BaseDialog)
 END_MESSAGE_MAP()
 
 AbstractNewDialog::AbstractNewDialog(CWnd* parent)
-  : I7BaseDialog(AbstractNewDialog::IDD,FALSE,parent)
+  : I7BaseDialog(AbstractNewDialog::IDD,parent)
 {
   m_author = theApp.GetProfileString("User",L"Name",L"");
 }

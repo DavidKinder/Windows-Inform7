@@ -62,6 +62,22 @@ void GameText::Layout(const CRect& r)
   m_main->DeferMoveWindow(GetSafeHwnd(),r);
 }
 
+void GameText::FontChanged(void)
+{
+  RichEdit::FontChanged();
+
+  m_defaultFont.Release();
+  m_skeinFont.Release();
+  CreateFonts();
+
+  // Reset to unstyled text: this isn't perfect, but how often will the font be changed?
+  SetStyle(false,false,false,false,0);
+
+  // Set the size of the margins to match the font
+  CSize fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontDisplay));
+  SetMargins(fontSize.cx);
+}
+
 void GameText::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r)
 {
   w = size * fontSize.cx;
@@ -167,7 +183,7 @@ void GameText::SetStyle(bool bold, bool italic, bool reverse, bool fixed, int si
   if (italic)
     m_currentFont->SetItalic(tomTrue);
   if (fixed)
-    m_currentFont->SetName(CComBSTR(theApp.GetFixedFontName()));
+    m_currentFont->SetName(CComBSTR(theApp.GetFontName(InformApp::FontFixedWidth)));
 
   if (size != 0)
   {
@@ -396,7 +412,7 @@ int GameText::OnCreate(LPCREATESTRUCT lpCreateStruct)
   SetEventMask(ENM_CHANGE|ENM_PROTECTED|ENM_KEYEVENTS|ENM_LINK);
 
   // Set margins
-  CSize fontSize = theApp.MeasureFont(&(theApp.GetFont()));
+  CSize fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontDisplay));
   SetMargins(fontSize.cx);
 
   // Set the default foreground colour
@@ -407,19 +423,12 @@ int GameText::OnCreate(LPCREATESTRUCT lpCreateStruct)
   format.crTextColor = m_fore;
   SetDefaultCharFormat(format);
 
-  // Get the default font
-  CComPtr<ITextRange> range;
-  m_textDoc->Range(0,0,&range);
-  CComPtr<ITextFont> font;
-  range->GetFont(&font);
-  font->GetDuplicate(&m_defaultFont);
-
-  // Create a font for skein input
-  font->GetDuplicate(&m_skeinFont);
-  m_skeinFont->SetForeColor(theApp.GetColour(InformApp::ColourSkeinInput));
-  m_skeinFont->SetBold(tomTrue);
+  // Create fonts
+  CreateFonts();
 
   // Get the default paragraph
+  CComPtr<ITextRange> range;
+  m_textDoc->Range(0,0,&range);
   CComPtr<ITextPara> para;
   range->GetPara(&para);
   para->GetDuplicate(&m_defaultPara);
@@ -634,6 +643,21 @@ void GameText::CaretToEnd(void)
   CComPtr<ITextRange> range;
   m_textDoc->Range(len,len,&range);
   range->Select();
+}
+
+void GameText::CreateFonts(void)
+{
+  // Get the default font
+  CComPtr<ITextRange> range;
+  m_textDoc->Range(0,0,&range);
+  CComPtr<ITextFont> font;
+  range->GetFont(&font);
+  font->GetDuplicate(&m_defaultFont);
+
+  // Create a font for skein input
+  font->GetDuplicate(&m_skeinFont);
+  m_skeinFont->SetForeColor(theApp.GetColour(InformApp::ColourSkeinInput));
+  m_skeinFont->SetBold(tomTrue);
 }
 
 // IRichEditOleCallback implementation

@@ -6,11 +6,8 @@ class I7BaseDialog : public BaseDialog
 {
   DECLARE_DYNAMIC(I7BaseDialog)
 
-public:
-  I7BaseDialog(UINT templateId, BOOL appFontSize, CWnd* parent = NULL);
-
 protected:
-  I7BaseDialog(BOOL appFontSize);
+  I7BaseDialog(UINT templateId, CWnd* parent = NULL);
   void SetFont(CDialogTemplate& dlgTemplate);
 
   BOOL m_appFontSize;

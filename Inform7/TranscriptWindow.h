@@ -16,6 +16,7 @@ public:
 
   void SetSkein(Skein* skein);
   void Layout(void);
+  void PrefsChanged(void);
   void BlessAll(void);
 
   void SkeinChanged(Skein::Change change);
@@ -62,7 +63,6 @@ private:
   int GetHeight(void);
   COLORREF Brighter(COLORREF colour);
 
-  CFont m_btnFont;
   bool m_mouseOver;
 
   // Skein node pointers must be validated whenever a

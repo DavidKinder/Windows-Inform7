@@ -40,7 +40,8 @@ public:
     virtual void DocLink(const wchar_t* url) = 0;
   };
 
-  static void SetRegistryPath(const char* path);
+  static void SetIEPreferences(const char* path);
+
   void SetLinkConsumer(LinkConsumer* consumer);
   void SetFocusOnContent(void);
   void SetFocusFlag(bool focus);

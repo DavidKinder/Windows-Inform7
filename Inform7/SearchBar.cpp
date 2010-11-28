@@ -159,7 +159,8 @@ BOOL SearchBar::CreateDlgIndirect(LPCDLGTEMPLATE lpDialogTemplate, CWnd* pParent
   TRY
   {
     CDialogTemplate dlgTemp(lpDialogTemplate);
-    dlgTemp.SetFont(theApp.GetFontName(),theApp.GetDialogFontSize()/10);
+    dlgTemp.SetFont(
+      theApp.GetFontName(InformApp::FontSystem),theApp.GetFontSize(InformApp::FontSystem));
     hTemplate = dlgTemp.Detach();
     lpDialogTemplate = (DLGTEMPLATE*)GlobalLock(hTemplate);
 

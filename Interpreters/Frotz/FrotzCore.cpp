@@ -68,11 +68,13 @@ int readReturnCommand(int command)
       if (readCommand == Return_Size)
       {
         // Get the current screen size
-        int new_size[2];
+        int new_size[4];
         readReturnData(new_size,sizeof new_size);
 
         h_screen_width = new_size[0];
         h_screen_height = new_size[1];
+        h_font_width = new_size[2];
+        h_font_height = new_size[3];
         h_screen_cols = h_screen_width / h_font_width;
         h_screen_rows = h_screen_height / h_font_height;
       }
@@ -153,7 +155,7 @@ int getColourIndex(unsigned short colour)
     if (zcolours[i] == colour)
       return i+BLACK_COLOUR;
   }
-  for (i = 0; i < NON_STD_COLS; i++)
+  for (int i = 0; i < NON_STD_COLS; i++)
   {
     if (nonStdColours[i] == colour)
       return i+18;
@@ -460,7 +462,7 @@ extern "C" void os_init_screen(void)
 
   if ((h_version != V5) && (h_version != V8))
   {
-    os_display_string(L"Only Z-code versions 5 and 8 are supported.\n");
+    os_display_string((const zword *)L"Only Z-code versions 5 and 8 are supported.\n");
     flushOutput();
     exit(0);
   }
@@ -602,7 +604,7 @@ extern "C" zword os_read_line(int max, zword *buf, int timeout, int width, int c
   // Tell the UI to read in a line
   int data[2];
   data[0] = 0;
-  data[1] = wcslen(buf);
+  data[1] = wcslen((const wchar_t *)buf);
   sendCommand(Command_ReadLine,sizeof data,data);
 
   // Get the length of the input line
@@ -629,7 +631,7 @@ extern "C" zword os_read_line(int max, zword *buf, int timeout, int width, int c
   readReturnData(line,length);
 
   int i = 0;
-  while ((i < max) && (i < length/sizeof wchar_t))
+  while ((i < max) && (i < length/sizeof (wchar_t)))
   {
     buf[i] = line[i];
     i++;

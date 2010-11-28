@@ -44,9 +44,7 @@ BOOL SearchWindow::Create(CWnd* parent)
   m_resultsList.SetExtendedStyle(LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
   m_resultsList.InsertColumn(0,"Context");
   m_resultsList.InsertColumn(1,"Location");
-
-  m_font.CreatePointFont(theApp.GetDialogFontSize(),theApp.GetFontName());
-  m_resultsList.SetFont(&m_font);
+  m_resultsList.SetFont(theApp.GetFont(InformApp::FontSystem));
 
   theApp.SetIcon(this);
   return TRUE;

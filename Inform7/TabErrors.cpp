@@ -243,6 +243,12 @@ void TabErrors::Progress(const char* msg)
   }
 }
 
+void TabErrors::PrefsChanged(CRegKey& key)
+{
+  m_progress.FontChanged();
+  m_problems->Refresh();
+}
+
 void TabErrors::SetLinkNotify(LinkNotify* notify)
 {
   m_notify = notify;

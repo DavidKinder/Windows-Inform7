@@ -231,6 +231,12 @@ void Panel::SaveSettings(CRegKey& key)
     m_tabs[i]->SaveSettings(key);
 }
 
+void Panel::PrefsChanged(CRegKey& key)
+{
+  for (int i = 0; i < Number_Tabs; i++)
+    m_tabs[i]->PrefsChanged(key);
+}
+
 bool Panel::IsTabEnabled(int tab)
 {
   return m_tabs[tab]->IsEnabled();

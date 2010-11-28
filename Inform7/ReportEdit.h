@@ -10,6 +10,7 @@ class ReportEdit : public CWnd
 public:
   ReportEdit();
   BOOL Create(CWnd* parent, UINT id);
+  void FontChanged(void);
 
   void AppendText(const char* text);
   void ClearText(void);
@@ -23,6 +24,7 @@ protected:
   afx_msg void OnEditSelectAll();
 
 private:
+  void SetFonts(void);
   LONG_PTR CallEdit(UINT msg, DWORD wp = 0, LONG_PTR lp = 0);
 
   sptr_t m_editPtr;

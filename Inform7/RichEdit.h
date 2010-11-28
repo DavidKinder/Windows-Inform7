@@ -7,6 +7,7 @@ class RichEdit : public CWnd
 public:
   RichEdit();
   BOOL Create(DWORD style, CWnd* parent, UINT id);
+  void FontChanged(void);
 
   DWORD SetEventMask(DWORD eventMask);
   void EmptyUndoBuffer(void);
@@ -64,6 +65,8 @@ public:
 
   void SizeText(CDC& dc, CRect& rect);
   void DrawText(CDC& dc, const CRect& rect);
+
+  void FontChanged(void);
 
   DECLARE_INTERFACE_MAP()
 

@@ -27,6 +27,7 @@ public:
   void Progress(const char* msg);
   void LoadSettings(CRegKey& key);
   void SaveSettings(CRegKey& key);
+  void PrefsChanged(CRegKey& key);
 
   void SetSettings(ProjectSettings* settings);
   void UpdateSettings(void);

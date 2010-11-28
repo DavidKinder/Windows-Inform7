@@ -15,12 +15,20 @@ public:
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);
   virtual BOOL OnInitDialog();
+  virtual void OnOK();
 
   afx_msg void OnBnClickedCleanFiles();
 
   void UpdateControlStates(void);
+  static int CALLBACK ListFonts(ENUMLOGFONTEX *font, NEWTEXTMETRICEX *metric, DWORD fontType, LPARAM param);
 
   DECLARE_MESSAGE_MAP()
+
+  CString m_fontName;
+  CString m_fixedFontName;
+  CString m_fontSize;
+  CComboBox m_font;
+  CComboBox m_fixedFont;
 
   DWORD m_tabSize;
   BOOL m_indentWrapped;

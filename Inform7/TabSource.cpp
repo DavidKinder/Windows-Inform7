@@ -367,19 +367,20 @@ void TabSource::SaveToPath(const char* path)
 
 void TabSource::LoadSettings(CRegKey& key)
 {
-  m_source.GetEdit().LoadSettings(key,false);
+  m_source.GetEdit().LoadSettings(key);
   m_contents.LoadSettings(key);
 }
 
 void TabSource::SaveSettings(CRegKey& key)
 {
-  m_source.GetEdit().SaveSettings(key);
   m_contents.SaveSettings(key);
 }
 
 void TabSource::PrefsChanged(CRegKey& key)
 {
-  m_source.GetEdit().LoadSettings(key,true);
+  m_source.GetEdit().LoadSettings(key);
+  m_source.PrefsChanged();
+  m_contents.PrefsChanged();
 }
 
 void TabSource::SetDocument(TabSource* master)
@@ -409,11 +410,6 @@ void TabSource::PasteCode(const wchar_t* code)
 {
   SetActiveTab(SrcTab_Source,false);
   m_source.GetEdit().PasteCode(code);
-}
-
-void TabSource::SetTextSize(int size)
-{
-  m_source.GetEdit().SetTextSize(size);
 }
 
 void TabSource::UpdateSpellCheck(void)

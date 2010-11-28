@@ -30,7 +30,8 @@ InformApp theApp;
 
 InformApp::InformApp()
 {
-  m_fontSize = 0;
+  for (int i = 0; i < sizeof m_fontSizes / sizeof m_fontSizes[0]; i++)
+    m_fontSizes[i] = 0;
 }
 
 BOOL InformApp::InitInstance()
@@ -48,9 +49,9 @@ BOOL InformApp::InitInstance()
   CheckIEVersion(5.0);
   CheckMSXML();
 
-  SetFonts();
   SetRegistryKey("David Kinder");
-  ReportHtml::SetRegistryPath(REGISTRY_PATH_BROWSER);
+  SetFonts();
+  ReportHtml::SetIEPreferences(REGISTRY_PATH_BROWSER);
 
   // Set the HOME environment variable to the My Documents folder,
   // used by the Natural Inform compiler, and make sure directories
@@ -157,35 +158,22 @@ void InformApp::OnAppWebPage()
   ::ShellExecute(0,NULL,"http://inform7.com/",NULL,NULL,SW_SHOWNORMAL);
 }
 
-CFont& InformApp::GetFont(void)
+CFont* InformApp::GetFont(Fonts font)
 {
-  if ((HFONT)m_font == 0)
-    m_font.CreatePointFont(10*GetFontPointSize(),GetFontName());
-  return m_font;
+  CFont& theFont = m_fonts[font];
+  if ((HFONT)theFont == 0)
+    theFont.CreatePointFont(10*GetFontSize(font),GetFontName(font));
+  return &theFont;
 }
 
-const char* InformApp::GetFontName(void)
+const char* InformApp::GetFontName(Fonts font)
 {
-  return m_fontName;
+  return m_fontNames[font];
 }
 
-const char* InformApp::GetFixedFontName(void)
+int InformApp::GetFontSize(Fonts font)
 {
-  return m_fixedFontName;
-}
-
-int InformApp::GetFontPointSize(void)
-{
-  return m_fontSize;
-}
-
-int InformApp::GetDialogFontSize(void)
-{
-  int size = 9*m_fontSize;
-
-  // Use a minimum size of 9pt for Vista, and 8pt for earlier
-  int minSize = (theOS.GetWindowsVersion() < 6) ? 80 : 90;
-  return (size > minSize) ? size : minSize;
+  return m_fontSizes[font];
 }
 
 CSize InformApp::MeasureFont(CFont* font)
@@ -365,6 +353,12 @@ void InformApp::GetWindowFrames(CArray<CFrameWnd*>& frames)
 
 void InformApp::SendAllFrames(Changed changed, int value)
 {
+  if (changed == Preferences)
+  {
+    SetFonts();
+    ReportHtml::SetIEPreferences(NULL);
+  }
+
   CArray<CFrameWnd*> frames;
   GetWindowFrames(frames);
 
@@ -652,7 +646,20 @@ CDibSection* InformApp::GetCachedImage(const char* name)
 
 void InformApp::CacheImage(const char* name, CDibSection* dib)
 {
-  m_bitmaps[name] = dib;
+  if (dib == NULL)
+  {
+    std::map<std::string,CDibSection*>::iterator it = m_bitmaps.find(name);
+    if (it != m_bitmaps.end())
+    {
+      delete it->second;
+      m_bitmaps.erase(it);
+    }
+  }
+  else
+  {
+    ASSERT(m_bitmaps.count(name) == 0);
+    m_bitmaps[name] = dib;
+  }
 }
 
 CDibSection* InformApp::CreateScaledImage(CDibSection* fromImage, double scaleX, double scaleY)
@@ -1060,7 +1067,9 @@ static int CALLBACK EnumFontProc(ENUMLOGFONTEX*, NEWTEXTMETRICEX* ,DWORD, LPARAM
 
 void InformApp::SetFonts(void)
 {
-  m_fontSize = 0;
+  // Clear existing fonts
+  m_fonts[FontDisplay].DeleteObject();
+  m_fonts[FontFixedWidth].DeleteObject();
 
   // Look for registry settings
   CRegKey registryKey;
@@ -1069,53 +1078,61 @@ void InformApp::SetFonts(void)
     char fontName[MAX_PATH];
     ULONG len = sizeof fontName;
     if (registryKey.QueryStringValue("Font Name",fontName,&len) == ERROR_SUCCESS)
-      m_fontName = fontName;
+      m_fontNames[FontDisplay] = fontName;
+    len = sizeof fontName;
+    if (registryKey.QueryStringValue("Fixed Font Name",fontName,&len) == ERROR_SUCCESS)
+      m_fontNames[FontFixedWidth] = fontName;
     DWORD fontSize = 0;
     if (registryKey.QueryDWORDValue("Font Size",fontSize) == ERROR_SUCCESS)
-      m_fontSize = fontSize;
+    {
+      m_fontSizes[FontDisplay] = fontSize;
+      m_fontSizes[FontFixedWidth] = fontSize;
+    }
   }
 
   // Get a device context for the display
   CDC* dc = CWnd::GetDesktopWindow()->GetDC();
 
-  // Get desktop settings
+  if (m_fontNames[FontFixedWidth].IsEmpty())
+  {
+    const char* fixedFonts[] =
+    {
+      "Consolas",
+      "Lucida Console",
+      "Courier New",
+      "Courier"
+    };
+
+    // Search the list of known fixed width fonts for a match
+    LOGFONT fontInfo;
+    ::ZeroMemory(&fontInfo,sizeof fontInfo);
+    fontInfo.lfCharSet = DEFAULT_CHARSET;
+    bool found = false;
+    for (int i = 0; i < sizeof fixedFonts / sizeof fixedFonts[0]; i++)
+    {
+      strcpy(fontInfo.lfFaceName,fixedFonts[i]);
+      ::EnumFontFamiliesEx(dc->GetSafeHdc(),&fontInfo,(FONTENUMPROC)EnumFontProc,(LPARAM)&found,0);
+      if (found)
+      {
+        m_fontNames[FontFixedWidth] = fontInfo.lfFaceName;
+        break;
+      }
+    }
+  }
+
+  // Get desktop settings, and use the message font as a default
   NONCLIENTMETRICS ncm;
   ::ZeroMemory(&ncm,sizeof ncm);
   ncm.cbSize = sizeof ncm;
   ::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof ncm,&ncm,0);
-
-  // Find the message font name and size
-  if (m_fontName.IsEmpty())
-    m_fontName = ncm.lfMessageFont.lfFaceName;
-  if (m_fontSize == 0)
+  int fontSize = abs(MulDiv(ncm.lfMessageFont.lfHeight,72,dc->GetDeviceCaps(LOGPIXELSY)));
+  fontSize = max(fontSize,(theOS.GetWindowsVersion() < 6) ? 8 : 9);
+  for (int i = 0; i < 3; i++)
   {
-    int fontSize = abs(MulDiv(ncm.lfMessageFont.lfHeight,72,dc->GetDeviceCaps(LOGPIXELSY)));
-    m_fontSize = (fontSize > 9) ? fontSize : 9;
-  }
-
-  // List of fixed width fonts to look for
-  const char* fixedFonts[] =
-  {
-    "Consolas",
-    "Lucida Console",
-    "Courier New",
-    "Courier"
-  };
-
-  // Search the list of fixed width fonts for a match
-  LOGFONT fontInfo;
-  ::ZeroMemory(&fontInfo,sizeof fontInfo);
-  fontInfo.lfCharSet = DEFAULT_CHARSET;
-  bool found = false;
-  for (int i = 0; i < sizeof fixedFonts / sizeof fixedFonts[0]; i++)
-  {
-    strcpy(fontInfo.lfFaceName,fixedFonts[i]);
-    ::EnumFontFamiliesEx(dc->GetSafeHdc(),&fontInfo,(FONTENUMPROC)EnumFontProc,(LPARAM)&found,0);
-    if (found)
-    {
-      m_fixedFontName = fontInfo.lfFaceName;
-      break;
-    }
+    if (m_fontNames[i].IsEmpty())
+      m_fontNames[i] = ncm.lfMessageFont.lfFaceName;
+    if (m_fontSizes[i] == 0)
+      m_fontSizes[i] = fontSize;
   }
 
   // Release the desktop device context

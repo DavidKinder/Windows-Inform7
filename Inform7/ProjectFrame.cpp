@@ -871,14 +871,11 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
       CRegKey registryKey;
       if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
       {
-        ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->PrefsChanged(registryKey);
-        ((TabSource*)GetPanel(1)->GetTab(Panel::Tab_Source))->PrefsChanged(registryKey);
+        GetPanel(0)->PrefsChanged(registryKey);
+        GetPanel(1)->PrefsChanged(registryKey);
       }
+      m_game.PrefsChanged();
     }
-    break;
-  case InformApp::SourceTextSize:
-    ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->SetTextSize(value);
-    ((TabSource*)GetPanel(1)->GetTab(Panel::Tab_Source))->SetTextSize(value);
     break;
   case InformApp::Spelling:
     ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->UpdateSpellCheck();

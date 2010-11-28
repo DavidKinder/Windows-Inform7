@@ -33,7 +33,6 @@ public:
   void SetDocument(TabSource* master);
   bool Highlight(const char* url, COLORREF colour);
   void PasteCode(const wchar_t* code);
-  void SetTextSize(int size);
   void UpdateSpellCheck(void);
 
   // Implementation of SearchWindow::Source

@@ -176,6 +176,10 @@ void TabSettings::SaveSettings(CRegKey& key)
 {
 }
 
+void TabSettings::PrefsChanged(CRegKey& key)
+{
+}
+
 namespace
 {
   CRect getRect(CWnd* parent, UINT id)
@@ -222,7 +226,8 @@ void TabSettings::OnInitialUpdate()
   LOGFONT lf;
   GetDlgItem(IDC_STORY_BOX)->GetFont()->GetLogFont(&lf);
   int fh = abs(lf.lfHeight);
-  m_labelFont.CreatePointFont(9*theApp.GetFontPointSize(),theApp.GetFontName());
+  m_labelFont.CreatePointFont(
+    9*theApp.GetFontSize(InformApp::FontSystem),theApp.GetFontName(InformApp::FontSystem));
   CDC* dc = GetDC();
   CFont* oldFont = dc->SelectObject(&m_labelFont);
 
@@ -339,7 +344,8 @@ BOOL TabSettings::CreateDlgIndirect(LPCDLGTEMPLATE lpDialogTemplate,
   TRY
   {
     CDialogTemplate dlgTemp(lpDialogTemplate);
-    dlgTemp.SetFont(theApp.GetFontName(),theApp.GetFontPointSize());
+    dlgTemp.SetFont(
+      theApp.GetFontName(InformApp::FontSystem),theApp.GetFontSize(InformApp::FontSystem));
     hTemplate = dlgTemp.Detach();
     lpDialogTemplate = (DLGTEMPLATE*)GlobalLock(hTemplate);
 

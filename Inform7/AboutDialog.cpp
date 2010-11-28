@@ -144,7 +144,7 @@ BOOL AboutDialog::OnInitDialog()
   {
     CString creditsRTF;
     creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s",
-      (theApp.GetDialogFontSize()/5)+2,text1);
+      (theApp.GetFontSize(InformApp::FontSystem)*2)+2,text1);
     CMemFile creditsFile((BYTE*)(LPCSTR)creditsRTF,creditsRTF.GetLength());
     EDITSTREAM stream;
     stream.dwCookie = (DWORD_PTR)&creditsFile;
@@ -173,7 +173,7 @@ BOOL AboutDialog::OnInitDialog()
   {
     CString creditsRTF;
     creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s%s",
-      (theApp.GetDialogFontSize()/5)+2,text1,text2);
+      (theApp.GetFontSize(InformApp::FontSystem)*2)+2,text1,text2);
     CMemFile creditsFile((BYTE*)(LPCSTR)creditsRTF,creditsRTF.GetLength());
     EDITSTREAM stream;
     stream.dwCookie = (DWORD_PTR)&creditsFile;

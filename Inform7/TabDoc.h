@@ -19,6 +19,7 @@ public:
   BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 
   void CompileProject(CompileStage stage, int code);
+  void PrefsChanged(CRegKey& key);
 
   void Show(const char* url);
   void SetFocusFlag(bool set);

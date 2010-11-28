@@ -21,7 +21,6 @@ protected:
   afx_msg void OnResultsEndScroll(NMHDR* pNotifyStruct, LRESULT* result);
 
   CListCtrl m_resultsList;
-  CFont m_font;
   bool m_shown;
 
 public:

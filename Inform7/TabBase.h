@@ -18,6 +18,7 @@ public:
   void Progress(const char* msg);
   void LoadSettings(CRegKey& key);
   void SaveSettings(CRegKey& key);
+  void PrefsChanged(CRegKey& key);
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -32,8 +33,6 @@ protected:
   void SizeTab(CRect& client, CSize& fontSize, int& heading, int& h);
 
   virtual CString GetToolTip(UINT_PTR id);
-
-  CFont m_font;
 
 private:
   CButton m_navigate[2];

@@ -36,7 +36,5 @@ protected:
   int PrevEnabledTab(int currentTab, bool wrap);
 
   TabController* m_controller;
-
-  CFont m_font;
   bool m_buttons;
 };

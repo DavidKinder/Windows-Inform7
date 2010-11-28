@@ -60,6 +60,18 @@ void GameGrid::Layout(const CRect& r)
   m_main->DeferMoveWindow(GetSafeHwnd(),r);
 }
 
+void GameGrid::FontChanged(void)
+{
+  CFont* font = theApp.GetFont(InformApp::FontFixedWidth);
+  SetFont(font);
+  m_currentFont.DeleteObject();
+
+  // Get the width and height of the font
+  CSize fontSize = theApp.MeasureFont(font);
+  m_charWidth = fontSize.cx;
+  m_charHeight = fontSize.cy;
+}
+
 void GameGrid::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r)
 {
   w = size * m_charWidth;
@@ -172,14 +184,7 @@ int GameGrid::OnCreate(LPCREATESTRUCT lpCreateStruct)
   if (CWnd::OnCreate(lpCreateStruct) == -1)
     return -1;
 
-  m_font.CreatePointFont(10*theApp.GetFontPointSize(),theApp.GetFixedFontName());
-  SetFont(&m_font);
-
-  // Get the with and height of the font
-  CSize fontSize = theApp.MeasureFont(&m_font);
-  m_charWidth = fontSize.cx;
-  m_charHeight = fontSize.cy;
-
+  FontChanged();
   ClearText(false,false);
   return 0;
 }
@@ -303,7 +308,8 @@ BOOL GameGrid::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 void GameGrid::SelectFont(CDC& dc, int row, int column)
 {
   // Discard any previous font
-  dc.SelectObject(&m_font);
+  CFont* font = theApp.GetFont(InformApp::FontFixedWidth);
+  dc.SelectObject(font);
   m_currentFont.DeleteObject();
 
   // Get the attributes of the grid character
@@ -313,7 +319,7 @@ void GameGrid::SelectFont(CDC& dc, int row, int column)
   if (attributes.bold || attributes.italic)
   {
     LOGFONT fontInfo;
-    m_font.GetLogFont(&fontInfo);
+    font->GetLogFont(&fontInfo);
     if (attributes.bold)
       fontInfo.lfWeight = FW_BOLD;
     if (attributes.italic)
@@ -324,13 +330,13 @@ void GameGrid::SelectFont(CDC& dc, int row, int column)
   else if (attributes.link != 0)
   {
     LOGFONT fontInfo;
-    m_font.GetLogFont(&fontInfo);
+    font->GetLogFont(&fontInfo);
     fontInfo.lfUnderline = TRUE;
     m_currentFont.CreateFontIndirect(&fontInfo);
     dc.SelectObject(&m_currentFont);
   }
   else
-    dc.SelectObject(&m_font);
+    dc.SelectObject(font);
 
   // Set colours
   if (attributes.reverse)
