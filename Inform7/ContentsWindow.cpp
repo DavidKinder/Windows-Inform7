@@ -50,15 +50,6 @@ void ContentsPane::UpdateSmallest(Level smallest)
 void ContentsPane::PrefsChanged(void)
 {
   CreateFonts();
-
-  // Remove previously cached images
-  for (int i = 0; i < 3; i++)
-  {
-    CString circleName;
-    circleName.Format("Contents-circle-scaled-%d",i);
-    theApp.CacheImage(circleName,NULL);
-  }
-
   SetScrollSize();
   Invalidate();
 }

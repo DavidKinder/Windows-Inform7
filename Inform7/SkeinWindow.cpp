@@ -395,16 +395,9 @@ void SkeinWindow::Layout(bool force)
 
 void SkeinWindow::PrefsChanged(void)
 {
-  // Discard previous fonts and bitmaps
   m_labelFont.DeleteObject();
-  theApp.CacheImage("Skein-played-scaled",NULL);
-  theApp.CacheImage("Skein-played-scaled-dark",NULL);
-  theApp.CacheImage("Skein-unplayed-scaled",NULL);
-  theApp.CacheImage("Skein-unplayed-scaled-dark",NULL);
-  theApp.CacheImage("Skein-annotation-scaled",NULL);
-  theApp.CacheImage("SkeinDiffersBadge-scaled",NULL);
-
   SetFontsBitmaps();
+
   Layout(true);
   Invalidate();
 }
@@ -646,6 +639,7 @@ void SkeinWindow::DrawNodeBack(Skein::Node* node, CDC& dc, CDibSection& bitmap, 
     while (x < centre.x+(width/2))
     {
       int w = back->GetSize().cx-(2*edgeWidth);
+      ASSERT(w > 0);
       if (x+w > centre.x+(width/2))
         w = centre.x+(width/2)-x;
       dc.BitBlt(x,y,w,back->GetSize().cy,&dcFrom,edgeWidth,0,SRCCOPY);

@@ -142,6 +142,7 @@ public:
   const std::vector<ExtLocation>& GetExtensions(void);
 
 protected:
+  void ClearScaledImages(void);
   void CheckIEVersion(double required);
   void CheckMSXML(void);
   void SetMyDocuments(void);

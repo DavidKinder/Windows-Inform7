@@ -356,6 +356,7 @@ void InformApp::SendAllFrames(Changed changed, int value)
   if (changed == Preferences)
   {
     SetFonts();
+    ClearScaledImages();
     ReportHtml::SetIEPreferences(NULL);
   }
 
@@ -646,20 +647,8 @@ CDibSection* InformApp::GetCachedImage(const char* name)
 
 void InformApp::CacheImage(const char* name, CDibSection* dib)
 {
-  if (dib == NULL)
-  {
-    std::map<std::string,CDibSection*>::iterator it = m_bitmaps.find(name);
-    if (it != m_bitmaps.end())
-    {
-      delete it->second;
-      m_bitmaps.erase(it);
-    }
-  }
-  else
-  {
-    ASSERT(m_bitmaps.count(name) == 0);
-    m_bitmaps[name] = dib;
-  }
+  ASSERT(m_bitmaps.count(name) == 0);
+  m_bitmaps[name] = dib;
 }
 
 CDibSection* InformApp::CreateScaledImage(CDibSection* fromImage, double scaleX, double scaleY)
@@ -678,6 +667,34 @@ CDibSection* InformApp::CreateScaledImage(CDibSection* fromImage, double scaleX,
   ScaleGfx(fromImage->GetBits(),fromSize.cx,fromSize.cy,
     newImage->GetBits(),newSize.cx,newSize.cy);
   return newImage;
+}
+
+void InformApp::ClearScaledImages(void)
+{
+  static const char* names[] = 
+  {
+    // From ContentsPane
+    "Contents-circle-scaled-0",
+    "Contents-circle-scaled-1",
+    "Contents-circle-scaled-2",
+    // From SkeinWindow
+    "Skein-played-scaled",
+    "Skein-played-scaled-dark",
+    "Skein-unplayed-scaled",
+    "Skein-unplayed-scaled-dark",
+    "Skein-annotation-scaled",
+    "SkeinDiffersBadge-scaled",
+  };
+
+  for (int i = 0; i < sizeof names / sizeof names[0]; i++)
+  {
+    std::map<std::string,CDibSection*>::iterator it = m_bitmaps.find(names[i]);
+    if (it != m_bitmaps.end())
+    {
+      delete it->second;
+      m_bitmaps.erase(it);
+    }
+  }
 }
 
 void InformApp::CheckIEVersion(double required)
