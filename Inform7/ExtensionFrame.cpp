@@ -86,7 +86,22 @@ void ExtensionFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
   MenuBarFrameWnd::OnActivate(nState,pWndOther,bMinimized);
 
   if (nState == WA_ACTIVE)
+  {
+    // Only consider reopening if the extension has not been edited
+    if (!m_edit.IsEdited())
+    {
+      CFileStatus status;
+      if (CFile::GetStatus(m_extension,status))
+      {
+        // Reopen the extension if it has been changed by another application
+        if (status.m_mtime > m_edit.GetFileTime())
+          OpenFile(m_extension);
+      }
+    }
+
+    // Set the focus on the extension's source
     m_edit.SetFocus();
+  }
 }
 
 void ExtensionFrame::OnClose()

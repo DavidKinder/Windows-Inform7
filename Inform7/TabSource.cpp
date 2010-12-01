@@ -358,13 +358,6 @@ bool TabSource::IsProjectEdited(void)
   return m_source.GetEdit().IsEdited();
 }
 
-void TabSource::SaveToPath(const char* path)
-{
-  CFile sourceFile;
-  if (sourceFile.Open(path,CFile::modeCreate|CFile::modeWrite))
-    m_source.GetEdit().SaveFile(&sourceFile);
-}
-
 void TabSource::LoadSettings(CRegKey& key)
 {
   m_source.GetEdit().LoadSettings(key);
@@ -415,6 +408,22 @@ void TabSource::PasteCode(const wchar_t* code)
 void TabSource::UpdateSpellCheck(void)
 {
   m_source.GetEdit().UpdateSpellCheck();
+}
+
+bool TabSource::CheckNeedReopen(const char* path)
+{
+  // Only re-open if the source has not been edited
+  if (!IsProjectEdited())
+  {
+    CString fileName = path;
+    fileName += SOURCE_FILE;
+
+    // Need re-opening if the current file time is later than the last recorded
+    CFileStatus status;
+    if (CFile::GetStatus(fileName,status))
+      return status.m_mtime > m_source.GetEdit().GetFileTime();
+  }
+  return false;
 }
 
 void TabSource::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)

@@ -117,8 +117,7 @@ static UINT indicators[] =
 };
 
 ProjectFrame::ProjectFrame()
-  : m_compiling(false), m_game(m_skein), m_watchSourceDir(0), m_focus(0),
-    m_menuGutter(0), m_menuTextGap(0,0)
+  : m_compiling(false), m_game(m_skein), m_focus(0), m_menuGutter(0), m_menuTextGap(0,0)
 {
 }
 
@@ -279,26 +278,20 @@ void ProjectFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
     m_focus = GetFocus()->GetSafeHwnd();
     break;
   case WA_ACTIVE:
+    // Check if the source file has been changed by another application
+    TabSource* leftSource = (TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source);
+    if (leftSource->CheckNeedReopen(m_projectDir))
+    {
+      // Reopen the source files
+      leftSource->OpenProject(m_projectDir,true);
+      GetPanel(1)->GetTab(Panel::Tab_Source)->OpenProject(m_projectDir,false);
+    }
+
     // Restore the focus window
     if (!::IsWindow(m_focus))
       m_focus = 0;
     if (m_focus != 0)
       CWnd::FromHandle(m_focus)->SetFocus();
-
-    // Check if there have been any changes to the source directory
-    if (CheckSourceDir())
-    {
-      // Ask the user
-      if (MessageBox(
-        "The game's source code has been modified from outside Inform.\n"
-        "Do you want to reload it?",INFORM_TITLE,MB_YESNO|MB_ICONWARNING) == IDYES)
-      {
-        // Reopen the source files only
-        GetPanel(0)->GetTab(Panel::Tab_Source)->OpenProject(m_projectDir,true);
-        GetPanel(1)->GetTab(Panel::Tab_Source)->OpenProject(m_projectDir,false);
-        GetPanel(0)->SetActiveTab(Panel::Tab_Source);
-      }
-    }
     break;
   }
 }
@@ -342,12 +335,6 @@ void ProjectFrame::OnClose()
       // Don't close the window
       return;
     }
-  }
-
-  if (m_watchSourceDir != 0)
-  {
-    ::FindCloseChangeNotification(m_watchSourceDir);
-    m_watchSourceDir = 0;
   }
 
   m_game.StopInterpreter(false);
@@ -882,31 +869,6 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
     ((TabSource*)GetPanel(1)->GetTab(Panel::Tab_Source))->UpdateSpellCheck();
     break;
   }
-}
-
-void ProjectFrame::WatchSourceDir(void)
-{
-  if (m_watchSourceDir != 0)
-    ::FindCloseChangeNotification(m_watchSourceDir);
-  m_watchSourceDir = ::FindFirstChangeNotification(m_projectDir+"\\Source",
-    FALSE,FILE_NOTIFY_CHANGE_LAST_WRITE);
-}
-
-bool ProjectFrame::CheckSourceDir(void)
-{
-  if (m_watchSourceDir)
-  {
-    if (::WaitForSingleObject(m_watchSourceDir,0) == WAIT_OBJECT_0)
-    {
-      while (::WaitForSingleObject(m_watchSourceDir,0) == WAIT_OBJECT_0)
-        ::FindNextChangeNotification(m_watchSourceDir);
-
-      DWORD watch = 1;
-      m_registryKey.QueryDWORDValue("Watch File Changes",watch);
-      return (watch != 0);
-    }
-  }
-  return false;
 }
 
 void ProjectFrame::OnFileNew()
@@ -1566,9 +1528,6 @@ void ProjectFrame::OpenProject(const char* project)
   // Set the project directory
   m_projectDir = project;
 
-  // Watch for external changes to the source code file
-  WatchSourceDir();
-
   // Open files in the project
   GetPanel(0)->OpenProject(m_projectDir,true);
   GetPanel(1)->OpenProject(m_projectDir,false);
@@ -1586,11 +1545,9 @@ bool ProjectFrame::SaveProject(const char* project)
   ::CreateDirectory(m_projectDir+"\\Index",NULL);
   ::CreateDirectory(m_projectDir+"\\Source",NULL);
 
-  // Save the project from the left hand panel, discarding any file notifications
-  WatchSourceDir();
+  // Save the project from the left hand panel
   bool saved = GetPanel(0)->SaveProject(m_projectDir,true);
   GetPanel(1)->SaveProject(m_projectDir,false);
-  CheckSourceDir();
   return saved;
 }
 

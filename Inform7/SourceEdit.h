@@ -60,6 +60,7 @@ public:
   void OpenFile(CFile* file);
   bool SaveFile(CFile* file);
   bool IsEdited(void);
+  const CTime& GetFileTime(void);
 
   void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results);
   void Highlight(CHARRANGE range, bool centre);
@@ -97,6 +98,7 @@ private:
 
 private:
   sptr_t m_editPtr;
+  CTime m_fileTime;
 
   int m_marker;
   CHARRANGE m_markSel;

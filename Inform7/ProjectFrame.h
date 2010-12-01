@@ -165,9 +165,6 @@ protected:
   bool LoadHelpBar(void);
   bool SetToolbarText(CToolBar& toolbar);
 
-  void WatchSourceDir(void);
-  bool CheckSourceDir(void);
-
   CRect GetInitialSearchRect(void);
 
   enum SkeinAction
@@ -191,7 +188,6 @@ protected:
 
   CRegKey m_registryKey;
   CString m_projectDir;
-  HANDLE m_watchSourceDir;
 
   ProjectSettings m_settings;
   bool m_compiling;

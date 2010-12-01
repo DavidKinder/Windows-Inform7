@@ -25,7 +25,6 @@ public:
   void OpenProject(const char* path, bool primary);
   bool SaveProject(const char* path, bool primary);
   bool IsProjectEdited(void);
-  void SaveToPath(const char* path);
   void LoadSettings(CRegKey& key);
   void SaveSettings(CRegKey& key);
   void PrefsChanged(CRegKey& key);
@@ -34,6 +33,7 @@ public:
   bool Highlight(const char* url, COLORREF colour);
   void PasteCode(const wchar_t* code);
   void UpdateSpellCheck(void);
+  bool CheckNeedReopen(const char* path);
 
   // Implementation of SearchWindow::Source
   void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results);

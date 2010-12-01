@@ -54,7 +54,7 @@ BEGIN_MESSAGE_MAP(SourceEdit, CWnd)
   ON_REGISTERED_MESSAGE(EditFind::FINDMSG, OnFindReplaceCmd)
 END_MESSAGE_MAP()
 
-SourceEdit::SourceEdit() : m_spell(this)
+SourceEdit::SourceEdit() : m_fileTime(CTime::GetCurrentTime()), m_spell(this)
 {
   m_editPtr = 0;
   m_marker = 0;
@@ -587,6 +587,10 @@ void SourceEdit::OpenFile(CFile* file)
   CallEdit(SCI_SETTEXT,0,(sptr_t)(LPCSTR)utfText);
   CallEdit(SCI_EMPTYUNDOBUFFER);
   CallEdit(SCI_SETSAVEPOINT);
+
+  CFileStatus status;
+  if (file->GetStatus(status))
+    m_fileTime = status.m_mtime;
 }
 
 bool SourceEdit::SaveFile(CFile* file)
@@ -600,6 +604,7 @@ bool SourceEdit::SaveFile(CFile* file)
   utfText.ReleaseBuffer();
 
   // Write out the document contents
+  bool success = true;
   try
   {
     file->Write(utfText,utfText.GetLength());
@@ -608,14 +613,24 @@ bool SourceEdit::SaveFile(CFile* file)
   catch (CException* ex)
   {
     ex->Delete();
-    return false;
+    success = false;
   }
-  return true;
+
+  CFileStatus status;
+  if (file->GetStatus(status))
+    m_fileTime = status.m_mtime;
+
+  return success;
 }
 
 bool SourceEdit::IsEdited(void)
 {
   return (CallEdit(SCI_GETMODIFY) != 0);
+}
+
+const CTime& SourceEdit::GetFileTime(void)
+{
+  return m_fileTime;
 }
 
 void SourceEdit::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
