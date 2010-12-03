@@ -83,6 +83,12 @@ bool PropList::GetBoolean(LPCWSTR dict1, LPCWSTR dict2, bool defaultValue)
   return defaultValue;
 }
 
+bool PropList::Exists(LPCWSTR dict1, LPCWSTR dict2)
+{
+  CComPtr<IXMLDOMNode> node = GetNode(dict1,dict2);
+  return (node != NULL);
+}
+
 void PropList::GetKeyValues(LPCWSTR dict, KeyValueMap& values)
 {
   if (m_doc == NULL)

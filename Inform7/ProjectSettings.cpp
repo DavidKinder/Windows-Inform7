@@ -45,8 +45,8 @@ void ProjectSettings::Load(const char* path)
     return;
 
   // Get the settings from the XML
-  m_predictable = propList.GetBoolean(L"IFCompilerOptions",L"IFSettingNobbleRng",false);
   m_blorb = propList.GetBoolean(L"IFOutputSettings",L"IFSettingCreateBlorb",true);
+  m_predictable = propList.GetBoolean(L"IFOutputSettings",L"IFSettingNobbleRng",false);
   switch (propList.GetNumber(L"IFOutputSettings",L"IFSettingZCodeVersion"))
   {
   case 5:
@@ -62,6 +62,10 @@ void ProjectSettings::Load(const char* path)
     m_output = OutputZ5;
     break;
   }
+
+  // Cope with old settings files
+  if (propList.Exists(L"IFCompilerOptions",L"IFSettingNobbleRng"))
+    m_predictable = propList.GetBoolean(L"IFCompilerOptions",L"IFSettingNobbleRng",false);
 }
 
 bool ProjectSettings::Save(const char* path)
@@ -78,23 +82,23 @@ bool ProjectSettings::Save(const char* path)
     "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" "
       "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
     "<plist version=\"1.0\">\n"
-    "<dict>\n");
-
-  fprintf(settingsFile,
+    "<dict>\n"
     "\t<key>IFCompilerOptions</key>\n"
     "\t<dict>\n"
     "\t\t<key>IFSettingNaturalInform</key>\n"
     "\t\t<true/>\n"
-    "\t\t<key>IFSettingNobbleRng</key>\n"
-    "\t\t<%s/>\n"
-    "\t</dict>\n",
-    m_predictable ? "true" : "false");
-
-  fprintf(settingsFile,
+    "\t</dict>\n"
+    "\t<key>IFInform6Extensions</key>\n"
+    "\t<dict/>\n"
     "\t<key>IFLibrarySettings</key>\n"
     "\t<dict>\n"
     "\t\t<key>IFSettingLibraryToUse</key>\n"
     "\t\t<string>Natural</string>\n"
+    "\t</dict>\n"
+    "\t<key>IFMiscSettings</key>\n"
+    "\t<dict>\n"
+    "\t\t<key>IFSettingInfix</key>\n"
+    "\t\t<false/>\n"
     "\t</dict>\n");
 
   fprintf(settingsFile,
@@ -102,13 +106,18 @@ bool ProjectSettings::Save(const char* path)
     "\t<dict>\n"
     "\t\t<key>IFSettingCreateBlorb</key>\n"
     "\t\t<%s/>\n"
+    "\t\t<key>IFSettingNobbleRng</key>\n"
+    "\t\t<%s/>\n"
     "\t\t<key>IFSettingZCodeVersion</key>\n"
     "\t\t<integer>%d</integer>\n"
     "\t</dict>\n",
     m_blorb ? "true" : "false",
+    m_predictable ? "true" : "false",
     (int)m_output);
 
   fprintf(settingsFile,
+    "\t<key>IFRandomSettings</key>\n"
+    "\t<dict/>\n"
     "</dict>\n"
     "</plist>\n");
   fclose(settingsFile);
