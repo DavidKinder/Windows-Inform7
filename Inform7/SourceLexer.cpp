@@ -49,14 +49,14 @@ void SourceLexer::Process(int startPos, int endPos)
 
     if (style == STYLE_QUOTE)
     {
-      if (c == '\"')
+      if (IsQuote(c,pos,true))
         ApplyStyle(startPos,pos+1,style,STYLE_TEXT,mask);
       else if (c == '[')
         ApplyStyle(startPos,pos,style,STYLE_QUOTEBRACKET,mask);
     }
     else if (style == STYLE_QUOTEBRACKET)
     {
-      if (c == '\"')
+      if (IsQuote(c,pos,true))
         ApplyStyle(startPos,pos+1,style,STYLE_TEXT,mask);
       else if (c == ']')
         ApplyStyle(startPos,pos+1,style,STYLE_QUOTE,mask);
@@ -96,26 +96,32 @@ void SourceLexer::Process(int startPos, int endPos)
     else
     {
       // Check for a title?
-      if ((pos == 0) && (c == '\"'))
+      if ((pos == 0) && IsQuote(c,pos,false))
       {
         // Get the first line
+        CString line;
         int endPos = (int)CallEdit(SCI_GETLINEENDPOSITION,0);
         TextRange range;
-        range.chrg.cpMin = pos;
+        range.chrg.cpMin = 0;
         range.chrg.cpMax = endPos;
-        range.lpstrText = (char*)alloca(endPos+2);
+        range.lpstrText = line.GetBuffer(endPos+1);
         CallEdit(SCI_GETTEXTRANGE,0,(sptr_t)&range);
+        line.ReleaseBuffer();
+
+        // Replace any Unicode quotes with normal ones (see the comments in IsQuote())
+        line.Replace("\xe2\x80\x9c","\"");
+        line.Replace("\xe2\x80\x9d","\"");
 
         // Look for an opening quote
-        if (range.lpstrText[0] == '\"')
+        if (line.GetAt(0) == '\"')
         {
           bool title = false;
-          if (strstr(range.lpstrText,"\" by ") != NULL)
+          if (line.Find("\" by ") > 0)
           {
             // Found a title followed by the author name
             title = true;
           }
-          else if (range.lpstrText[endPos-1] == '\"')
+          else if (line.GetAt(line.GetLength()-1) == '\"')
           {
             // Found a title on its own
             title = true;
@@ -181,7 +187,7 @@ void SourceLexer::Process(int startPos, int endPos)
         if ((char)CallEdit(SCI_GETCHARAT,pos+1) == '-')
           ApplyStyle(startPos,pos,style,STYLE_INFORM6,mask);
       }
-      else if (c == '\"')
+      else if (IsQuote(c,pos,false))
       {
         // A double quote indicates the start of a string only if it is at the
         // start of a line or preceeded by white space or punctuation
@@ -231,6 +237,31 @@ void SourceLexer::AddHeading(HeadingLevel level, LPCSTR name, int pos)
     }
     m_headings.Add(Heading(level,name,line));
   }
+}
+
+bool SourceLexer::IsQuote(unsigned char c, int& pos, bool advance)
+{
+  // Check for the usual double quote character
+  if (c == '\"')
+    return true;
+
+  // Check for Unicode left- and right-double quotes (0x201C and 0x201D)
+  // In UTF-8, 0x201C is 0xE2 0x80 0x9C
+  if (c == 0xE2)
+  {
+    c = (unsigned char)CallEdit(SCI_GETCHARAT,pos+1);
+    if (c == 0x80)
+    {
+      c = (unsigned char)CallEdit(SCI_GETCHARAT,pos+2);
+      if ((c == 0x9C) || (c == 0x9D))
+      {
+        if (advance)
+          pos += 2;
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 LONG_PTR SourceLexer::CallEdit(UINT msg, DWORD wp, LONG_PTR lp)

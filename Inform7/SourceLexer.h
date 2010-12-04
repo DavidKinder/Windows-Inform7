@@ -48,6 +48,7 @@ public:
 private:
   void ApplyStyle(int& start, int pos, int& style, int newStyle, int mask);
   void AddHeading(HeadingLevel level, LPCSTR name, int pos);
+  bool IsQuote(unsigned char c, int& pos, bool advance);
   LONG_PTR CallEdit(UINT msg, DWORD wp = 0, LONG_PTR lp = 0);
 
   SourceEdit* m_edit;
