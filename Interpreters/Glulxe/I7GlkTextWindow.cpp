@@ -192,9 +192,10 @@ void I7GlkTextWindow::clear(void)
 {
   m_stream->flush();
 
-  int data[2];
+  int data[8];
   data[0] = m_id;
-  data[1] = 0;
+  for (int i = 1; i < 8; i++)
+    data[i] = 0;
   sendCommand(Command_Clear,sizeof data,data);
 }
 

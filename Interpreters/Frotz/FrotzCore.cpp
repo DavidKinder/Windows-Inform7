@@ -325,9 +325,10 @@ extern "C" void os_erase_area(int top, int left, int bottom, int right, int win)
   {
   case -2:
     {
-      int data[2];
+      int data[8];
+      memset(data,0,sizeof data);
+
       data[0] = 0;
-      data[1] = 0;
       sendCommand(Command_Clear,sizeof data,data);
       data[0] = 1;
       sendCommand(Command_Clear,sizeof data,data);
@@ -339,9 +340,10 @@ extern "C" void os_erase_area(int top, int left, int bottom, int right, int win)
   case 0:
   case 1:
     {
-      int data[2];
+      int data[8];
+      memset(data,0,sizeof data);
+
       data[0] = win;
-      data[1] = 0;
       sendCommand(Command_Clear,sizeof data,data);
     }
     break;

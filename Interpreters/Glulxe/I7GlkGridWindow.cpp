@@ -46,9 +46,15 @@ void I7GlkGridWindow::clear(void)
   m_stream->flush();
   I7GlkStyle theStyle = getStyle(style_Normal);
 
-  int data[2];
+  int data[8];
   data[0] = m_id;
   data[1] = theStyle.m_reverse ? 1 : 0;
+  data[2] = (theStyle.m_textColour & 0x00FF0000) >> 16;
+  data[3] = (theStyle.m_textColour & 0x0000FF00) >> 8;
+  data[4] = (theStyle.m_textColour & 0x000000FF);
+  data[5] = (theStyle.m_backColour & 0x00FF0000) >> 16;
+  data[6] = (theStyle.m_backColour & 0x0000FF00) >> 8;
+  data[7] = (theStyle.m_backColour & 0x000000FF);
   sendCommand(Command_Clear,sizeof data,data);
 }
 

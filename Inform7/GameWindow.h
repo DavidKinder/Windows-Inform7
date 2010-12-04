@@ -76,7 +76,7 @@ private:
   void CommandSetCursor(int wndId, int row, int column);
   void CommandReadLine(int wndId, int initial, bool restart);
   void CommandReadKey(bool restart);
-  void CommandClear(int wndId, int reverse);
+  void CommandClear(int wndId, int reverse, int* fore, int* back);
   void CommandDraw(int wndId, int image, int val1, int val2, int width, int height);
   void CommandArrange(int wndId, int method, int size, int keyId, bool swap);
   void CommandPlaySound(int channelId, int sound, int repeats, int volume);

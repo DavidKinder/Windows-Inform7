@@ -20,7 +20,7 @@ public:
   void FontChanged(void);
   void GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r);
   void AddText(const CStringW& text, bool fromSkein);
-  void ClearText(bool styles, bool reverse);
+  void ClearText(bool styles, bool reverse, COLORREF fore, COLORREF back);
   void SetStyle(bool bold, bool italic, bool reverse, bool fixed, int size);
   void SetColours(COLORREF fore, COLORREF back);
   void SetCursor(int x, int y);

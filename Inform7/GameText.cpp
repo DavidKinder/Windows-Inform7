@@ -136,7 +136,7 @@ void GameText::AddText(const CStringW& text, bool fromSkein)
   m_textDoc->Unfreeze(&freeze);
 }
 
-void GameText::ClearText(bool styles, bool reverse)
+void GameText::ClearText(bool styles, bool reverse, COLORREF fore, COLORREF back)
 {
   // Don't update the display until we're done
   long freeze = 0;
@@ -433,7 +433,7 @@ int GameText::OnCreate(LPCREATESTRUCT lpCreateStruct)
   range->GetPara(&para);
   para->GetDuplicate(&m_defaultPara);
 
-  ClearText(true,false);
+  ClearText(true,false,0,0);
   return 0;
 }
 

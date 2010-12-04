@@ -150,7 +150,7 @@ void GamePair::AddText(const CStringW& text, bool fromSkein)
 {
 }
 
-void GamePair::ClearText(bool styles, bool reverse)
+void GamePair::ClearText(bool styles, bool reverse, COLORREF fore, COLORREF back)
 {
 }
 

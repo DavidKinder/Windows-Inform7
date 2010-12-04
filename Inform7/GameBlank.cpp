@@ -54,7 +54,7 @@ void GameBlank::AddText(const CStringW& text, bool fromSkein)
 {
 }
 
-void GameBlank::ClearText(bool styles, bool reverse)
+void GameBlank::ClearText(bool styles, bool reverse, COLORREF fore, COLORREF back)
 {
 }
 

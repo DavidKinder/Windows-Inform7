@@ -103,7 +103,7 @@ void GameGraphics::AddText(const CStringW& text, bool fromSkein)
 {
 }
 
-void GameGraphics::ClearText(bool styles, bool reverse)
+void GameGraphics::ClearText(bool styles, bool reverse, COLORREF fore, COLORREF back)
 {
 }
 

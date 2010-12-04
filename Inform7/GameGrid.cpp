@@ -104,23 +104,22 @@ void GameGrid::AddText(const CStringW& text, bool fromSkein)
   Invalidate();
 }
 
-void GameGrid::ClearText(bool styles, bool reverse)
+void GameGrid::ClearText(bool styles, bool reverse, COLORREF fore, COLORREF back)
 {
   int rows = m_rows;
   int cols = m_columns;
   ResizeGrid(0,0);
   ResizeGrid(rows,cols);
 
-  if (reverse)
-  {
-    GridInfo info;
-    info.reverse = true;
+  GridInfo info;
+  info.reverse = reverse;
+  info.fore = fore;
+  info.back = back;
 
-    for (int i = 0; i < m_rows; i++)
-    {
-      for (int j = 0; j < m_grid[i].GetLength(); j++)
-        m_grid[i].SetAttributes(j,info);
-    }
+  for (int i = 0; i < m_rows; i++)
+  {
+    for (int j = 0; j < m_grid[i].GetLength(); j++)
+      m_grid[i].SetAttributes(j,info);
   }
 
   m_x = 0;
@@ -185,7 +184,9 @@ int GameGrid::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
 
   FontChanged();
-  ClearText(false,false);
+  ClearText(false,false,
+    theApp.GetColour(InformApp::ColourText),
+    theApp.GetColour(InformApp::ColourBack));
   return 0;
 }
 

@@ -38,7 +38,7 @@ public:
   virtual void FontChanged(void) = 0;
   virtual void GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r) = 0;
   virtual void AddText(const CStringW& text, bool fromSkein) = 0;
-  virtual void ClearText(bool styles, bool reverse) = 0;
+  virtual void ClearText(bool styles, bool reverse, COLORREF fore, COLORREF back) = 0;
   virtual void SetStyle(bool bold, bool italic, bool reverse, bool fixed, int size) = 0;
   virtual void SetColours(COLORREF fore, COLORREF back) = 0;
   virtual void SetCursor(int x, int y) = 0;

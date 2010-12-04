@@ -364,7 +364,7 @@ void GameWindow::RunInterpreterCommand(void)
     CommandReadKey(false);
     break;
   case Command_Clear:
-    CommandClear(idata[0],idata[1]);
+    CommandClear(idata[0],idata[1],idata+2,idata+5);
     break;
   case Command_Draw:
     CommandDraw(idata[0],idata[1],idata[2],idata[3],idata[4],idata[5]);
@@ -617,7 +617,7 @@ void GameWindow::CommandReadKey(bool restart)
   }
 }
 
-void GameWindow::CommandClear(int wndId, int reverse)
+void GameWindow::CommandClear(int wndId, int reverse, int* fore, int* back)
 {
   GameBase* wnd = NULL;
   if (m_windows.Lookup(wndId,wnd) == FALSE)
@@ -626,7 +626,9 @@ void GameWindow::CommandClear(int wndId, int reverse)
     return;
   }
 
-  wnd->ClearText(false,reverse != 0);
+  COLORREF foreColour = RGB(fore[0],fore[1],fore[2]);
+  COLORREF backColour = RGB(back[0],back[1],back[2]);
+  wnd->ClearText(false,reverse != 0,foreColour,backColour);
 
   if (wnd->IsKindOf(RUNTIME_CLASS(GameText)))
     m_transcript.Add('\n');
