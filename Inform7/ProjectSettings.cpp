@@ -70,6 +70,9 @@ void ProjectSettings::Load(const char* path)
 
 bool ProjectSettings::Save(const char* path)
 {
+  if (!m_changed)
+    return true;
+
   CString fileName = path;
   fileName += SETTINGS_FILE;
 
@@ -121,6 +124,7 @@ bool ProjectSettings::Save(const char* path)
     "</dict>\n"
     "</plist>\n");
   fclose(settingsFile);
+  m_changed = false;
   return true;
 }
 
@@ -171,4 +175,6 @@ void ProjectSettings::SetDefaults(void)
     // Use the latest available compiler
     m_compiler = *m_compilers.rbegin();
   }
+
+  m_changed = false;
 }

@@ -53,6 +53,7 @@ void TabSettings::UpdateSettings(void)
   else if (m_outputGlulx.GetCheck() == BST_CHECKED)
     m_settings->m_output = ProjectSettings::OutputGlulx;
 
+  m_settings->m_changed = true;
   if (m_notify)
     m_notify->OnSettingsChange(this);
 }
