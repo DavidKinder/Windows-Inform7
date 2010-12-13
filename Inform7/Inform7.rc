@@ -103,10 +103,10 @@ BEGIN
     END
     POPUP "F&ormat"
     BEGIN
-        MENUITEM "Shift Selection &Right\tCtrl+7", ID_FORMAT_SHIFT_RIGHT
-        MENUITEM "Shift Selection &Left\tCtrl+8", ID_FORMAT_SHIFT_LEFT
-        MENUITEM "&Comment Out Selection\tCtrl+9", ID_FORMAT_COMMENT
-        MENUITEM "&Uncomment Selection\tCtrl+0", ID_FORMAT_UNCOMMENT
+        MENUITEM "Shift Selection &Right\tAlt+]", ID_FORMAT_SHIFT_RIGHT
+        MENUITEM "Shift Selection &Left\tAlt+[", ID_FORMAT_SHIFT_LEFT
+        MENUITEM "&Comment Out Selection\tAlt+/", ID_FORMAT_COMMENT
+        MENUITEM "&Uncomment Selection\tAlt+Shift+/", ID_FORMAT_UNCOMMENT
         MENUITEM SEPARATOR
         MENUITEM "Renu&mber All Sections\tCtrl+M", ID_FORMAT_RENUMBER
     END
@@ -146,28 +146,28 @@ BEGIN
     BEGIN
         POPUP "Show &Tab"
         BEGIN
-            MENUITEM "&Source\tCtrl+Shift+S",       ID_WINDOW_TAB_SOURCE
-            MENUITEM "&Errors\tCtrl+Shift+E",       ID_WINDOW_TAB_ERRORS
-            MENUITEM "Inde&x\tCtrl+Shift+X",        ID_WINDOW_TAB_INDEX
-            MENUITEM "Skei&n\tCtrl+Shift+N",        ID_WINDOW_TAB_SKEIN
-            MENUITEM "&Transcript\tCtrl+Shift+T",   ID_WINDOW_TAB_TRANSCRIPT
-            MENUITEM "&Game\tCtrl+Shift+G",         ID_WINDOW_TAB_GAME
-            MENUITEM "&Documentation\tCtrl+Shift+D", ID_WINDOW_TAB_DOCUMENTATION
-            MENUITEM "Setti&ngs",                   ID_WINDOW_TAB_SETTINGS
+            MENUITEM "&Source\tCtrl+F1",        ID_WINDOW_TAB_SOURCE
+            MENUITEM "&Errors\tCtrl+F2",        ID_WINDOW_TAB_ERRORS
+            MENUITEM "Inde&x\tCtrl+F3",         ID_WINDOW_TAB_INDEX
+            MENUITEM "Skei&n\tCtrl+F4",         ID_WINDOW_TAB_SKEIN
+            MENUITEM "&Transcript\tCtrl+F5",    ID_WINDOW_TAB_TRANSCRIPT
+            MENUITEM "&Game\tCtrl+F6",          ID_WINDOW_TAB_GAME
+            MENUITEM "&Documentation\tCtrl+F7", ID_WINDOW_TAB_DOCUMENTATION
+            MENUITEM "Setti&ngs\tCtrl+F8",      ID_WINDOW_TAB_SETTINGS
             MENUITEM SEPARATOR
-            MENUITEM "Go to &Left Pane",            ID_WINDOW_LEFTPANE
-            MENUITEM "Go to &Right Pane",           ID_WINDOW_RIGHTPANE
+            MENUITEM "Go to &Left Pane\tCtrl+1",    ID_WINDOW_LEFTPANE
+            MENUITEM "Go to &Right Pane\tCtrl+2",   ID_WINDOW_RIGHTPANE
             MENUITEM "S&witch Panes\tF6",           ID_WINDOW_SWITCH
         END
         POPUP "Show Inde&x"
         BEGIN
-            MENUITEM "C&ontents\tCtrl+Shift+O",     ID_WINDOW_INDEX_CONTENTS
-            MENUITEM "&Actions\tCtrl+Shift+A",      ID_WINDOW_INDEX_ACTIONS
-            MENUITEM "&Kinds\tCtrl+Shift+K",        ID_WINDOW_INDEX_KINDS
-            MENUITEM "&Phrases\tCtrl+Shift+P",      ID_WINDOW_INDEX_PHRASES
-            MENUITEM "&Rules\tCtrl+Shift+R",        ID_WINDOW_INDEX_RULES
-            MENUITEM "S&cenes\tCtrl+Shift+C",       ID_WINDOW_INDEX_SCENES
-            MENUITEM "&World\tCtrl+Shift+W",        ID_WINDOW_INDEX_WORLD
+            MENUITEM "C&ontents\tCtrl+3",     ID_WINDOW_INDEX_CONTENTS
+            MENUITEM "&Actions\tCtrl+4",      ID_WINDOW_INDEX_ACTIONS
+            MENUITEM "&Kinds\tCtrl+5",        ID_WINDOW_INDEX_KINDS
+            MENUITEM "&Phrases\tCtrl+6",      ID_WINDOW_INDEX_PHRASES
+            MENUITEM "&Rules\tCtrl+7",        ID_WINDOW_INDEX_RULES
+            MENUITEM "S&cenes\tCtrl+8",       ID_WINDOW_INDEX_SCENES
+            MENUITEM "&World\tCtrl+9",        ID_WINDOW_INDEX_WORLD
         END
         MENUITEM SEPARATOR
         MENUITEM "Window List",                 ID_WINDOW_LIST
@@ -288,27 +288,30 @@ BEGIN
     VK_F9,          ID_REPLAY_LAST,         VIRTKEY, NOINVERT
     VK_F3,          ID_SEARCH_DOCS,         VIRTKEY, NOINVERT
     VK_F2,          ID_SEARCH_SOURCE,       VIRTKEY, NOINVERT
-    "A",            ID_WINDOW_INDEX_ACTIONS, VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "O",            ID_WINDOW_INDEX_CONTENTS, VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "K",            ID_WINDOW_INDEX_KINDS,  VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "P",            ID_WINDOW_INDEX_PHRASES, VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "R",            ID_WINDOW_INDEX_RULES,  VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "C",            ID_WINDOW_INDEX_SCENES, VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "W",            ID_WINDOW_INDEX_WORLD,  VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "4",            ID_WINDOW_INDEX_ACTIONS, VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_WINDOW_INDEX_CONTENTS, VIRTKEY, CONTROL, NOINVERT
+    "5",            ID_WINDOW_INDEX_KINDS,  VIRTKEY, CONTROL, NOINVERT
+    "6",            ID_WINDOW_INDEX_PHRASES, VIRTKEY, CONTROL, NOINVERT
+    "7",            ID_WINDOW_INDEX_RULES,  VIRTKEY, CONTROL, NOINVERT
+    "8",            ID_WINDOW_INDEX_SCENES, VIRTKEY, CONTROL, NOINVERT
+    "9",            ID_WINDOW_INDEX_WORLD,  VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_WINDOW_SWITCH,       VIRTKEY, NOINVERT
-    "D",            ID_WINDOW_TAB_DOCUMENTATION, VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "E",            ID_WINDOW_TAB_ERRORS,   VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "G",            ID_WINDOW_TAB_GAME,     VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "X",            ID_WINDOW_TAB_INDEX,    VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "N",            ID_WINDOW_TAB_SKEIN,    VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "S",            ID_WINDOW_TAB_SOURCE,   VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "T",            ID_WINDOW_TAB_TRANSCRIPT, VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_F7,          ID_WINDOW_TAB_DOCUMENTATION, VIRTKEY, CONTROL, NOINVERT
+    VK_F2,          ID_WINDOW_TAB_ERRORS,   VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_WINDOW_TAB_GAME,     VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          ID_WINDOW_TAB_INDEX,    VIRTKEY, CONTROL, NOINVERT
+    VK_F8,          ID_WINDOW_TAB_SETTINGS, VIRTKEY, CONTROL, NOINVERT
+    VK_F4,          ID_WINDOW_TAB_SKEIN,    VIRTKEY, CONTROL, NOINVERT
+    VK_F1,          ID_WINDOW_TAB_SOURCE,   VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          ID_WINDOW_TAB_TRANSCRIPT, VIRTKEY, CONTROL, NOINVERT
     VK_F4,          ID_SOURCE_ALL,          VIRTKEY, NOINVERT
-    "7",            ID_FORMAT_SHIFT_RIGHT,  VIRTKEY, CONTROL, NOINVERT
-    "8",            ID_FORMAT_SHIFT_LEFT,   VIRTKEY, CONTROL, NOINVERT
-    "9",            ID_FORMAT_COMMENT,      VIRTKEY, CONTROL, NOINVERT
-    "0",            ID_FORMAT_UNCOMMENT,    VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_6,       ID_FORMAT_SHIFT_RIGHT,  VIRTKEY, ALT, NOINVERT
+    VK_OEM_4,       ID_FORMAT_SHIFT_LEFT,   VIRTKEY, ALT, NOINVERT
+    VK_OEM_2,       ID_FORMAT_COMMENT,      VIRTKEY, ALT, NOINVERT
+    VK_OEM_2,       ID_FORMAT_UNCOMMENT,    VIRTKEY, SHIFT, ALT, NOINVERT
     "M",            ID_FORMAT_RENUMBER,     VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_WINDOW_LEFTPANE,     VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_WINDOW_RIGHTPANE,    VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_EXTFRAME ACCELERATORS 

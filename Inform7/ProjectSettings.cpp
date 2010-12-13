@@ -70,11 +70,11 @@ void ProjectSettings::Load(const char* path)
 
 bool ProjectSettings::Save(const char* path)
 {
-  if (!m_changed)
-    return true;
-
   CString fileName = path;
   fileName += SETTINGS_FILE;
+
+  if (!m_changed && (::GetFileAttributes(fileName) != INVALID_FILE_ATTRIBUTES))
+    return true;
 
   FILE* settingsFile = fopen(fileName,"wt");
   if (settingsFile == NULL)

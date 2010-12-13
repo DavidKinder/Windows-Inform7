@@ -1296,7 +1296,8 @@ void ProjectFrame::OnWindowShowTab(UINT nID)
 {
   int index = nID-ID_WINDOW_TAB_SOURCE;
   Panel::Tabs tab = (Panel::Tabs)(Panel::Tab_Source+index);
-  GetPanel(ChoosePanel(tab))->SetActiveTab(tab);
+  int panel = GetPanel(0)->IsChild(GetFocus()) ? 0 : 1;
+  GetPanel(panel)->SetActiveTab(tab);
 }
 
 void ProjectFrame::OnWindowShowIndex(UINT nID)
