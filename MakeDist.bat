@@ -8,7 +8,7 @@ pushd \Programs
 "\Program Files\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\BuildDate\*.vcproj Adv\Inform7\BuildDate\*.cpp
 "\Program Files\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\Inform7\res\* Adv\Inform7\Inform7\*.cpp Adv\Inform7\Inform7\*.c Adv\Inform7\Inform7\*.h Adv\Inform7\Inform7\*.rc Adv\Inform7\Inform7\*.vcproj Adv\Inform7\Inform7\*.sln
 "\Program Files\Zip\zip" -r \Temp\Windows_UI_source.zip Adv\Inform7\Inform7\Scintilla\*
-"\Program Files\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\Installer\Inform7.* Adv\Inform7\Installer\*.bmp Adv\Inform7\Installer\*.txt
+"\Program Files\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\Installer\Inform7.* Adv\Inform7\Installer\*.bmp
 "\Program Files\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\Installer\PlugIn\*.cpp Adv\Inform7\Installer\PlugIn\*.sln Adv\Inform7\Installer\PlugIn\*.vcproj
 "\Program Files\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\Interpreters\Frotz\*.cpp Adv\Inform7\Interpreters\Frotz\*.vcproj Adv\Inform7\Interpreters\Frotz\*.sln
 "\Program Files\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\Interpreters\Glulxe\*.cpp Adv\Inform7\Interpreters\Glulxe\*.h Adv\Inform7\Interpreters\Glulxe\*.vcproj Adv\Inform7\Interpreters\Glulxe\*.sln Adv\Inform7\Interpreters\Glulxe\Makefile
