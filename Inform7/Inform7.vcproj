@@ -611,9 +611,6 @@
 			Name="Bitmaps"
 			Filter="">
 			<File
-				RelativePath="..\..\..\Libraries\mfc\2PassScale.h">
-			</File>
-			<File
 				RelativePath="..\..\..\Libraries\mfc\Dib.cpp">
 			</File>
 			<File
@@ -670,7 +667,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Compiling resources with SDK resource compiler..."
-						CommandLine="&quot;C:\Program Files\Microsoft SDKs\Windows\v7.0\Bin\rc&quot; /d _DEBUG /l 0x809 /i $(ConfigurationName) /fo $(ConfigurationName)/$(InputName).res $(InputFileName)"
+						CommandLine="&quot;C:\Program Files\Microsoft SDKs\Windows\v7.0\Bin\rc&quot; /d _DEBUG /l 0x809 /i $(ConfigurationName) /fo $(ConfigurationName)/$(InputName).res $(InputFileName)
+"
 						Outputs="$(ConfigurationName)/$(InputName).res"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -678,7 +676,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Compiling resources with SDK resource compiler..."
-						CommandLine="&quot;C:\Program Files\Microsoft SDKs\Windows\v7.0\Bin\rc&quot; /d NDEBUG /l 0x809 /i $(ConfigurationName) /fo $(ConfigurationName)/$(InputName).res $(InputFileName)"
+						CommandLine="&quot;C:\Program Files\Microsoft SDKs\Windows\v7.0\Bin\rc&quot; /d NDEBUG /l 0x809 /i $(ConfigurationName) /fo $(ConfigurationName)/$(InputName).res $(InputFileName)
+"
 						Outputs="$(ConfigurationName)/$(InputName).res"/>
 				</FileConfiguration>
 			</File>
