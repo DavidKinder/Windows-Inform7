@@ -145,16 +145,12 @@ void I7GlkTextWindow::endLine(event_t* event, glui32 len, bool cancel)
     }
   }
 
-  if (cancel == false)
+  if (m_echo != NULL)
   {
-    if (m_echo != NULL)
-    {
-      if (m_lineBuffer != NULL)
-        m_echo->putStr(m_lineBuffer,charLen);
-      if (m_lineUBuffer != NULL)
-        m_echo->putStr(m_lineUBuffer,charLen);
-    }
-    m_stream->putStr("\n",1);
+    if (m_lineBuffer != NULL)
+      m_echo->putStr(m_lineBuffer,charLen);
+    if (m_lineUBuffer != NULL)
+      m_echo->putStr(m_lineUBuffer,charLen);
   }
 
   if (unregisterArrFn)
@@ -175,6 +171,7 @@ void I7GlkTextWindow::endLine(event_t* event, glui32 len, bool cancel)
     data[0] = m_id;
     sendCommand(Command_CancelLine,sizeof data,data);
   }
+  m_stream->putStr("\n",1);
 }
 
 void I7GlkTextWindow::requestKey(ReadKey readKey)

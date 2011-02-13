@@ -473,7 +473,7 @@ void I7GlkWinStream::putStr(char* s, glui32 len)
 
   for (glui32 i = 0; i < len; i++)
   {
-    m_buffered.push_back((unsigned char)s[i]);
+    addChar((unsigned char)s[i]);
     if (s[i] == '\n')
     {
       flush();
@@ -497,7 +497,7 @@ void I7GlkWinStream::putStr(glui32* s, glui32 len)
 
   for (glui32 i = 0; i < len; i++)
   {
-    m_buffered.push_back((wchar_t)s[i]);
+    addChar(s[i]);
     if (s[i] == '\n')
     {
       flush();
@@ -576,5 +576,21 @@ void I7GlkWinStream::flush(void)
   {
     sendCommand(Command_PrintOutput,m_buffered.size() * sizeof(wchar_t),&m_buffered[0]);
     m_buffered.resize(1);
+  }
+}
+
+void I7GlkWinStream::addChar(glui32 c)
+{
+  if ((c == '\n') || (c >= 32 && c <= 126) || (c >= 160 && c <= 0xFFFF))
+    m_buffered.push_back((wchar_t)c);
+  else
+  {
+    char error[16];
+    if (c <= 0xFF)
+      sprintf(error,"[0x%02X]",(int)c);
+    else
+      sprintf(error,"[0x%08X]",(int)c);
+    for (int i = 0; i < (int)strlen(error); i++)
+      addChar((unsigned char)error[i]);
   }
 }

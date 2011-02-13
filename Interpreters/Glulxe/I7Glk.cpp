@@ -77,7 +77,7 @@ extern "C" glui32 glk_gestalt_ext(glui32 sel, glui32 val, glui32 *arr, glui32 ar
   switch (sel)
   {
   case gestalt_Version:
-    return 0x00000700; // Glk 0.7.0
+    return 0x00000701; // Glk 0.7.1
 
   case gestalt_LineInput:
     if ((val >= 32 && val <= 126) || (val >= 160 && val <= 0xFFFF))
@@ -117,11 +117,12 @@ extern "C" glui32 glk_gestalt_ext(glui32 sel, glui32 val, glui32 *arr, glui32 ar
     else
     {
       if (arr && (arrlen > 0))
-        arr[0] = 0;
+        arr[0] = (val <= 0xFF) ? 6 : 12;
       return gestalt_CharOutput_CannotPrint;
     }
 
   case gestalt_Unicode:
+  case gestalt_UnicodeNorm:
     return 1;
 
   case gestalt_Graphics:
@@ -1386,6 +1387,47 @@ extern "C" void glk_request_line_event_uni(winid_t win, glui32 *buf, glui32 maxl
     return;
 
   ((I7GlkWindow*)win)->requestLine(buf,maxlen,initlen);
+}
+
+extern "C" void glk_set_echo_line_event(winid_t win, glui32 val)
+{
+}
+
+extern "C" void glk_set_terminators_line_event(winid_t win, glui32 *keycodes, glui32 count)
+{
+}
+
+extern "C" glui32 glk_buffer_canon_decompose_uni(glui32 *buf, glui32 len, glui32 numchars)
+{
+  glui32 *dest = buffer_canon_decompose(buf,&numchars);
+  if (dest == NULL)
+    return 0;
+
+  glui32 newlen = numchars;
+  if (newlen > len)
+    newlen = len;
+  if (newlen > 0)
+    memcpy(buf,dest,newlen * sizeof(glui32));
+  free(dest);
+
+  return numchars;
+}
+
+extern "C" glui32 glk_buffer_canon_normalize_uni(glui32 *buf, glui32 len, glui32 numchars)
+{
+  glui32 *dest = buffer_canon_decompose(buf,&numchars);
+  if (dest == NULL)
+    return 0;
+  numchars = buffer_canon_compose(dest,numchars);
+
+  glui32 newlen = numchars;
+  if (newlen > len)
+    newlen = len;
+  if (newlen)
+    memcpy(buf,dest,newlen * sizeof(glui32));
+  free(dest);
+
+  return numchars;
 }
 
 extern "C" void gidispatch_set_object_registry(

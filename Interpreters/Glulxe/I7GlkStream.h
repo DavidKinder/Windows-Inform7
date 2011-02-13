@@ -140,6 +140,8 @@ public:
   void flush(void);
 
 protected:
+  void addChar(glui32 c);
+
   I7GlkWindow* m_win;
   glui32 m_style;
   std::vector<wchar_t> m_buffered;
