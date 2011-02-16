@@ -1,8 +1,11 @@
 #include "I7GlkGridWindow.h"
 #include "../../Inform7/InterpreterCommands.h"
 
+#include <deque>
+
 extern int charWidth;
 extern int charHeight;
+extern std::deque<event_t> inputEvents;
 
 void sendCommand(int command, int dataLength, const void* data);
 
@@ -12,6 +15,28 @@ I7GlkGridWindow::I7GlkGridWindow(glui32 rock) : I7GlkWindow(rock)
 {
   for (int i = 0; i < style_NUMSTYLES; i++)
     m_styles[i] = defaultStyles[1][i];
+}
+
+void I7GlkGridWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen)
+{
+  // Line input is not supported
+  event_t lineEvent;
+  lineEvent.type = evtype_LineInput;
+  lineEvent.win = (winid_t)this;
+  lineEvent.val1 = 0;
+  lineEvent.val2 = 0;
+  inputEvents.push_back(lineEvent);
+}
+
+void I7GlkGridWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen)
+{
+  // Line input is not supported
+  event_t lineEvent;
+  lineEvent.type = evtype_LineInput;
+  lineEvent.win = (winid_t)this;
+  lineEvent.val1 = 0;
+  lineEvent.val2 = 0;
+  inputEvents.push_back(lineEvent);
 }
 
 void I7GlkGridWindow::requestKey(ReadKey readKey)

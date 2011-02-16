@@ -10,7 +10,7 @@ public:
 
   void requestLine(char* buf, glui32 maxlen, glui32 initlen);
   void requestLine(glui32* buf, glui32 maxlen, glui32 initlen);
-  void endLine(event_t* event, glui32 len, bool cancel);
+  void endLine(event_t* event, bool cancel, wchar_t* lineData, int lineLen);
   void requestKey(ReadKey readKey);
   void requestLink(void);
 

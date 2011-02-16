@@ -10,7 +10,6 @@ extern gidispatch_rock_t (*registerArrFn)(void *array, glui32 len, char *typecod
 extern void (*unregisterArrFn)(void *array, glui32 len, char *typecode, gidispatch_rock_t objrock);
 
 void sendCommand(int command, int dataLength, const void* data);
-void readReturnData(void* data, int length);
 
 I7GlkStyle I7GlkTextWindow::defaultStyles[2][style_NUMSTYLES] =
 {
@@ -102,7 +101,7 @@ void I7GlkTextWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen)
   sendCommand(Command_ReadLine,sizeof data,data);
 }
 
-void I7GlkTextWindow::endLine(event_t* event, glui32 len, bool cancel)
+void I7GlkTextWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, int lineLen)
 {
   if ((m_lineBuffer == NULL) && (m_lineUBuffer == NULL))
   {
@@ -111,46 +110,39 @@ void I7GlkTextWindow::endLine(event_t* event, glui32 len, bool cancel)
     return;
   }
 
-  int charLen = len / sizeof (wchar_t);
-  if (charLen > m_lineLength)
-    charLen = m_lineLength;
-
   if (event != NULL)
   {
     event->type = evtype_LineInput;
     event->win = (winid_t)this;
-    event->val1 = charLen;
+    event->val1 = lineLen;
     event->val2 = 0;
   }
 
-  if (len > 0)
+  if (lineLen > 0)
   {
-    wchar_t* readLine = (wchar_t*)alloca(len);
-    readReturnData(readLine,len);
-
     if (m_lineBuffer != NULL)
     {
-      for (int i = 0; i < charLen; i++)
+      for (int i = 0; i < lineLen; i++)
       {
-        if (readLine[i] > 255)
+        if (lineData[i] > 255)
           m_lineBuffer[i] = '?';
         else
-          m_lineBuffer[i] = (char)readLine[i];
+          m_lineBuffer[i] = (char)lineData[i];
       }
     }
     if (m_lineUBuffer != NULL)
     {
-      for (int i = 0; i < charLen; i++)
-        m_lineUBuffer[i] = readLine[i];
+      for (int i = 0; i < lineLen; i++)
+        m_lineUBuffer[i] = lineData[i];
     }
   }
 
   if (m_echo != NULL)
   {
     if (m_lineBuffer != NULL)
-      m_echo->putStr(m_lineBuffer,charLen);
+      m_echo->putStr(m_lineBuffer,lineLen);
     if (m_lineUBuffer != NULL)
-      m_echo->putStr(m_lineUBuffer,charLen);
+      m_echo->putStr(m_lineUBuffer,lineLen);
   }
 
   if (unregisterArrFn)

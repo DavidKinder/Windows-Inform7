@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cstdio>
 #include <string>
 #include <set>
 #include <vector>
+#include <stdio.h>
 
 extern "C" {
 #include "Glk.h"

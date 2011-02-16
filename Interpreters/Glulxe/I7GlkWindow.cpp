@@ -11,7 +11,6 @@ extern gidispatch_rock_t (*registerObjFn)(void *obj, glui32 objclass);
 extern void (*unregisterObjFn)(void *obj, glui32 objclass, gidispatch_rock_t objrock);
 
 void sendCommand(int command, int dataLength, const void* data);
-void readReturnData(void* data, int length);
 
 I7Rect::I7Rect()
 {
@@ -114,13 +113,13 @@ I7GlkWindow::~I7GlkWindow()
     mainWindow = NULL;
 }
 
-void I7GlkWindow::endLine(event_t* event, glui32 len, bool cancel)
+void I7GlkWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, int lineLen)
 {
   if (event != NULL)
     event->type = evtype_None;
 }
 
-void I7GlkWindow::endKey(event_t* event, glui32 len, bool cancel)
+void I7GlkWindow::endKey(event_t* event, bool cancel, int key)
 {
   if (m_readKey == ReadKeyNone)
   {
@@ -130,38 +129,32 @@ void I7GlkWindow::endKey(event_t* event, glui32 len, bool cancel)
   }
 
   glui32 glkKey = 0;
-  if (len > 0)
+  switch (key)
   {
-    int key = 0;
-    readReturnData(&key,sizeof key);
-
-    switch (key)
-    {
-    case '\r':
-      glkKey = keycode_Return;
-      break;
-    case '\033':
-      glkKey = keycode_Escape;
-      break;
-    case Key_Left:
-      glkKey = keycode_Left;
-      break;
-    case Key_Right:
-      glkKey = keycode_Right;
-      break;
-    case Key_Up:
-      glkKey = keycode_Up;
-      break;
-    case Key_Down:
-      glkKey = keycode_Down;
-      break;
-    default:
-      if ((key > 255) && (m_readKey == ReadKeyAscii))
-        glkKey = '?';
-      else
-        glkKey = key;
-      break;
-    }
+  case '\r':
+    glkKey = keycode_Return;
+    break;
+  case '\033':
+    glkKey = keycode_Escape;
+    break;
+  case Key_Left:
+    glkKey = keycode_Left;
+    break;
+  case Key_Right:
+    glkKey = keycode_Right;
+    break;
+  case Key_Up:
+    glkKey = keycode_Up;
+    break;
+  case Key_Down:
+    glkKey = keycode_Down;
+    break;
+  default:
+    if ((key > 255) && (m_readKey == ReadKeyAscii))
+      glkKey = '?';
+    else
+      glkKey = key;
+    break;
   }
 
   if (event != NULL)

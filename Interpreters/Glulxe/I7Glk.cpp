@@ -15,9 +15,9 @@ extern "C" {
 #include "GlkUnicode.h"
 #include "../../Inform7/InterpreterCommands.h"
 
-#include <cstdlib>
 #include <deque>
 #include <map>
+#include <stdlib.h>
 #include <windows.h>
 
 gidispatch_rock_t (*registerObjFn)(void *obj, glui32 objclass) = NULL;
@@ -44,6 +44,52 @@ DWORD timerLast = 0;
 
 std::deque<event_t> inputEvents;
 std::deque<event_t> otherEvents;
+
+struct FrontEndCmd
+{
+  FrontEndCmd()
+  {
+    cmd -1;
+    len = 0;
+    data = NULL;
+  }
+
+  void free(void)
+  {
+    ::free(data);
+    len = 0;
+    data = NULL;
+  }
+
+  void read(void)
+  {
+    readReturnData(&cmd,sizeof cmd);
+    readReturnData(&len,sizeof len);
+    data = malloc(len);
+    readReturnData(data,len);
+  }
+
+  int cmd;
+  int len;
+  void* data;
+};
+
+std::deque<FrontEndCmd> commands;
+
+bool readCommand(void)
+{
+  // Look for anything to read
+  DWORD available = 0;
+  HANDLE in = ::GetStdHandle(STD_INPUT_HANDLE);
+  ::PeekNamedPipe(in,NULL,0,NULL,&available,NULL);
+  if (available == 0)
+    return false;
+
+  FrontEndCmd command;
+  command.read();
+  commands.push_back(command);
+  return true;
+}
 
 extern "C" void glk_exit(void)
 {
@@ -840,38 +886,35 @@ extern "C" void glk_select(event_t *event)
       wstr->flush();
   }
 
-  event->type = evtype_None;
-  HANDLE in = ::GetStdHandle(STD_INPUT_HANDLE);
-
   // Wait for an event to be added to one of the event queues
   while (inputEvents.empty() && otherEvents.empty())
   {
-    // Look for returned data
-    DWORD available = 0;
-    ::PeekNamedPipe(in,NULL,0,NULL,&available,NULL);
-
-    if (available > 0)
+    // Read in any new commands
+    while (readCommand())
     {
-      // Get the returned command
-      int readCommand, readLength;
-      readReturnData(&readCommand,sizeof readCommand);
-      readReturnData(&readLength,sizeof readLength);
+    }
 
-      switch (readCommand)
+    // Process the queue of commands
+    while (!commands.empty())
+    {
+      FrontEndCmd command = commands.front();
+      commands.pop_front();
+
+      switch (command.cmd)
       {
       case Return_ReadLine:
-        if (readLength >= sizeof (int))
+        if (command.len >= sizeof(int))
         {
-          int wndId;
-          readReturnData(&wndId,sizeof (int));
-          readLength -= sizeof (int);
-
+          int wndId = ((int*)command.data)[0];
           for (winid_t win = glk_window_iterate(0,NULL); win != 0; win = glk_window_iterate(win,NULL))
           {
             if (((I7GlkWindow*)win)->getId() == wndId)
             {
+              void* lineData = ((int*)command.data)+1;
+              int lineLen = (command.len - sizeof(int)) / sizeof(wchar_t);
+
               event_t lineEvent;
-              ((I7GlkWindow*)win)->endLine(&lineEvent,readLength,false);
+              ((I7GlkWindow*)win)->endLine(&lineEvent,false,(wchar_t*)lineData,lineLen);
               if (lineEvent.type == evtype_LineInput)
                 inputEvents.push_back(lineEvent);
               break;
@@ -881,27 +924,32 @@ extern "C" void glk_select(event_t *event)
         break;
 
       case Return_ReadKey:
-        for (winid_t win = glk_window_iterate(0,NULL); win != 0; win = glk_window_iterate(win,NULL))
+        if (command.len >= sizeof(int))
         {
-          event_t charEvent;
-          ((I7GlkWindow*)win)->endKey(&charEvent,readLength,false);
-          if (charEvent.type == evtype_CharInput)
+          int key = ((int*)command.data)[0];
+          for (winid_t win = glk_window_iterate(0,NULL); win != 0; win = glk_window_iterate(win,NULL))
           {
-            inputEvents.push_back(charEvent);
-            break;
+            event_t charEvent;
+            ((I7GlkWindow*)win)->endKey(&charEvent,false,key);
+            if (charEvent.type == evtype_CharInput)
+            {
+              inputEvents.push_back(charEvent);
+              break;
+            }
           }
         }
         break;
 
       case Return_Size:
+        if (command.len == 4*sizeof(int))
         {
-          int size[4];
-          readReturnData(size,sizeof size);
+          int* size = (int*)command.data;
 
           displayWidth = size[0];
           displayHeight = size[1];
           charWidth = size[2];
           charHeight = size[3];
+
           if (mainWindow != NULL)
           {
             mainWindow->layout(I7Rect(0,0,displayWidth,displayHeight));
@@ -927,13 +975,12 @@ extern "C" void glk_select(event_t *event)
         break;
 
       case Return_SoundOver:
+        if (command.len == sizeof(int))
         {
-          int notify[1];
-          readReturnData(notify,sizeof notify);
-
+          int notify = ((int*)command.data)[0];
           for (schanid_t chan = glk_schannel_iterate(0,NULL); chan != NULL; chan = glk_schannel_iterate(chan,NULL))
           {
-            if (((I7GlkChannel*)chan)->getId() == notify[0])
+            if (((I7GlkChannel*)chan)->getId() == notify)
             {
               event_t notifyEvent;
               ((I7GlkChannel*)chan)->getNotify(notifyEvent);
@@ -946,10 +993,9 @@ extern "C" void glk_select(event_t *event)
         break;
 
       case Return_Mouse:
+        if (command.len == 3*sizeof(int))
         {
-          int mouse[3];
-          readReturnData(mouse,sizeof mouse);
-
+          int* mouse = (int*)command.data;
           for (winid_t win = glk_window_iterate(0,NULL); win != 0; win = glk_window_iterate(win,NULL))
           {
             if (((I7GlkWindow*)win)->getId() == mouse[0])
@@ -965,10 +1011,9 @@ extern "C" void glk_select(event_t *event)
         break;
 
       case Return_Link:
+        if (command.len == 2*sizeof(int))
         {
-          int link[2];
-          readReturnData(link,sizeof link);
-
+          int* link = (int*)command.data;
           for (winid_t win = glk_window_iterate(0,NULL); win != 0; win = glk_window_iterate(win,NULL))
           {
             if (((I7GlkWindow*)win)->getId() == link[0])
@@ -982,14 +1027,10 @@ extern "C" void glk_select(event_t *event)
           }
         }
         break;
-
-      default:
-        // Discard the data
-        void* data = malloc(readLength);
-        readReturnData(data,readLength);
-        free(data);
-        break;
       }
+
+      // Discard the memory allocated for the command
+      command.free();
     }
 
     // Check if a timer event should occur
@@ -1005,10 +1046,12 @@ extern "C" void glk_select(event_t *event)
       otherEvents.push_back(timerEvent);
     }
 
-    ::Sleep(50);
+    if (inputEvents.empty() && otherEvents.empty())
+      ::Sleep(50);
   }
 
   // Get an event from one of the event queues
+  event->type = evtype_None;
   if (inputEvents.empty() == false)
   {
     *event = inputEvents.front();
@@ -1081,7 +1124,7 @@ extern "C" void glk_cancel_line_event(winid_t win, event_t *event)
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
     return;
 
-  ((I7GlkWindow*)win)->endLine(event,0,true);
+  ((I7GlkWindow*)win)->endLine(event,true,NULL,0);
 }
 
 extern "C" void glk_cancel_char_event(winid_t win)
@@ -1089,7 +1132,7 @@ extern "C" void glk_cancel_char_event(winid_t win)
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
     return;
 
-  ((I7GlkWindow*)win)->endKey(NULL,0,true);
+  ((I7GlkWindow*)win)->endKey(NULL,true,0);
 }
 
 extern "C" void glk_cancel_mouse_event(winid_t win)

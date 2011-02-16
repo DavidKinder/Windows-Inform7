@@ -7,6 +7,8 @@ class I7GlkGridWindow : public I7GlkWindow
 public:
   I7GlkGridWindow(glui32 rock);
 
+  void requestLine(char* buf, glui32 maxlen, glui32 initlen);
+  void requestLine(glui32* buf, glui32 maxlen, glui32 initlen);
   void requestKey(ReadKey readKey);
   void requestLink(void);
   void requestMouse(void);

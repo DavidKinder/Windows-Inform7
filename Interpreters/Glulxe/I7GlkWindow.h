@@ -70,9 +70,9 @@ public:
 
   virtual void requestLine(char* buf, glui32 maxlen, glui32 initlen) {}
   virtual void requestLine(glui32* buf, glui32 maxlen, glui32 initlen) {}
-  virtual void endLine(event_t* event, glui32 len, bool cancel);
+  virtual void endLine(event_t* event, bool cancel, wchar_t* lineData, int lineLen);
   virtual void requestKey(ReadKey readKey) {}
-  virtual void endKey(event_t* event, glui32 len, bool cancel);
+  virtual void endKey(event_t* event, bool cancel, int key);
   virtual void requestMouse(void) {}
   virtual void endMouse(event_t* event, int x, int y);
   virtual void requestLink(void) {}

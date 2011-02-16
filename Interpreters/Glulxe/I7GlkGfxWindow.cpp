@@ -2,7 +2,6 @@
 #include "../../Inform7/InterpreterCommands.h"
 
 void sendCommand(int command, int dataLength, const void* data);
-void readReturnData(void* data, int length);
 
 I7GlkGfxWindow::I7GlkGfxWindow(glui32 rock) : I7GlkWindow(rock)
 {
