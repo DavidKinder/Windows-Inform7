@@ -74,7 +74,7 @@ private:
   void CommandSetStyle(int wndId, TerpTextStyle style, int size);
   void CommandSetColour(int wndId, int* fore, int* back);
   void CommandSetCursor(int wndId, int row, int column);
-  void CommandReadLine(int wndId, int initial, bool restart);
+  void CommandReadLine(int wndId, int initial, bool restart, bool echo);
   void CommandReadKey(bool restart);
   void CommandClear(int wndId, int reverse, int* fore, int* back);
   void CommandDraw(int wndId, int image, int val1, int val2, int width, int height);

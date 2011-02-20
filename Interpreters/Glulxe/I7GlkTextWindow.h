@@ -8,8 +8,8 @@ public:
   I7GlkTextWindow(glui32 rock);
   ~I7GlkTextWindow();
 
-  void requestLine(char* buf, glui32 maxlen, glui32 initlen);
-  void requestLine(glui32* buf, glui32 maxlen, glui32 initlen);
+  void requestLine(char* buf, glui32 maxlen, glui32 initlen, bool echo);
+  void requestLine(glui32* buf, glui32 maxlen, glui32 initlen, bool echo);
   void endLine(event_t* event, bool cancel, wchar_t* lineData, int lineLen);
   void requestKey(ReadKey readKey);
   void requestLink(void);
@@ -29,6 +29,7 @@ protected:
   char* m_lineBuffer;
   glui32* m_lineUBuffer;
   glui32 m_lineLength;
+  bool m_echoInput;
 
   I7Rect m_rect;
 };

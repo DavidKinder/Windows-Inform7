@@ -25,6 +25,7 @@ GameText::GameText(MainWindow* main)
   m_inputPos = -1;
   m_history = 0; 
   m_link = 0;
+  m_echo = true;
 
   m_fore = theApp.GetColour(InformApp::ColourText);
   m_back = theApp.GetColour(InformApp::ColourBack);
@@ -536,7 +537,7 @@ void GameText::OnEnLink(NMHDR *pNMHDR, LRESULT *pResult)
   }
 }
 
-void GameText::AllowLineInput(int initial)
+void GameText::AllowLineInput(int initial, bool echo)
 {
   // Get the end range of text
   CComPtr<ITextRange> range;
@@ -564,6 +565,9 @@ void GameText::AllowLineInput(int initial)
 
   // Reset the command history counter
   m_history = 0;
+
+  // Set whether the line input will be left when complete
+  m_echo = echo;
 }
 
 CStringW GameText::StopLineInput(bool discard)
@@ -612,6 +616,11 @@ void GameText::AllowCharInput(void)
   range->Select();
   SetFocus();
   SendMessage(EM_SCROLLCARET);
+}
+
+bool GameText::GetEcho(void)
+{
+  return m_echo;
 }
 
 bool GameText::GetLineFromHistory(int history)

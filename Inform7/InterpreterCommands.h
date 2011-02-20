@@ -23,6 +23,7 @@ enum TerpCommand
   Command_SetParagraph,
   Command_CancelLine,
   Command_CancelKey,
+  Command_ReadLineSilent,
 };
 
 enum TerpReturn

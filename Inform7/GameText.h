@@ -29,9 +29,10 @@ public:
   void SetParagraph(Justify justify);
   void SetBackColour(COLORREF colour);
 
-  void AllowLineInput(int initial);
+  void AllowLineInput(int initial, bool echo);
   CStringW StopLineInput(bool discard);
   void AllowCharInput(void);
+  bool GetEcho(void);
 
 protected:
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
@@ -59,6 +60,7 @@ private:
   long m_inputPos;
   int m_history;
   int m_link;
+  bool m_echo;
 
   MainWindow* m_main;
 

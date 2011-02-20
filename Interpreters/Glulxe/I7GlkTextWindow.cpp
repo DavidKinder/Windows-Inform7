@@ -61,6 +61,7 @@ I7GlkTextWindow::I7GlkTextWindow(glui32 rock) : I7GlkWindow(rock)
   m_lineBuffer = NULL;
   m_lineUBuffer = NULL;
   m_lineLength = 0;
+  m_echoInput = true;
 
   m_arrayRock.num = 0;
 
@@ -76,10 +77,11 @@ I7GlkTextWindow::~I7GlkTextWindow()
     (*unregisterArrFn)(m_lineUBuffer,m_lineLength,"&+#!Iu",m_arrayRock);
 }
 
-void I7GlkTextWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen)
+void I7GlkTextWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen, bool echo)
 {
   m_lineBuffer = buf;
   m_lineLength = maxlen;
+  m_echoInput = echo;
 
   if (registerArrFn)
     m_arrayRock = (*registerArrFn)(m_lineBuffer,m_lineLength,"&+#!Cn");
@@ -93,13 +95,14 @@ void I7GlkTextWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen)
   int data[2];
   data[0] = m_id;
   data[1] = initlen;
-  sendCommand(Command_ReadLine,sizeof data,data);
+  sendCommand(echo ? Command_ReadLine : Command_ReadLineSilent,sizeof data,data);
 }
 
-void I7GlkTextWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen)
+void I7GlkTextWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen, bool echo)
 {
   m_lineUBuffer = buf;
   m_lineLength = maxlen;
+  m_echoInput = echo;
 
   if (registerArrFn)
     m_arrayRock = (*registerArrFn)(m_lineUBuffer,m_lineLength,"&+#!Iu");
@@ -113,7 +116,7 @@ void I7GlkTextWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen)
   int data[2];
   data[0] = m_id;
   data[1] = initlen;
-  sendCommand(Command_ReadLine,sizeof data,data);
+  sendCommand(echo ? Command_ReadLine : Command_ReadLineSilent,sizeof data,data);
 }
 
 static void readCancelLine(int id, wchar_t*& lineData, int& lineLen)
@@ -187,14 +190,17 @@ void I7GlkTextWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, in
     }
   }
 
-  if (m_echo != NULL)
+  if (m_echoInput)
   {
-    if (m_lineBuffer != NULL)
-      m_echo->putStr(m_lineBuffer,lineLen);
-    if (m_lineUBuffer != NULL)
-      m_echo->putStr(m_lineUBuffer,lineLen);
+    if (m_echo != NULL)
+    {
+      if (m_lineBuffer != NULL)
+        m_echo->putStr(m_lineBuffer,lineLen);
+      if (m_lineUBuffer != NULL)
+        m_echo->putStr(m_lineUBuffer,lineLen);
+    }
+    m_stream->putStr("\n",1);
   }
-  m_stream->putStr("\n",1);
 
   if (unregisterArrFn)
   {

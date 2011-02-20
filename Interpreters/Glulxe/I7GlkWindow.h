@@ -68,8 +68,8 @@ public:
     ReadKeyUnicode,
   };
 
-  virtual void requestLine(char* buf, glui32 maxlen, glui32 initlen) {}
-  virtual void requestLine(glui32* buf, glui32 maxlen, glui32 initlen) {}
+  virtual void requestLine(char* buf, glui32 maxlen, glui32 initlen, bool echo) {}
+  virtual void requestLine(glui32* buf, glui32 maxlen, glui32 initlen, bool echo) {}
   virtual void endLine(event_t* event, bool cancel, wchar_t* lineData, int lineLen);
   virtual void requestKey(ReadKey readKey) {}
   virtual void endKey(event_t* event, bool cancel, int key);

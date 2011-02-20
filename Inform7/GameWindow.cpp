@@ -257,11 +257,12 @@ void GameWindow::InputFromSkein(void)
       WindowMapIt it(m_windows);
       if (it.Iterate(RUNTIME_CLASS(GameText)))
       {
-        ((GameText*)it.Value())->StopLineInput(true);
+        GameText* wnd = ((GameText*)it.Value());
+        wnd->StopLineInput(true);
 
         // Reset the state and attempt to get line input again
         m_state = TerpOutput;
-        CommandReadLine(it.Key(),0,true);
+        CommandReadLine(it.Key(),0,true,wnd->GetEcho());
       }
     }
     break;
@@ -358,7 +359,10 @@ void GameWindow::RunInterpreterCommand(void)
     CommandSetCursor(idata[0],idata[1],idata[2]);
     break;
   case Command_ReadLine:
-    CommandReadLine(idata[0],idata[1],false);
+    CommandReadLine(idata[0],idata[1],false,true);
+    break;
+  case Command_ReadLineSilent:
+    CommandReadLine(idata[0],idata[1],false,false);
     break;
   case Command_ReadKey:
     CommandReadKey(false);
@@ -562,7 +566,7 @@ void GameWindow::CommandSetCursor(int wndId, int column, int row)
   wnd->SetCursor(column,row);
 }
 
-void GameWindow::CommandReadLine(int wndId, int initial, bool restart)
+void GameWindow::CommandReadLine(int wndId, int initial, bool restart, bool echo)
 {
   GameBase* wnd = NULL;
   if (m_windows.Lookup(wndId,wnd) == FALSE)
@@ -575,12 +579,13 @@ void GameWindow::CommandReadLine(int wndId, int initial, bool restart)
   {
     if (!restart)
       UpdateTranscript();
-    ((GameText*)wnd)->AllowLineInput(initial);
+    ((GameText*)wnd)->AllowLineInput(initial,echo);
 
     CStringW skeinLine;
     if (m_skein.NextLine(skeinLine))
     {
-      wnd->AddText(skeinLine,true);
+      if (echo)
+        wnd->AddText(skeinLine,true);
       wnd->MoveToEnd();
       SendInputLine(GetWindowId(wnd),skeinLine);
     }
@@ -1112,7 +1117,7 @@ LRESULT GameWindow::OnEndLineInput(WPARAM wParam, LPARAM lParam)
     return 0;
 
   // Get the input line
-  CStringW input = wnd->StopLineInput(false);
+  CStringW input = wnd->StopLineInput(!(wnd->GetEcho()));
 
   // If the interpreter is still running, send back data
   if (m_interpreter != 0)
