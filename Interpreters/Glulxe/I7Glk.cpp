@@ -47,27 +47,9 @@ std::deque<event_t> otherEvents;
 
 struct FrontEndCmd
 {
-  FrontEndCmd()
-  {
-    cmd -1;
-    len = 0;
-    data = NULL;
-  }
-
-  void free(void)
-  {
-    ::free(data);
-    len = 0;
-    data = NULL;
-  }
-
-  void read(void)
-  {
-    readReturnData(&cmd,sizeof cmd);
-    readReturnData(&len,sizeof len);
-    data = malloc(len);
-    readReturnData(data,len);
-  }
+  FrontEndCmd();
+  void free(void);
+  void read(void);
 
   int cmd;
   int len;
@@ -75,6 +57,28 @@ struct FrontEndCmd
 };
 
 std::deque<FrontEndCmd> commands;
+
+FrontEndCmd::FrontEndCmd()
+{
+  cmd -1;
+  len = 0;
+  data = NULL;
+}
+
+void FrontEndCmd::free(void)
+{
+  ::free(data);
+  len = 0;
+  data = NULL;
+}
+
+void FrontEndCmd::read(void)
+{
+  readReturnData(&cmd,sizeof cmd);
+  readReturnData(&len,sizeof len);
+  data = malloc(len);
+  readReturnData(data,len);
+}
 
 bool readCommand(void)
 {
@@ -890,9 +894,7 @@ extern "C" void glk_select(event_t *event)
   while (inputEvents.empty() && otherEvents.empty())
   {
     // Read in any new commands
-    while (readCommand())
-    {
-    }
+    while (readCommand());
 
     // Process the queue of commands
     while (!commands.empty())

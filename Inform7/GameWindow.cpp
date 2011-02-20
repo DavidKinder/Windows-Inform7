@@ -827,10 +827,7 @@ void GameWindow::CommandCancelLine(int wndId)
   }
 
   if (wnd->IsKindOf(RUNTIME_CLASS(GameText)))
-  {
-    ((GameText*)wnd)->StopLineInput(true);
-    m_state = TerpOutput;
-  }
+    PostMessage(WM_ENDLINEINPUT,(WPARAM)wnd->GetSafeHwnd(),0);
 }
 
 bool GameWindow::GameKeyEvent(CWnd* wnd, WPARAM wParam, LPARAM lParam)
@@ -843,7 +840,7 @@ bool GameWindow::GameKeyEvent(CWnd* wnd, WPARAM wParam, LPARAM lParam)
       // Post a message to indicate that line input should
       // end. The actual handling of line input needs to
       // occur after this return key event has completed.
-      PostMessage(WM_ENDLINEINPUT,(WPARAM)wnd->GetSafeHwnd());
+      PostMessage(WM_ENDLINEINPUT,(WPARAM)wnd->GetSafeHwnd(),1);
       return false;
     }
     break;
@@ -1099,11 +1096,11 @@ void GameWindow::OnTimer(UINT nIDEvent)
   processingTimer = false;
 }
 
-LRESULT GameWindow::OnEndLineInput(WPARAM wParam, LPARAM)
+LRESULT GameWindow::OnEndLineInput(WPARAM wParam, LPARAM lParam)
 {
   m_state = TerpOutput;
 
-  // Find a text buffer window
+  // Find the matching window
   GameText* wnd = NULL;
   WindowMapIt it(m_windows);
   while (it.Iterate(RUNTIME_CLASS(GameText)))
@@ -1123,7 +1120,8 @@ LRESULT GameWindow::OnEndLineInput(WPARAM wParam, LPARAM)
     SendInputLine(GetWindowId(wnd),input);
 
     // Add the input line to the skein
-    m_skein.NewLine(input);
+    if (lParam != 0)
+      m_skein.NewLine(input);
   }
   return 0;
 }

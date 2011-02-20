@@ -1,7 +1,9 @@
 #include "I7GlkTextWindow.h"
 #include "../../Inform7/InterpreterCommands.h"
 
+#include <deque>
 #include <malloc.h>
+#include <windows.h>
 
 extern int charWidth;
 extern int charHeight;
@@ -9,7 +11,20 @@ extern int charHeight;
 extern gidispatch_rock_t (*registerArrFn)(void *array, glui32 len, char *typecode);
 extern void (*unregisterArrFn)(void *array, glui32 len, char *typecode, gidispatch_rock_t objrock);
 
+struct FrontEndCmd
+{
+  FrontEndCmd();
+  void free(void);
+  void read(void);
+
+  int cmd;
+  int len;
+  void* data;
+};
+extern std::deque<FrontEndCmd> commands;
+
 void sendCommand(int command, int dataLength, const void* data);
+bool readCommand(void);
 
 I7GlkStyle I7GlkTextWindow::defaultStyles[2][style_NUMSTYLES] =
 {
@@ -101,6 +116,31 @@ void I7GlkTextWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen)
   sendCommand(Command_ReadLine,sizeof data,data);
 }
 
+static void readCancelLine(int id, wchar_t*& lineData, int& lineLen)
+{
+  for (;;)
+  {
+    while (readCommand());
+
+    for (std::deque<FrontEndCmd>::iterator it = commands.begin(); it != commands.end(); ++it)
+    {
+      if ((it->cmd == Return_ReadLine) && (it->len >= sizeof(int)))
+      {
+        if (id == ((int*)it->data)[0])
+        {
+          lineData = (wchar_t*)(((int*)it->data)+1);
+          lineLen = (it->len - sizeof(int)) / sizeof(wchar_t);
+          it->free();
+          commands.erase(it);
+          return;
+        }
+      }
+    }
+
+    ::Sleep(50);
+  }
+}
+
 void I7GlkTextWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, int lineLen)
 {
   if ((m_lineBuffer == NULL) && (m_lineUBuffer == NULL))
@@ -108,6 +148,16 @@ void I7GlkTextWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, in
     if (event != NULL)
       event->type = evtype_None;
     return;
+  }
+
+  if (cancel)
+  {
+    int data[1];
+    data[0] = m_id;
+    sendCommand(Command_CancelLine,sizeof data,data);
+
+    // Wait for the cancelled line input to be sent back
+    readCancelLine(getId(),lineData,lineLen);
   }
 
   if (event != NULL)
@@ -144,6 +194,7 @@ void I7GlkTextWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, in
     if (m_lineUBuffer != NULL)
       m_echo->putStr(m_lineUBuffer,lineLen);
   }
+  m_stream->putStr("\n",1);
 
   if (unregisterArrFn)
   {
@@ -156,14 +207,6 @@ void I7GlkTextWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, in
   m_lineBuffer = NULL;
   m_lineUBuffer = NULL;
   m_lineLength = 0;
-
-  if (cancel)
-  {
-    int data[1];
-    data[0] = m_id;
-    sendCommand(Command_CancelLine,sizeof data,data);
-  }
-  m_stream->putStr("\n",1);
 }
 
 void I7GlkTextWindow::requestKey(ReadKey readKey)
