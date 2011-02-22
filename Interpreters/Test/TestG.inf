@@ -21,6 +21,7 @@ Array args buffer 28;
     print "4) Mouse input^";
     print "5) Hyperlink input^";
     print "6) File output^";
+    print "7) Sound notification^";
     key = waitForKey(win1);
     glk_window_close(win1,GLK_NULL);
 
@@ -32,6 +33,7 @@ Array args buffer 28;
      52: mouseInput();
      53: linkInput();
      54: fileOutput();
+     55: soundNotify();
     }
   }
 ];
@@ -458,6 +460,39 @@ Array args buffer 28;
   print "Hello!";
   glk_stream_close(fstr,GLK_NULL);
   glk_fileref_destroy(fref);
+];
+
+[ soundNotify win channel play key;
+
+  win = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  glk_set_window(win);
+  channel = glk_schannel_create(0);
+  play = glk_schannel_play_ext(channel,3,1,45);
+
+  if (play == 1)
+  {
+    print "The sound has started playing^";
+    while (true)
+    {
+      glk_select(event);
+      if (event-->0 == evtype_SoundNotify)
+      {
+        if (event-->1 == GLK_NULL && event-->2 == 3 && event-->3 == 45)
+        {
+          print "The sound has finished playing^";
+          break;
+        }
+        else
+          print "An invalid sound notification event has occurred!^";
+      }
+    }
+  }
+  else
+    print "The sound failed to start playing^";
+
+  key = waitForKey(win);
+  glk_schannel_destroy(channel);
+  glk_window_close(win,GLK_NULL);
 ];
 
 [ waitForKey win;

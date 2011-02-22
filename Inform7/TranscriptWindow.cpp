@@ -57,7 +57,7 @@ int TranscriptWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
   EnableScrollBar(SB_VERT,ESB_DISABLE_BOTH);
 
   // Control for editing text
-  if (m_edit.Create(ES_MULTILINE|WS_CHILD,this,0) == FALSE)
+  if (m_edit.Create(ES_MULTILINE|ES_WANTRETURN|WS_CHILD,this,0) == FALSE)
     return -1;
   m_edit.SetMargins(theApp.MeasureFont(m_edit.GetFont()).cx/4);
 

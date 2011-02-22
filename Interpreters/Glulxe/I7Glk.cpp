@@ -62,7 +62,7 @@ std::deque<FrontEndCmd> commands;
 
 FrontEndCmd::FrontEndCmd()
 {
-  cmd -1;
+  cmd = -1;
   len = 0;
   data = NULL;
 }
