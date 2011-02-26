@@ -129,7 +129,7 @@ extern "C" glui32 glk_gestalt_ext(glui32 sel, glui32 val, glui32 *arr, glui32 ar
   switch (sel)
   {
   case gestalt_Version:
-    return 0x00000701; // Glk 0.7.1
+    return 0x00000702; // Glk 0.7.2
 
   case gestalt_LineInput:
     if ((val >= 32 && val <= 126) || (val >= 160 && val <= 0xFFFF))
@@ -209,6 +209,9 @@ extern "C" glui32 glk_gestalt_ext(glui32 sel, glui32 val, glui32 *arr, glui32 ar
     return 0;
 
   case gestalt_LineInputEcho:
+    return 1;
+
+  case gestalt_DateTime:
     return 1;
   }
   return 0;
@@ -1479,6 +1482,259 @@ extern "C" glui32 glk_buffer_canon_normalize_uni(glui32 *buf, glui32 len, glui32
   free(dest);
 
   return numchars;
+}
+
+// Date and time related helper functions
+namespace {
+
+FILETIME BadTime = { 0xFFFFFFFF,0xFFFFFFFF };
+
+bool IsBadTime(const FILETIME& ft)
+{
+  if (ft.dwLowDateTime != BadTime.dwLowDateTime)
+    return false;
+  if (ft.dwHighDateTime != BadTime.dwHighDateTime)
+    return false;
+  return true;
+}
+
+FILETIME GetNow(void)
+{
+  FILETIME ft;
+  ::GetSystemTimeAsFileTime(&ft);
+  return ft;
+}
+
+FILETIME ToLocal(const FILETIME& ft)
+{
+  if (!IsBadTime(ft))
+  {
+    FILETIME lft;
+    if (::FileTimeToLocalFileTime(&ft,&lft))
+      return lft;
+  }
+  return BadTime;
+}
+
+void ToGlkTime(const FILETIME& ft, glktimeval_t* time)
+{
+  if (IsBadTime(ft))
+  {
+    time->high_sec = time->low_sec = 0xFFFFFFFF;
+    return;
+  }
+
+  // Convert to seconds since the start of 1970
+  ULONGLONG ticks = ((ULONGLONG)ft.dwHighDateTime << 32) + ft.dwLowDateTime;
+  LONGLONG secs = (ticks / 10000000) - 11644473600LL;
+
+  time->high_sec = (glsi32)(secs >> 32);
+  time->low_sec = (glsi32)(secs & 0xFFFFFFFF);
+  time->microsec = (glsi32)(ticks % 10000000) / 10;
+}
+
+FILETIME FromGlkTime(const glktimeval_t* time)
+{
+  LONGLONG secs = ((LONGLONG)time->high_sec << 32) + time->low_sec;
+  ULONGLONG ticks = ((secs + 11644473600LL) * 10000000) + (time->microsec * 10);
+
+  FILETIME ft;
+  ft.dwHighDateTime = (DWORD)(ticks >> 32);
+  ft.dwLowDateTime = (DWORD)(ticks & 0xFFFFFFFF);
+  return ft;
+}
+
+glsi32 ToSimpleTime(const FILETIME& ft, glui32 factor)
+{
+  if (IsBadTime(ft))
+    return -1;
+
+  // Convert to seconds since the start of 1970
+  ULONGLONG ticks = ((ULONGLONG)ft.dwHighDateTime << 32)|ft.dwLowDateTime;
+  LONGLONG secs = (ticks / 10000000) - 11644473600LL;
+
+  // Round towards negative infinity
+  if (secs < 0)
+    return (glsi32)(-1 - (((LONGLONG)-1 - secs) / (LONGLONG)factor));
+  return (glsi32)(secs / (LONGLONG)factor);
+}
+
+FILETIME FromSimpleTime(glsi32 time, glui32 factor)
+{
+  LONGLONG secs = time * factor;
+  ULONGLONG ticks = (secs + 11644473600LL) * 10000000;
+
+  FILETIME ft;
+  ft.dwHighDateTime = (DWORD)(ticks >> 32);
+  ft.dwLowDateTime = (DWORD)(ticks & 0xFFFFFFFF);
+  return ft;
+}
+
+void ToGlkDate(const FILETIME& ft, glkdate_t* date)
+{
+  SYSTEMTIME st;
+  ::FileTimeToSystemTime(&ft,&st);
+
+  date->year = st.wYear;
+  date->month = st.wMonth;
+  date->day = st.wDay;
+  date->weekday = st.wDayOfWeek;
+  date->hour = st.wHour;
+  date->minute = st.wMinute;
+  date->second = st.wSecond;
+
+  LONGLONG ticks = ((LONGLONG)ft.dwHighDateTime << 32) + ft.dwLowDateTime;
+  date->microsec = (glsi32)((ticks / 10) % 1000000);
+}
+
+glsi32 NormalizeField(glsi32 value, glsi32 range, glsi32& carry)
+{
+  carry = (value / range);
+  if (value < 0)
+    carry--;
+  return value - (carry*range);
+}
+
+glsi32 DaysInMonth(WORD month, WORD year)
+{
+  switch (month)
+  {
+  case 9: // September
+  case 4: // April
+  case 6: // June
+  case 11: // November
+    return 30;
+  case 1: // January
+  case 3: // March
+  case 5: // May
+  case 7: // July
+  case 8: // August
+  case 10: // October
+  case 12: // December
+    return 31;
+  case 2: // February
+    if (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0))
+      return 29;
+    else
+      return 28;
+  default:
+    return 0;
+  }
+}
+
+glsi32 NextMonth(WORD& month, WORD& year)
+{
+  glsi32 days = DaysInMonth(month,year);
+  month++;
+  if (month == 13)
+  {
+    month = 1;
+    year++;
+  }
+  return days;
+}
+
+glsi32 LastMonth(WORD& month, WORD& year)
+{
+  month--;
+  if (month == 0)
+  {
+    month = 12;
+    year--;
+  }
+  return DaysInMonth(month,year);
+}
+
+FILETIME FromGlkDate(const glkdate_t* date)
+{
+  glsi32 carry = 0;
+  glsi32 micros = NormalizeField(date->microsec,1000000,carry);
+
+  SYSTEMTIME st;
+  ::ZeroMemory(&st,sizeof st);
+  st.wSecond = (WORD)NormalizeField(date->second + carry,60,carry);
+  st.wMinute = (WORD)NormalizeField(date->minute + carry,60,carry);
+  st.wHour = (WORD)NormalizeField(date->hour + carry,24,carry);
+
+  glsi32 days = date->day + carry;
+  st.wMonth = 1 + (WORD)NormalizeField(date->month - 1,12,carry);
+  st.wYear = (WORD)(date->year + carry);
+
+  while (days <= 0)
+    days += LastMonth(st.wMonth,st.wYear);
+  while (days > DaysInMonth(st.wMonth,st.wYear))
+    days -= NextMonth(st.wMonth,st.wYear);
+  st.wDay = (WORD)days;
+
+  FILETIME ft;
+  if (::SystemTimeToFileTime(&st,&ft))
+  {
+    ULONGLONG ticks = ((LONGLONG)ft.dwHighDateTime << 32) + ft.dwLowDateTime;
+    ticks += (micros * 10);
+
+    ft.dwHighDateTime = (DWORD)(ticks >> 32);
+    ft.dwLowDateTime = (DWORD)(ticks & 0xFFFFFFFF);
+    return ft;
+  }
+  return BadTime;
+}
+
+} // unnamed namespace
+
+extern "C" void glk_current_time(glktimeval_t* time)
+{
+  ToGlkTime(GetNow(),time);
+}
+
+extern "C" glsi32 glk_current_simple_time(glui32 factor)
+{
+  if (factor == 0)
+    return 0;
+  return ToSimpleTime(GetNow(),factor);
+}
+
+extern "C" void glk_time_to_date_utc(glktimeval_t* time, glkdate_t* date)
+{
+  ToGlkDate(FromGlkTime(time),date);
+}
+
+extern "C" void glk_time_to_date_local(glktimeval_t* time, glkdate_t* date)
+{
+  ToGlkDate(ToLocal(FromGlkTime(time)),date);
+}
+
+extern "C" void glk_simple_time_to_date_utc(glsi32 time, glui32 factor, glkdate_t* date)
+{
+  ToGlkDate(FromSimpleTime(time,factor),date);
+}
+
+extern "C" void glk_simple_time_to_date_local(glsi32 time, glui32 factor, glkdate_t* date)
+{
+  ToGlkDate(ToLocal(FromSimpleTime(time,factor)),date);
+}
+
+extern "C" void glk_date_to_time_utc(glkdate_t* date, glktimeval_t* time)
+{
+  ToGlkTime(FromGlkDate(date),time);
+}
+
+extern "C" void glk_date_to_time_local(glkdate_t* date, glktimeval_t* time)
+{
+  ToGlkTime(ToLocal(FromGlkDate(date)),time);
+}
+
+extern "C" glsi32 glk_date_to_simple_time_utc(glkdate_t* date, glui32 factor)
+{
+  if (factor == 0)
+    return 0;
+  return ToSimpleTime(FromGlkDate(date),factor);
+}
+
+extern "C" glsi32 glk_date_to_simple_time_local(glkdate_t* date, glui32 factor)
+{
+  if (factor == 0)
+    return 0;
+  return ToSimpleTime(ToLocal(FromGlkDate(date)),factor);
 }
 
 extern "C" void gidispatch_set_object_registry(
