@@ -6,8 +6,8 @@ OPTIONS = -DUSE_INLINE -DUSE_DIRECT_THREADING -DUSE_OWN_POWF
 
 OUTPUT = ../../Build/Interpreters/git
 
-CFLAGS = $(OPTIONS) -w -I ../../../Glk/Include
-CXXFLAGS = -w -I ../../../Glk/Git -I ../../../Glk/Include -I ../../../Glk/GlkDll
+CFLAGS = $(OPTIONS) -w -fno-strict-aliasing -I ../../../Glk/Include
+CXXFLAGS = -w -fno-strict-aliasing -I ../../../Glk/Git -I ../../../Glk/Include -I ../../../Glk/GlkDll
 VPATH = ../Glulxe:../../../Glk/Git:../../../Glk/GlkDll:$(LIBPATH)/zlib
 
 OBJS =	git.o memory.o compiler.o opcodes.o operands.o peephole.o terp.o \

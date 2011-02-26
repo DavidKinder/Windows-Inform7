@@ -1,7 +1,7 @@
 # Makefile for Inform 7 Glulxe, compiled with Cygwin/MinGW GCC 3.4.4
 
 CFLAGS = -O3 -mno-cygwin -mwindows -I ../../../Glk/Include \
-	-DVERIFY_MEMORY_ACCESS -DFLOAT_USE_OWN_POWF
+	-DVERIFY_MEMORY_ACCESS -DFLOAT_USE_OWN_POWF -fno-strict-aliasing
 CXXFLAGS = $(CFLAGS) -I ../../../Glk/GlkDll
 VPATH   = ../../../Glk/Glulxe:../../../Glk/GlkDll
 
