@@ -48,7 +48,10 @@ protected:
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg LRESULT OnSourceRange(WPARAM, LPARAM);
   afx_msg LRESULT OnNextRange(WPARAM, LPARAM);
-  afx_msg void OnSourceAll();
+  afx_msg void OnHeadingsShow();
+  afx_msg void OnHeadingsAll();
+  afx_msg void OnHeadingsPrevious();
+  afx_msg void OnHeadingsNext();
   virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 
 private:

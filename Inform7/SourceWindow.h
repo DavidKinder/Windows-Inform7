@@ -18,6 +18,7 @@ public:
   const SourceHeading& GetHeading(void);
   void GetAllHeadings(CArray<SourceLexer::Heading>& headings);
   void ShowBetween(int startLine, int endLine, const SourceHeading* heading);
+  void GetTears(bool& top, bool& bottom);
 
   void Highlight(int line, COLORREF colour, bool centre);
   void Highlight(CHARRANGE range, bool centre);

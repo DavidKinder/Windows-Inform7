@@ -99,6 +99,19 @@ BEGIN
         MENUITEM "R&eplace...\tCtrl+H",         ID_EDIT_REPLACE
         MENUITEM "&Spelling...\tCtrl+G",        ID_EDIT_SPELLING
         MENUITEM SEPARATOR
+        POPUP "&Headings"
+        BEGIN
+            MENUITEM "Show &Headings",          ID_HEAD_SHOW
+            MENUITEM SEPARATOR
+            MENUITEM "&Current Section Only",   ID_HEAD_CURRENT
+            MENUITEM "&Increase Restriction",   ID_HEAD_INCREASE
+            MENUITEM "&Reduce Restriction",     ID_HEAD_REDUCE
+            MENUITEM "&Entire Source\tF4",      ID_HEAD_ENTIRE
+            MENUITEM SEPARATOR
+            MENUITEM "&Previous Section",       ID_HEAD_PREVIOUS
+            MENUITEM "&Next Section",           ID_HEAD_NEXT
+        END
+        MENUITEM SEPARATOR
         MENUITEM "Prefere&nces...",             ID_APP_PREFS
     END
     POPUP "F&ormat"
@@ -304,7 +317,7 @@ BEGIN
     VK_F4,          ID_WINDOW_TAB_SKEIN,    VIRTKEY, CONTROL, NOINVERT
     VK_F1,          ID_WINDOW_TAB_SOURCE,   VIRTKEY, CONTROL, NOINVERT
     VK_F5,          ID_WINDOW_TAB_TRANSCRIPT, VIRTKEY, CONTROL, NOINVERT
-    VK_F4,          ID_SOURCE_ALL,          VIRTKEY, NOINVERT
+    VK_F4,          ID_HEAD_ENTIRE,         VIRTKEY, NOINVERT
     VK_OEM_6,       ID_FORMAT_SHIFT_RIGHT,  VIRTKEY, ALT, NOINVERT
     VK_OEM_4,       ID_FORMAT_SHIFT_LEFT,   VIRTKEY, ALT, NOINVERT
     VK_OEM_2,       ID_FORMAT_COMMENT,      VIRTKEY, ALT, NOINVERT
@@ -768,6 +781,17 @@ BEGIN
     ID_SKEIN_DELETE_THREAD  "Delete this knot and all knots in the same thread"
     ID_SKEIN_SAVE_TRANSCRIPT 
                             "Save the transcript of play from the start down to this knot"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_HEAD_SHOW            "Show the contents list of the headings in the source"
+    ID_HEAD_CURRENT         "Only show the section containing the cursor in the source"
+    ID_HEAD_INCREASE        "Show the section at the next lower heading level in the source"
+    ID_HEAD_REDUCE          "Show the section at the next higher heading level in the source"
+    ID_HEAD_PREVIOUS        "Show the previous section in the source"
+    ID_HEAD_NEXT            "Show the next section in the source"
+    ID_HEAD_ENTIRE          "Show the entire source"
 END
 
 #endif    // English (U.K.) resources

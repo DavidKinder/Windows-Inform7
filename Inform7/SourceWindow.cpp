@@ -90,6 +90,12 @@ void SourceWindow::ShowBetween(int startLine, int endLine, const SourceHeading* 
   }
 }
 
+void SourceWindow::GetTears(bool& top, bool& bottom)
+{
+  top = m_tearTop;
+  bottom = m_tearBottom;
+}
+
 void SourceWindow::Highlight(int line, COLORREF colour, bool centre)
 {
   // If the line is not currently visible, show the whole of the source

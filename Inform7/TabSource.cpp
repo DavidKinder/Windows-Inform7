@@ -20,7 +20,10 @@ BEGIN_MESSAGE_MAP(TabSource, TabBase)
   ON_WM_SIZE()
   ON_MESSAGE(WM_SOURCERANGE, OnSourceRange)
   ON_MESSAGE(WM_NEXTRANGE, OnNextRange)
-  ON_COMMAND(ID_SOURCE_ALL, OnSourceAll)
+  ON_COMMAND(ID_HEAD_SHOW, OnHeadingsShow)
+  ON_COMMAND(ID_HEAD_ENTIRE, OnHeadingsAll)
+  ON_COMMAND(ID_HEAD_PREVIOUS, OnHeadingsPrevious)
+  ON_COMMAND(ID_HEAD_NEXT, OnHeadingsNext)
 END_MESSAGE_MAP()
 
 TabSource::TabSource() : m_tab(true)
@@ -297,11 +300,33 @@ LRESULT TabSource::OnNextRange(WPARAM wp, LPARAM)
   return 0;
 }
 
-void TabSource::OnSourceAll()
+void TabSource::OnHeadingsShow()
+{
+  if (GetActiveTab() == SrcTab_Source)
+    SetActiveTab(SrcTab_Contents,true);
+}
+
+void TabSource::OnHeadingsAll()
 {
   // Show all source
   m_source.ShowBetween(0,0,NULL);
   SetActiveTab(SrcTab_Source,false);
+}
+
+void TabSource::OnHeadingsPrevious()
+{
+  bool top, bottom;
+  m_source.GetTears(top,bottom);
+  if (top)
+    SendMessage(WM_NEXTRANGE,1);
+}
+
+void TabSource::OnHeadingsNext()
+{
+  bool top, bottom;
+  m_source.GetTears(top,bottom);
+  if (bottom)
+    SendMessage(WM_NEXTRANGE,0);
 }
 
 void TabSource::OpenProject(const char* path, bool primary)
