@@ -21,6 +21,9 @@ BEGIN_MESSAGE_MAP(TabSource, TabBase)
   ON_MESSAGE(WM_SOURCERANGE, OnSourceRange)
   ON_MESSAGE(WM_NEXTRANGE, OnNextRange)
   ON_COMMAND(ID_HEAD_SHOW, OnHeadingsShow)
+  ON_COMMAND(ID_HEAD_CURRENT, OnHeadingsCurrent)
+  ON_COMMAND(ID_HEAD_INCREASE, OnHeadingsIncrease)
+  ON_COMMAND(ID_HEAD_REDUCE, OnHeadingsReduce)
   ON_COMMAND(ID_HEAD_ENTIRE, OnHeadingsAll)
   ON_COMMAND(ID_HEAD_PREVIOUS, OnHeadingsPrevious)
   ON_COMMAND(ID_HEAD_NEXT, OnHeadingsNext)
@@ -213,8 +216,123 @@ LRESULT TabSource::OnSourceRange(WPARAM wp, LPARAM)
   return 0;
 }
 
-namespace {
-int FindHeading(const CArray<SourceLexer::Heading>& headings, const CStringW& find, int i)
+LRESULT TabSource::OnNextRange(WPARAM wp, LPARAM)
+{
+  // Get a list of headings
+  CArray<SourceLexer::Heading> headings;
+  m_source.GetAllHeadings(headings);
+
+  // Find the currently selected heading
+  int idx = 0;
+  const SourceHeading& heading = m_source.GetHeading();
+  for (int i = (int)heading.GetSize()-1; i >= 0; i--)
+  {
+    idx = FindHeading(headings,heading.GetAt(i),idx);
+    if (idx < 0)
+      break;
+  }
+
+  // Find the next (or previous) heading at the same or higher level
+  if (idx > 0)
+    idx = FindNextHeading(headings,(wp == 0),idx);
+
+  // Show the new heading
+  ShowHeading(headings,idx);
+  return 0;
+}
+
+void TabSource::OnHeadingsShow()
+{
+  if (GetActiveTab() == SrcTab_Source)
+    SetActiveTab(SrcTab_Contents,true);
+}
+
+void TabSource::OnHeadingsCurrent()
+{
+  CArray<SourceLexer::Heading> headings;
+  m_source.GetAllHeadings(headings);
+
+  int idx = FindCurrentHeading(headings);
+  if (idx >= 0)
+    ShowHeading(headings,idx);
+}
+
+void TabSource::OnHeadingsIncrease()
+{
+  CArray<SourceLexer::Heading> headings;
+  m_source.GetAllHeadings(headings);
+
+  int idx = FindCurrentHeading(headings);
+  if (idx < 0)
+    return;
+
+  // Get the indexes of the headings leading to the current one
+  CArray<int,int> indexes;
+  SourceLexer::HeadingLevel level = SourceLexer::Title;
+  for (int i = idx; i >= 0; i--)
+  {
+    const SourceLexer::Heading& head = headings.GetAt(i);
+    if ((i == idx) || (head.level < level))
+    {
+      level = head.level;
+      if (head.level > SourceLexer::Title)
+        indexes.InsertAt(0,i);
+    }
+  }
+
+  // Use the index of the heading one deeper that that now in use
+  const SourceHeading& heading = m_source.GetHeading();
+  if (heading.GetSize() < indexes.GetSize())
+  {
+    idx = indexes.GetAt(heading.GetSize());
+    ShowHeading(headings,idx);
+  }
+}
+
+void TabSource::OnHeadingsReduce()
+{
+  CArray<SourceLexer::Heading> headings;
+  m_source.GetAllHeadings(headings);
+
+  // Find the currently selected heading, but ignore the final part
+  // of it (so that the restriction is reduced)
+  int idx = 0;
+  const SourceHeading& heading = m_source.GetHeading();
+  for (int i = (int)heading.GetSize()-1; i > 0; i--)
+  {
+    idx = FindHeading(headings,heading.GetAt(i),idx);
+    if (idx < 0)
+      break;
+  }
+
+  // Show the new heading
+  ShowHeading(headings,idx);
+}
+
+void TabSource::OnHeadingsAll()
+{
+  // Show all source
+  m_source.ShowBetween(0,0,NULL);
+  SetActiveTab(SrcTab_Source,false);
+}
+
+void TabSource::OnHeadingsPrevious()
+{
+  bool top, bottom;
+  m_source.GetTears(top,bottom);
+  if (top)
+    SendMessage(WM_NEXTRANGE,1);
+}
+
+void TabSource::OnHeadingsNext()
+{
+  bool top, bottom;
+  m_source.GetTears(top,bottom);
+  if (bottom)
+    SendMessage(WM_NEXTRANGE,0);
+}
+
+int TabSource::FindHeading(const CArray<SourceLexer::Heading>& headings, const CStringW& find, int i)
 {
   while (i < headings.GetSize())
   {
@@ -225,7 +343,7 @@ int FindHeading(const CArray<SourceLexer::Heading>& headings, const CStringW& fi
   return -1;
 }
 
-int FindNext(const CArray<SourceLexer::Heading>& headings, bool next, int i)
+int TabSource::FindNextHeading(const CArray<SourceLexer::Heading>& headings, bool next, int i)
 {
   SourceLexer::HeadingLevel level = headings.GetAt(i).level;
   if (next)
@@ -251,28 +369,28 @@ int FindNext(const CArray<SourceLexer::Heading>& headings, bool next, int i)
   return -1;
 }
 
-} // unnamed namespace
-
-LRESULT TabSource::OnNextRange(WPARAM wp, LPARAM)
+int TabSource::FindCurrentHeading(const CArray<SourceLexer::Heading>& headings)
 {
-  // Get a list of headings
-  CArray<SourceLexer::Heading> headings;
-  m_source.GetAllHeadings(headings);
-
-  // Find the currently selected heading
-  int idx = 0;
-  const SourceHeading& heading = m_source.GetHeading();
-  for (int i = (int)heading.GetSize()-1; i >= 0; i--)
+  // Find the heading that the caret is in
+  int line = m_source.GetCurrentLine();
+  int best = -1, bestLines = 0;
+  for (int i = 0; i < headings.GetSize(); i++)
   {
-    idx = FindHeading(headings,heading.GetAt(i),idx);
-    if (idx < 0)
-      break;
+    const SourceLexer::Heading& heading = headings.GetAt(i);
+    if (line >= heading.line)
+    {
+      if ((best == -1) || ((line - heading.line) < bestLines))
+      {
+        best = i;
+        bestLines = line - heading.line;
+      }
+    }
   }
+  return best;
+}
 
-  // Find the next (or previous) heading at the same or higher level
-  if (idx > 0)
-    idx = FindNext(headings,(wp == 0),idx);
-
+void TabSource::ShowHeading(const CArray<SourceLexer::Heading>& headings, int idx)
+{
   // If no next heading, use the entire source
   if (idx < 0)
     idx = 0;
@@ -290,43 +408,13 @@ LRESULT TabSource::OnNextRange(WPARAM wp, LPARAM)
         newHeading.Add(CStringW(head.name));
     }
   }
-  int endIdx = FindNext(headings,true,idx);
+  int endIdx = FindNextHeading(headings,true,idx);
 
   // Select the new heading
   int startLine = (idx > 0) ? headings.GetAt(idx).line : 0;
   int endLine = (endIdx > 0) ? headings.GetAt(endIdx).line-1 : 0;
   m_source.ShowBetween(startLine,endLine,&newHeading);
   SetActiveTab(SrcTab_Source,false);
-  return 0;
-}
-
-void TabSource::OnHeadingsShow()
-{
-  if (GetActiveTab() == SrcTab_Source)
-    SetActiveTab(SrcTab_Contents,true);
-}
-
-void TabSource::OnHeadingsAll()
-{
-  // Show all source
-  m_source.ShowBetween(0,0,NULL);
-  SetActiveTab(SrcTab_Source,false);
-}
-
-void TabSource::OnHeadingsPrevious()
-{
-  bool top, bottom;
-  m_source.GetTears(top,bottom);
-  if (top)
-    SendMessage(WM_NEXTRANGE,1);
-}
-
-void TabSource::OnHeadingsNext()
-{
-  bool top, bottom;
-  m_source.GetTears(top,bottom);
-  if (bottom)
-    SendMessage(WM_NEXTRANGE,0);
 }
 
 void TabSource::OpenProject(const char* path, bool primary)

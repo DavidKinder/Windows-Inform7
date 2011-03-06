@@ -16,7 +16,7 @@ public:
 
   ContentsPane();
 
-  void SetHeadings(const CArray<Item>& headings, const SourceHeading& selected);
+  Level SetHeadings(const CArray<Item>& headings, const SourceHeading& selected);
   void UpdateSmallest(Level smallest);
   void PrefsChanged(void);
 
@@ -68,7 +68,7 @@ private:
   CWnd* GetParentTab(CWnd* wnd = NULL);
   void SetScrollSize(void);
   CDibSection* GetCircle(COLORREF back, int index);
-  void SetSelectedNode(const SourceHeading& selected);
+  Node* SetSelectedNode(const SourceHeading& selected);
   void CreateFonts(void);
 
   CArray<Item> m_items;
@@ -85,7 +85,8 @@ class ContentsWindow : public CWnd
 public:
   ContentsWindow();
 
-  void SetHeadings(const CArray<SourceLexer::Heading>& headings, const SourceHeading& selected);
+  void SetHeadings(
+    const CArray<SourceLexer::Heading>& headings, const SourceHeading& selected);
   void SetFocus(void);
 
   void SlideIn(CWnd* source);

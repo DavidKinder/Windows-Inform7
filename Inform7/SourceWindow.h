@@ -22,6 +22,7 @@ public:
 
   void Highlight(int line, COLORREF colour, bool centre);
   void Highlight(CHARRANGE range, bool centre);
+  int GetCurrentLine(void);
 
 protected:
   DECLARE_MESSAGE_MAP()

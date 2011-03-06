@@ -116,6 +116,12 @@ void SourceWindow::Highlight(CHARRANGE range, bool centre)
   m_edit.Highlight(range,centre);
 }
 
+int SourceWindow::GetCurrentLine(void)
+{
+  CHARRANGE lines = m_edit.GetRangeLines(m_edit.GetSelect());
+  return lines.cpMin;
+}
+
 BOOL SourceWindow::OnEraseBkgnd(CDC* pDC)
 {
   return TRUE;

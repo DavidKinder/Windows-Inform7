@@ -24,7 +24,8 @@ ContentsPane::ContentsPane() : m_smallest(SourceLexer::Section)
 {
 }
 
-void ContentsPane::SetHeadings(const CArray<SourceLexer::Heading>& headings, const SourceHeading& selected)
+ContentsPane::Level ContentsPane::SetHeadings(
+  const CArray<SourceLexer::Heading>& headings, const SourceHeading& selected)
 {
   // Use the new array of items
   m_items.RemoveAll();
@@ -35,9 +36,11 @@ void ContentsPane::SetHeadings(const CArray<SourceLexer::Heading>& headings, con
   BuildTree(m_tree.get());
 
   // Mark the selected node from the previous selection, if any
-  SetSelectedNode(selected);
-
+  Node* selNode = SetSelectedNode(selected);
   SetScrollSize();
+
+  // Return the level of the selected node, if any
+  return (selNode != NULL) ? selNode->GetLevel() : SourceLexer::Root;
 }
 
 void ContentsPane::UpdateSmallest(Level smallest)
@@ -473,23 +476,23 @@ CDibSection* ContentsPane::GetCircle(COLORREF back, int index)
   return circleDib;
 }
 
-void ContentsPane::SetSelectedNode(const SourceHeading& selected)
+ContentsPane::Node* ContentsPane::SetSelectedNode(const SourceHeading& selected)
 {
   if (selected.GetSize() == 0)
-    return;
+    return NULL;
 
   // Find the node to search under
   Node* node = m_tree.get();
   if (node->children.GetCount() != 1)
   {
     ASSERT(FALSE);
-    return;
+    return NULL;
   }
   node = node->children.GetAt(0);
   if (node->GetLevel() != SourceLexer::Title)
   {
     ASSERT(FALSE);
-    return;
+    return NULL;
   }
 
   int selIndex = (int)selected.GetSize()-1;
@@ -502,16 +505,17 @@ void ContentsPane::SetSelectedNode(const SourceHeading& selected)
         newNode = node->children.GetAt(i);
     }
     if (newNode == NULL)
-      return;
+      return NULL;
 
     if (selIndex == 0)
     {
       newNode->SelectNode(Node::NodeSelected);
-      return;
+      return newNode;
     }
     selIndex--;
     node = newNode;
   }
+  return NULL;
 }
 
 void ContentsPane::CreateFonts(void)
@@ -629,9 +633,37 @@ ContentsWindow::ContentsWindow()
   m_animateStep = 0;
 }
 
-void ContentsWindow::SetHeadings(const CArray<SourceLexer::Heading>& headings, const SourceHeading& selected)
+void ContentsWindow::SetHeadings(
+  const CArray<SourceLexer::Heading>& headings, const SourceHeading& selected)
 {
-  m_contents.SetHeadings(headings,selected);
+  ContentsPane::Level level = m_contents.SetHeadings(headings,selected);
+
+  int pos = -1;
+  switch (level)
+  {
+  case SourceLexer::Volume:
+    pos = 0;
+    break;
+  case SourceLexer::Book:
+    pos = 1;
+    break;
+  case SourceLexer::Part:
+    pos = 2;
+    break;
+  case SourceLexer::Chapter:
+    pos = 3;
+    break;
+  case SourceLexer::Section:
+    pos = 4;
+    break;
+  }
+
+  // Make sure that the level of the selected node is shown
+  if ((pos >= 0) && (m_depth.GetPos() < pos))
+  {
+    m_depth.SetPos(pos);
+    UpdateSmallest();
+  }
 }
 
 void ContentsWindow::SetFocus(void)

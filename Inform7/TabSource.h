@@ -49,6 +49,9 @@ protected:
   afx_msg LRESULT OnSourceRange(WPARAM, LPARAM);
   afx_msg LRESULT OnNextRange(WPARAM, LPARAM);
   afx_msg void OnHeadingsShow();
+  afx_msg void OnHeadingsCurrent();
+  afx_msg void OnHeadingsIncrease();
+  afx_msg void OnHeadingsReduce();
   afx_msg void OnHeadingsAll();
   afx_msg void OnHeadingsPrevious();
   afx_msg void OnHeadingsNext();
@@ -65,6 +68,11 @@ private:
 
   SourceTabs GetActiveTab(void);
   void SetActiveTab(SourceTabs tab, bool focus);
+
+  int FindHeading(const CArray<SourceLexer::Heading>& headings, const CStringW& find, int i);
+  int FindNextHeading(const CArray<SourceLexer::Heading>& headings, bool next, int i);
+  int FindCurrentHeading(const CArray<SourceLexer::Heading>& headings);
+  void ShowHeading(const CArray<SourceLexer::Heading>& headings, int idx);
 
   FlatTab m_tab;
 
