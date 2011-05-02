@@ -12,12 +12,12 @@ OBJS =	accel.o exec.o files.o float.o funcs.o gestalt.o glkop.o heap.o main.o \
 	gi_blorb.o gi_dispa.o \
 	I7Glk.o I7GlkBlankWindow.o I7GlkChannel.o I7GlkFile.o I7GlkGfxWindow.o \
 	I7GlkGridWindow.o I7GlkPairWindow.o I7GlkStream.o I7GlkTextWindow.o \
-	I7GlkWindow.o Startup.o GlkUnicode.o
+	I7GlkWindow.o Startup.o GlkTime.o GlkUnicode.o
 
 all: glulxe
 
 glulxe: $(OBJS)
-	$(CXX) -mno-cygwin -mwindows -s -o $(OUTPUT) $(OBJS)
+	$(CXX) -mno-cygwin -mwindows -s -o $(OUTPUT) $(OBJS) -lwinmm
 
 clean:
 	rm -f *.o *.a

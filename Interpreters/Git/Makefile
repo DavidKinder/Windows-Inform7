@@ -3,6 +3,7 @@
 CC = gcc-2 -O3 -mwindows
 CXX= g++-2 -O3 -mwindows
 OPTIONS = -DUSE_INLINE -DUSE_DIRECT_THREADING -DUSE_OWN_POWF
+LIBS = -lwinmm
 
 OUTPUT = ../../Build/Interpreters/git
 
@@ -15,7 +16,7 @@ OBJS =	git.o memory.o compiler.o opcodes.o operands.o peephole.o terp.o \
 	gi_blorb.o gi_dispa.o \
 	I7Glk.o I7GlkBlankWindow.o I7GlkChannel.o I7GlkFile.o I7GlkGfxWindow.o \
 	I7GlkGridWindow.o I7GlkPairWindow.o I7GlkStream.o I7GlkTextWindow.o \
-	I7GlkWindow.o Startup.o GlkUnicode.o
+	I7GlkWindow.o Startup.o GlkTime.o GlkUnicode.o
 
 git: $(OBJS)
 	$(CXX) -s -o $(OUTPUT) $(OBJS) $(LIBS)
