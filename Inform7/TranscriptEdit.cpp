@@ -50,6 +50,8 @@ void TranscriptEdit::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
   case VK_RETURN:
     if ((::GetKeyState(VK_CONTROL) & 0x8000))
       EndEdit();
+    else if ((::GetKeyState(VK_SHIFT) & 0x8000))
+      EndEdit();
     else
       RichEdit::OnKeyDown(nChar,nRepCnt,nFlags);
     break;

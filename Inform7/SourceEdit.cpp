@@ -434,9 +434,8 @@ void SourceEdit::OnConvertPaste(NMHDR* hdr, LRESULT* res)
   else
     data.AttachClipboard();
 
-  // If the pasted text came from HTML, try to interpret tables
-  UINT CF_HTML = ::RegisterClipboardFormat("HTML Format");
-  if (data.IsDataAvailable(CF_HTML))
+  // Try to interpret tables and leading white space
+  if (data.IsDataAvailable(CF_UNICODETEXT))
   {
     CStringW theText(cp->utext,cp->ulen);
     CStringW newText, line;
@@ -458,11 +457,11 @@ void SourceEdit::OnConvertPaste(NMHDR* hdr, LRESULT* res)
         if (tokens.GetSize() > 1)
         {
           line.Empty();
-          for (int i = 0; i < tokens.GetSize(); i++)
+          for (int j = 0; j < tokens.GetSize(); j++)
           {
-            if (i > 0)
+            if (j > 0)
               line.AppendChar(L'\t');
-            line.Append(tokens.GetAt(i));
+            line.Append(tokens.GetAt(j));
           }
         }
         else
@@ -476,20 +475,30 @@ void SourceEdit::OnConvertPaste(NMHDR* hdr, LRESULT* res)
           inTable = true;
           foundTable = true;
         }
+
+        // Replace any leading blocks of 4 spaces
+        int j = 0;
+        while (j >= 0)
+        {
+          if (line.Mid(j,4).Compare(L"    ") == 0)
+          {
+            line.Delete(j,3);
+            line.SetAt(j,L'\t');
+            j++;
+          }
+          else
+            j = -1;
+        }
       }
       if (!newText.IsEmpty())
         newText.AppendChar(L'\n');
       newText.Append(line);
     }
 
-    // Only change the text to be pasted if a table was found
-    if (foundTable)
-    {
-      CString newTextUtf = TextFormat::UnicodeToUTF8(newText);
-			cp->text = new char[newTextUtf.GetLength() + 1];
-      strcpy(cp->text,newTextUtf);
-      *res = 1;
-    }
+    CString newTextUtf = TextFormat::UnicodeToUTF8(newText);
+		cp->text = new char[newTextUtf.GetLength() + 1];
+    strcpy(cp->text,newTextUtf);
+    *res = 1;
   }
 }
 
