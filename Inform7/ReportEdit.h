@@ -19,6 +19,8 @@ public:
 protected:
   DECLARE_MESSAGE_MAP()
 
+  afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+
   afx_msg void OnUpdateNeedSel(CCmdUI* pCmdUI);
   afx_msg void OnEditCopy();
   afx_msg void OnEditSelectAll();

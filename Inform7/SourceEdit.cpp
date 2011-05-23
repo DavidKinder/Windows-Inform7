@@ -20,6 +20,7 @@ BEGIN_MESSAGE_MAP(SourceEdit, CWnd)
   ON_WM_DESTROY()
   ON_WM_CONTEXTMENU()
   ON_WM_CHAR()
+  ON_WM_MOUSEWHEEL()
 
   ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateEditUndo)
   ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
@@ -121,6 +122,11 @@ BOOL SourceEdit::Create(CWnd* parent, UINT id)
   CallEdit(SCI_ASSIGNCMDKEY,SCK_END+(SCMOD_ALT<<16),SCI_LINEEND);
   CallEdit(SCI_ASSIGNCMDKEY,SCK_END+((SCMOD_ALT|SCMOD_SHIFT)<<16),SCI_LINEENDEXTEND);
 
+  // Remove unwanted key bindings
+  CallEdit(SCI_CLEARCMDKEY,SCK_ADD+(SCMOD_CTRL<<16));
+  CallEdit(SCI_CLEARCMDKEY,SCK_SUBTRACT+(SCMOD_CTRL<<16));
+  CallEdit(SCI_CLEARCMDKEY,SCK_DIVIDE+(SCMOD_CTRL<<16));
+
   return TRUE;
 }
 
@@ -151,6 +157,14 @@ void SourceEdit::OnContextMenu(CWnd* pWnd, CPoint point)
   menu.AppendMenu(MF_SEPARATOR,0,(LPCSTR)NULL);
   menu.AppendMenu(MF_STRING,ID_EDIT_SELECT_ALL,"Select &All");
   menu.TrackPopupMenu(TPM_LEFTALIGN,point.x,point.y,GetParentFrame(),NULL);
+}
+
+BOOL SourceEdit::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+  // Disallow zooming
+  if (nFlags & MK_CONTROL)
+    return TRUE;
+  return CWnd::OnMouseWheel(nFlags,zDelta,pt);
 }
 
 void SourceEdit::OnUpdateEditUndo(CCmdUI *pCmdUI)

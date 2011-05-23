@@ -50,7 +50,7 @@ protected:
   afx_msg void OnEditSelectAll();
 
   bool Setup(void);
-  bool RejectKey(MSG* msg);
+  bool RejectMsg(MSG* msg);
 
   CComQIPtr<ITextDocument> m_textDoc;
 };

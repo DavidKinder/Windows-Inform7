@@ -235,31 +235,43 @@ void RichEdit::FontChanged(void)
   SetDefaultCharFormat(format);
 }
 
-bool RichEdit::RejectKey(MSG* msg)
+bool RichEdit::RejectMsg(MSG* msg)
 {
-  if ((msg->hwnd == GetSafeHwnd()) && (msg->message == WM_KEYDOWN))
+  if (msg->hwnd == GetSafeHwnd())
   {
-    // Reject inappropriate editing hotkeys
-    bool alt = ((::GetKeyState(VK_MENU) & 0x8000) != 0);
-    bool ctrl = ((::GetKeyState(VK_CONTROL) & 0x8000) != 0);
-    bool shift = ((::GetKeyState(VK_SHIFT) & 0x8000) != 0);
-    if (ctrl && !alt)
+    switch (msg->message)
     {
-      switch (msg->wParam)
+    case WM_KEYDOWN:
       {
-      case 'E': // Center alignment
-      case 'J': // Justify alignment
-      case 'R': // Right alignment
-      case 'L': // Left alignment
-      case '1': // Line spacing = 1 line
-      case '2': // Line spacing = 2 lines
-      case '5': // Line spacing = 1.5 lines
-      case VK_OEM_PLUS: // Superscript and subscript
-        return true;
-      case 'A': // If shifted, all capitals
-      case VK_OEM_7: // If shifted, smart quotes
-        return shift;
+        // Reject inappropriate editing hotkeys
+        bool alt = ((::GetKeyState(VK_MENU) & 0x8000) != 0);
+        bool ctrl = ((::GetKeyState(VK_CONTROL) & 0x8000) != 0);
+        bool shift = ((::GetKeyState(VK_SHIFT) & 0x8000) != 0);
+        if (ctrl && !alt)
+        {
+          switch (msg->wParam)
+          {
+          case 'E': // Center alignment
+          case 'J': // Justify alignment
+          case 'R': // Right alignment
+          case 'L': // Left alignment
+          case '1': // Line spacing = 1 line
+          case '2': // Line spacing = 2 lines
+          case '5': // Line spacing = 1.5 lines
+          case VK_OEM_PLUS: // Superscript and subscript
+            return true;
+          case 'A': // If shifted, all capitals
+          case VK_OEM_7: // If shifted, smart quotes
+            return shift;
+          }
+        }
       }
+      break;
+    case WM_MOUSEWHEEL:
+      // Reject mouse wheel zooming
+      if (GET_KEYSTATE_WPARAM(msg->wParam) & MK_CONTROL)
+        return true;
+      break;
     }
   }
   return false;

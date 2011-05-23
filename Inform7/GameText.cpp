@@ -337,7 +337,7 @@ BOOL GameText::PreCreateWindow(CREATESTRUCT& cs)
 
 BOOL GameText::PreTranslateMessage(MSG* pMsg)
 {
-  if (RejectKey(pMsg))
+  if (RejectMsg(pMsg))
     return TRUE;
 
   if ((pMsg->hwnd == GetSafeHwnd()) && (pMsg->message == WM_KEYDOWN))

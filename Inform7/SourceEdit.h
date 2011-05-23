@@ -22,6 +22,7 @@ protected:
   afx_msg void OnDestroy();
   afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
   afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+  afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 
   afx_msg void OnUpdateEditUndo(CCmdUI *pCmdUI);
   afx_msg void OnEditUndo();

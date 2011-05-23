@@ -9,7 +9,7 @@
 IMPLEMENT_DYNAMIC(ReportEdit, CWnd)
 
 BEGIN_MESSAGE_MAP(ReportEdit, CWnd)
-  ON_WM_DESTROY()
+  ON_WM_MOUSEWHEEL()
   ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateNeedSel)
   ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
   ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
@@ -18,6 +18,13 @@ END_MESSAGE_MAP()
 ReportEdit::ReportEdit()
 {
   m_fixed = false;
+}
+
+BOOL ReportEdit::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+  if (nFlags & MK_CONTROL)
+    return TRUE;
+  return CWnd::OnMouseWheel(nFlags,zDelta,pt);
 }
 
 BOOL ReportEdit::Create(CWnd* parent, UINT id)
@@ -38,6 +45,9 @@ BOOL ReportEdit::Create(CWnd* parent, UINT id)
   CallEdit(SCI_SETMARGINLEFT,0,0);
   CallEdit(SCI_SETMARGINRIGHT,0,0);
   CallEdit(SCI_SETCARETSTYLE,CARETSTYLE_INVISIBLE,0);
+  CallEdit(SCI_CLEARCMDKEY,SCK_ADD+(SCMOD_CTRL<<16));
+  CallEdit(SCI_CLEARCMDKEY,SCK_SUBTRACT+(SCMOD_CTRL<<16));
+  CallEdit(SCI_CLEARCMDKEY,SCK_DIVIDE+(SCMOD_CTRL<<16));
   SetFonts();
 
   return TRUE;

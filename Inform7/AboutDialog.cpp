@@ -323,7 +323,7 @@ void AboutCreditsEdit::OnSetFocus(CWnd* pOldWnd)
 
 BOOL AboutCreditsEdit::PreTranslateMessage(MSG* pMsg)
 {
-  if (RejectKey(pMsg))
+  if (RejectMsg(pMsg))
     return TRUE;
   return RichEdit::PreTranslateMessage(pMsg);
 }
