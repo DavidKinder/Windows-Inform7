@@ -54,9 +54,95 @@ void I7GlkStream::getResults(stream_result_t *result)
   }
 }
 
+glui32 I7GlkStream::getLine(char *buf, glui32 len)
+{
+  bool get = true;
+  glui32 i = 0;
+
+  while (get && (i < len-1))
+  {
+    glsi32 c = getChar();
+    if (c == -1)
+      get = false;
+    else
+    {
+      if (c >= 0 && c <= 255)
+        buf[i++] = (char)c;
+      else
+        buf[i++] = '?';
+
+      if (c == '\n')
+        get = false;
+    }
+  }
+
+  buf[i++] = '\0';
+  return i-1;
+}
+
+glui32 I7GlkStream::getBuffer(char *buf, glui32 len)
+{
+  bool get = true;
+  int i = 0;
+
+  while (get && (i < len))
+  {
+    glsi32 c = getChar();
+    if (c == -1)
+      get = false;
+    else
+    {
+      if (c >= 0 && c <= 255)
+        buf[i++] = (char)c;
+      else
+        buf[i++] = '?';
+    }
+  }
+  return i;
+}
+
+glui32 I7GlkStream::getLine(glui32 *buf, glui32 len)
+{
+  bool get = true;
+  glui32 i = 0;
+
+  while (get && (i < len-1))
+  {
+    glsi32 c = getChar();
+    if (c == -1)
+      get = false;
+    else
+    {
+      buf[i++] = (glui32)c;
+      if (c == '\n')
+        get = false;
+    }
+  }
+
+  buf[i++] = '\0';
+  return i-1;
+}
+
+glui32 I7GlkStream::getBuffer(glui32 *buf, glui32 len)
+{
+  bool get = true;
+  int i = 0;
+
+  while (get && (i < len))
+  {
+    glsi32 c = getChar();
+    if (c == -1)
+      get = false;
+    else
+      buf[i++] = (glui32)c;
+  }
+  return i;
+}
+
 I7GlkFileStream::I7GlkFileStream(glui32 rock) : I7GlkStream(rock)
 {
   m_file = NULL;
+  m_lastOper = 0;
 }
 
 I7GlkFileStream::~I7GlkFileStream()
@@ -73,6 +159,7 @@ void I7GlkFileStream::setPosition(glsi32 pos, glui32 seekmode)
   else if (seekmode == seekmode_End)
     origin = SEEK_END;
   fseek(m_file,pos,origin);
+  m_lastOper = 0;
 }
 
 glui32 I7GlkFileStream::getPosition(void)
@@ -82,40 +169,24 @@ glui32 I7GlkFileStream::getPosition(void)
 
 glsi32 I7GlkFileStream::getChar(void)
 {
+  setNextOperation(filemode_Read);
   int c = fgetc(m_file);
   if (c == EOF)
     return -1;
-
   m_read++;
   return c;
 }
 
-glui32 I7GlkFileStream::getLine(char *buf, glui32 len)
-{
-  if (fgets(buf,len,m_file) != NULL)
-  {
-    int read = strlen(buf);
-    m_read += read;
-    return read;
-  }
-  return 0;
-}
-
-glui32 I7GlkFileStream::getBuffer(char *buf, glui32 len)
-{
-  int read = fread(buf,1,len,m_file);
-  m_read += read;
-  return read;
-}
-
 void I7GlkFileStream::putStr(char* s, glui32 len)
 {
+  setNextOperation(filemode_Write);
   m_write += fwrite(s,1,len,m_file);
   fflush(m_file);
 }
 
 void I7GlkFileStream::putStr(glui32* s, glui32 len)
 {
+  setNextOperation(filemode_Write);
   for (glui32 i = 0; i < len; i++)
   {
     if (fputc((s[i] > 255) ? '?' : s[i],m_file) != EOF)
@@ -160,6 +231,182 @@ bool I7GlkFileStream::open(I7GlkFile* file, glui32 mode)
       fseek(m_file,0,SEEK_END);
 
   return (m_file != NULL) ? true : false;
+}
+
+void I7GlkFileStream::setNextOperation(glui32 oper)
+{
+  /* If switching between reading and writing, force an fseek() */
+  if ((m_lastOper != 0) && (m_lastOper != oper))
+  {
+    long pos = ftell(m_file);
+    fseek(m_file,pos,SEEK_SET);
+  }
+  m_lastOper = oper;
+}
+
+I7GlkUniFileStream::I7GlkUniFileStream(glui32 rock) : I7GlkStream(rock)
+{
+  m_text = false;
+  m_file = NULL;
+  m_lastOper = 0;
+}
+
+I7GlkUniFileStream::~I7GlkUniFileStream()
+{
+  if (m_file != NULL)
+    fclose(m_file);
+}
+
+void I7GlkUniFileStream::setPosition(glsi32 pos, glui32 seekmode)
+{
+  int origin = SEEK_SET;
+  if (seekmode == seekmode_Current)
+    origin = SEEK_CUR;
+  else if (seekmode == seekmode_End)
+    origin = SEEK_END;
+
+  if (m_text)
+    fseek(m_file,pos*2,origin);
+  else
+    fseek(m_file,pos*4,origin);
+  m_lastOper = 0;
+}
+
+glui32 I7GlkUniFileStream::getPosition(void)
+{
+  if (m_text)
+    return (glui32)ftell(m_file)/2;
+  else
+    return (glui32)ftell(m_file)/4;
+}
+
+glsi32 I7GlkUniFileStream::getChar(void)
+{
+  setNextOperation(filemode_Read);
+  glsi32 c = -1;
+  if (m_text)
+  {
+    glui32 uc = 0;
+    int c1 = fgetc(m_file);
+    if (c1 != EOF)
+    {
+      uc |= (c1 & 0xFF);
+      c1 = fgetc(m_file);
+      if (c1 != EOF)
+      {
+        uc |= ((c1 & 0xFF) << 8);
+        c = uc;
+      }
+    }
+  }
+  else
+  {
+    glui32 uc = 0;
+    for (int i = 0; i < 4; i++)
+    {
+      uc <<= 8;
+      int c1 = fgetc(m_file);
+      if (c1 == EOF)
+        break;
+      uc |= (c1 & 0xFF);
+      if (i == 3)
+        c = uc;
+    }
+  }
+
+  if (c != -1)
+    m_read++;
+  return c;
+}
+
+void I7GlkUniFileStream::putStr(char* s, glui32 len)
+{
+  setNextOperation(filemode_Write);
+  for (glui32 i = 0; i < len; i++)
+    addChar((unsigned char)s[i]);
+  fflush(m_file);
+}
+
+void I7GlkUniFileStream::putStr(glui32* s, glui32 len)
+{
+  setNextOperation(filemode_Write);
+  for (glui32 i = 0; i < len; i++)
+    addChar(s[i]);
+  fflush(m_file);
+}
+
+bool I7GlkUniFileStream::open(I7GlkFile* file, glui32 mode)
+{
+  if ((mode == filemode_ReadWrite) || (mode == filemode_WriteAppend))
+  {
+    FILE* f = fopen(file->fileName(),"ab");
+    if (f != NULL)
+      fclose(f);
+  }
+
+  std::string modeStr;
+  switch (mode)
+  {
+  case filemode_Write:
+    modeStr = "w";
+    break;
+  case filemode_Read:
+    modeStr = "r";
+    break;
+  case filemode_ReadWrite:
+    modeStr = "r+";
+    break;
+  case filemode_WriteAppend:
+    modeStr = "r+";
+    break;
+  }
+
+  if (file->isText())
+  {
+    m_text = true;
+    modeStr += "t";
+  }
+  else
+  {
+    m_text = false;
+    modeStr += "b";
+  }
+
+  m_file = fopen(file->fileName(),modeStr.c_str());
+  if ((m_file != NULL) && (mode == filemode_WriteAppend))
+      fseek(m_file,0,SEEK_END);
+
+  return (m_file != NULL) ? true : false;
+}
+
+void I7GlkUniFileStream::addChar(glui32 c)
+{
+  if (m_text)
+  {
+    if (c > 0xFFFF)
+      c = L'?';
+    fputc(c & 0xFF,m_file);
+    fputc((c>>8) & 0xFF,m_file);
+  }
+  else
+  {
+    fputc((c>>24) & 0xFF,m_file);
+    fputc((c>>16) & 0xFF,m_file);
+    fputc((c>>8) & 0xFF,m_file);
+    fputc(c & 0xFF,m_file);
+  }
+  m_write++;
+}
+
+void I7GlkUniFileStream::setNextOperation(glui32 oper)
+{
+  /* If switching between reading and writing, force an fseek() */
+  if ((m_lastOper != 0) && (m_lastOper != oper))
+  {
+    long pos = ftell(m_file);
+    fseek(m_file,pos,SEEK_SET);
+  }
+  m_lastOper = oper;
 }
 
 I7GlkMemoryStream::I7GlkMemoryStream(char* buf, glui32 len, glui32 rock) : I7GlkStream(rock)
@@ -209,62 +456,6 @@ glsi32 I7GlkMemoryStream::getChar(void)
     return (unsigned char)m_buffer[m_position++];
   }
   return -1;
-}
-
-glui32 I7GlkMemoryStream::getLine(char *buf, glui32 len)
-{
-  if (m_buffer == NULL)
-    return 0;
-
-  bool get = true;
-  glui32 i = 0;
-
-  while (get && (i < len-1))
-  {
-    glsi32 c = getChar();
-    if (c == -1)
-      get = false;
-    else
-    {
-      if (c >= 0 && c <= 255)
-        buf[i++] = (char)c;
-      else
-        buf[i++] = '?';
-
-      if (c == '\n')
-        get = false;
-    }
-  }
-
-  buf[i++] = '\0';
-  m_read += i-1;
-  return i-1;
-}
-
-glui32 I7GlkMemoryStream::getBuffer(char *buf, glui32 len)
-{
-  if (m_buffer == NULL)
-    return 0;
-
-  bool get = true;
-  int i = 0;
-
-  while (get && (i < len))
-  {
-    glsi32 c = getChar();
-    if (c == -1)
-      get = false;
-    else
-    {
-      if (c >= 0 && c <= 255)
-        buf[i++] = (char)c;
-      else
-        buf[i++] = '?';
-    }
-  }
-
-  m_read += i;
-  return i;
 }
 
 void I7GlkMemoryStream::putStr(char* s, glui32 len)
@@ -342,66 +533,9 @@ glsi32 I7GlkUniMemoryStream::getChar(void)
   if (m_position < m_length)
   {
     m_read++;
-    glui32 c = m_buffer[m_position++];
-    return (c <= 255) ? c : '?';
+    return (glsi32)m_buffer[m_position++];
   }
   return -1;
-}
-
-glui32 I7GlkUniMemoryStream::getLine(char *buf, glui32 len)
-{
-  if (m_buffer == NULL)
-    return 0;
-
-  bool get = true;
-  glui32 i = 0;
-
-  while (get && (i < len-1))
-  {
-    glsi32 c = getChar();
-    if (c == -1)
-      get = false;
-    else
-    {
-      if (c >= 0 && c <= 255)
-        buf[i++] = (char)c;
-      else
-        buf[i++] = '?';
-
-      if (c == '\n')
-        get = false;
-    }
-  }
-
-  buf[i++] = '\0';
-  m_read += i-1;
-  return i-1;
-}
-
-glui32 I7GlkUniMemoryStream::getBuffer(char *buf, glui32 len)
-{
-  if (m_buffer == NULL)
-    return 0;
-
-  bool get = true;
-  int i = 0;
-
-  while (get && (i < len))
-  {
-    glsi32 c = getChar();
-    if (c == -1)
-      get = false;
-    else
-    {
-      if (c >= 0 && c <= 255)
-        buf[i++] = (char)c;
-      else
-        buf[i++] = '?';
-    }
-  }
-
-  m_read += i;
-  return i;
 }
 
 void I7GlkUniMemoryStream::putStr(char* s, glui32 len)
@@ -453,17 +587,7 @@ glui32 I7GlkWinStream::getPosition(void)
 
 glsi32 I7GlkWinStream::getChar(void)
 {
-  return 0;
-}
-
-glui32 I7GlkWinStream::getLine(char *buf, glui32 len)
-{
-  return 0;
-}
-
-glui32 I7GlkWinStream::getBuffer(char *buf, glui32 len)
-{
-  return 0;
+  return -1;
 }
 
 void I7GlkWinStream::putStr(char* s, glui32 len)

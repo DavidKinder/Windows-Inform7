@@ -26,8 +26,10 @@ public:
   virtual glui32 getPosition(void) = 0;
 
   virtual glsi32 getChar(void) = 0;
-  virtual glui32 getLine(char *buf, glui32 len) = 0;
-  virtual glui32 getBuffer(char *buf, glui32 len) = 0;
+  virtual glui32 getLine(char *buf, glui32 len);
+  virtual glui32 getBuffer(char *buf, glui32 len);
+  virtual glui32 getLine(glui32 *buf, glui32 len);
+  virtual glui32 getBuffer(glui32 *buf, glui32 len);
 
   virtual void putStr(char* s, glui32 len) = 0;
   virtual void putStr(glui32* s, glui32 len) = 0;
@@ -56,8 +58,6 @@ public:
   glui32 getPosition(void);
 
   glsi32 getChar(void);
-  glui32 getLine(char *buf, glui32 len);
-  glui32 getBuffer(char *buf, glui32 len);
 
   void putStr(char* s, glui32 len);
   void putStr(glui32* s, glui32 len);
@@ -65,7 +65,35 @@ public:
   bool open(I7GlkFile* file, glui32 mode);
 
 protected:
+  void setNextOperation(glui32 oper);
+
   FILE* m_file;
+  glui32 m_lastOper;
+};
+
+class I7GlkUniFileStream : public I7GlkStream
+{
+public:
+  I7GlkUniFileStream(glui32 rock);
+  virtual ~I7GlkUniFileStream();
+
+  void setPosition(glsi32 pos, glui32 seekmode);
+  glui32 getPosition(void);
+
+  glsi32 getChar(void);
+
+  void putStr(char* s, glui32 len);
+  void putStr(glui32* s, glui32 len);
+
+  bool open(I7GlkFile* file, glui32 mode);
+
+protected:
+  void addChar(glui32 c);
+  void setNextOperation(glui32 oper);
+
+  bool m_text;
+  FILE* m_file;
+  glui32 m_lastOper;
 };
 
 class I7GlkMemoryStream : public I7GlkStream
@@ -78,8 +106,6 @@ public:
   glui32 getPosition(void);
 
   glsi32 getChar(void);
-  glui32 getLine(char *buf, glui32 len);
-  glui32 getBuffer(char *buf, glui32 len);
 
   void putStr(char* s, glui32 len);
   void putStr(glui32* s, glui32 len);
@@ -102,8 +128,6 @@ public:
   glui32 getPosition(void);
 
   glsi32 getChar(void);
-  glui32 getLine(char *buf, glui32 len);
-  glui32 getBuffer(char *buf, glui32 len);
 
   void putStr(char* s, glui32 len);
   void putStr(glui32* s, glui32 len);
@@ -127,8 +151,6 @@ public:
   glui32 getPosition(void);
 
   glsi32 getChar(void);
-  glui32 getLine(char *buf, glui32 len);
-  glui32 getBuffer(char *buf, glui32 len);
 
   void putStr(char* s, glui32 len);
   void putStr(glui32* s, glui32 len);

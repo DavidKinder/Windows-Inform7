@@ -634,7 +634,7 @@ extern "C" void glk_set_style_stream(strid_t str, glui32 styl)
 extern "C" glsi32 glk_get_char_stream(strid_t str)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return 0;
+    return -1;
 
   glsi32 c = ((I7GlkStream*)str)->getChar();
   if ((c == -1) || (c >= 0 && c <= 255))
@@ -1391,22 +1391,40 @@ extern "C" void glk_put_buffer_stream_uni(strid_t str, glui32 *buf, glui32 len)
 
 extern "C" glsi32 glk_get_char_stream_uni(strid_t str)
 {
-  return -1;
+  if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
+    return -1;
+
+  return ((I7GlkStream*)str)->getChar();
 }
 
 extern "C" glui32 glk_get_buffer_stream_uni(strid_t str, glui32 *buf, glui32 len)
 {
-  return 0;
+  if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
+    return 0;
+
+  return ((I7GlkStream*)str)->getBuffer(buf,len);
 }
 
 extern "C" glui32 glk_get_line_stream_uni(strid_t str, glui32 *buf, glui32 len)
 {
-  return 0;
+  if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
+    return 0;
+
+  return ((I7GlkStream*)str)->getLine(buf,len);
 }
 
 extern "C" strid_t glk_stream_open_file_uni(frefid_t fileref, glui32 fmode, glui32 rock)
 {
-  return 0;
+  if (glkFiles.find((I7GlkFile*)fileref) == glkFiles.end())
+    return 0;
+
+  I7GlkUniFileStream* str = new I7GlkUniFileStream(rock);
+  if (str->open((I7GlkFile*)fileref,fmode) == false)
+  {
+    delete str;
+    str = NULL;
+  }
+  return (strid_t)str;
 }
 
 extern "C" strid_t glk_stream_open_memory_uni(glui32 *buf, glui32 buflen, glui32 fmode, glui32 rock)
