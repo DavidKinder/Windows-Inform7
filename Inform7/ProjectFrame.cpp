@@ -18,7 +18,7 @@
 #define new DEBUG_NEW
 #endif
 
-#define MAX_MENU_EXTENSIONS 200
+#define MAX_MENU_EXTENSIONS 1000
 
 IMPLEMENT_DYNAMIC(ProjectFrame, MenuBarFrameWnd)
 

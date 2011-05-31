@@ -104,7 +104,6 @@
 #define ID_NAVIGATE_BACK                500
 #define ID_NAVIGATE_FORE                501
 #define ID_MENU_PROPERTIES              550
-#define ID_EXTENSIONS_LIST              600
 #define IDC_CREDITS                     1000
 #define IDC_OUTPUT_Z5                   1001
 #define IDC_OUTPUT_Z8                   1002
@@ -148,6 +147,7 @@
 #define IDC_FONT                        1044
 #define IDC_FONTSIZE                    1045
 #define IDC_FIXEDFONT                   1046
+#define ID_EXTENSIONS_LIST              2000
 
 // Next default values for new objects
 // 
