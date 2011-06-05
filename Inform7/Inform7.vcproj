@@ -140,6 +140,9 @@
 				RelativePath="ExtensionFrame.h">
 			</File>
 			<File
+				RelativePath="HookApiFunction.cpp">
+			</File>
+			<File
 				RelativePath="Inform.cpp">
 			</File>
 			<File

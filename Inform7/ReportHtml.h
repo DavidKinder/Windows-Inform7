@@ -66,6 +66,9 @@ protected:
   afx_msg void OnEditFind();
 
 private:
+  static LONG WINAPI HookRegOpenKeyExW(
+    HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
+
   static CString m_registryPath;
   LinkConsumer* m_consumer;
 

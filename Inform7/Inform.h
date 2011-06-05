@@ -92,6 +92,7 @@ public:
   CString GetLastProjectDir(void);
   CString GetHomeDir(void);
   FileProtocol& GetUrlProtocol(void);
+  double GetIEVersion(void);
 
   void NewFrame(CFrameWnd* frame);
   void FrameClosing(CFrameWnd* frame);
@@ -143,7 +144,6 @@ public:
 
 protected:
   void ClearScaledImages(void);
-  void CheckIEVersion(double required);
   void CheckMSXML(void);
   void SetMyDocuments(void);
   bool CreateHomeDirs(void);

@@ -258,6 +258,9 @@ void ReportHtml::OnUpdateEditFind(CCmdUI* pCmdUI)
 
 CString ReportHtml::m_registryPath;
 
+void HookApiFunction(
+  HMODULE callingdll, HMODULE calledDll, const char* calledDllName, const char* functionName, PROC newFunction);
+
 void ReportHtml::SetIEPreferences(const char* path)
 {
   if (path != NULL)
@@ -315,7 +318,21 @@ void ReportHtml::SetIEPreferences(const char* path)
     "Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION",
     REG_NONE,REG_OPTION_NON_VOLATILE,KEY_READ|KEY_WRITE,NULL,&disposition);
   if (result == ERROR_SUCCESS)
-    featureKey.SetDWORDValue("Inform7.exe",8888);
+    featureKey.SetDWORDValue("Inform7.exe",8000);
+
+  if (path != NULL)
+  {
+    // IE9 has a nasty bug: IDocHostUIHandler::GetOptionKeyPath() is never called.
+    // To work around this, we intercept and re-direct calls to open the IE registry key.
+    if (theApp.GetIEVersion() == 9.0)
+    {
+      HMODULE advadi = ::LoadLibrary("advapi32.dll");
+      HMODULE mshtml = ::LoadLibrary("mshtml.dll");
+      HookApiFunction(mshtml,advadi,"advapi32.dll","RegOpenKeyExW",(PROC)HookRegOpenKeyExW);
+      HMODULE iertutil = ::LoadLibrary("iertutil.dll");
+      HookApiFunction(iertutil,advadi,"advapi32.dll","RegOpenKeyExW",(PROC)HookRegOpenKeyExW);
+    }
+  }
 
   // If the registry path hasn't been changed, this is a preferences update,
   // so cause all Internet Explorer windows to update
@@ -325,6 +342,25 @@ void ReportHtml::SetIEPreferences(const char* path)
     SendMessageTimeout(HWND_BROADCAST,
       WM_SETTINGCHANGE,0x1F,(LPARAM)"Software\\Microsoft\\Internet Explorer",SMTO_BLOCK,1000,&result);
   }
+}
+
+LONG WINAPI ReportHtml::HookRegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult)
+{
+  static const wchar_t* ieKey = L"Software\\Microsoft\\Internet Explorer";
+
+  // Never redirect any of the FeatureControl settings
+  if (wcsstr(lpSubKey,L"FeatureControl") != NULL)
+    return ::RegOpenKeyExW(hKey,lpSubKey,ulOptions,samDesired,phkResult);
+
+  if (wcsnicmp(lpSubKey,ieKey,wcslen(ieKey)) == 0)
+  {
+    // Redirect the IE settings to our registry key
+    CStringW newSubKey(m_registryPath);
+    newSubKey.Append(lpSubKey+wcslen(ieKey));
+    return ::RegOpenKeyExW(hKey,newSubKey,ulOptions,samDesired,phkResult);
+  }
+  else
+    return ::RegOpenKeyExW(hKey,lpSubKey,ulOptions,samDesired,phkResult);
 }
 
 void ReportHtml::SetLinkConsumer(LinkConsumer* consumer)
@@ -370,6 +406,7 @@ void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
 
   // Don't send a navigation notification for programmatic navigation
   m_notify = false;
+  SetSilent(TRUE);
   CHtmlView::Navigate(url);
 }
 

@@ -26,6 +26,27 @@ SYMGETSYMFROMADDR64 symGetSymFromAddr64 = NULL;
 SYMINITIALIZE symInitialize = NULL;
 SYMSETOPTIONS symSetOptions = NULL;
 
+bool GotFunctions(void)
+{
+  if (stackWalk64 == NULL)
+    return false;
+  if (symFunctionTableAccess64 == NULL)
+    return false;
+  if (symGetLineFromAddr64 == NULL)
+    return false;
+  if (symGetModuleBase64 == NULL)
+    return false;
+  if (symGetModuleInfo64 == NULL)
+    return false;
+  if (symGetSymFromAddr64 == NULL)
+    return false;
+  if (symInitialize == NULL)
+    return false;
+  if (symSetOptions == NULL)
+    return false;
+  return true;
+}
+
 void PrintStackTrace(void)
 {
   HANDLE process = ::GetCurrentProcess();
@@ -49,8 +70,7 @@ void PrintStackTrace(void)
     symInitialize = (SYMINITIALIZE)::GetProcAddress(debugDll,"SymInitialize");
     symSetOptions = (SYMSETOPTIONS)::GetProcAddress(debugDll,"SymSetOptions");
   }
-  if (!stackWalk64 && !symFunctionTableAccess64 && !symGetLineFromAddr64 && !symGetModuleBase64 &&
-      !symGetModuleInfo64 && !symGetSymFromAddr64 && !symInitialize && !symSetOptions)
+  if (!GotFunctions())
   {
     log << "Failed to get debughlp entry points" << std::endl;
     log.close();

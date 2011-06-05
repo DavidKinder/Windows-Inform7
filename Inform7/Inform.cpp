@@ -46,7 +46,13 @@ BOOL InformApp::InitInstance()
   if (!Scintilla_RegisterClasses(AfxGetInstanceHandle()))
     return FALSE;
 
-  CheckIEVersion(5.0);
+  if (GetIEVersion() < 5.0)
+  {
+    CString msg;
+    msg.Format("Internet Explorer version 5 or higher must be installed.");
+    AfxMessageBox(msg,MB_ICONSTOP|MB_OK);
+    exit(0);
+  }
   CheckMSXML();
 
   SetRegistryKey("David Kinder");
@@ -697,7 +703,7 @@ void InformApp::ClearScaledImages(void)
   }
 }
 
-void InformApp::CheckIEVersion(double required)
+double InformApp::GetIEVersion(void)
 {
   CRegKey ieKey;
   if (ieKey.Open(HKEY_LOCAL_MACHINE,"SOFTWARE\\Microsoft\\Internet Explorer",KEY_READ) == ERROR_SUCCESS)
@@ -706,16 +712,11 @@ void InformApp::CheckIEVersion(double required)
     ULONG len = sizeof version;
     if (ieKey.QueryStringValue("Version",version,&len) == ERROR_SUCCESS)
     {
-      // Check the major and minor components of the version number
-      if (atof(version) >= required)
-        return;
+      // Return the major and minor components of the version number
+      return atof(version);
     }
   }
-
-  CString msg;
-  msg.Format("At least Internet Explorer %.1lf is required.",required);
-  AfxMessageBox(msg,MB_ICONSTOP|MB_OK);
-  exit(0);
+  return 0.0;
 }
 
 void InformApp::CheckMSXML(void)
