@@ -437,7 +437,7 @@ CDibSection* InformApp::GetImage(const char* path)
 
     // Set up the point to return to in case of error
     png_bytep* rowPointers = NULL;
-    if (setjmp(png_ptr->jmpbuf))
+    if (setjmp(png_jmpbuf(png_ptr)))
     {
       if (rowPointers)
         delete[] rowPointers;
@@ -459,7 +459,7 @@ CDibSection* InformApp::GetImage(const char* path)
     if (color_type == PNG_COLOR_TYPE_PALETTE && bit_depth <= 8)
       png_set_palette_to_rgb(png_ptr);
     if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-      png_set_gray_1_2_4_to_8(png_ptr);
+      png_set_expand_gray_1_2_4_to_8(png_ptr);
     if (png_get_valid(png_ptr,info_ptr,PNG_INFO_tRNS))
       png_set_tRNS_to_alpha(png_ptr);
     double gamma;
@@ -582,7 +582,7 @@ CSize InformApp::GetImageSize(const char* path)
       png_destroy_read_struct(&png_ptr,&info_ptr,(png_infopp)NULL);
       return size;
     }
-    if (setjmp(png_ptr->jmpbuf))
+    if (setjmp(png_jmpbuf(png_ptr)))
     {
       png_destroy_read_struct(&png_ptr,&info_ptr,&end_info);
       return size;
