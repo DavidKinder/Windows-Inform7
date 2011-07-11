@@ -204,10 +204,13 @@ void TabErrors::CompileProject(CompileStage stage, int code)
 
 void TabErrors::Progress(const char* msg)
 {
-  // Check for an Inform 6 memory map
+  // Check for Inform 6 printing a memory map or statistics
   const char* dynamic = "Dynamic +---------------------+";
+  const char* statistics = "In:  1 source code files";
   const char* compiledWith = "Compiled with ";
   if (strncmp(msg,dynamic,strlen(dynamic)) == 0)
+    m_progress.SetFormat(true);
+  else if (strncmp(msg,statistics,strlen(statistics)) == 0)
     m_progress.SetFormat(true);
   else if (strncmp(msg,compiledWith,strlen(compiledWith)) == 0)
     m_progress.SetFormat(false);
