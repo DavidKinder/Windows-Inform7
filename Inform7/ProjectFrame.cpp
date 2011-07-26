@@ -901,7 +901,7 @@ void ProjectFrame::OnFileInstallExt()
 void ProjectFrame::OnFileNewExt()
 {
   SaveSettings();
-  ExtensionFrame::StartNew(this);
+  ExtensionFrame::StartNew(this,m_settings);
 }
 
 void ProjectFrame::OnFileOpenExt(UINT nID)
@@ -911,7 +911,7 @@ void ProjectFrame::OnFileOpenExt(UINT nID)
   if ((index >= 0) && (index < (int)extensions.size()))
   {
     SaveSettings();
-    ExtensionFrame::StartExisting(extensions[index].path.c_str());
+    ExtensionFrame::StartExisting(extensions[index].path.c_str(),m_settings);
   }
 }
 
@@ -1929,7 +1929,7 @@ void ProjectFrame::OnSourceLink(const char* url, TabInterface* from, COLORREF hi
   {
     panel->SetActiveTab(Panel::Tab_Source);
   }
-  else if (ExtensionFrame::StartHighlight(url,highlight))
+  else if (ExtensionFrame::StartHighlight(url,highlight,m_settings))
   {
   }
   else

@@ -73,7 +73,6 @@ public:
   void PasteCode(const wchar_t* code);
   void UpdateSpellCheck(void);
   void MoveShowSelect(CWnd* child);
-  void SetElasticTabStops(bool enable);
 
   CHARRANGE GetSelect(void);
   RECT GetSelectRect(void);
@@ -86,6 +85,8 @@ public:
 
   void LoadSettings(CRegKey& key);
   void PrefsChanged(void);
+  bool GetElasticTabStops(void);
+  void SetElasticTabStops(bool enable);
 
   void GetAllHeadings(CArray<SourceLexer::Heading>& headings);
   int GetLineHeight(void);

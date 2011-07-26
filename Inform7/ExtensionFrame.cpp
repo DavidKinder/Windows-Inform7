@@ -26,6 +26,9 @@ BEGIN_MESSAGE_MAP(ExtensionFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_SAVE, OnFileSave)
   ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
 
+  ON_UPDATE_COMMAND_UI(ID_FORMAT_ELASTIC_TABSTOPS, OnUpdateElasticTabStops)
+  ON_COMMAND(ID_FORMAT_ELASTIC_TABSTOPS, OnFormatElasticTabStops)
+
   ON_UPDATE_COMMAND_UI(ID_WINDOW_LIST, OnUpdateWindowList)
   ON_COMMAND_RANGE(ID_WINDOW_LIST, ID_WINDOW_LIST+8, OnWindowList)
 END_MESSAGE_MAP()
@@ -249,6 +252,17 @@ void ExtensionFrame::OnFileSaveAs()
   OnFileSave();
 }
 
+void ExtensionFrame::OnUpdateElasticTabStops(CCmdUI *pCmdUI)
+{
+  pCmdUI->SetCheck(m_edit.GetElasticTabStops());
+}
+
+void ExtensionFrame::OnFormatElasticTabStops()
+{
+  bool elastic = !(m_edit.GetElasticTabStops());
+  m_edit.SetElasticTabStops(elastic);
+}
+
 void ExtensionFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
 {
   CMenu* windowMenu = GetMenu()->GetSubMenu(2);
@@ -291,7 +305,7 @@ void ExtensionFrame::OnWindowList(UINT nID)
     frames[index]->ActivateFrame();
 }
 
-void ExtensionFrame::StartNew(CWnd* parent)
+void ExtensionFrame::StartNew(CWnd* parent, const ProjectSettings& settings)
 {
   NewExtensionDialog dialog(parent);
   if (dialog.DoModal() != IDOK)
@@ -301,19 +315,19 @@ void ExtensionFrame::StartNew(CWnd* parent)
   initialCode.Format(L"%S by %s begins here.\r\r%S ends here.\n",
     dialog.GetName(),dialog.GetAuthor(),dialog.GetName());
 
-  ExtensionFrame* frame = NewFrame();
+  ExtensionFrame* frame = NewFrame(settings);
   frame->m_extension = dialog.GetPath();
 
   frame->m_edit.PasteCode(initialCode);
 }
 
-void ExtensionFrame::StartExisting(const char* path)
+void ExtensionFrame::StartExisting(const char* path, const ProjectSettings& settings)
 {
-  ExtensionFrame* frame = NewFrame();
+  ExtensionFrame* frame = NewFrame(settings);
   frame->OpenFile(path);
 }
 
-bool ExtensionFrame::StartHighlight(const char* url, COLORREF colour)
+bool ExtensionFrame::StartHighlight(const char* url, COLORREF colour, const ProjectSettings& settings)
 {
   // Try to decode the URL
   int line = 0;
@@ -357,7 +371,7 @@ bool ExtensionFrame::StartHighlight(const char* url, COLORREF colour)
         }
 
         // Open a new window
-        ExtensionFrame* extFrame = NewFrame();
+        ExtensionFrame* extFrame = NewFrame(settings);
         extFrame->OpenFile(path);
 
         // Highlight the text
@@ -474,7 +488,7 @@ bool ExtensionFrame::InstallExtensions(CWnd* parent)
   return true;
 }
 
-ExtensionFrame* ExtensionFrame::NewFrame(void)
+ExtensionFrame* ExtensionFrame::NewFrame(const ProjectSettings& settings)
 {
   ExtensionFrame* frame = new ExtensionFrame;
   theApp.NewFrame(frame);
@@ -483,6 +497,8 @@ ExtensionFrame* ExtensionFrame::NewFrame(void)
   frame->SetFromRegistryPath(REGISTRY_PATH_WINDOW);
   frame->ShowWindow(SW_SHOW);
   frame->UpdateWindow();
+
+  frame->m_edit.SetElasticTabStops(settings.m_elasticTabStops);
 
   return frame;
 }

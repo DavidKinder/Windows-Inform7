@@ -855,15 +855,6 @@ void SourceEdit::MoveShowSelect(CWnd* child)
   }
 }
 
-void SourceEdit::SetElasticTabStops(bool enable)
-{
-  m_elasticTabStops = enable;
-  if (m_elasticTabStops)
-    ElasticTabStops_OnModify(m_editPtr,0,CallEdit(SCI_GETLENGTH));
-  else
-    ElasticTabStops_OnClear(m_editPtr);
-}
-
 CHARRANGE SourceEdit::GetSelect(void)
 {
   CHARRANGE select;
@@ -1001,6 +992,20 @@ void SourceEdit::PrefsChanged(void)
   // Somewhat tortuously, this causes Scintilla to update its internal style state, so
   // that any calls before the next re-paint get the correct style or sizing information
   CallEdit(WM_QUERYNEWPALETTE);
+}
+
+bool SourceEdit::GetElasticTabStops(void)
+{
+  return m_elasticTabStops;
+}
+
+void SourceEdit::SetElasticTabStops(bool enable)
+{
+  m_elasticTabStops = enable;
+  if (m_elasticTabStops)
+    ElasticTabStops_OnModify(m_editPtr,0,CallEdit(SCI_GETLENGTH));
+  else
+    ElasticTabStops_OnClear(m_editPtr);
 }
 
 void SourceEdit::GetAllHeadings(CArray<SourceLexer::Heading>& headings)

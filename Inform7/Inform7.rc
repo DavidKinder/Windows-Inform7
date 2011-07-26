@@ -273,6 +273,8 @@ BEGIN
         MENUITEM "Shift Selection &Left\tAlt+[", ID_FORMAT_SHIFT_LEFT
         MENUITEM "&Comment Out Selection\tAlt+/", ID_FORMAT_COMMENT
         MENUITEM "&Uncomment Selection\tAlt+Shift+/", ID_FORMAT_UNCOMMENT
+        MENUITEM SEPARATOR
+        MENUITEM "Enable &Elastic Tabstops",    ID_FORMAT_ELASTIC_TABSTOPS
     END
     POPUP "&Window"
     BEGIN

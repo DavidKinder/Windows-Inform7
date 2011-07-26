@@ -3,6 +3,7 @@
 #include "Inform.h"
 #include "SourceEdit.h"
 #include "MenuBar.h"
+#include "ProjectSettings.h"
 
 #include <deque>
 
@@ -35,20 +36,23 @@ protected:
   afx_msg void OnFileSave();
   afx_msg void OnFileSaveAs();
 
+  afx_msg void OnUpdateElasticTabStops(CCmdUI *pCmdUI);
+  afx_msg void OnFormatElasticTabStops();
+
   afx_msg void OnUpdateWindowList(CCmdUI *pCmdUI);
   afx_msg void OnWindowList(UINT nID);
 
 public:
-  static void StartNew(CWnd* parent);
-  static void StartExisting(const char* path);
-  static bool StartHighlight(const char* url, COLORREF colour);
+  static void StartNew(CWnd* parent, const ProjectSettings& settings);
+  static void StartExisting(const char* path, const ProjectSettings& settings);
+  static bool StartHighlight(const char* url, COLORREF colour, const ProjectSettings& settings);
   static bool InstallExtensions(CWnd* parent);
 
   CString GetDisplayName(bool showEdited);
   void SendChanged(InformApp::Changed changed, int value);
 
 protected:
-  static ExtensionFrame* NewFrame(void);
+  static ExtensionFrame* NewFrame(const ProjectSettings& settings);
   static bool IsValidExtension(const CStringW& firstLine, CStringW& name, CStringW& author);
   static bool RemoveI7X(CString& path);
   static void DeleteOldExtension(CString path);
