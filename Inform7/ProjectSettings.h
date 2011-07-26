@@ -23,6 +23,7 @@ public:
   Output m_output;
   bool m_blorb;
   bool m_predictable;
+  bool m_elasticTabStops;
 
   int m_compiler;
   static std::set<int> m_compilers;

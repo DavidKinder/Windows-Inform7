@@ -122,6 +122,8 @@ BEGIN
         MENUITEM "&Uncomment Selection\tAlt+Shift+/", ID_FORMAT_UNCOMMENT
         MENUITEM SEPARATOR
         MENUITEM "Renu&mber All Sections\tCtrl+M", ID_FORMAT_RENUMBER
+        MENUITEM SEPARATOR
+        MENUITEM "Enable &Elastic Tabstops",    ID_FORMAT_ELASTIC_TABSTOPS
     END
     POPUP "&Play"
     BEGIN
@@ -140,11 +142,11 @@ BEGIN
         MENUITEM "Show &Last Command",          ID_REPLAY_SHOW_LAST
         MENUITEM "Show Last &Command in Skein", ID_REPLAY_SHOW_LAST_SKEIN
         MENUITEM SEPARATOR
-        MENUITEM "Find &Previous Changed Command", 234
-        MENUITEM "Find &Next Changed Command",  235
-        MENUITEM "Find Previous Di&fference",   236
-        MENUITEM "Find Next &Difference",       237
-        MENUITEM "Show Ne&xt Difference in Skein", 238
+        MENUITEM "Find &Previous Changed Command", ID_REPLAY_CHANGED_PREV
+        MENUITEM "Find &Next Changed Command",  ID_REPLAY_CHANGED_NEXT
+        MENUITEM "Find Previous Di&fference",   ID_REPLAY_DIFF_PREV
+        MENUITEM "Find Next &Difference",       ID_REPLAY_DIFF_NEXT
+        MENUITEM "Show Ne&xt Difference in Skein", ID_REPLAY_DIFF_NEXT_SKEIN
     END
     POPUP "&Release"
     BEGIN
@@ -664,6 +666,7 @@ BEGIN
     ID_FORMAT_COMMENT       "Comment out the selected lines"
     ID_FORMAT_UNCOMMENT     "Uncomment the selected lines"
     ID_FORMAT_RENUMBER      "Renumber all section headings in the source"
+    ID_FORMAT_ELASTIC_TABSTOPS "Turn elastic tabstops on and off"
     ID_PLAY_GO              "Build the game and run it\nGo!"
     ID_PLAY_STOP            "Stop the currently running game\nStop"
     ID_PLAY_TEST            "Build the game and run the ""test me"" command"

@@ -70,7 +70,7 @@ BOOL AboutDialog::OnInitDialog()
   const char* text1 =
     "\\b Inform written by\\b0\\par"
     "\\tab Graham Nelson with help from\\par"
-    "\\tab Emily Short and many others:\\par"
+    "\\tab Emily Short and many others\\par"
     "\\par"
     "\\b Windows Inform front-end written by\\b0\\par"
     "\\tab David Kinder\\par"
@@ -82,15 +82,15 @@ BOOL AboutDialog::OnInitDialog()
     "\\tab Jesse McGrew";
   const char* text2 =
     "\\par"
+    "\\tab Andrew Plotkin\\par"
+    "\\tab David Kinder\\par"
     "\\par"
     "\\b Contributions to Inform 6\\b0\\par"
     "\\tab Emily Short\\par"
     "\\tab Gunther Schmidl\\par"
-    "\\tab Andrew Plotkin\\par"
     "\\tab Jason Penney\\par"
     "\\tab Joe Mason\\par"
     "\\tab Cedric Knight\\par"
-    "\\tab David Kinder\\par"
     "\\tab Dave Griffith\\par"
     "\\tab Roger Firth\\par"
     "\\tab Michael Coyne\\par"
@@ -113,6 +113,9 @@ BOOL AboutDialog::OnInitDialog()
     "\\tab Atul Varma\\par"
     "\\tab Fredrik Ramsberg\\par"
     "\\tab Dannii Willis\\par"
+    "\\tab Andrew Plotkin\\par"
+    "\\par"
+    "\\b Quixe Glulx interpreter written by\\b0\\par"
     "\\tab Andrew Plotkin\\par"
     "\\par"
     "\\b libpng written by\\b0\\par"
@@ -138,7 +141,10 @@ BOOL AboutDialog::OnInitDialog()
     "\\tab Kevin Hendricks, and others\\par"
     "\\par"
     "\\b Scintilla written by\\b0\\par"
-    "\\tab Neil Hodgson}";
+    "\\tab Neil Hodgson\\par"
+    "\\par"
+    "\\b Elastic tabstops invented by\\b0\\par"
+    "\\tab Nick Gravgaard}";
 
   // Start with only as much text as should be visible
   {

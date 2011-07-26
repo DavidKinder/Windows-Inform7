@@ -924,6 +924,10 @@ struct SCNXConvertCopyToClip {
 #define SCIX_VISIBLEREGIONEND 4903
 /*XXXXDK Show only part of document */
 
+/*XXXXDK tabs */
+#define SCIX_SETTABSTOPS 4910
+/*XXXXDK tabs */
+
 #ifdef SCI_NAMESPACE
 }
 #endif

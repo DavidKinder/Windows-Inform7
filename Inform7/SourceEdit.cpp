@@ -12,6 +12,10 @@
 #define new DEBUG_NEW
 #endif
 
+// Elastic tabstops implementation
+void ElasticTabStops_OnModify(sptr_t edit, int start, int end);
+void ElasticTabStops_OnClear(sptr_t edit);
+
 #define SOURCE_FILE "story.ni"
 
 IMPLEMENT_DYNAMIC(SourceEdit, CWnd)
@@ -49,6 +53,7 @@ BEGIN_MESSAGE_MAP(SourceEdit, CWnd)
   ON_NOTIFY_REFLECT(SCN_SAVEPOINTLEFT, OnSavePointLeft)
   ON_NOTIFY_REFLECT(SCN_STYLENEEDED, OnStyleNeeded)
   ON_NOTIFY_REFLECT(SCN_CHARADDED, OnCharAdded)
+  ON_NOTIFY_REFLECT(SCN_MODIFIED, OnDocModified)
   ON_NOTIFY_REFLECT(SCNX_CONVERTPASTE, OnConvertPaste)
   ON_NOTIFY_REFLECT(SCNX_CONVERTCOPYTOCLIP, OnConvertCopyToClip)
 
@@ -64,6 +69,7 @@ SourceEdit::SourceEdit() : m_fileTime(CTime::GetCurrentTime()), m_spell(this)
 
   // Default preferences values
   m_autoIndent = true;
+  m_elasticTabStops = false;
 }
 
 BOOL SourceEdit::Create(CWnd* parent, UINT id)
@@ -99,6 +105,7 @@ BOOL SourceEdit::Create(CWnd* parent, UINT id)
   CallEdit(SCI_SETEOLMODE,SC_EOL_LF);
   CallEdit(SCI_SETPASTECONVERTENDINGS,1);
   CallEdit(SCI_SETWRAPMODE,1);
+  CallEdit(SCI_SETMODEVENTMASK,SC_MOD_INSERTTEXT|SC_MOD_DELETETEXT);
   for (int i = 0; i < 5; i++)
     CallEdit(SCI_SETMARGINWIDTHN,i,0);
   CallEdit(SCI_SETMARGINLEFT,0,fontSize.cx);
@@ -432,6 +439,22 @@ void SourceEdit::OnCharAdded(NMHDR* hdr, LRESULT* res)
         }
       }
       CallEdit(SCI_REPLACESEL,0,(LONG_PTR)buffer);
+    }
+  }
+}
+
+void SourceEdit::OnDocModified(NMHDR* hdr, LRESULT*)
+{
+  if (hdr->code == SCN_MODIFIED)
+  {
+    // If text has been added or removed, update the elastic tabstops
+    if (m_elasticTabStops)
+    {
+      SCNotification* notify = (SCNotification*)hdr;
+      if (notify->modificationType & SC_MOD_INSERTTEXT)
+        ElasticTabStops_OnModify(m_editPtr,notify->position,notify->position+notify->length);
+      else if (notify->modificationType & SC_MOD_DELETETEXT)
+        ElasticTabStops_OnModify(m_editPtr,notify->position,notify->position);
     }
   }
 }
@@ -830,6 +853,15 @@ void SourceEdit::MoveShowSelect(CWnd* child)
         SWP_NOOWNERZORDER|SWP_NOZORDER|SWP_NOSIZE);
     }
   }
+}
+
+void SourceEdit::SetElasticTabStops(bool enable)
+{
+  m_elasticTabStops = enable;
+  if (m_elasticTabStops)
+    ElasticTabStops_OnModify(m_editPtr,0,CallEdit(SCI_GETLENGTH));
+  else
+    ElasticTabStops_OnClear(m_editPtr);
 }
 
 CHARRANGE SourceEdit::GetSelect(void)

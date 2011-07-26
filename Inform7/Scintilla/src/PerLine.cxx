@@ -480,3 +480,82 @@ int LineAnnotation::Lines(int line) const {
 	else
 		return 0;
 }
+
+/*XXXXDK tabs */
+LineTabs::~LineTabs() {
+	Init();
+}
+
+void LineTabs::Init() {
+	for (int line = 0; line < tabs.Length(); line++) {
+		delete tabs[line];
+	}
+	tabs.DeleteAll();
+}
+
+void LineTabs::InsertLine(int line) {
+	if (tabs.Length()) {
+		tabs.EnsureLength(line);
+		tabs.Insert(line, 0);
+	}
+}
+
+void LineTabs::RemoveLine(int line) {
+	if (tabs.Length() > line) {
+		delete tabs[line];
+		tabs.Delete(line);
+	}
+}
+
+bool LineTabs::SetTabs(int line, int* tabStops, int numTabs) {
+	tabs.EnsureLength(line + 1);
+	if (!tabs[line]) {
+		tabs[line] = new TabList();
+	}
+
+	TabList* tl = tabs[line];
+	if (tl) {
+		// Are the new tabs the same as the old ones?
+		if (numTabs == tl->Length()) {
+			bool same = true;
+			for (int i = 0; i < numTabs; i++) {
+				if (tl->ValueAt(i) != tabStops[i]) {
+					same = false;
+				}
+			}
+			if (same) {
+				return false;
+			}
+		}
+
+		// Resize the array of tabs
+		if (numTabs < tl->Length()) {
+			tl->DeleteRange(numTabs, tl->Length() - numTabs);
+		} else {
+			tl->EnsureLength(numTabs);
+		}
+
+		// Set the new tab values
+		PLATFORM_ASSERT(tl->Length() == numTabs);
+		for (int i = 0; i < numTabs; i++) {
+			tl->SetValueAt(i, tabStops[i]);
+		}
+	}
+	return true;
+}
+
+int LineTabs::GetNextTab(int line, int x)
+{
+	if (line < tabs.Length()) {
+		TabList* tl = tabs[line];
+		if (tl) {
+			for (int i = 0; i < tl->Length(); i++) {
+				if ((*tl)[i] > x) {
+					return (*tl)[i];
+				}
+			}
+		}
+	}
+	return 0;
+}
+/*XXXXDK tabs */

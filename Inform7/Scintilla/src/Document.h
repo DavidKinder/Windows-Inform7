@@ -147,7 +147,7 @@ private:
 	int lenWatchers;
 
 	// ldSize is not real data - it is for dimensions and loops
-	enum lineData { ldMarkers, ldLevels, ldState, ldMargin, ldAnnotation, ldSize };	
+	enum lineData { ldMarkers, ldLevels, ldState, ldMargin, ldAnnotation, /*XXXXDK tabs*/ldTabs/*XXXXDK tabs*/, ldSize };	
 	PerLine *perLineData[ldSize];
 
 	bool matchesValid;
@@ -307,6 +307,11 @@ public:
 	int ParaDown(int pos);
 	int IndentSize() { return actualIndentInChars; }
 	int BraceMatch(int position, int maxReStyle);
+
+/*XXXXDK tabs */
+	void SetTabStops(int line, int* tabs);
+	int GetTabStop(int line, int x);
+/*XXXXDK tabs */
 
 private:
 	CharClassify::cc WordCharClass(unsigned char ch);

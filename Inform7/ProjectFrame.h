@@ -80,6 +80,9 @@ protected:
   afx_msg void OnFileSaveAs();
   afx_msg void OnFileImportSkein();
 
+  afx_msg void OnUpdateElasticTabStops(CCmdUI *pCmdUI);
+  afx_msg void OnFormatElasticTabStops();
+
   afx_msg void OnUpdateCompile(CCmdUI *pCmdUI);
   afx_msg void OnPlayGo();
   afx_msg void OnPlayTest();

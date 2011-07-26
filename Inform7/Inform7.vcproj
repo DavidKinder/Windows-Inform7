@@ -381,6 +381,9 @@
 				RelativePath="ContentsWindow.h">
 			</File>
 			<File
+				RelativePath="ElasticTabStops.cpp">
+			</File>
+			<File
 				RelativePath="SourceEdit.cpp">
 			</File>
 			<File

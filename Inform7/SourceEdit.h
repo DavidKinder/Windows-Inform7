@@ -47,6 +47,7 @@ protected:
   afx_msg void OnSavePointLeft(NMHDR*, LRESULT*);
   afx_msg void OnStyleNeeded(NMHDR*, LRESULT*);
   afx_msg void OnCharAdded(NMHDR* hdr, LRESULT* res);
+  afx_msg void OnDocModified(NMHDR* hdr, LRESULT* res);
   afx_msg void OnConvertPaste(NMHDR*, LRESULT*);
   afx_msg void OnConvertCopyToClip(NMHDR*, LRESULT*);
 
@@ -72,6 +73,7 @@ public:
   void PasteCode(const wchar_t* code);
   void UpdateSpellCheck(void);
   void MoveShowSelect(CWnd* child);
+  void SetElasticTabStops(bool enable);
 
   CHARRANGE GetSelect(void);
   RECT GetSelectRect(void);
@@ -105,6 +107,7 @@ private:
   CHARRANGE m_markSel;
 
   bool m_autoIndent;
+  bool m_elasticTabStops;
 
   EditFind m_find;
   SpellCheck m_spell;

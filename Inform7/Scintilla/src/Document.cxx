@@ -81,6 +81,9 @@ Document::Document() {
 	perLineData[ldState] = new LineState();
 	perLineData[ldMargin] = new LineAnnotation();
 	perLineData[ldAnnotation] = new LineAnnotation();
+/*XXXXDK tabs */
+	perLineData[ldTabs] = new LineTabs();
+/*XXXXDK tabs */
 
 	cb.SetPerLine(this);
 }
@@ -1596,6 +1599,32 @@ int Document::BraceMatch(int position, int /*maxReStyle*/) {
 	}
 	return - 1;
 }
+
+/*XXXXDK tabs */
+void Document::SetTabStops(int line, int* tabs)
+{
+	int numTabs = 0;
+	while (tabs[numTabs] != 0) {
+		numTabs++;
+	}
+
+	LineTabs* lt = static_cast<LineTabs*>(perLineData[ldTabs]);
+	if (lt->SetTabs(line, tabs, numTabs)) {
+		DocModification mh(SC_MOD_CHANGELINESTATE, 0, 0, 0, 0, line);
+		NotifyModified(mh);
+	}
+}
+
+int Document::GetTabStop(int line, int x)
+{
+	LineTabs* lt = static_cast<LineTabs*>(perLineData[ldTabs]);
+	if (lt) {
+		return lt->GetNextTab(line, x);
+	} else {
+		return 0;
+	}
+}
+/*XXXXDK tabs */
 
 /**
  * Implementation of RegexSearchBase for the default built-in regular expression engine

@@ -113,6 +113,24 @@ public:
 	int Lines(int line) const;
 };
 
+/*XXXXDK tabs */
+typedef SplitVector<int> TabList;
+
+class LineTabs : public PerLine {
+	SplitVector<TabList*> tabs;
+public:
+	LineTabs() {
+	}
+	virtual ~LineTabs();
+	virtual void Init();
+	virtual void InsertLine(int line);
+	virtual void RemoveLine(int line);
+
+	bool SetTabs(int line, int* tabStops, int numTabs);
+	int GetNextTab(int line, int x);
+};
+/*XXXXDK tabs */
+
 #ifdef SCI_NAMESPACE
 }
 #endif

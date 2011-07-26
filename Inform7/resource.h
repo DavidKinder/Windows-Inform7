@@ -29,6 +29,7 @@
 #define ID_FORMAT_COMMENT               212
 #define ID_FORMAT_UNCOMMENT             213
 #define ID_FORMAT_RENUMBER              214
+#define ID_FORMAT_ELASTIC_TABSTOPS      215
 #define ID_PLAY_GO                      220
 #define ID_PLAY_STOP                    221
 #define ID_PLAY_TEST                    222

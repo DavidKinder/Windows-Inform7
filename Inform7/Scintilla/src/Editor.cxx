@@ -1835,6 +1835,16 @@ bool BadUTF(const char *s, int len, int &trailBytes) {
 	}
 }
 
+/* XXXXDK tabs */
+int NextTabPos(Document *pdoc, int line, int x, int tabWidth)
+{
+	int next = pdoc->GetTabStop(line, x);
+	if (next > 0)
+		return next;
+	return ((((x + 2) / tabWidth) + 1) * tabWidth);
+}
+/* XXXXDK tabs */
+
 /**
  * Fill in the LineLayout data for the given line.
  * Copy the given @a line and its styles from the document into local arrays.
@@ -1959,8 +1969,13 @@ void Editor::LayoutLine(int line, Surface *surface, ViewStyle &vstyle, LineLayou
 				if (vstyle.styles[ll->styles[charInLine]].visible) {
 					if (isControl) {
 						if (ll->chars[charInLine] == '\t') {
+/* XXXXDK tabs */
+/*
 							ll->positions[charInLine + 1] = ((((startsegx + 2) /
-							        tabWidth) + 1) * tabWidth) - startsegx;
+								tabWidth) + 1) * tabWidth) - startsegx;
+*/
+							ll->positions[charInLine + 1] = NextTabPos(pdoc, line, startsegx, tabWidth) - startsegx;
+/* XXXXDK tabs */
 						} else if (controlCharSymbol < 32) {
 							if (ctrlCharWidth[ll->chars[charInLine]] == 0) {
 								const char *ctrlChar = ControlCharacterString(ll->chars[charInLine]);
@@ -8030,6 +8045,12 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
     }
     return pdoc->Length();
 /*XXXXDK Show only part of document */
+
+/*XXXXDK tabs */
+	case SCIX_SETTABSTOPS:
+		pdoc->SetTabStops(wParam, reinterpret_cast<int*>(lParam));
+		return 0l;
+/*XXXXDK tabs */
 
   default:
 		return DefWndProc(iMessage, wParam, lParam);
