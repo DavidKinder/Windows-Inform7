@@ -3992,7 +3992,12 @@ void Editor::CheckModificationForWrap(DocModification mh) {
 		int lineDoc = pdoc->LineFromPosition(mh.position);
 		int lines = Platform::Maximum(0, mh.linesAdded);
 		SetAnnotationHeights(lineDoc, lineDoc + lines + 2);
-	}
+  }
+/*XXXXDK tabs */
+  else if (mh.modificationType & SC_MOD_CHANGELINESTATE) {
+		NeedWrapping(mh.line, mh.line + 1);
+  }
+/*XXXXDK tabs */
 }
 
 // Move a position so it is still after the same character as before the insertion.
