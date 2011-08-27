@@ -191,6 +191,11 @@ CSize InformApp::MeasureFont(CFont* font)
   dc->GetTextMetrics(&metrics);
   dc->SelectObject(oldFont);
   AfxGetMainWnd()->ReleaseDC(dc);
+
+  // Cope with invalid font information in bad fonts
+  if (metrics.tmAveCharWidth < 1)
+    metrics.tmAveCharWidth = 8;
+
   return CSize(metrics.tmAveCharWidth,metrics.tmHeight);
 }
 
