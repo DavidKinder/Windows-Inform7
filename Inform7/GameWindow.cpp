@@ -726,7 +726,7 @@ void GameWindow::CommandPlaySound(int channelId, int sound, int repeats, int vol
     return;
 
   // Play the sound and store the sound object
-  if (soundObj->Play(repeats,volume) == false)
+  if (soundObj->Play(repeats,volume,false) == false)
   {
     delete soundObj;
     return;
@@ -1373,4 +1373,12 @@ void GameWindow::DeferredMoveWindows(void)
     while (it.Iterate())
       it.Value()->MoveToEnd();
   }
+}
+
+// Helper function needed for Windows Glk sound calls
+DWORD TickCountDiff(DWORD later, DWORD earlier)
+{
+  if (later < earlier)
+    return ((MAXDWORD - earlier) + later);
+  return (later - earlier);
 }
