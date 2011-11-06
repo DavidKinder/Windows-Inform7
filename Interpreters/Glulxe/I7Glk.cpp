@@ -131,7 +131,7 @@ extern "C" glui32 glk_gestalt_ext(glui32 sel, glui32 val, glui32 *arr, glui32 ar
   switch (sel)
   {
   case gestalt_Version:
-    return 0x00000702; // Glk 0.7.2
+    return 0x00000703; // Glk 0.7.3
 
   case gestalt_LineInput:
     if ((val >= 32 && val <= 126) || (val >= 160 && val <= 0xFFFF))
@@ -189,6 +189,7 @@ extern "C" glui32 glk_gestalt_ext(glui32 sel, glui32 val, glui32 *arr, glui32 ar
     return 0;
 
   case gestalt_Sound:
+  case gestalt_Sound2:
   case gestalt_SoundVolume:
   case gestalt_SoundNotify:
   case gestalt_SoundMusic:
@@ -1226,7 +1227,13 @@ extern "C" void glk_window_set_background_color(winid_t win, glui32 color)
 
 extern "C" schanid_t glk_schannel_create(glui32 rock)
 {
+  return glk_schannel_create_ext(rock,0x10000);
+}
+
+extern "C" schanid_t glk_schannel_create_ext(glui32 rock, glui32 volume)
+{
   I7GlkChannel* chan = new I7GlkChannel(rock);
+  chan->setVolume(volume);
   return (schanid_t)chan;
 }
 
@@ -1283,6 +1290,12 @@ extern "C" glui32 glk_schannel_play_ext(schanid_t chan, glui32 snd, glui32 repea
   return ((I7GlkChannel*)chan)->play(snd,repeats,notify);
 }
 
+extern "C" glui32 glk_schannel_play_multi(schanid_t *chanarray, glui32 chancount, glui32 *sndarray, glui32 soundcount, glui32 notify)
+{
+  // XXXX GLK 073
+  return 0;
+}
+
 extern "C" void glk_schannel_stop(schanid_t chan)
 {
   if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
@@ -1291,11 +1304,27 @@ extern "C" void glk_schannel_stop(schanid_t chan)
   ((I7GlkChannel*)chan)->stop();
 }
 
+extern "C" void glk_schannel_pause(schanid_t chan)
+{
+  // XXXX GLK 073
+}
+
+extern "C" void glk_schannel_unpause(schanid_t chan)
+{
+  // XXXX GLK 073
+}
+
 extern "C" void glk_schannel_set_volume(schanid_t chan, glui32 vol)
+{
+  glk_schannel_set_volume_ext(chan,vol,0,0);
+}
+
+extern "C" void glk_schannel_set_volume_ext(schanid_t chan, glui32 vol, glui32 duration, glui32 notify)
 {
   if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
     return;
 
+  // XXXX GLK 073
   ((I7GlkChannel*)chan)->setVolume(vol);
 }
 
