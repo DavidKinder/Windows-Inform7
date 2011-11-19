@@ -1071,21 +1071,25 @@ extern "C" void os_prepare_sample(int number)
  */
 extern "C" void os_start_sample(int number, int volume, int repeats, zword eos)
 {
-  if (volume == 255)
-    volume = 0x10000;
-  else
+  if ((volume >= 1) && (volume <= 8))
     volume = volume * 0x2000;
+  else
+    volume = 0x10000;
 
   if (repeats == 0)
     repeats = 1;
   else if (repeats == 255)
     repeats = -1;
 
-  int data[4];
+  int data[3];
+  data[0] = 0;
+  data[1] = volume;
+  data[2] = 0;
+  sendCommand(Command_SetVolume,sizeof data,data);
+
   data[0] = 0;
   data[1] = number;
   data[2] = repeats;
-  data[3] = volume;
   sendCommand(Command_PlaySound,sizeof data,data);
 }
 

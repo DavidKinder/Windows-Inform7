@@ -16,7 +16,6 @@ I7GlkChannel::I7GlkChannel(glui32 rock)
   m_rock = rock;
 
   m_sound = 0;
-  m_volume = 0x10000;
   m_notify = 0;
 
   glkChannels.insert(this);
@@ -40,17 +39,19 @@ glui32 I7GlkChannel::play(glui32 snd, glui32 repeats, glui32 notify)
   m_sound = snd;
   m_notify = notify;
 
-  int data[4];
+  int data[3];
   data[0] = m_id;
   data[1] = snd;
   data[2] = repeats;
-  data[3] = m_volume;
   sendCommand(Command_PlaySound,sizeof data,data);
   return 1;
 }
 
-void I7GlkChannel::stop(void)
+void I7GlkChannel::stop(bool check)
 {
+  if (check && (m_sound == 0))
+    return;
+
   m_sound = 0;
   m_notify = 0;
 
@@ -59,13 +60,12 @@ void I7GlkChannel::stop(void)
   sendCommand(Command_StopSound,sizeof data,data);
 }
 
-void I7GlkChannel::setVolume(glui32 vol)
+void I7GlkChannel::setVolume(glui32 volume, glui32 duration)
 {
-  m_volume = vol;
-
-  int data[2];
+  int data[3];
   data[0] = m_id;
-  data[1] = m_volume;
+  data[1] = volume;
+  data[2] = duration;
   sendCommand(Command_SetVolume,sizeof data,data);
 }
 

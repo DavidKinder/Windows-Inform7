@@ -79,9 +79,9 @@ private:
   void CommandClear(int wndId, int reverse, int* fore, int* back);
   void CommandDraw(int wndId, int image, int val1, int val2, int width, int height);
   void CommandArrange(int wndId, int method, int size, int keyId, bool swap);
-  void CommandPlaySound(int channelId, int sound, int repeats, int volume);
+  void CommandPlaySound(int channelId, int sound, int repeats);
   void CommandStopSound(int channelId);
-  void CommandSetVolume(int channelId, int volume);
+  void CommandSetVolume(int channelId, int volume, int duration);
   void CommandFillRect(int wndId, int* rect, int* colour);
   void CommandBackColour(int wndId, int* colour);
   void CommandSetLink(int wndId, int link);
@@ -128,9 +128,41 @@ private:
   CArray<wchar_t> m_transcript;
 
   typedef std::map<std::pair<int,COLORREF>,CDibSection*> ImageMap;
-  typedef std::map<int,CWinGlkSound*> SoundMap;
 
   PropList m_manifest;
   ImageMap m_images;
+
+  struct VolumeFade
+  {
+    // The initial volume
+    double start;
+    // The final volume
+    double target;
+    // The change in the volume per millisecond
+    double rate;
+    // The start time of the volume change
+    DWORD startTime;
+    // If true, the volume fade has finished
+    bool finished;
+    // The notification value, or zero
+    int notify;
+
+    VolumeFade()
+    {
+      start = 0.0;
+      target = 0.0;
+      rate = 0.0;
+      startTime = 0;
+      finished = false;
+      notify = 0;
+    }
+  };
+
+  typedef std::map<int,CWinGlkSound*> SoundMap;
+  typedef std::map<int,int> VolumeMap;
+  typedef std::map<int,VolumeFade> VolumeFadeMap;
+
   SoundMap m_sounds;
+  VolumeMap m_volumes;
+  VolumeFadeMap m_volumeFades;
 };

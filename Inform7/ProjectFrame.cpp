@@ -120,7 +120,7 @@ static UINT indicators[] =
 };
 
 ProjectFrame::ProjectFrame()
-  : m_compiling(false), m_game(m_skein), m_focus(0), m_menuGutter(0), m_menuTextGap(0,0)
+  : m_compiling(false), m_game(m_skein), m_focus(0), m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0)
 {
 }
 
@@ -1002,6 +1002,7 @@ void ProjectFrame::OnPlayLoad()
   SimpleFileDialog dialog(TRUE,NULL,NULL,OFN_HIDEREADONLY|OFN_ENABLESIZING,
     "Z-code games (*.z?;*.zblorb)|*.z?;*.zblorb|Glulx games (*.ulx;*.gblorb)|*.ulx;*.gblorb||",this);
   dialog.m_ofn.lpstrTitle = "Select a game to play";
+  dialog.m_ofn.nFilterIndex = m_loadFilter;
   if (dialog.DoModal() != IDOK)
     return;
 
@@ -1014,7 +1015,8 @@ void ProjectFrame::OnPlayLoad()
   m_skein.Reset(true);
 
   GetPanel(ChoosePanel(Panel::Tab_Game))->SetActiveTab(Panel::Tab_Game);
-  bool glulx = (dialog.m_ofn.nFilterIndex == 2);
+  m_loadFilter = dialog.m_ofn.nFilterIndex;
+  bool glulx = (m_loadFilter == 2);
   m_game.RunInterpreter(path.Left(split),path.Mid(split+1),glulx);
 }
 

@@ -1233,7 +1233,7 @@ extern "C" schanid_t glk_schannel_create(glui32 rock)
 extern "C" schanid_t glk_schannel_create_ext(glui32 rock, glui32 volume)
 {
   I7GlkChannel* chan = new I7GlkChannel(rock);
-  chan->setVolume(volume);
+  chan->setVolume(volume,0);
   return (schanid_t)chan;
 }
 
@@ -1242,6 +1242,7 @@ extern "C" void glk_schannel_destroy(schanid_t chan)
   if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
     return;
 
+  ((I7GlkChannel*)chan)->stop(true);
   delete (I7GlkChannel*)chan;
 }
 
@@ -1283,7 +1284,7 @@ extern "C" glui32 glk_schannel_play_ext(schanid_t chan, glui32 snd, glui32 repea
 
   if (repeats == 0)
   {
-    ((I7GlkChannel*)chan)->stop();
+    ((I7GlkChannel*)chan)->stop(false);
     return 1;
   }
 
@@ -1301,7 +1302,7 @@ extern "C" void glk_schannel_stop(schanid_t chan)
   if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
     return;
 
-  ((I7GlkChannel*)chan)->stop();
+  ((I7GlkChannel*)chan)->stop(false);
 }
 
 extern "C" void glk_schannel_pause(schanid_t chan)
@@ -1325,7 +1326,7 @@ extern "C" void glk_schannel_set_volume_ext(schanid_t chan, glui32 vol, glui32 d
     return;
 
   // XXXX GLK 073
-  ((I7GlkChannel*)chan)->setVolume(vol);
+  ((I7GlkChannel*)chan)->setVolume(vol,duration);
 }
 
 extern "C" void glk_sound_load_hint(glui32 snd, glui32 flag)

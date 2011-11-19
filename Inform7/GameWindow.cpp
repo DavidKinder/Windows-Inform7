@@ -224,6 +224,8 @@ void GameWindow::StopInterpreter(bool clear)
   for (SoundMap::const_iterator it = m_sounds.begin(); it != m_sounds.end(); ++it)
     delete it->second;
   m_sounds.clear();
+  m_volumes.clear();
+  m_volumeFades.clear();
 
   if (clear)
   {
@@ -374,13 +376,13 @@ void GameWindow::RunInterpreterCommand(void)
     CommandDraw(idata[0],idata[1],idata[2],idata[3],idata[4],idata[5]);
     break;
   case Command_PlaySound:
-    CommandPlaySound(idata[0],idata[1],idata[2],idata[3]);
+    CommandPlaySound(idata[0],idata[1],idata[2]);
     break;
   case Command_StopSound:
     CommandStopSound(idata[0]);
     break;
   case Command_SetVolume:
-    CommandSetVolume(idata[0],idata[1]);
+    CommandSetVolume(idata[0],idata[1],idata[2]);
     break;
   case Command_FillRect:
     CommandFillRect(idata[0],idata+1,idata+5);
@@ -679,7 +681,7 @@ void GameWindow::CommandArrange(int wndId, int method, int size, int keyId, bool
   }
 }
 
-void GameWindow::CommandPlaySound(int channelId, int sound, int repeats, int volume)
+void GameWindow::CommandPlaySound(int channelId, int sound, int repeats)
 {
   // Initialize the sound system
   if (soundInit == false)
@@ -720,6 +722,12 @@ void GameWindow::CommandPlaySound(int channelId, int sound, int repeats, int vol
   if (loader == NULL)
     return;
 
+  // Get the volume for the sound
+  int volume = 0x10000;
+  VolumeMap::const_iterator vit = m_volumes.find(channelId);
+  if (vit != m_volumes.end())
+    volume = vit->second;
+
   // Create a sound object
   CWinGlkSound* soundObj = loader->GetSound(path);
   if (soundObj == NULL)
@@ -744,13 +752,36 @@ void GameWindow::CommandStopSound(int channelId)
   }
 }
 
-void GameWindow::CommandSetVolume(int channelId, int volume)
+void GameWindow::CommandSetVolume(int channelId, int volume, int duration)
 {
-  // Find the sound on the channel, if any, and set its volume
-  SoundMap::iterator it = m_sounds.find(channelId);
-  if (it == m_sounds.end())
-    return;
-  it->second->SetVolume(volume);
+  if (duration == 0)
+  {
+    // Store the new volume
+    m_volumeFades.erase(channelId);
+    m_volumes[channelId] = volume;
+
+    // Find the sound on the channel, if any, and set its volume
+    SoundMap::iterator it = m_sounds.find(channelId);
+    if (it != m_sounds.end())
+      it->second->SetVolume(volume);
+  }
+  else
+  {
+    // Get the current volume
+    int volumeNow = 0x10000;
+    VolumeMap::const_iterator vit = m_volumes.find(channelId);
+    if (vit != m_volumes.end())
+      volumeNow = vit->second;
+
+    // Add to the volume fade map
+    VolumeFade fade;
+    fade.start = volumeNow;
+    fade.target = volume;
+    fade.rate = (double)(volume - volumeNow) / (double)duration;
+    fade.startTime = ::GetTickCount();
+    fade.notify = 0;
+    m_volumeFades[channelId] = fade;
+  }
 }
 
 void GameWindow::CommandFillRect(int wndId, int* rect, int* colour)

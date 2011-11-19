@@ -5,7 +5,7 @@
   fonts();
   split();
   input();
-  beep();
+  sound();
 ];
 
 [ interpreter major minor;
@@ -126,14 +126,77 @@ Array parse buffer 63;
   new_line;
 ];
 
-[ beep i;
+Array numbers --> 8;
 
-  print "^Press a key for sound_effect(1)";
-  @read_char -> i;
-  @sound_effect 1;
+[ parse_numbers i num innum;
 
-  print "^Press a key for sound_effect(2)";
-  @read_char -> i;
-  @sound_effect 2;
+  num = 0;
+  innum = 0;
+
+  for (i = 2: i <= (buffer->1)+1: i++)
+  {
+    switch (buffer->i)
+    {
+    '0':
+      numbers-->num = (numbers-->num*10)+0;
+      innum = 1;
+    '1':
+      numbers-->num = (numbers-->num*10)+1;
+      innum = 1;
+    '2':
+      numbers-->num = (numbers-->num*10)+2;
+      innum = 1;
+    '3':
+      numbers-->num = (numbers-->num*10)+3;
+      innum = 1;
+    '4':
+      numbers-->num = (numbers-->num*10)+4;
+      innum = 1;
+    '5':
+      numbers-->num = (numbers-->num*10)+5;
+      innum = 1;
+    '6':
+      numbers-->num = (numbers-->num*10)+6;
+      innum = 1;
+    '7':
+      numbers-->num = (numbers-->num*10)+7;
+      innum = 1;
+    '8':
+      numbers-->num = (numbers-->num*10)+8;
+      innum = 1;
+    '9':
+      numbers-->num = (numbers-->num*10)+9;
+      innum = 1;
+    default:
+      if (innum == 1)
+      {
+        num++;
+        innum = 0;
+      }
+    }
+  }
+
+];
+
+[ sound result snd vol;
+
+  new_line;
+  while (true)
+  {
+    print "Sound effect number and volume: ";
+    buffer->0 = 60;
+    buffer->1 = 0;
+    @aread buffer parse -> result;
+
+    numbers-->0 = 0;
+    numbers-->1 = 0;
+    parse_numbers();
+    snd = numbers-->0;
+    vol = numbers-->1;
+
+    if (snd == 0)
+      return;
+    @sound_effect snd 2 vol;
+  }
 ];
 

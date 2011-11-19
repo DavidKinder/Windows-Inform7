@@ -196,6 +196,7 @@ protected:
   bool m_compiling;
 
   CString m_outputFileLoc;
+  int m_loadFilter;
 
   CFont m_menuFonts[2];
   int m_menuGutter;

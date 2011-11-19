@@ -1,7 +1,7 @@
 !-------------------------------------------------------------------------------
 !  infglk.h - an Inform library to allow easy access to glk functions
 !    under glulx
-!  Dynamically created by glk2inf.pl on 08/31/2006 at 19:20:21.
+!  Dynamically created by glk2inf.pl on 11/19/2011 at 16:32:20.
 !  Send comments or suggestions to: katre@plover.net
 !-------------------------------------------------------------------------------
 #Ifdef TARGET_GLULX;
@@ -35,6 +35,12 @@ Constant gestalt_HyperlinkInput 12;
 Constant gestalt_SoundMusic 13;
 Constant gestalt_GraphicsTransparency 14;
 Constant gestalt_Unicode 15;
+Constant gestalt_UnicodeNorm 16;
+Constant gestalt_LineInputEcho 17;
+Constant gestalt_LineTerminators 18;
+Constant gestalt_LineTerminatorKey 19;
+Constant gestalt_DateTime 20;
+Constant gestalt_Sound2 21;
 Constant evtype_None 0;
 Constant evtype_Timer 1;
 Constant evtype_CharInput 2;
@@ -44,6 +50,7 @@ Constant evtype_Arrange 5;
 Constant evtype_Redraw 6;
 Constant evtype_SoundNotify 7;
 Constant evtype_Hyperlink 8;
+Constant evtype_VolumeNotify 9;
 Constant keycode_Unknown $ffffffff;
 Constant keycode_Left $fffffffe;
 Constant keycode_Right $fffffffd;
@@ -96,6 +103,9 @@ Constant winmethod_DirMask $0f;
 Constant winmethod_Fixed $10;
 Constant winmethod_Proportional $20;
 Constant winmethod_DivisionMask $f0;
+Constant winmethod_Border $000;
+Constant winmethod_NoBorder $100;
+Constant winmethod_BorderMask $100;
 Constant fileusage_Data $00;
 Constant fileusage_SavedGame $01;
 Constant fileusage_Transcript $02;
@@ -594,6 +604,20 @@ Constant imagealign_MarginRight $05;
   return ret;
 ];
 
+[ glk_set_echo_line_event _vararg_count ret;
+! glk_set_echo_line_event (win val)
+  ! And now the @glk call
+  @glk 336 _vararg_count ret;
+  return ret;
+];
+
+[ glk_set_terminators_line_event _vararg_count ret;
+! glk_set_terminators_line_event (win keycodes count)
+  ! And now the @glk call
+  @glk 337 _vararg_count ret;
+  return ret;
+];
+
 [ glk_buffer_to_lower_case_uni _vararg_count ret;
 ! glk_buffer_to_lower_case_uni (buf len numchars)
   ! And now the @glk call
@@ -703,6 +727,20 @@ Constant imagealign_MarginRight $05;
 ! glk_request_line_event_uni (win buf maxlen initlen)
   ! And now the @glk call
   @glk 321 _vararg_count ret;
+  return ret;
+];
+
+[ glk_buffer_canon_decompose_uni _vararg_count ret;
+! glk_buffer_canon_decompose_uni (buf len numchars)
+  ! And now the @glk call
+  @glk 291 _vararg_count ret;
+  return ret;
+];
+
+[ glk_buffer_canon_normalize_uni _vararg_count ret;
+! glk_buffer_canon_normalize_uni (buf len numchars)
+  ! And now the @glk call
+  @glk 292 _vararg_count ret;
   return ret;
 ];
 
@@ -818,6 +856,41 @@ Constant imagealign_MarginRight $05;
   return ret;
 ];
 
+[ glk_schannel_create_ext _vararg_count ret;
+! glk_schannel_create_ext (rock volume)
+  ! And now the @glk call
+  @glk 244 _vararg_count ret;
+  return ret;
+];
+
+[ glk_schannel_play_multi _vararg_count ret;
+! glk_schannel_play_multi (chanarray chancount sndarray soundcount notify)
+  ! And now the @glk call
+  @glk 247 _vararg_count ret;
+  return ret;
+];
+
+[ glk_schannel_pause _vararg_count ret;
+! glk_schannel_pause (chan)
+  ! And now the @glk call
+  @glk 254 _vararg_count ret;
+  return ret;
+];
+
+[ glk_schannel_unpause _vararg_count ret;
+! glk_schannel_unpause (chan)
+  ! And now the @glk call
+  @glk 255 _vararg_count ret;
+  return ret;
+];
+
+[ glk_schannel_set_volume_ext _vararg_count ret;
+! glk_schannel_set_volume_ext (chan vol duration notify)
+  ! And now the @glk call
+  @glk 253 _vararg_count ret;
+  return ret;
+];
+
 [ glk_set_hyperlink _vararg_count ret;
 ! glk_set_hyperlink (linkval)
   ! And now the @glk call
@@ -843,6 +916,76 @@ Constant imagealign_MarginRight $05;
 ! glk_cancel_hyperlink_event (win)
   ! And now the @glk call
   @glk 259 _vararg_count ret;
+  return ret;
+];
+
+[ glk_current_time _vararg_count ret;
+! glk_current_time (time)
+  ! And now the @glk call
+  @glk 352 _vararg_count ret;
+  return ret;
+];
+
+[ glk_current_simple_time _vararg_count ret;
+! glk_current_simple_time (factor)
+  ! And now the @glk call
+  @glk 353 _vararg_count ret;
+  return ret;
+];
+
+[ glk_time_to_date_utc _vararg_count ret;
+! glk_time_to_date_utc (time date)
+  ! And now the @glk call
+  @glk 360 _vararg_count ret;
+  return ret;
+];
+
+[ glk_time_to_date_local _vararg_count ret;
+! glk_time_to_date_local (time date)
+  ! And now the @glk call
+  @glk 361 _vararg_count ret;
+  return ret;
+];
+
+[ glk_simple_time_to_date_utc _vararg_count ret;
+! glk_simple_time_to_date_utc (time factor date)
+  ! And now the @glk call
+  @glk 362 _vararg_count ret;
+  return ret;
+];
+
+[ glk_simple_time_to_date_local _vararg_count ret;
+! glk_simple_time_to_date_local (time factor date)
+  ! And now the @glk call
+  @glk 363 _vararg_count ret;
+  return ret;
+];
+
+[ glk_date_to_time_utc _vararg_count ret;
+! glk_date_to_time_utc (date time)
+  ! And now the @glk call
+  @glk 364 _vararg_count ret;
+  return ret;
+];
+
+[ glk_date_to_time_local _vararg_count ret;
+! glk_date_to_time_local (date time)
+  ! And now the @glk call
+  @glk 365 _vararg_count ret;
+  return ret;
+];
+
+[ glk_date_to_simple_time_utc _vararg_count ret;
+! glk_date_to_simple_time_utc (date factor)
+  ! And now the @glk call
+  @glk 366 _vararg_count ret;
+  return ret;
+];
+
+[ glk_date_to_simple_time_local _vararg_count ret;
+! glk_date_to_simple_time_local (date factor)
+  ! And now the @glk call
+  @glk 367 _vararg_count ret;
   return ret;
 ];
 
