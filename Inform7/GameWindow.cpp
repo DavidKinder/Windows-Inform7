@@ -221,11 +221,13 @@ void GameWindow::StopInterpreter(bool clear)
   m_interpreter = 0;
 
   // Stop any playing sounds
-  for (SoundMap::const_iterator it = m_sounds.begin(); it != m_sounds.end(); ++it)
+  SoundMap sounds;
+  {
+    CSingleLock lock(&m_soundLock,TRUE);
+    m_sounds.swap(sounds);
+  }
+  for (SoundMap::const_iterator it = sounds.begin(); it != sounds.end(); ++it)
     delete it->second;
-  m_sounds.clear();
-  m_volumes.clear();
-  m_volumeFades.clear();
 
   if (clear)
   {
@@ -687,17 +689,24 @@ void GameWindow::CommandPlaySound(int channelId, int sound, int repeats)
   if (soundInit == false)
   {
     CWinGlkSoundLoader::InitLoaders();
-    CDSoundEngine::GetSoundEngine().Initialize();
+    CDSoundEngine::GetSoundEngine().Initialize(VolumeFader);
     soundInit = true;
   }
 
   // If there is a sound already playing on the channel, stop it
-  SoundMap::iterator it = m_sounds.find(channelId);
-  if (it != m_sounds.end())
+  SoundKey key(this,channelId);
+  CWinGlkSound* oldObj = NULL;
   {
-    delete it->second;
-    m_sounds.erase(it);
+    CSingleLock lock(&m_soundLock,TRUE);
+    SoundMap::iterator it = m_sounds.find(key);
+    if (it != m_sounds.end())
+    {
+      oldObj = it->second;
+      m_sounds.erase(it);
+    }
   }
+  if (oldObj != NULL)
+    delete oldObj;
 
   // Get the path to the resource file and work out its file extension
   CString path = GetMediaPath(L"Sounds",sound);
@@ -724,9 +733,12 @@ void GameWindow::CommandPlaySound(int channelId, int sound, int repeats)
 
   // Get the volume for the sound
   int volume = 0x10000;
-  VolumeMap::const_iterator vit = m_volumes.find(channelId);
-  if (vit != m_volumes.end())
-    volume = vit->second;
+  {
+    CSingleLock lock(&m_soundLock,TRUE);
+    VolumeMap::const_iterator vit = m_volumes.find(key);
+    if (vit != m_volumes.end())
+      volume = vit->second;
+  }
 
   // Create a sound object
   CWinGlkSound* soundObj = loader->GetSound(path);
@@ -739,29 +751,43 @@ void GameWindow::CommandPlaySound(int channelId, int sound, int repeats)
     delete soundObj;
     return;
   }
-  m_sounds[channelId] = soundObj;
+
+  CSingleLock lock(&m_soundLock,TRUE);
+  m_sounds[key] = soundObj;
 }
 
 void GameWindow::CommandStopSound(int channelId)
 {
-  SoundMap::iterator it = m_sounds.find(channelId);
-  if (it != m_sounds.end())
+  SoundKey key(this,channelId);
+  CWinGlkSound* soundObj = NULL;
   {
-    delete it->second;
-    m_sounds.erase(it);
+    CSingleLock lock(&m_soundLock,TRUE);
+    SoundMap::iterator it = m_sounds.find(key);
+    if (it != m_sounds.end())
+    {
+      soundObj = it->second;
+      m_sounds.erase(it);
+    }
   }
+  if (soundObj != NULL)
+    delete soundObj;
 }
 
 void GameWindow::CommandSetVolume(int channelId, int volume, int duration)
 {
+  SoundKey key(this,channelId);
+
+  // Hold the lock through the whole operation
+  CSingleLock lock(&m_soundLock,TRUE);
+
   if (duration == 0)
   {
     // Store the new volume
-    m_volumeFades.erase(channelId);
-    m_volumes[channelId] = volume;
+    m_volumeFades.erase(key);
+    m_volumes[key] = volume;
 
     // Find the sound on the channel, if any, and set its volume
-    SoundMap::iterator it = m_sounds.find(channelId);
+    SoundMap::iterator it = m_sounds.find(key);
     if (it != m_sounds.end())
       it->second->SetVolume(volume);
   }
@@ -769,7 +795,7 @@ void GameWindow::CommandSetVolume(int channelId, int volume, int duration)
   {
     // Get the current volume
     int volumeNow = 0x10000;
-    VolumeMap::const_iterator vit = m_volumes.find(channelId);
+    VolumeMap::const_iterator vit = m_volumes.find(key);
     if (vit != m_volumes.end())
       volumeNow = vit->second;
 
@@ -780,7 +806,7 @@ void GameWindow::CommandSetVolume(int channelId, int volume, int duration)
     fade.rate = (double)(volume - volumeNow) / (double)duration;
     fade.startTime = ::GetTickCount();
     fade.notify = 0;
-    m_volumeFades[channelId] = fade;
+    m_volumeFades[key] = fade;
   }
 }
 
@@ -1106,22 +1132,28 @@ void GameWindow::OnTimer(UINT nIDEvent)
   case 1:
     {
       // Find any sounds that have finished playing
-      std::set<int> done;
-      for (SoundMap::const_iterator it = m_sounds.begin(); it != m_sounds.end(); ++it)
+      SoundMap done;
       {
-        if (it->second->IsPlaying() == false)
-          done.insert(it->first);
+        CSingleLock lock(&m_soundLock,TRUE);
+        for (SoundMap::const_iterator it = m_sounds.begin(); it != m_sounds.end(); ++it)
+        {
+          if (it->second->IsPlaying() == false)
+            done.insert(*it);
+        }
+        for (SoundMap::const_iterator dit = done.begin(); dit != done.end(); ++dit)
+        {
+          SoundMap::iterator it = m_sounds.find(dit->first);
+          m_sounds.erase(it);
+        }
       }
 
       // Delete finished sounds and notify the interpreter
-      for (std::set<int>::iterator dit = done.begin(); dit != done.end(); ++dit)
+      for (SoundMap::const_iterator dit = done.begin(); dit != done.end(); ++dit)
       {
-        SoundMap::iterator it = m_sounds.find(*dit);
-        delete it->second;
-        m_sounds.erase(it);
+        delete dit->second;
 
         int notify[1];
-        notify[0] = *dit;
+        notify[0] = dit->first.channel;
         SendReturn(Return_SoundOver,sizeof notify,notify);
       }
     }
@@ -1291,9 +1323,15 @@ void GameWindow::ClearMedia(void)
     delete it->second;
   m_images.clear();
 
-  for (SoundMap::const_iterator it = m_sounds.begin(); it != m_sounds.end(); ++it)
+  SoundMap sounds;
+  {
+    CSingleLock lock(&m_soundLock,TRUE);
+    m_sounds.swap(sounds);
+    m_volumes.clear();
+    m_volumeFades.clear();
+  }
+  for (SoundMap::const_iterator it = sounds.begin(); it != sounds.end(); ++it)
     delete it->second;
-  m_sounds.clear();
 }
 
 void GameWindow::WriteImageSizes(void)
@@ -1412,4 +1450,82 @@ DWORD TickCountDiff(DWORD later, DWORD earlier)
   if (later < earlier)
     return ((MAXDWORD - earlier) + later);
   return (later - earlier);
+}
+
+// Details of sounds currently playing
+CCriticalSection GameWindow::m_soundLock;
+GameWindow::SoundMap GameWindow::m_sounds;
+GameWindow::VolumeMap GameWindow::m_volumes;
+GameWindow::VolumeFadeMap GameWindow::m_volumeFades;
+
+// Called from the sound engine thread
+void GameWindow::VolumeFader(void)
+{
+  DWORD now = ::GetTickCount();
+  CSingleLock lock(&m_soundLock,TRUE);
+
+  for (VolumeFadeMap::iterator it = m_volumeFades.begin(); it != m_volumeFades.end(); ++it)
+  {
+    const SoundKey& key = it->first;
+    VolumeFade& fade = it->second;
+
+    if (!fade.finished)
+    {
+      // Work out the new volume
+      double volume = fade.start+(TickCountDiff(now,fade.startTime)*fade.rate);
+
+      // Don't let the new volume go beyond the target volume
+      if (fade.rate >= 0.0)
+      {
+        if (volume >= fade.target)
+        {
+          volume = fade.target;
+          fade.finished = true;
+        }
+      }
+      else
+      {
+        if (volume <= fade.target)
+        {
+          volume = fade.target;
+          fade.finished = true;
+        }
+      }
+
+      // Use the new volume
+      m_volumes[key] = (int)volume;
+      SoundMap::iterator sit = m_sounds.find(key);
+      if (sit != m_sounds.end())
+        sit->second->SetVolume((int)volume);
+    }
+  }
+}
+
+GameWindow::SoundKey::SoundKey()
+{
+  wnd = NULL;
+  channel = 0;
+}
+
+GameWindow::SoundKey::SoundKey(GameWindow* wnd_, int channel_)
+{
+  wnd = wnd_;
+  channel = channel_;
+}
+
+bool GameWindow::SoundKey::operator<(const SoundKey& key) const
+{
+  if (wnd != key.wnd)
+    return wnd < key.wnd;
+  return channel < key.channel;
+}
+
+GameWindow::VolumeFade::VolumeFade()
+{
+  start = 0.0;
+  target = 0.0;
+  rate = 0.0;
+  startTime = 0;
+  finished = false;
+  notify = 0;
 }

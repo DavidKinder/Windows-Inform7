@@ -105,6 +105,9 @@ private:
 
   void DeferredMoveWindows(void);
 
+  // Called from the sound engine thread
+  static void VolumeFader(void);
+
   void* m_owner;
   CSize m_fontSize;
 
@@ -132,6 +135,22 @@ private:
   PropList m_manifest;
   ImageMap m_images;
 
+  // The key for looking up sound details in maps
+  struct SoundKey
+  {
+    // The game window that generated the sound
+    GameWindow* wnd;
+    // The sound channel
+    int channel;
+
+    // Constructors
+    SoundKey();
+    SoundKey(GameWindow* wnd_, int channel_);
+    // Ordering operator
+    bool operator<(const SoundKey& key) const;
+  };
+
+  // Details of a volume fade operation
   struct VolumeFade
   {
     // The initial volume
@@ -147,22 +166,17 @@ private:
     // The notification value, or zero
     int notify;
 
-    VolumeFade()
-    {
-      start = 0.0;
-      target = 0.0;
-      rate = 0.0;
-      startTime = 0;
-      finished = false;
-      notify = 0;
-    }
+    // Constructor
+    VolumeFade();
   };
 
-  typedef std::map<int,CWinGlkSound*> SoundMap;
-  typedef std::map<int,int> VolumeMap;
-  typedef std::map<int,VolumeFade> VolumeFadeMap;
+  typedef std::map<SoundKey,CWinGlkSound*> SoundMap;
+  typedef std::map<SoundKey,int> VolumeMap;
+  typedef std::map<SoundKey,VolumeFade> VolumeFadeMap;
 
-  SoundMap m_sounds;
-  VolumeMap m_volumes;
-  VolumeFadeMap m_volumeFades;
+  // Details of sounds currently playing
+  static CCriticalSection m_soundLock;
+  static SoundMap m_sounds;
+  static VolumeMap m_volumes;
+  static VolumeFadeMap m_volumeFades;
 };
