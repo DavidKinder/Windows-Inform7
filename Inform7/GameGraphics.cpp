@@ -163,8 +163,11 @@ void GameGraphics::Draw(CDibSection* image, int val1, int val2, int width, int h
     {
       // Create a temporary bitmap
       CDC* dcWnd = GetDC();
-      scaledBitmap.CreateBitmap(dcWnd->GetSafeHdc(),imgSize.cx,imgSize.cy);
+      BOOL created =
+        scaledBitmap.CreateBitmap(dcWnd->GetSafeHdc(),imgSize.cx,imgSize.cy);
       ReleaseDC(dcWnd);
+      if (!created)
+        return;
 
       // Scale the image into the temporary bitmap
       bits = scaledBitmap.GetBits();

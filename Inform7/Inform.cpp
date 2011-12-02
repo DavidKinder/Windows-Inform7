@@ -112,11 +112,11 @@ BOOL InformApp::PreTranslateMessage(MSG* pMsg)
   CArray<CFrameWnd*> frames;
   GetWindowFrames(frames);
 
-	CWnd* wnd = CWnd::FromHandle(pMsg->hwnd);
+  CWnd* wnd = CWnd::FromHandle(pMsg->hwnd);
   for (int i = 0; i < frames.GetSize(); i++)
   {
     CFrameWnd* frame = frames[i];
-		if (wnd->GetTopLevelParent() == frame)
+    if (wnd->GetTopLevelParent() == frame)
       return CWnd::WalkPreTranslateTree(frame->GetSafeHwnd(),pMsg);
   }
 
@@ -482,8 +482,13 @@ CDibSection* InformApp::GetImage(const char* path)
     // Create a bitmap
     HDC dc = ::GetDC(NULL);
     CDibSection* dib = new CDibSection();
-    dib->CreateBitmap(dc,width,height);
+    BOOL created = dib->CreateBitmap(dc,width,height);
     ::ReleaseDC(NULL,dc);
+    if (!created)
+    {
+      png_destroy_read_struct(&png_ptr,&info_ptr,&end_info);
+      return NULL;
+    }
 
     // Read in the image
     rowPointers = new png_bytep[height];
@@ -529,8 +534,13 @@ CDibSection* InformApp::GetImage(const char* path)
     // Create a bitmap
     HDC dc = ::GetDC(NULL);
     CDibSection* dib = new CDibSection();
-    dib->CreateBitmap(dc,width,height);
+    BOOL created = dib->CreateBitmap(dc,width,height);
     ::ReleaseDC(NULL,dc);
+    if (!created)
+    {
+      jpeg_destroy_decompress(&info);
+      return NULL;
+    }
 
     // Get an output buffer
     JSAMPARRAY buffer = (*info.mem->alloc_sarray)
@@ -671,7 +681,8 @@ CDibSection* InformApp::CreateScaledImage(CDibSection* fromImage, double scaleX,
   // Create a scaled image
   CDibSection* newImage = new CDibSection();
   CDC* dc = AfxGetMainWnd()->GetDC();
-  newImage->CreateBitmap(dc->GetSafeHdc(),newSize.cx,newSize.cy);
+  BOOL created = newImage->CreateBitmap(dc->GetSafeHdc(),newSize.cx,newSize.cy);
+  ASSERT(created);
   AfxGetMainWnd()->ReleaseDC(dc);
 
   // Scale and stretch the image
@@ -894,7 +905,7 @@ void InformApp::WriteLog(const char* msg)
 
 bool InformApp::IsWaitCursor(void)
 {
-	return (m_nWaitCursorCount > 0);
+  return (m_nWaitCursorCount > 0);
 }
 
 CStringW InformApp::GetProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR defaultValue)

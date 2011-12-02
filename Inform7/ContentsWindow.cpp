@@ -896,11 +896,12 @@ void ContentsWindow::PrintWindow(CDibSection& dib, CWnd* wnd, COLORREF back)
   CRect client;
   wnd->GetClientRect(client);
   dib.DeleteBitmap();
-  dib.CreateBitmap(dc,client.Width(),client.Height());
-
-  // Print the window into the bitmap
-  CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&dib);
-  dc.FillSolidRect(client,back);
-  wnd->SendMessage(WM_PRINT,(WPARAM)dc.GetSafeHdc(),PRF_CHILDREN|PRF_CLIENT|PRF_NONCLIENT);
-  dc.SelectObject(oldBitmap);
+  if (dib.CreateBitmap(dc,client.Width(),client.Height()))
+  {
+    // Print the window into the bitmap
+    CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&dib);
+    dc.FillSolidRect(client,back);
+    wnd->SendMessage(WM_PRINT,(WPARAM)dc.GetSafeHdc(),PRF_CHILDREN|PRF_CLIENT|PRF_NONCLIENT);
+    dc.SelectObject(oldBitmap);
+  }
 }

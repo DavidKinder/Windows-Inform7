@@ -82,6 +82,7 @@ BOOL SplashScreen::OnInitDialog()
 
     // Get the unscaled background
     CDibSection* back = theApp.GetCachedImage("Welcome Background");
+    ASSERT(back != NULL);
 
     // Create a bitmap for the scaled background
     CDC* dc = GetDesktopWindow()->GetDC();
