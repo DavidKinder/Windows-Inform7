@@ -456,9 +456,21 @@ bool TabSource::SaveProject(const char* path, bool primary)
 
   if (primary)
   {
-    CFile sourceFile;
-    if (sourceFile.Open(fileName,CFile::modeCreate|CFile::modeWrite))
-      saved = m_source.GetEdit().SaveFile(&sourceFile);
+    CString saveName = fileName;
+    saveName += ".save";
+
+    {
+      CFile sourceFile;
+      if (sourceFile.Open(saveName,CFile::modeCreate|CFile::modeWrite))
+        saved = m_source.GetEdit().SaveFile(&sourceFile);
+    }
+
+    if (saved)
+    {
+      ::DeleteFile(fileName);
+      if (::MoveFile(saveName,fileName) == FALSE)
+        saved = false;
+    }
   }
   else
     saved = true;

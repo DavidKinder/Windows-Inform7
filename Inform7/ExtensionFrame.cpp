@@ -219,18 +219,28 @@ void ExtensionFrame::OnFileSave()
     return;
   }
 
-  // Open the file for saving
-  CFile extFile;
-  if (extFile.Open(m_extension,CFile::modeCreate|CFile::modeWrite) == FALSE)
+  // Choose a temporary file name to save under
+  CString saveName = m_extension;
+  saveName += ".save";
+
   {
-    CString msg;
-    msg.Format("Failed to save extension to \n\"%s\"",(LPCSTR)m_extension);
-    MessageBox(msg,INFORM_TITLE,MB_ICONERROR|MB_OK);
-    return;
+    // Open the file for saving
+    CFile extFile;
+    if (extFile.Open(saveName,CFile::modeCreate|CFile::modeWrite) == FALSE)
+    {
+      CString msg;
+      msg.Format("Failed to save extension to \n\"%s\"",(LPCSTR)m_extension);
+      MessageBox(msg,INFORM_TITLE,MB_ICONERROR|MB_OK);
+      return;
+    }
+
+    // Save the extension from the edit control
+    if (!m_edit.SaveFile(&extFile))
+      return;
   }
 
-  // Save the extension from the edit control
-  if (m_edit.SaveFile(&extFile))
+  ::DeleteFile(m_extension);
+  if (::MoveFile(saveName,m_extension))
   {
     DeleteOldExtension(m_extension);
 
