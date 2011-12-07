@@ -487,6 +487,12 @@ Array args buffer 28;
         print "Sound notification: sound=",event-->2,", notification=",event-->3,"^";
         glk_request_line_event(win,input,100,0);
       }
+      else if (event-->0 == evtype_VolumeNotify)
+      {
+        glk_cancel_line_event(win,GLK_NULL);
+        print "Volume notification: notification=",event-->3,"^";
+        glk_request_line_event(win,input,100,0);
+      }
     }
 
     if (event-->2 == 0)

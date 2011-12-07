@@ -926,7 +926,7 @@ extern "C" void glk_select(event_t *event)
               void* lineData = ((int*)command.data)+1;
               int lineLen = (command.len - sizeof(int)) / sizeof(wchar_t);
 
-              event_t lineEvent;
+              event_t lineEvent = { 0 };
               ((I7GlkWindow*)win)->endLine(&lineEvent,false,(wchar_t*)lineData,lineLen);
               if (lineEvent.type == evtype_LineInput)
                 inputEvents.push_back(lineEvent);
@@ -942,7 +942,7 @@ extern "C" void glk_select(event_t *event)
           int key = ((int*)command.data)[0];
           for (winid_t win = glk_window_iterate(0,NULL); win != 0; win = glk_window_iterate(win,NULL))
           {
-            event_t charEvent;
+            event_t charEvent = { 0 };
             ((I7GlkWindow*)win)->endKey(&charEvent,false,key);
             if (charEvent.type == evtype_CharInput)
             {
@@ -995,9 +995,27 @@ extern "C" void glk_select(event_t *event)
           {
             if (((I7GlkChannel*)chan)->getId() == notify)
             {
-              event_t notifyEvent;
-              ((I7GlkChannel*)chan)->getNotify(notifyEvent);
+              event_t notifyEvent = { 0 };
+              ((I7GlkChannel*)chan)->getSoundNotify(notifyEvent);
               if (notifyEvent.type == evtype_SoundNotify)
+                otherEvents.push_back(notifyEvent);
+              break;
+            }
+          }
+        }
+        break;
+
+      case Return_VolumeOver:
+        if (command.len == sizeof(int))
+        {
+          int notify = ((int*)command.data)[0];
+          for (schanid_t chan = glk_schannel_iterate(0,NULL); chan != NULL; chan = glk_schannel_iterate(chan,NULL))
+          {
+            if (((I7GlkChannel*)chan)->getId() == notify)
+            {
+              event_t notifyEvent = { 0 };
+              ((I7GlkChannel*)chan)->getVolumeNotify(notifyEvent);
+              if (notifyEvent.type == evtype_VolumeNotify)
                 otherEvents.push_back(notifyEvent);
               break;
             }
@@ -1013,7 +1031,7 @@ extern "C" void glk_select(event_t *event)
           {
             if (((I7GlkWindow*)win)->getId() == mouse[0])
             {
-              event_t mouseEvent;
+              event_t mouseEvent = { 0 };
               ((I7GlkWindow*)win)->endMouse(&mouseEvent,mouse[1],mouse[2]);
               if (mouseEvent.type == evtype_MouseInput)
                 inputEvents.push_back(mouseEvent);
@@ -1031,7 +1049,7 @@ extern "C" void glk_select(event_t *event)
           {
             if (((I7GlkWindow*)win)->getId() == link[0])
             {
-              event_t linkEvent;
+              event_t linkEvent = { 0 };
               ((I7GlkWindow*)win)->endLink(&linkEvent,link[1]);
               if (linkEvent.type == evtype_Hyperlink)
                 inputEvents.push_back(linkEvent);
@@ -1233,7 +1251,7 @@ extern "C" schanid_t glk_schannel_create(glui32 rock)
 extern "C" schanid_t glk_schannel_create_ext(glui32 rock, glui32 volume)
 {
   I7GlkChannel* chan = new I7GlkChannel(rock);
-  chan->setVolume(volume,0);
+  chan->setVolume(volume,0,0);
   return (schanid_t)chan;
 }
 
@@ -1325,8 +1343,7 @@ extern "C" void glk_schannel_set_volume_ext(schanid_t chan, glui32 vol, glui32 d
   if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
     return;
 
-  // XXXX GLK 073
-  ((I7GlkChannel*)chan)->setVolume(vol,duration);
+  ((I7GlkChannel*)chan)->setVolume(vol,duration,notify);
 }
 
 extern "C" void glk_sound_load_hint(glui32 snd, glui32 flag)

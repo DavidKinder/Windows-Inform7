@@ -33,7 +33,8 @@ enum TerpReturn
   Return_Size,
   Return_SoundOver,
   Return_Mouse,
-  Return_Link
+  Return_Link,
+  Return_VolumeOver
 };
 
 enum TerpWindow

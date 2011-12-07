@@ -20,8 +20,9 @@ public:
 
   glui32 play(glui32 snd, glui32 repeats, glui32 notify);
   void stop(bool check);
-  void setVolume(glui32 volume, glui32 duration);
-  void getNotify(event_t& event);
+  void setVolume(glui32 volume, glui32 duration, glui32 notify);
+  void getSoundNotify(event_t& event);
+  void getVolumeNotify(event_t& event);
 
 protected:
   int m_id;
@@ -29,7 +30,8 @@ protected:
   gidispatch_rock_t m_dispRock;
 
   glui32 m_sound;
-  glui32 m_notify;
+  glui32 m_soundNotify;
+  glui32 m_volumeNotify;
 };
 
 extern std::set<I7GlkChannel*> glkChannels;

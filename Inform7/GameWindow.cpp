@@ -224,7 +224,7 @@ void GameWindow::StopInterpreter(bool clear)
   SoundMap sounds;
   {
     CSingleLock lock(&m_soundLock,TRUE);
-    m_sounds.swap(sounds);
+    RemoveSounds(sounds,false);
   }
   for (SoundMap::const_iterator it = sounds.begin(); it != sounds.end(); ++it)
     delete it->second;
@@ -1131,30 +1131,39 @@ void GameWindow::OnTimer(UINT nIDEvent)
 
   case 1:
     {
-      // Find any sounds that have finished playing
-      SoundMap done;
+      // Find any sounds and volume fades that have finished
+      SoundMap sounds;
+      VolumeFadeMap volumeFades;
       {
         CSingleLock lock(&m_soundLock,TRUE);
-        for (SoundMap::const_iterator it = m_sounds.begin(); it != m_sounds.end(); ++it)
+        RemoveSounds(sounds,true);
+
+        for (VolumeFadeMap::const_iterator it = m_volumeFades.begin(); it != m_volumeFades.end(); ++it)
         {
-          if (it->second->IsPlaying() == false)
-            done.insert(*it);
+          if (it->first.wnd == this)
+          {
+            if (it->second.finished)
+              volumeFades.insert(*it);
+          }
         }
-        for (SoundMap::const_iterator dit = done.begin(); dit != done.end(); ++dit)
-        {
-          SoundMap::iterator it = m_sounds.find(dit->first);
-          m_sounds.erase(it);
-        }
+        for (VolumeFadeMap::const_iterator it = volumeFades.begin(); it != volumeFades.end(); ++it)
+          m_volumeFades.erase(m_volumeFades.find(it->first));
       }
 
       // Delete finished sounds and notify the interpreter
-      for (SoundMap::const_iterator dit = done.begin(); dit != done.end(); ++dit)
+      for (SoundMap::const_iterator it = sounds.begin(); it != sounds.end(); ++it)
       {
-        delete dit->second;
+        delete it->second;
 
         int notify[1];
-        notify[0] = dit->first.channel;
+        notify[0] = it->first.channel;
         SendReturn(Return_SoundOver,sizeof notify,notify);
+      }
+      for (VolumeFadeMap::const_iterator it = volumeFades.begin(); it != volumeFades.end(); ++it)
+      {
+        int notify[1];
+        notify[0] = it->first.channel;
+        SendReturn(Return_VolumeOver,sizeof notify,notify);
       }
     }
     break;
@@ -1326,9 +1335,25 @@ void GameWindow::ClearMedia(void)
   SoundMap sounds;
   {
     CSingleLock lock(&m_soundLock,TRUE);
-    m_sounds.swap(sounds);
-    m_volumes.clear();
-    m_volumeFades.clear();
+    RemoveSounds(sounds,false);
+
+    VolumeMap volumes;
+    for (VolumeMap::const_iterator it = m_volumes.begin(); it != m_volumes.end(); ++it)
+    {
+      if (it->first.wnd == this)
+        volumes.insert(*it);
+    }
+    for (VolumeMap::const_iterator it = volumes.begin(); it != volumes.end(); ++it)
+      m_volumes.erase(m_volumes.find(it->first));
+
+    VolumeFadeMap volumeFades;
+    for (VolumeFadeMap::const_iterator it = m_volumeFades.begin(); it != m_volumeFades.end(); ++it)
+    {
+      if (it->first.wnd == this)
+        volumeFades.insert(*it);
+    }
+    for (VolumeFadeMap::const_iterator it = volumeFades.begin(); it != volumeFades.end(); ++it)
+      m_volumeFades.erase(m_volumeFades.find(it->first));
   }
   for (SoundMap::const_iterator it = sounds.begin(); it != sounds.end(); ++it)
     delete it->second;
@@ -1450,6 +1475,21 @@ DWORD TickCountDiff(DWORD later, DWORD earlier)
   if (later < earlier)
     return ((MAXDWORD - earlier) + later);
   return (later - earlier);
+}
+
+// This method must be called with the sound lock held
+void GameWindow::RemoveSounds(SoundMap& sounds, bool finished)
+{
+  for (SoundMap::const_iterator it = m_sounds.begin(); it != m_sounds.end(); ++it)
+  {
+    if (it->first.wnd == this)
+    {
+      if (!finished || !(it->second->IsPlaying()))
+        sounds.insert(*it);
+    }
+  }
+  for (SoundMap::const_iterator it = sounds.begin(); it != sounds.end(); ++it)
+    m_sounds.erase(m_sounds.find(it->first));
 }
 
 // Details of sounds currently playing

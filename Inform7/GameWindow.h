@@ -174,6 +174,9 @@ private:
   typedef std::map<SoundKey,int> VolumeMap;
   typedef std::map<SoundKey,VolumeFade> VolumeFadeMap;
 
+  // This method must be called with the sound lock held
+  void RemoveSounds(SoundMap& sounds, bool finished);
+
   // Details of sounds currently playing
   static CCriticalSection m_soundLock;
   static SoundMap m_sounds;
