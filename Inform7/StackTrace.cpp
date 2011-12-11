@@ -5,6 +5,8 @@
 #include <fstream>
 #include <dbghelp.h>
 
+#pragma warning(disable : 4748)
+
 namespace {
 
 typedef BOOL(__stdcall *STACKWALK64)(DWORD, HANDLE, HANDLE, LPSTACKFRAME64, PVOID,
