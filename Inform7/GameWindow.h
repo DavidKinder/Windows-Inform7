@@ -80,6 +80,7 @@ private:
   void CommandDraw(int wndId, int image, int val1, int val2, int width, int height);
   void CommandArrange(int wndId, int method, int size, int keyId, bool swap);
   void CommandPlaySound(int channelId, int sound, int repeats);
+  void CommandPlaySounds(int* sounds, int numSounds);
   void CommandStopSound(int channelId);
   void CommandSetVolume(int channelId, int volume, int duration);
   void CommandFillRect(int wndId, int* rect, int* colour);
@@ -173,6 +174,8 @@ private:
   typedef std::map<SoundKey,CWinGlkSound*> SoundMap;
   typedef std::map<SoundKey,int> VolumeMap;
   typedef std::map<SoundKey,VolumeFade> VolumeFadeMap;
+
+  CWinGlkSound* GetSound(const SoundKey& key, int sound);
 
   // This method must be called with the sound lock held
   void RemoveSounds(SoundMap& sounds, bool finished);

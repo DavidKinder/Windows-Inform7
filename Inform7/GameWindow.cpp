@@ -380,6 +380,9 @@ void GameWindow::RunInterpreterCommand(void)
   case Command_PlaySound:
     CommandPlaySound(idata[0],idata[1],idata[2]);
     break;
+  case Command_PlaySounds:
+    CommandPlaySounds(idata,dataLength/(3*sizeof(int)));
+    break;
   case Command_StopSound:
     CommandStopSound(idata[0]);
     break;
@@ -685,50 +688,9 @@ void GameWindow::CommandArrange(int wndId, int method, int size, int keyId, bool
 
 void GameWindow::CommandPlaySound(int channelId, int sound, int repeats)
 {
-  // Initialize the sound system
-  if (soundInit == false)
-  {
-    CWinGlkSoundLoader::InitLoaders();
-    CDSoundEngine::GetSoundEngine().Initialize(VolumeFader);
-    soundInit = true;
-  }
-
-  // If there is a sound already playing on the channel, stop it
   SoundKey key(this,channelId);
-  CWinGlkSound* oldObj = NULL;
-  {
-    CSingleLock lock(&m_soundLock,TRUE);
-    SoundMap::iterator it = m_sounds.find(key);
-    if (it != m_sounds.end())
-    {
-      oldObj = it->second;
-      m_sounds.erase(it);
-    }
-  }
-  if (oldObj != NULL)
-    delete oldObj;
-
-  // Get the path to the resource file and work out its file extension
-  CString path = GetMediaPath(L"Sounds",sound);
-  if (path.IsEmpty())
-    return;
-  int lastPeriod = path.ReverseFind('.');
-  if (lastPeriod == -1)
-    return;
-  CString pathExt = path.Mid(lastPeriod+1);
-
-  // Identify the loader for the resource
-  CWinGlkSoundLoader* loader = NULL;
-  for (int i = 0; i < CWinGlkSoundLoader::GetLoaderCount(); i++)
-  {
-    CWinGlkSoundLoader* testLoader = CWinGlkSoundLoader::GetLoader(i);
-    for (int j = 0; j < testLoader->GetNumberFileExtensions(); j++)
-    {
-      if (pathExt.CompareNoCase(testLoader->GetFileExtension(j)) == 0)
-        loader = testLoader;
-    }
-  }
-  if (loader == NULL)
+  CWinGlkSound* soundObj = GetSound(key,sound);
+  if (soundObj == NULL)
     return;
 
   // Get the volume for the sound
@@ -740,11 +702,6 @@ void GameWindow::CommandPlaySound(int channelId, int sound, int repeats)
       volume = vit->second;
   }
 
-  // Create a sound object
-  CWinGlkSound* soundObj = loader->GetSound(path);
-  if (soundObj == NULL)
-    return;
-
   // Play the sound and store the sound object
   if (soundObj->Play(repeats,volume,false) == false)
   {
@@ -754,6 +711,53 @@ void GameWindow::CommandPlaySound(int channelId, int sound, int repeats)
 
   CSingleLock lock(&m_soundLock,TRUE);
   m_sounds[key] = soundObj;
+}
+
+void GameWindow::CommandPlaySounds(int* soundData, int numSounds)
+{
+  SoundMap soundObjs;
+  std::map<SoundKey,int> repeats;
+  for (int i = 0; i < numSounds; i++)
+  {
+    SoundKey key(this,soundData[3*numSounds]);
+    CWinGlkSound* soundObj = GetSound(key,soundData[(3*numSounds)+1]);
+    if (soundObj != NULL)
+    {
+      soundObjs[key] = soundObj;
+      repeats[key] = soundData[(3*numSounds)+2];
+    }
+  }
+
+  // Get the volumes for the sounds
+  VolumeMap volumes;
+  {
+    CSingleLock lock(&m_soundLock,TRUE);
+    for (SoundMap::const_iterator it = soundObjs.begin(); it != soundObjs.end(); ++it)
+    {
+      VolumeMap::const_iterator vit = m_volumes.find(it->first);
+      if (vit != m_volumes.end())
+        volumes[it->first] = vit->second;
+      else
+        volumes[it->first] = 0x10000;
+    }
+  }
+
+  // Play the sounds and store the sound objects
+  for (SoundMap::iterator it = soundObjs.begin(); it != soundObjs.end(); ++it)
+  {
+    if (it->second->Play(repeats[it->first],volumes[it->first],false) == false)
+    {
+      delete it->second;
+      it->second = NULL;
+    }
+  }
+
+  CSingleLock lock(&m_soundLock,TRUE);
+  for (SoundMap::iterator it = soundObjs.begin(); it != soundObjs.end(); ++it)
+  {
+    if (it->second != NULL)
+      m_sounds[it->first] = it->second;
+  }
 }
 
 void GameWindow::CommandStopSound(int channelId)
@@ -1475,6 +1479,57 @@ DWORD TickCountDiff(DWORD later, DWORD earlier)
   if (later < earlier)
     return ((MAXDWORD - earlier) + later);
   return (later - earlier);
+}
+
+CWinGlkSound* GameWindow::GetSound(const SoundKey& key, int sound)
+{
+  // Initialize the sound system
+  if (soundInit == false)
+  {
+    CWinGlkSoundLoader::InitLoaders();
+    CDSoundEngine::GetSoundEngine().Initialize(VolumeFader);
+    soundInit = true;
+  }
+
+  // If there is a sound already playing on the channel, stop it
+  CWinGlkSound* oldObj = NULL;
+  {
+    CSingleLock lock(&m_soundLock,TRUE);
+    SoundMap::iterator it = m_sounds.find(key);
+    if (it != m_sounds.end())
+    {
+      oldObj = it->second;
+      m_sounds.erase(it);
+    }
+  }
+  if (oldObj != NULL)
+    delete oldObj;
+
+  // Get the path to the resource file and work out its file extension
+  CString path = GetMediaPath(L"Sounds",sound);
+  if (path.IsEmpty())
+    return NULL;
+  int lastPeriod = path.ReverseFind('.');
+  if (lastPeriod == -1)
+    return NULL;
+  CString pathExt = path.Mid(lastPeriod+1);
+
+  // Identify the loader for the resource
+  CWinGlkSoundLoader* loader = NULL;
+  for (int i = 0; i < CWinGlkSoundLoader::GetLoaderCount(); i++)
+  {
+    CWinGlkSoundLoader* testLoader = CWinGlkSoundLoader::GetLoader(i);
+    for (int j = 0; j < testLoader->GetNumberFileExtensions(); j++)
+    {
+      if (pathExt.CompareNoCase(testLoader->GetFileExtension(j)) == 0)
+        loader = testLoader;
+    }
+  }
+  if (loader == NULL)
+    return NULL;
+
+  // Create a sound object
+  return loader->GetSound(path);
 }
 
 // This method must be called with the sound lock held

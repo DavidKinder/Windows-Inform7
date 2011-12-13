@@ -458,6 +458,9 @@ Array args buffer 28;
   glk_fileref_destroy(fref);
 ];
 
+Array multiChannels --> 3;
+Array multiSounds --> 3;
+
 [ sound win channel1 channel2 channel3 channel result;
 
   win = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
@@ -472,6 +475,7 @@ Array args buffer 28;
   print "  3 <channel> <sound> <repeat> <notify> - Play a sound^";
   print "  4 <channel> <volume> - Set the volume^";
   print "  5 <channel> <volume> <duration> <notify> - Set the volume^";
+  print "  6 <sound1> <sound2> <sound3> <notify> - Play multiple sounds^";
 
   while (true)
   {
@@ -524,17 +528,26 @@ Array args buffer 28;
         print "glk_schannel_play_ext(",numbers-->1,",",numbers-->2,",",numbers-->3,",",numbers-->4,") returned ",result,"^";
       4: glk_schannel_set_volume(channel,numbers-->2);
       5: glk_schannel_set_volume_ext(channel,numbers-->2,numbers-->3,numbers-->4);
+      6:
+        multiChannels-->0 = channel1;
+        multiChannels-->1 = channel2;
+        multiChannels-->2 = channel3;
+        multiSounds-->0 = numbers-->1;
+        multiSounds-->1 = numbers-->2;
+        multiSounds-->2 = numbers-->3;
+        result = glk_schannel_play_multi(multiChannels,3,multiSounds,3,numbers-->4);
+        print "glk_schannel_play_multi() returned ",result,"^";
     }
   }
 ];
 
-Array numbers --> 8;
+Array numbers --> 16;
 
 [ parseNumbers len i num innum;
 
   num = 0;
   innum = 0;
-  for (i = 0: i < 8: i++)
+  for (i = 0: i < 16: i++)
     numbers-->i = 0;
 
   for (i = 0: i < len: i++)

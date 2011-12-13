@@ -52,6 +52,17 @@ glui32 I7GlkChannel::play(glui32 snd, glui32 repeats, glui32 notify)
   return 1;
 }
 
+glui32 I7GlkChannel::multiPlay(glui32 snd, glui32 repeats, glui32 notify, int* data)
+{
+  m_sound = snd;
+  m_soundNotify = notify;
+
+  data[0] = m_id;
+  data[1] = snd;
+  data[2] = repeats;
+  return 1;
+}
+
 void I7GlkChannel::stop(bool check)
 {
   if (check && (m_sound == 0))

@@ -19,6 +19,7 @@ public:
   gidispatch_rock_t& getDispRock(void) { return m_dispRock; }
 
   glui32 play(glui32 snd, glui32 repeats, glui32 notify);
+  glui32 multiPlay(glui32 snd, glui32 repeats, glui32 notify, int* data);
   void stop(bool check);
   void setVolume(glui32 volume, glui32 duration, glui32 notify);
   void getSoundNotify(event_t& event);

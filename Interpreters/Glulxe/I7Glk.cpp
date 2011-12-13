@@ -20,6 +20,7 @@ extern "C" {
 
 #include <deque>
 #include <map>
+#include <malloc.h>
 #include <stdlib.h>
 
 gidispatch_rock_t (*registerObjFn)(void *obj, glui32 objclass) = NULL;
@@ -1311,8 +1312,23 @@ extern "C" glui32 glk_schannel_play_ext(schanid_t chan, glui32 snd, glui32 repea
 
 extern "C" glui32 glk_schannel_play_multi(schanid_t *chanarray, glui32 chancount, glui32 *sndarray, glui32 soundcount, glui32 notify)
 {
-  // XXXX GLK 073
-  return 0;
+  if (chancount != soundcount)
+    return 0;
+
+  int* data = (int*)alloca(3*sizeof(int)*chancount);
+  glui32 playing = 0;
+  for (glui32 i = 0; i < chancount; i++)
+  {
+    if (glkChannels.find((I7GlkChannel*)chanarray[i]) == glkChannels.end())
+    {
+      if (((I7GlkChannel*)chanarray[i])->multiPlay(sndarray[i],1,notify,data+(3*playing)))
+        playing++;
+    }
+  }
+
+  if (playing > 0)
+    sendCommand(Command_PlaySounds,3*sizeof(int)*playing,data);
+  return playing;
 }
 
 extern "C" void glk_schannel_stop(schanid_t chan)

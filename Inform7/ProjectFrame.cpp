@@ -252,10 +252,11 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   UpdateMenuParams();
   UpdateExtensionsMenu();
 
-#ifndef _DEBUG
-  // Remove debugging menu item
-  GetMenu()->RemoveMenu(ID_PLAY_LOAD,MF_BYCOMMAND);
-#endif
+  if (getenv("INFORM7_TEST") == NULL)
+  {
+    // Remove test menu item
+    GetMenu()->RemoveMenu(ID_PLAY_LOAD,MF_BYCOMMAND);
+  }
 
   return 0;
 }
