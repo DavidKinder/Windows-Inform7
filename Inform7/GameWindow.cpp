@@ -719,12 +719,12 @@ void GameWindow::CommandPlaySounds(int* soundData, int numSounds)
   std::map<SoundKey,int> repeats;
   for (int i = 0; i < numSounds; i++)
   {
-    SoundKey key(this,soundData[3*numSounds]);
-    CWinGlkSound* soundObj = GetSound(key,soundData[(3*numSounds)+1]);
+    SoundKey key(this,soundData[3*i]);
+    CWinGlkSound* soundObj = GetSound(key,soundData[(3*i)+1]);
     if (soundObj != NULL)
     {
       soundObjs[key] = soundObj;
-      repeats[key] = soundData[(3*numSounds)+2];
+      repeats[key] = soundData[(3*i)+2];
     }
   }
 

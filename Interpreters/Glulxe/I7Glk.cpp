@@ -1319,7 +1319,7 @@ extern "C" glui32 glk_schannel_play_multi(schanid_t *chanarray, glui32 chancount
   glui32 playing = 0;
   for (glui32 i = 0; i < chancount; i++)
   {
-    if (glkChannels.find((I7GlkChannel*)chanarray[i]) == glkChannels.end())
+    if (glkChannels.find((I7GlkChannel*)chanarray[i]) != glkChannels.end())
     {
       if (((I7GlkChannel*)chanarray[i])->multiPlay(sndarray[i],1,notify,data+(3*playing)))
         playing++;
