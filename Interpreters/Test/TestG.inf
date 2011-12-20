@@ -476,6 +476,8 @@ Array multiSounds --> 3;
   print "  4 <channel> <volume> - Set the volume^";
   print "  5 <channel> <volume> <duration> <notify> - Set the volume^";
   print "  6 <sound1> <sound2> <sound3> <notify> - Play multiple sounds^";
+  print "  7 <channel> - Pause a sound channel^";
+  print "  8 <channel> - Unpause a sound channel^";
 
   while (true)
   {
@@ -537,6 +539,8 @@ Array multiSounds --> 3;
         multiSounds-->2 = numbers-->3;
         result = glk_schannel_play_multi(multiChannels,3,multiSounds,3,numbers-->4);
         print "glk_schannel_play_multi() returned ",result,"^";
+      7: glk_schannel_pause(channel);
+      8: glk_schannel_unpause(channel);
     }
   }
 ];

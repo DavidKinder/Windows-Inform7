@@ -24,7 +24,8 @@ enum TerpCommand
   Command_CancelLine,
   Command_CancelKey,
   Command_ReadLineSilent,
-  Command_PlaySounds
+  Command_PlaySounds,
+  Command_PauseSound
 };
 
 enum TerpReturn

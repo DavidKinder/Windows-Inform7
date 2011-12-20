@@ -1253,6 +1253,7 @@ extern "C" schanid_t glk_schannel_create_ext(glui32 rock, glui32 volume)
 {
   I7GlkChannel* chan = new I7GlkChannel(rock);
   chan->setVolume(volume,0,0);
+  chan->pause(false);
   return (schanid_t)chan;
 }
 
@@ -1341,12 +1342,18 @@ extern "C" void glk_schannel_stop(schanid_t chan)
 
 extern "C" void glk_schannel_pause(schanid_t chan)
 {
-  // XXXX GLK 073
+  if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
+    return;
+
+  ((I7GlkChannel*)chan)->pause(true);
 }
 
 extern "C" void glk_schannel_unpause(schanid_t chan)
 {
-  // XXXX GLK 073
+  if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
+    return;
+
+  ((I7GlkChannel*)chan)->pause(false);
 }
 
 extern "C" void glk_schannel_set_volume(schanid_t chan, glui32 vol)

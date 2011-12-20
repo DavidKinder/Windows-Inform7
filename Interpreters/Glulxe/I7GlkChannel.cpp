@@ -101,6 +101,14 @@ void I7GlkChannel::setVolume(glui32 volume, glui32 duration, glui32 notify)
     m_volumeNotify = notify;
 }
 
+void I7GlkChannel::pause(bool pause)
+{
+  int data[2];
+  data[0] = m_id;
+  data[1] = pause ? 1 : 0;
+  sendCommand(Command_PauseSound,sizeof data,data);
+}
+
 void I7GlkChannel::getSoundNotify(event_t& event)
 {
   if (m_soundNotify != 0)

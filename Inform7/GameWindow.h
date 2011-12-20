@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 
 #include "Skein.h"
 #include "GameBase.h"
@@ -83,6 +84,7 @@ private:
   void CommandPlaySounds(int* sounds, int numSounds);
   void CommandStopSound(int channelId);
   void CommandSetVolume(int channelId, int volume, int duration);
+  void CommandPauseSound(int channelId, int pause);
   void CommandFillRect(int wndId, int* rect, int* colour);
   void CommandBackColour(int wndId, int* colour);
   void CommandSetLink(int wndId, int link);
@@ -171,6 +173,7 @@ private:
     VolumeFade();
   };
 
+  typedef std::set<SoundKey> SoundSet;
   typedef std::map<SoundKey,CWinGlkSound*> SoundMap;
   typedef std::map<SoundKey,int> VolumeMap;
   typedef std::map<SoundKey,VolumeFade> VolumeFadeMap;
@@ -185,4 +188,5 @@ private:
   static SoundMap m_sounds;
   static VolumeMap m_volumes;
   static VolumeFadeMap m_volumeFades;
+  static SoundSet m_paused;
 };

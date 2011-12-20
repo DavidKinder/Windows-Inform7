@@ -22,6 +22,7 @@ public:
   glui32 multiPlay(glui32 snd, glui32 repeats, glui32 notify, int* data);
   void stop(bool check);
   void setVolume(glui32 volume, glui32 duration, glui32 notify);
+  void pause(bool pause);
   void getSoundNotify(event_t& event);
   void getVolumeNotify(event_t& event);
 

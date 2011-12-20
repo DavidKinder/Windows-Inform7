@@ -389,6 +389,9 @@ void GameWindow::RunInterpreterCommand(void)
   case Command_SetVolume:
     CommandSetVolume(idata[0],idata[1],idata[2]);
     break;
+  case Command_PauseSound:
+    CommandPauseSound(idata[0],idata[1]);
+    break;
   case Command_FillRect:
     CommandFillRect(idata[0],idata+1,idata+5);
     break;
@@ -693,17 +696,21 @@ void GameWindow::CommandPlaySound(int channelId, int sound, int repeats)
   if (soundObj == NULL)
     return;
 
-  // Get the volume for the sound
+  // Get the volume and pause state of the sound
   int volume = 0x10000;
+  bool paused = false;
   {
     CSingleLock lock(&m_soundLock,TRUE);
     VolumeMap::const_iterator vit = m_volumes.find(key);
     if (vit != m_volumes.end())
       volume = vit->second;
+    SoundSet::const_iterator pit = m_paused.find(key);
+    if (pit != m_paused.end())
+      paused = true;
   }
 
   // Play the sound and store the sound object
-  if (soundObj->Play(repeats,volume,false) == false)
+  if (soundObj->Play(repeats,volume,paused) == false)
   {
     delete soundObj;
     return;
@@ -730,6 +737,7 @@ void GameWindow::CommandPlaySounds(int* soundData, int numSounds)
 
   // Get the volumes for the sounds
   VolumeMap volumes;
+  SoundSet paused;
   {
     CSingleLock lock(&m_soundLock,TRUE);
     for (SoundMap::const_iterator it = soundObjs.begin(); it != soundObjs.end(); ++it)
@@ -739,13 +747,17 @@ void GameWindow::CommandPlaySounds(int* soundData, int numSounds)
         volumes[it->first] = vit->second;
       else
         volumes[it->first] = 0x10000;
+      SoundSet::const_iterator pit = m_paused.find(it->first);
+      if (pit != m_paused.end())
+        paused.insert(it->first);
     }
   }
 
   // Play the sounds and store the sound objects
   for (SoundMap::iterator it = soundObjs.begin(); it != soundObjs.end(); ++it)
   {
-    if (it->second->Play(repeats[it->first],volumes[it->first],false) == false)
+    bool isPaused = (paused.find(it->first) != paused.end());
+    if (it->second->Play(repeats[it->first],volumes[it->first],isPaused) == false)
     {
       delete it->second;
       it->second = NULL;
@@ -812,6 +824,26 @@ void GameWindow::CommandSetVolume(int channelId, int volume, int duration)
     fade.notify = 0;
     m_volumeFades[key] = fade;
   }
+}
+
+void GameWindow::CommandPauseSound(int channelId, int pause)
+{
+  SoundKey key(this,channelId);
+  CSingleLock lock(&m_soundLock,TRUE);
+
+  bool previous = (m_paused.find(key) != m_paused.end());
+  if (previous == (pause != 0))
+    return;
+
+  if (pause != 0)
+    m_paused.insert(key);
+  else
+    m_paused.erase(key);
+
+  // Find the sound on the channel, if any, and set its paused state
+  SoundMap::iterator it = m_sounds.find(key);
+  if (it != m_sounds.end())
+    it->second->Pause(pause != 0);
 }
 
 void GameWindow::CommandFillRect(int wndId, int* rect, int* colour)
@@ -1552,6 +1584,7 @@ CCriticalSection GameWindow::m_soundLock;
 GameWindow::SoundMap GameWindow::m_sounds;
 GameWindow::VolumeMap GameWindow::m_volumes;
 GameWindow::VolumeFadeMap GameWindow::m_volumeFades;
+GameWindow::SoundSet GameWindow::m_paused;
 
 // Called from the sound engine thread
 void GameWindow::VolumeFader(void)
