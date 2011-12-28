@@ -52,6 +52,9 @@ enum direction
   FORWARDS
 };
 
+et_tabstop* grid_buffer = NULL;
+int grid_buffer_size = 0;
+
 // by default, tabstops are at least 40 pixels plus 16 pixels of padding
 #define MINIMUM_WIDTH_DEFAULT 40
 #define PADDING_WIDTH_DEFAULT 16
@@ -170,12 +173,23 @@ void stretch_tabstops(sptr_t edit, int block_start_linenum, int block_nof_lines,
   et_line* lines = (et_line*)_alloca(sizeof (et_line) * block_nof_lines);
   memset(lines,0,sizeof (et_line) * block_nof_lines);
 
-  et_tabstop** grid = (et_tabstop**)_alloca(sizeof (et_tabstop*) * block_nof_lines);
-  grid[0] = (et_tabstop*)_alloca(sizeof (et_tabstop) * block_nof_lines * max_tabs);
-  memset(grid[0],0,sizeof (et_tabstop) * block_nof_lines * max_tabs);
-  for (l = 1; l < block_nof_lines; l++)
+  int new_buffer_size = __max(8,sizeof (et_tabstop) * block_nof_lines * max_tabs);
+  if (new_buffer_size > grid_buffer_size)
   {
-    grid[l] = grid[0] + (l * max_tabs);
+    et_tabstop* new_buffer = (et_tabstop*)realloc(grid_buffer,new_buffer_size);
+    if (new_buffer == NULL)
+    {
+      return;
+    }
+    grid_buffer = new_buffer;
+    grid_buffer_size = new_buffer_size;
+  }
+  memset(grid_buffer,0,new_buffer_size);
+
+  et_tabstop** grid = (et_tabstop**)_alloca(sizeof (et_tabstop*) * block_nof_lines);
+  for (l = 0; l < block_nof_lines; l++)
+  {
+    grid[l] = grid_buffer + (l * max_tabs);
   }
 
   // get width of text in cells
