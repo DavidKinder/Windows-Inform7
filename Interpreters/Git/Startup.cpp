@@ -1,6 +1,6 @@
+#include <map>
 #include <math.h>
 #include <stdio.h>
-#include <map>
 #include <windows.h>
 
 #include "../Glulxe/I7GlkStream.h"
@@ -65,7 +65,7 @@ void readImageSizes(const char* gamePath)
   fclose(sizeFile);
 }
 
-void fatalError(const char* s)
+extern "C" void fatalError(const char* s)
 {
   for (strid_t str = glk_stream_iterate(0,NULL); str != 0; str = glk_stream_iterate(str,NULL))
   {

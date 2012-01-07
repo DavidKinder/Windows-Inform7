@@ -1,6 +1,8 @@
 #include <map>
 #include <math.h>
 #include <windows.h>
+
+#include "I7GlkStream.h"
 #include "../../Inform7/InterpreterCommands.h"
 
 extern "C" {
@@ -62,6 +64,19 @@ void readImageSizes(const char* gamePath)
     imageSizes[num] = std::make_pair(w,h);
   }
   fclose(sizeFile);
+}
+
+extern "C" void fatalError(const char* s)
+{
+  for (strid_t str = glk_stream_iterate(0,NULL); str != 0; str = glk_stream_iterate(str,NULL))
+  {
+    I7GlkWinStream* wstr = dynamic_cast<I7GlkWinStream*>((I7GlkStream*)str);
+    if (wstr != NULL)
+      wstr->flush();
+  }
+
+  sendCommand(Command_FatalError,strlen(s) * sizeof s[0],s);
+  exit(0);
 }
 
 int main(int argc, char** argv)

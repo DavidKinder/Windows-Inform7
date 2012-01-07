@@ -22,6 +22,7 @@ Array args buffer 28;
     print "5) Hyperlink input^";
     print "6) File output^";
     print "7) Sound^";
+    print "8) Errors^";
     key = waitForKey(win1);
     glk_window_close(win1,GLK_NULL);
 
@@ -34,6 +35,7 @@ Array args buffer 28;
       53: linkInput();
       54: fileOutput();
       55: sound();
+      56: errors();
     }
   }
 ];
@@ -596,6 +598,30 @@ Array numbers --> 16;
         }
     }
   }
+];
+
+[ errors win;
+
+  win = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  glk_set_window(win);
+
+  print "^Errors:^";
+  print "  1 - Printing with line input active^";
+  print "  2 - Printing with character input active^";
+
+  switch (waitForKey(win))
+  {
+    49:
+      glk_request_line_event(win,input,100,0);
+      print "^Oops, I've succeeded in printing to a window waiting for line input.^";
+      @quit;
+    50:
+      glk_request_char_event(win);
+      print "^Oops, I've succeeded in printing to a window waiting for character input.^";
+      @quit;
+  }
+
+  glk_window_close(glk_window_get_root(),GLK_NULL);
 ];
 
 [ waitForKey win;

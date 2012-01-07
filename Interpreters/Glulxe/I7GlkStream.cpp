@@ -12,6 +12,7 @@ extern gidispatch_rock_t (*registerArrFn)(void *array, glui32 len, char *typecod
 extern void (*unregisterArrFn)(void *array, glui32 len, char *typecode, gidispatch_rock_t objrock);
 
 void sendCommand(int command, int dataLength, const void* data);
+extern "C" void fatalError(const char* s);
 
 I7GlkStream::I7GlkStream(glui32 rock)
 {
@@ -596,6 +597,12 @@ glsi32 I7GlkWinStream::getChar(void)
 
 void I7GlkWinStream::putStr(char* s, glui32 len)
 {
+  if (m_win->inputActive())
+  {
+    fatalError("Writing text to a window that is waiting for line or character input is not allowed.");
+    return;
+  }
+
   if (m_write == 0)
     setParagraph();
 
@@ -620,6 +627,12 @@ void I7GlkWinStream::putStr(char* s, glui32 len)
 
 void I7GlkWinStream::putStr(glui32* s, glui32 len)
 {
+  if (m_win->inputActive())
+  {
+    fatalError("Writing text to a window that is waiting for line or character input is not allowed.");
+    return;
+  }
+
   if (m_write == 0)
     setParagraph();
 

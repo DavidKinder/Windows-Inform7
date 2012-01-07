@@ -13,6 +13,7 @@ public:
   void endLine(event_t* event, bool cancel, wchar_t* lineData, int lineLen);
   void requestKey(ReadKey readKey);
   void requestLink(void);
+  bool inputActive(void);
 
   void clear(void);
   glui32 draw(glui32 image, glsi32 val1, glsi32 val2, glui32 width, glui32 height);

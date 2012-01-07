@@ -12,6 +12,7 @@ public:
   void requestKey(ReadKey readKey);
   void requestLink(void);
   void requestMouse(void);
+  bool inputActive(void);
 
   void moveCursor(int x, int y);
   void clear(void);

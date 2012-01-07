@@ -77,6 +77,7 @@ public:
   virtual void endMouse(event_t* event, int x, int y);
   virtual void requestLink(void) {}
   virtual void endLink(event_t* event, int link);
+  virtual bool inputActive(void) { return false; }
 
   virtual void moveCursor(int x, int y) {}
   virtual void clear(void) {}

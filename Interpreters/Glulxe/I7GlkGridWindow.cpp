@@ -55,6 +55,13 @@ void I7GlkGridWindow::requestMouse(void)
   m_readMouse = true;
 }
 
+bool I7GlkGridWindow::inputActive(void)
+{
+  if (m_readKey != ReadKeyNone)
+    return true;
+  return false;
+}
+
 void I7GlkGridWindow::moveCursor(int x, int y)
 {
   m_stream->flush();

@@ -226,6 +226,15 @@ void I7GlkTextWindow::requestLink(void)
   m_readLink = true;
 }
 
+bool I7GlkTextWindow::inputActive(void)
+{
+  if ((m_lineBuffer != NULL) || (m_lineUBuffer != NULL))
+    return true;
+  if (m_readKey != ReadKeyNone)
+    return true;
+  return false;
+}
+
 void I7GlkTextWindow::clear(void)
 {
   m_stream->flush();
