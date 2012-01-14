@@ -31,8 +31,8 @@ public:
   virtual glui32 getLine(glui32 *buf, glui32 len);
   virtual glui32 getBuffer(glui32 *buf, glui32 len);
 
-  virtual void putStr(char* s, glui32 len) = 0;
-  virtual void putStr(glui32* s, glui32 len) = 0;
+  virtual void putStr(char* s, glui32 len, bool check) = 0;
+  virtual void putStr(glui32* s, glui32 len, bool check) = 0;
 
   virtual void setHyperlink(glui32 link) {}
 
@@ -59,8 +59,8 @@ public:
 
   glsi32 getChar(void);
 
-  void putStr(char* s, glui32 len);
-  void putStr(glui32* s, glui32 len);
+  void putStr(char* s, glui32 len, bool check);
+  void putStr(glui32* s, glui32 len, bool check);
 
   bool open(I7GlkFile* file, glui32 mode);
 
@@ -82,8 +82,8 @@ public:
 
   glsi32 getChar(void);
 
-  void putStr(char* s, glui32 len);
-  void putStr(glui32* s, glui32 len);
+  void putStr(char* s, glui32 len, bool check);
+  void putStr(glui32* s, glui32 len, bool check);
 
   bool open(I7GlkFile* file, glui32 mode);
 
@@ -107,8 +107,8 @@ public:
 
   glsi32 getChar(void);
 
-  void putStr(char* s, glui32 len);
-  void putStr(glui32* s, glui32 len);
+  void putStr(char* s, glui32 len, bool check);
+  void putStr(glui32* s, glui32 len, bool check);
 
 protected:
   gidispatch_rock_t m_arrayRock;
@@ -129,8 +129,8 @@ public:
 
   glsi32 getChar(void);
 
-  void putStr(char* s, glui32 len);
-  void putStr(glui32* s, glui32 len);
+  void putStr(char* s, glui32 len, bool check);
+  void putStr(glui32* s, glui32 len, bool check);
 
 protected:
   gidispatch_rock_t m_arrayRock;
@@ -152,8 +152,8 @@ public:
 
   glsi32 getChar(void);
 
-  void putStr(char* s, glui32 len);
-  void putStr(glui32* s, glui32 len);
+  void putStr(char* s, glui32 len, bool check);
+  void putStr(glui32* s, glui32 len, bool check);
 
   void setStyle(glui32 style);
   void setParagraph(void);

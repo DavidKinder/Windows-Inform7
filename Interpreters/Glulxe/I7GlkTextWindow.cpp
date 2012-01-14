@@ -88,7 +88,7 @@ void I7GlkTextWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen, bool
 
   if (initlen > 0)
   {
-    m_stream->putStr(buf,initlen);
+    m_stream->putStr(buf,initlen,false);
     m_stream->flush();
   }
 
@@ -109,7 +109,7 @@ void I7GlkTextWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen, bo
 
   if (initlen > 0)
   {
-    m_stream->putStr(buf,initlen);
+    m_stream->putStr(buf,initlen,false);
     m_stream->flush();
   }
 
@@ -195,11 +195,11 @@ void I7GlkTextWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, in
     if (m_echo != NULL)
     {
       if (m_lineBuffer != NULL)
-        m_echo->putStr(m_lineBuffer,lineLen);
+        m_echo->putStr(m_lineBuffer,lineLen,false);
       if (m_lineUBuffer != NULL)
-        m_echo->putStr(m_lineUBuffer,lineLen);
+        m_echo->putStr(m_lineUBuffer,lineLen,false);
     }
-    m_stream->putStr("\n",1);
+    m_stream->putStr("\n",1,false);
   }
 
   if (unregisterArrFn)

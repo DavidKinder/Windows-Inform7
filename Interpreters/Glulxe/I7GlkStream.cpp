@@ -178,14 +178,14 @@ glsi32 I7GlkFileStream::getChar(void)
   return c;
 }
 
-void I7GlkFileStream::putStr(char* s, glui32 len)
+void I7GlkFileStream::putStr(char* s, glui32 len, bool check)
 {
   setNextOperation(filemode_Write);
   m_write += fwrite(s,1,len,m_file);
   fflush(m_file);
 }
 
-void I7GlkFileStream::putStr(glui32* s, glui32 len)
+void I7GlkFileStream::putStr(glui32* s, glui32 len, bool check)
 {
   setNextOperation(filemode_Write);
   for (glui32 i = 0; i < len; i++)
@@ -320,7 +320,7 @@ glsi32 I7GlkUniFileStream::getChar(void)
   return c;
 }
 
-void I7GlkUniFileStream::putStr(char* s, glui32 len)
+void I7GlkUniFileStream::putStr(char* s, glui32 len, bool check)
 {
   setNextOperation(filemode_Write);
   for (glui32 i = 0; i < len; i++)
@@ -328,7 +328,7 @@ void I7GlkUniFileStream::putStr(char* s, glui32 len)
   fflush(m_file);
 }
 
-void I7GlkUniFileStream::putStr(glui32* s, glui32 len)
+void I7GlkUniFileStream::putStr(glui32* s, glui32 len, bool check)
 {
   setNextOperation(filemode_Write);
   for (glui32 i = 0; i < len; i++)
@@ -461,7 +461,7 @@ glsi32 I7GlkMemoryStream::getChar(void)
   return -1;
 }
 
-void I7GlkMemoryStream::putStr(char* s, glui32 len)
+void I7GlkMemoryStream::putStr(char* s, glui32 len, bool check)
 {
   if (m_buffer != NULL)
   {
@@ -474,7 +474,7 @@ void I7GlkMemoryStream::putStr(char* s, glui32 len)
   m_write += len;
 }
 
-void I7GlkMemoryStream::putStr(glui32* s, glui32 len)
+void I7GlkMemoryStream::putStr(glui32* s, glui32 len, bool check)
 {
   if (m_buffer != NULL)
   {
@@ -543,7 +543,7 @@ glsi32 I7GlkUniMemoryStream::getChar(void)
   return -1;
 }
 
-void I7GlkUniMemoryStream::putStr(char* s, glui32 len)
+void I7GlkUniMemoryStream::putStr(char* s, glui32 len, bool check)
 {
   if (m_buffer != NULL)
   {
@@ -556,7 +556,7 @@ void I7GlkUniMemoryStream::putStr(char* s, glui32 len)
   m_write += len;
 }
 
-void I7GlkUniMemoryStream::putStr(glui32* s, glui32 len)
+void I7GlkUniMemoryStream::putStr(glui32* s, glui32 len, bool check)
 {
   if (m_buffer != NULL)
   {
@@ -595,9 +595,9 @@ glsi32 I7GlkWinStream::getChar(void)
   return -1;
 }
 
-void I7GlkWinStream::putStr(char* s, glui32 len)
+void I7GlkWinStream::putStr(char* s, glui32 len, bool check)
 {
-  if (m_win->inputActive())
+  if (check && m_win->inputActive())
   {
     fatalError("Writing text to a window that is waiting for line or character input is not allowed.");
     return;
@@ -622,12 +622,12 @@ void I7GlkWinStream::putStr(char* s, glui32 len)
 
   I7GlkStream* echo = m_win->getEchoStream();
   if (echo != NULL)
-    echo->putStr(s,len);
+    echo->putStr(s,len,check);
 }
 
-void I7GlkWinStream::putStr(glui32* s, glui32 len)
+void I7GlkWinStream::putStr(glui32* s, glui32 len, bool check)
 {
-  if (m_win->inputActive())
+  if (check && m_win->inputActive())
   {
     fatalError("Writing text to a window that is waiting for line or character input is not allowed.");
     return;
@@ -649,7 +649,7 @@ void I7GlkWinStream::putStr(glui32* s, glui32 len)
 
   I7GlkStream* echo = m_win->getEchoStream();
   if (echo != NULL)
-    echo->putStr(s,len);
+    echo->putStr(s,len,check);
 }
 
 void I7GlkWinStream::setStyle(glui32 style)

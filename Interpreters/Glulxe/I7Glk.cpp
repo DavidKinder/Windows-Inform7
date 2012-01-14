@@ -589,7 +589,7 @@ extern "C" void glk_put_char_stream(strid_t str, unsigned char ch)
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
     return;
 
-  ((I7GlkStream*)str)->putStr((char*)&ch,1);
+  ((I7GlkStream*)str)->putStr((char*)&ch,1,true);
 }
 
 extern "C" void glk_put_string(char *s)
@@ -602,7 +602,7 @@ extern "C" void glk_put_string_stream(strid_t str, char *s)
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
     return;
 
-  ((I7GlkStream*)str)->putStr(s,strlen(s));
+  ((I7GlkStream*)str)->putStr(s,strlen(s),true);
 }
 
 extern "C" void glk_put_buffer(char *buf, glui32 len)
@@ -615,7 +615,7 @@ extern "C" void glk_put_buffer_stream(strid_t str, char *buf, glui32 len)
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
     return;
 
-  ((I7GlkStream*)str)->putStr(buf,len);
+  ((I7GlkStream*)str)->putStr(buf,len,true);
 }
 
 extern "C" void glk_set_style(glui32 styl)
@@ -1437,7 +1437,7 @@ extern "C" void glk_put_char_stream_uni(strid_t str, glui32 ch)
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
     return;
 
-  ((I7GlkStream*)str)->putStr((glui32*)&ch,1);
+  ((I7GlkStream*)str)->putStr((glui32*)&ch,1,true);
 }
 
 extern "C" void glk_put_string_stream_uni(strid_t str, glui32 *s)
@@ -1448,7 +1448,7 @@ extern "C" void glk_put_string_stream_uni(strid_t str, glui32 *s)
   int len = 0;
   while (s[len] != 0)
     len++;
-  ((I7GlkStream*)str)->putStr(s,len);
+  ((I7GlkStream*)str)->putStr(s,len,true);
 }
 
 extern "C" void glk_put_buffer_stream_uni(strid_t str, glui32 *buf, glui32 len)
@@ -1456,7 +1456,7 @@ extern "C" void glk_put_buffer_stream_uni(strid_t str, glui32 *buf, glui32 len)
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
     return;
 
-  ((I7GlkStream*)str)->putStr(buf,len);
+  ((I7GlkStream*)str)->putStr(buf,len,true);
 }
 
 extern "C" glsi32 glk_get_char_stream_uni(strid_t str)
