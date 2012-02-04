@@ -62,6 +62,7 @@ I7GlkTextWindow::I7GlkTextWindow(glui32 rock) : I7GlkWindow(rock)
   m_lineUBuffer = NULL;
   m_lineLength = 0;
   m_echoInput = true;
+  m_nextEchoInput = true;
 
   m_arrayRock.num = 0;
 
@@ -77,11 +78,11 @@ I7GlkTextWindow::~I7GlkTextWindow()
     (*unregisterArrFn)(m_lineUBuffer,m_lineLength,"&+#!Iu",m_arrayRock);
 }
 
-void I7GlkTextWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen, bool echo)
+void I7GlkTextWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen)
 {
   m_lineBuffer = buf;
   m_lineLength = maxlen;
-  m_echoInput = echo;
+  m_echoInput = m_nextEchoInput;
 
   if (registerArrFn)
     m_arrayRock = (*registerArrFn)(m_lineBuffer,m_lineLength,"&+#!Cn");
@@ -95,14 +96,14 @@ void I7GlkTextWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen, bool
   int data[2];
   data[0] = m_id;
   data[1] = initlen;
-  sendCommand(echo ? Command_ReadLine : Command_ReadLineSilent,sizeof data,data);
+  sendCommand(m_echoInput ? Command_ReadLine : Command_ReadLineSilent,sizeof data,data);
 }
 
-void I7GlkTextWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen, bool echo)
+void I7GlkTextWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen)
 {
   m_lineUBuffer = buf;
   m_lineLength = maxlen;
-  m_echoInput = echo;
+  m_echoInput = m_nextEchoInput;
 
   if (registerArrFn)
     m_arrayRock = (*registerArrFn)(m_lineUBuffer,m_lineLength,"&+#!Iu");
@@ -116,10 +117,10 @@ void I7GlkTextWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen, bo
   int data[2];
   data[0] = m_id;
   data[1] = initlen;
-  sendCommand(echo ? Command_ReadLine : Command_ReadLineSilent,sizeof data,data);
+  sendCommand(m_echoInput ? Command_ReadLine : Command_ReadLineSilent,sizeof data,data);
 }
 
-static void readCancelLine(int id, wchar_t*& lineData, int& lineLen)
+static FrontEndCmd readCancelLine(int id)
 {
   for (;;)
   {
@@ -131,11 +132,9 @@ static void readCancelLine(int id, wchar_t*& lineData, int& lineLen)
       {
         if (id == ((int*)it->data)[0])
         {
-          lineData = (wchar_t*)(((int*)it->data)+1);
-          lineLen = (it->len - sizeof(int)) / sizeof(wchar_t);
-          it->free();
+          FrontEndCmd cmd = *it;
           commands.erase(it);
-          return;
+          return cmd;
         }
       }
     }
@@ -153,6 +152,7 @@ void I7GlkTextWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, in
     return;
   }
 
+  FrontEndCmd cancelCmd;
   if (cancel)
   {
     int data[1];
@@ -160,7 +160,9 @@ void I7GlkTextWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, in
     sendCommand(Command_CancelLine,sizeof data,data);
 
     // Wait for the cancelled line input to be sent back
-    readCancelLine(getId(),lineData,lineLen);
+    cancelCmd = readCancelLine(getId());
+    lineData = (wchar_t*)(((int*)cancelCmd.data)+1);
+    lineLen = (cancelCmd.len - sizeof(int)) / sizeof(wchar_t);
   }
 
   if (event != NULL)
@@ -213,6 +215,7 @@ void I7GlkTextWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, in
   m_lineBuffer = NULL;
   m_lineUBuffer = NULL;
   m_lineLength = 0;
+  cancelCmd.free();
 }
 
 void I7GlkTextWindow::requestKey(ReadKey readKey)
@@ -233,6 +236,11 @@ bool I7GlkTextWindow::inputActive(void)
   if (m_readKey != ReadKeyNone)
     return true;
   return false;
+}
+
+void I7GlkTextWindow::setNextEchoInput(bool echo)
+{
+  m_nextEchoInput = echo;
 }
 
 void I7GlkTextWindow::clear(void)

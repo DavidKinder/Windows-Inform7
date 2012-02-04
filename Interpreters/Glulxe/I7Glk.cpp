@@ -45,8 +45,6 @@ std::map<int,std::pair<int,int> > imageSizes;
 DWORD timerTick = 0;
 DWORD timerLast = 0;
 
-bool echoLineInput = true;
-
 std::deque<event_t> inputEvents;
 std::deque<event_t> otherEvents;
 
@@ -1125,7 +1123,7 @@ extern "C" void glk_request_line_event(winid_t win, char *buf, glui32 maxlen, gl
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
     return;
 
-  ((I7GlkWindow*)win)->requestLine(buf,maxlen,initlen,echoLineInput);
+  ((I7GlkWindow*)win)->requestLine(buf,maxlen,initlen);
 }
 
 extern "C" void glk_request_char_event(winid_t win)
@@ -1529,12 +1527,15 @@ extern "C" void glk_request_line_event_uni(winid_t win, glui32 *buf, glui32 maxl
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
     return;
 
-  ((I7GlkWindow*)win)->requestLine(buf,maxlen,initlen,echoLineInput);
+  ((I7GlkWindow*)win)->requestLine(buf,maxlen,initlen);
 }
 
 extern "C" void glk_set_echo_line_event(winid_t win, glui32 val)
 {
-  echoLineInput = (val != 0);
+  if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
+    return;
+
+  ((I7GlkWindow*)win)->setNextEchoInput(val != 0);
 }
 
 extern "C" void glk_set_terminators_line_event(winid_t win, glui32 *keycodes, glui32 count)
@@ -1628,6 +1629,16 @@ extern "C" glsi32 glk_date_to_simple_time_local(glkdate_t* date, glui32 factor)
   if (factor == 0)
     return 0;
   return ToSimpleTime(ToLocal(FromGlkDate(date)),factor);
+}
+
+extern "C" strid_t glk_stream_open_resource(glui32 filenum, glui32 rock)
+{
+  return 0;
+}
+
+extern "C" strid_t glk_stream_open_resource_uni(glui32 filenum, glui32 rock)
+{
+  return 0;
 }
 
 extern "C" void gidispatch_set_object_registry(

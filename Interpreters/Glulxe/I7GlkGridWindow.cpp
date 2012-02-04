@@ -17,7 +17,7 @@ I7GlkGridWindow::I7GlkGridWindow(glui32 rock) : I7GlkWindow(rock)
     m_styles[i] = defaultStyles[1][i];
 }
 
-void I7GlkGridWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen, bool echo)
+void I7GlkGridWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen)
 {
   // Line input is not supported
   event_t lineEvent;
@@ -28,7 +28,7 @@ void I7GlkGridWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen, bool
   inputEvents.push_back(lineEvent);
 }
 
-void I7GlkGridWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen, bool echo)
+void I7GlkGridWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen)
 {
   // Line input is not supported
   event_t lineEvent;
