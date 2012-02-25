@@ -136,7 +136,7 @@ bool ProjectSettings::Save(const char* path)
 
 CString ProjectSettings::GetInformSwitches(bool release)
 {
-  CString switches("-w");
+  CString switches("-kw");
   switches += (!release) ? "SD" : "~S~D";
 
   switch (m_output)
