@@ -1,4 +1,6 @@
-// Conversion of Nick Gravgaard's elastic tabstop GEdit plugin to Scintilla
+// Conversion of Nick Gravgaard's elastic tabstop GEdit plugin to Scintilla, modified to follow
+// Andrew Hunder's Inform 7 OS X implementation in terms of where to apply elastic tabstops
+// (that is, only on lines that do not start with tabstops, and are not purely whitespace).
 
 #include "stdafx.h"
 
@@ -199,6 +201,8 @@ void stretch_tabstops(sptr_t edit, int block_start_linenum, int block_nof_lines,
     int current_line_num = block_start_linenum + l;
     int current_tab_num = 0;
     bool cell_empty = true;
+    bool line_blank = true;
+    bool line_uses_elastic_tabstops = true;
 
     int current_pos = call_edit(edit,SCI_POSITIONFROMLINE,current_line_num);
     int cell_start = current_pos;
@@ -216,19 +220,32 @@ void stretch_tabstops(sptr_t edit, int block_start_linenum, int block_nof_lines,
       }
       else if (current_char == '\t')
       {
-        if (!cell_empty)
+        if (line_blank)
         {
-          text_width_in_tab = get_text_width(edit,cell_start,current_pos);
+          line_uses_elastic_tabstops = false;
         }
-        grid[l][current_tab_num].ends_in_tab = true;
-        grid[l][current_tab_num].text_width_pix = calc_tab_width(text_width_in_tab);
-        current_tab_num++;
-        lines[l].num_tabs++;
-        text_width_in_tab = 0;
-        cell_empty = true;
+
+        if (line_uses_elastic_tabstops)
+        {
+          if (!cell_empty)
+          {
+            text_width_in_tab = get_text_width(edit,cell_start,current_pos);
+          }
+          grid[l][current_tab_num].ends_in_tab = true;
+          grid[l][current_tab_num].text_width_pix = calc_tab_width(text_width_in_tab);
+          current_tab_num++;
+          lines[l].num_tabs++;
+          text_width_in_tab = 0;
+          cell_empty = true;
+        }
       }
       else
       {
+        if (isspace(current_char) == 0)
+        {
+          line_blank = false;
+        }
+
         if (cell_empty)
         {
           cell_start = current_pos;
