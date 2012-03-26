@@ -57,8 +57,11 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_INSTALL_EXT, OnFileInstallExt)
   ON_COMMAND(ID_FILE_NEW_EXT, OnFileNewExt)
   ON_COMMAND_RANGE(ID_EXTENSIONS_LIST, ID_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileOpenExt)
+  ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE, OnUpdateCompile)
   ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
+  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateCompile)
   ON_COMMAND(ID_FILE_SAVE, OnFileSave)
+  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, OnUpdateCompile)
   ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
   ON_COMMAND(ID_FILE_IMPORT_SKEIN, OnFileImportSkein)
 
@@ -918,20 +921,25 @@ void ProjectFrame::OnFileOpenExt(UINT nID)
 
 void ProjectFrame::OnFileClose()
 {
-  SendMessage(WM_CLOSE);
+  if (!m_compiling)
+    SendMessage(WM_CLOSE);
 }
 
 void ProjectFrame::OnFileSave()
 {
-  SaveProject(m_projectDir);
+  if (!m_compiling)
+    SaveProject(m_projectDir);
 }
 
 void ProjectFrame::OnFileSaveAs()
 {
-  // Ask for a project to save as
-  ProjectDirDialog dialog(false,m_projectDir,"Save the project",this);
-  if (dialog.ShowDialog() == IDOK)
-    SaveProject(dialog.GetProjectDir());
+  if (!m_compiling)
+  {
+    // Ask for a project to save as
+    ProjectDirDialog dialog(false,m_projectDir,"Save the project",this);
+    if (dialog.ShowDialog() == IDOK)
+      SaveProject(dialog.GetProjectDir());
+  }
 }
 
 void ProjectFrame::OnFileImportSkein()
