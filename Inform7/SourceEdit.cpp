@@ -481,8 +481,8 @@ void SourceEdit::OnConvertPaste(NMHDR* hdr, LRESULT* res)
     bool foundTable = false;
     bool inTable = false;
 
-    int i = 0;
-    while (GetNextLine(theText,line,i))
+    int charPos = 0, lineCount = 0;
+    while (GetNextLine(theText,line,charPos))
     {
       if (inTable)
       {
@@ -514,22 +514,24 @@ void SourceEdit::OnConvertPaste(NMHDR* hdr, LRESULT* res)
         }
 
         // Replace any leading blocks of 4 spaces
-        int j = 0;
-        while (j >= 0)
+        int i = 0;
+        while (i >= 0)
         {
-          if (line.Mid(j,4).Compare(L"    ") == 0)
+          if (line.Mid(i,4).Compare(L"    ") == 0)
           {
-            line.Delete(j,3);
-            line.SetAt(j,L'\t');
-            j++;
+            line.Delete(i,3);
+            line.SetAt(i,L'\t');
+            i++;
           }
           else
-            j = -1;
+            i = -1;
         }
       }
-      if (!newText.IsEmpty())
+
+      if (lineCount > 0)
         newText.AppendChar(L'\n');
       newText.Append(line);
+      lineCount++;
     }
 
     CString newTextUtf = TextFormat::UnicodeToUTF8(newText);
