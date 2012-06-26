@@ -98,6 +98,7 @@ BOOL AboutDialog::OnInitDialog()
     "\\tab Neil Cerutti\\par"
     "\\tab Kevin Bracey\\par"
     "\\tab Brady Garvin\\par"
+    "\\tab Xun Gong\\par"
     "\\par"
     "\\b Frotz Z-code interpreter written by\\b0\\par"
     "\\tab Stefan Jokisch\\par"
