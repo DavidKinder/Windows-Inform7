@@ -47,14 +47,14 @@ void AbstractNewDialog::OnOK()
 
   // Check that the project author is valid
   CStringW invalidW(invalid);
-  if (GetAuthor().FindOneOf(invalidW) != -1)
+  if (m_author.FindOneOf(invalidW) != -1)
   {
     CString msg;
     msg.Format("The author's name cannot contain any of the following:\n%s",invalid);
     MessageBox(msg,INFORM_TITLE,MB_ICONERROR|MB_OK);
     return;
   }
-  if (GetAuthor().CompareNoCase(L"Reserved") == 0)
+  if (m_author.CompareNoCase(L"Reserved") == 0)
   {
     MessageBox("The author cannot be called 'Reserved'",INFORM_TITLE,MB_ICONERROR|MB_OK);
     return;
@@ -189,6 +189,13 @@ CString AbstractNewDialog::GetName(void)
 
 CStringW AbstractNewDialog::GetAuthor(void)
 {
+  // Quote the author's name if it contains a period
+  if (m_author.Find(L'.') != -1)
+  {
+    CStringW author;
+    author.Format(L"\"%s\"",m_author);
+    return author;
+  }
   return m_author;
 }
 
