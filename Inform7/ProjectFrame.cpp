@@ -1416,7 +1416,7 @@ void ProjectFrame::OnHelpRecipes()
 {
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
   ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(
-    theApp.GetAppDir()+"\\Documentation\\Rindex.html");
+    theApp.GetAppDir()+"\\Documentation\\Rdoc1.html");
   panel->SetActiveTab(Panel::Tab_Doc);
 }
 
