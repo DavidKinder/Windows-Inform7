@@ -175,7 +175,7 @@ void stretch_tabstops(sptr_t edit, int block_start_linenum, int block_nof_lines,
   et_line* lines = (et_line*)_alloca(sizeof (et_line) * block_nof_lines);
   memset(lines,0,sizeof (et_line) * block_nof_lines);
 
-  int new_buffer_size = __max(8,sizeof (et_tabstop) * block_nof_lines * max_tabs);
+  int new_buffer_size = sizeof (et_tabstop) * __max(1,block_nof_lines * max_tabs);
   if (new_buffer_size > grid_buffer_size)
   {
     et_tabstop* new_buffer = (et_tabstop*)realloc(grid_buffer,new_buffer_size);
