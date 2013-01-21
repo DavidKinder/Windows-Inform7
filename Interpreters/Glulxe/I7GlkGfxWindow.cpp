@@ -15,7 +15,8 @@ void I7GlkGfxWindow::requestMouse(void)
 
 void I7GlkGfxWindow::clear(void)
 {
-  fillRect(m_rect,m_backColour);
+  I7Rect r(0,0,m_rect.width(),m_rect.height());
+  fillRect(r,m_backColour);
 }
 
 glui32 I7GlkGfxWindow::draw(glui32 image, glsi32 val1, glsi32 val2, glui32 width, glui32 height)
@@ -74,4 +75,9 @@ void I7GlkGfxWindow::setBackColour(int colour)
   data[2] = (colour & 0x0000FF00) >> 8;
   data[3] = (colour & 0x000000FF);
   sendCommand(Command_BackColour,sizeof data,data);
+}
+
+int I7GlkGfxWindow::getBackColour(void)
+{
+  return m_backColour;
 }

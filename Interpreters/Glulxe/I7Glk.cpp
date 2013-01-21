@@ -1218,7 +1218,7 @@ extern "C" void glk_window_erase_rect(winid_t win, glsi32 left, glsi32 top, glui
   if (gwin != NULL)
   {
     I7Rect r(left,top,left+width,top+height);
-    gwin->fillRect(r,-1);
+    gwin->fillRect(r,gwin->getBackColour());
   }
 }
 

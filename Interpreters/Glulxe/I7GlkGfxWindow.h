@@ -18,6 +18,7 @@ public:
 
   void fillRect(const I7Rect& r, int colour);
   void setBackColour(int colour);
+  int getBackColour(void);
 
 protected:
   I7Rect m_rect;
