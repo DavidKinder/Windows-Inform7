@@ -201,6 +201,21 @@ LRESULT TabIndex::OnUserNavigate(WPARAM, LPARAM)
 {
   if (IsWindowVisible())
   {
+    // Has the user switched to a different section of the index?
+    CString url = m_index->GetURL();
+    int idx = No_IdxTab;
+    for (int i = 0; i < sizeof m_files / sizeof m_files[0]; i++)
+    {
+      CString check(m_files[i]);
+      if (url.Find(check) > 0)
+        idx = i;
+      check.Replace('\\','/');
+      if (url.Find(check) > 0)
+        idx = i;
+    }
+    if ((idx != No_IdxTab) && (idx != GetActiveTab()))
+      m_tab.SetCurSel(idx);
+
     TabState state;
     GetTabState(state);
     Panel::GetPanel(this)->AddToTabHistory(state);
