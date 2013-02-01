@@ -30,6 +30,7 @@ void (*unregisterArrFn)(void *array, glui32 len, char *typecode, gidispatch_rock
 
 void sendCommand(int command, int dataLength, const void* data);
 void readReturnData(void* data, int length);
+extern "C" void fatalError(const char* s);
 
 giblorb_map_t* blorbMap = NULL;
 
@@ -272,9 +273,9 @@ extern "C" winid_t glk_window_get_root(void)
 extern "C" winid_t glk_window_open(winid_t split, glui32 method, glui32 size, glui32 wintype, glui32 rock)
 {
   if ((split == 0) && (mainWindow != NULL))
-    return 0;
+    fatalError("glk_window_open() was called without a window to split, but a window is already open.");
   if ((split != 0) && (mainWindow == NULL))
-    return 0;
+    fatalError("glk_window_open() was called with a window to split, but no windows are open.");
 
   I7GlkWindow* win = NULL;
   switch (wintype)
@@ -292,52 +293,51 @@ extern "C" winid_t glk_window_open(winid_t split, glui32 method, glui32 size, gl
     win = new I7GlkGfxWindow(rock);
     break;
   }
+  if (win == NULL)
+    return 0;
 
-  if (win != NULL)
+  int data[6];
+  data[0] = win->getId();
+  data[1] = -1;
+  data[2] = -1;
+  data[3] = method;
+  data[4] = size;
+  data[5] = wintype;
+
+  if (split == 0)
+    mainWindow = win;
+  else
   {
-    int data[6];
-    data[0] = win->getId();
-    data[1] = -1;
-    data[2] = -1;
-    data[3] = method;
-    data[4] = size;
-    data[5] = wintype;
+    I7GlkPairWindow* parent = ((I7GlkWindow*)split)->getParent();
+    I7GlkPairWindow* pair = new I7GlkPairWindow((I7GlkWindow*)split,win,method,size);
 
-    if (split == 0)
-      mainWindow = win;
+    if (parent != NULL)
+    {
+      parent->replace((I7GlkWindow*)split,pair);
+      pair->setParent(parent);
+    }
     else
-    {
-      I7GlkPairWindow* parent = ((I7GlkWindow*)split)->getParent();
-      I7GlkPairWindow* pair = new I7GlkPairWindow((I7GlkWindow*)split,win,method,size);
+      mainWindow = pair;
 
-      if (parent != NULL)
-      {
-        parent->replace((I7GlkWindow*)split,pair);
-        pair->setParent(parent);
-      }
-      else
-        mainWindow = pair;
+    data[1] = ((I7GlkWindow*)split)->getId();
+    data[2] = pair->getId();
+  }
 
-      data[1] = ((I7GlkWindow*)split)->getId();
-      data[2] = pair->getId();
-    }
+  sendCommand(Command_CreateWindow,sizeof data,data);
 
-    sendCommand(Command_CreateWindow,sizeof data,data);
+  if (mainWindow != NULL)
+    mainWindow->layout(I7Rect(0,0,displayWidth,displayHeight));
+  win->getStream()->setStyle(style_Normal);
 
-    if (mainWindow != NULL)
-      mainWindow->layout(I7Rect(0,0,displayWidth,displayHeight));
-    win->getStream()->setStyle(style_Normal);
-
-    if (wintype == wintype_TextBuffer)
-    {
-      int data[4];
-      data[0] = win->getId();
-      int colour = win->getStyle(style_Normal).m_backColour;
-      data[1] = (colour & 0x00FF0000) >> 16;
-      data[2] = (colour & 0x0000FF00) >> 8;
-      data[3] = (colour & 0x000000FF);
-      sendCommand(Command_BackColour,sizeof data,data);
-    }
+  if (wintype == wintype_TextBuffer)
+  {
+    int data[4];
+    data[0] = win->getId();
+    int colour = win->getStyle(style_Normal).m_backColour;
+    data[1] = (colour & 0x00FF0000) >> 16;
+    data[2] = (colour & 0x0000FF00) >> 8;
+    data[3] = (colour & 0x000000FF);
+    sendCommand(Command_BackColour,sizeof data,data);
   }
 
   return (winid_t)win;
@@ -346,7 +346,7 @@ extern "C" winid_t glk_window_open(winid_t split, glui32 method, glui32 size, gl
 extern "C" void glk_window_close(winid_t win, stream_result_t *result)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_window_close() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->getStreamResults(result);
   ((I7GlkWindow*)win)->closeWindow();
@@ -358,7 +358,7 @@ extern "C" void glk_window_close(winid_t win, stream_result_t *result)
 extern "C" void glk_window_get_size(winid_t win, glui32 *widthptr, glui32 *heightptr)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_window_get_size() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->getSize(widthptr,heightptr);
 }
@@ -366,27 +366,29 @@ extern "C" void glk_window_get_size(winid_t win, glui32 *widthptr, glui32 *heigh
 extern "C" void glk_window_set_arrangement(winid_t win, glui32 method, glui32 size, winid_t keywin)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_window_set_arrangement() was called for an invalid window.");
   if ((keywin != 0) && (glkWindows.find((I7GlkWindow*)keywin) == glkWindows.end()))
-    return;
+    fatalError("glk_window_set_arrangement() was called for an invalid key window.");
 
   I7GlkPairWindow* pwin = dynamic_cast<I7GlkPairWindow*>((I7GlkWindow*)win);
-  if (pwin != NULL)
-  {
-    pwin->setArrangement(method,size,(I7GlkWindow*)keywin);
-    if (mainWindow != NULL)
-      mainWindow->layout(I7Rect(0,0,displayWidth,displayHeight));
-  }
+  if (pwin == NULL)
+    fatalError("glk_window_set_arrangement() was called for a window that is not a pair window.");
+
+  pwin->setArrangement(method,size,(I7GlkWindow*)keywin);
+  if (mainWindow != NULL)
+    mainWindow->layout(I7Rect(0,0,displayWidth,displayHeight));
 }
 
 extern "C" void glk_window_get_arrangement(winid_t win, glui32 *methodptr, glui32 *sizeptr, winid_t *keywinptr)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_window_get_arrangement() was called for an invalid window.");
 
   I7GlkPairWindow* pwin = dynamic_cast<I7GlkPairWindow*>((I7GlkWindow*)win);
-  if (pwin != NULL)
-    pwin->getArrangement(methodptr,sizeptr,keywinptr);
+  if (pwin == NULL)
+    fatalError("glk_window_get_arrangement() was called for a window that is not a pair window.");
+
+  pwin->getArrangement(methodptr,sizeptr,keywinptr);
 }
 
 extern "C" winid_t glk_window_iterate(winid_t win, glui32 *rockptr)
@@ -409,7 +411,7 @@ extern "C" winid_t glk_window_iterate(winid_t win, glui32 *rockptr)
 extern "C" glui32 glk_window_get_rock(winid_t win)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return 0;
+    fatalError("glk_window_get_rock() was called for an invalid window.");
 
   return ((I7GlkWindow*)win)->getRock();
 }
@@ -417,7 +419,7 @@ extern "C" glui32 glk_window_get_rock(winid_t win)
 extern "C" glui32 glk_window_get_type(winid_t win)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return wintype_Blank;
+    fatalError("glk_window_get_type() was called for an invalid window.");
 
   I7GlkWindow* window = (I7GlkWindow*)win;
 
@@ -429,14 +431,13 @@ extern "C" glui32 glk_window_get_type(winid_t win)
     return wintype_TextGrid;
   if (dynamic_cast<I7GlkGfxWindow*>(window) != NULL)
     return wintype_Graphics;
-
   return wintype_Blank;
 }
 
 extern "C" winid_t glk_window_get_parent(winid_t win)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return 0;
+    fatalError("glk_window_get_parent() was called for an invalid window.");
 
   return (winid_t)((I7GlkWindow*)win)->getParent();
 }
@@ -444,7 +445,7 @@ extern "C" winid_t glk_window_get_parent(winid_t win)
 extern "C" winid_t glk_window_get_sibling(winid_t win)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return 0;
+    fatalError("glk_window_get_sibling() was called for an invalid window.");
 
   I7GlkPairWindow* parent = ((I7GlkWindow*)win)->getParent();
   if (parent != NULL)
@@ -455,7 +456,7 @@ extern "C" winid_t glk_window_get_sibling(winid_t win)
 extern "C" void glk_window_clear(winid_t win)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_window_clear() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->clear();
 }
@@ -463,7 +464,7 @@ extern "C" void glk_window_clear(winid_t win)
 extern "C" void glk_window_move_cursor(winid_t win, glui32 xpos, glui32 ypos)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_window_move_cursor() was called for an invalid window.");
 
   return ((I7GlkWindow*)win)->moveCursor(xpos,ypos);
 }
@@ -471,7 +472,7 @@ extern "C" void glk_window_move_cursor(winid_t win, glui32 xpos, glui32 ypos)
 extern "C" strid_t glk_window_get_stream(winid_t win)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return 0;
+    fatalError("glk_window_get_stream() was called for an invalid window.");
 
   return (strid_t)((I7GlkWindow*)win)->getStream();
 }
@@ -479,7 +480,7 @@ extern "C" strid_t glk_window_get_stream(winid_t win)
 extern "C" void glk_window_set_echo_stream(winid_t win, strid_t str)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_window_set_echo_stream() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->setEchoStream((I7GlkStream*)str);
 }
@@ -487,20 +488,23 @@ extern "C" void glk_window_set_echo_stream(winid_t win, strid_t str)
 extern "C" strid_t glk_window_get_echo_stream(winid_t win)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return 0;
+    fatalError("glk_window_get_echo_stream() was called for an invalid window.");
 
   return (strid_t)((I7GlkWindow*)win)->getEchoStream();
 }
 
 extern "C" void glk_set_window(winid_t win)
 {
+  if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
+    fatalError("glk_set_window() was called for an invalid window.");
+
   glk_stream_set_current(glk_window_get_stream(win));
 }
 
 extern "C" strid_t glk_stream_open_file(frefid_t fileref, glui32 fmode, glui32 rock)
 {
   if (glkFiles.find((I7GlkFile*)fileref) == glkFiles.end())
-    return 0;
+    fatalError("glk_stream_open_file() was called for an invalid file reference.");
 
   I7GlkFileStream* str = new I7GlkFileStream(rock);
   if (str->open((I7GlkFile*)fileref,fmode) == false)
@@ -519,11 +523,11 @@ extern "C" strid_t glk_stream_open_memory(char *buf, glui32 buflen, glui32 fmode
 extern "C" void glk_stream_close(strid_t str, stream_result_t *result)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return;
+    fatalError("glk_stream_close() was called for an invalid stream.");
 
   I7GlkStream* stream = (I7GlkStream*)str;
   if (dynamic_cast<I7GlkWinStream*>(stream) != NULL)
-    return;
+    fatalError("glk_stream_close() was called for a window stream.");
 
   stream->getResults(result);
   delete stream;
@@ -549,7 +553,7 @@ extern "C" strid_t glk_stream_iterate(strid_t str, glui32 *rockptr)
 extern "C" glui32 glk_stream_get_rock(strid_t str)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return 0;
+    fatalError("glk_stream_get_rock() was called for an invalid stream.");
 
   return ((I7GlkStream*)str)->getRock();
 }
@@ -557,7 +561,7 @@ extern "C" glui32 glk_stream_get_rock(strid_t str)
 extern "C" void glk_stream_set_position(strid_t str, glsi32 pos, glui32 seekmode)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return;
+    fatalError("glk_stream_set_position() was called for an invalid stream.");
 
   ((I7GlkStream*)str)->setPosition(pos,seekmode);
 }
@@ -565,7 +569,7 @@ extern "C" void glk_stream_set_position(strid_t str, glsi32 pos, glui32 seekmode
 extern "C" glui32 glk_stream_get_position(strid_t str)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return 0;
+    fatalError("glk_stream_get_position() was called for an invalid stream.");
 
   return ((I7GlkStream*)str)->getPosition();
 }
@@ -588,7 +592,7 @@ extern "C" void glk_put_char(unsigned char ch)
 extern "C" void glk_put_char_stream(strid_t str, unsigned char ch)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return;
+    fatalError("glk_put_char_stream() was called for an invalid stream.");
 
   ((I7GlkStream*)str)->putStr((char*)&ch,1,true);
 }
@@ -601,7 +605,7 @@ extern "C" void glk_put_string(char *s)
 extern "C" void glk_put_string_stream(strid_t str, char *s)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return;
+    fatalError("glk_put_string_stream() was called for an invalid stream.");
 
   ((I7GlkStream*)str)->putStr(s,strlen(s),true);
 }
@@ -614,7 +618,7 @@ extern "C" void glk_put_buffer(char *buf, glui32 len)
 extern "C" void glk_put_buffer_stream(strid_t str, char *buf, glui32 len)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return;
+    fatalError("glk_put_buffer_stream() was called for an invalid stream.");
 
   ((I7GlkStream*)str)->putStr(buf,len,true);
 }
@@ -627,7 +631,7 @@ extern "C" void glk_set_style(glui32 styl)
 extern "C" void glk_set_style_stream(strid_t str, glui32 styl)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return;
+    fatalError("glk_set_style_stream() was called for an invalid stream.");
 
   I7GlkWinStream* wstr = dynamic_cast<I7GlkWinStream*>((I7GlkStream*)str);
   if (wstr != NULL)
@@ -637,7 +641,7 @@ extern "C" void glk_set_style_stream(strid_t str, glui32 styl)
 extern "C" glsi32 glk_get_char_stream(strid_t str)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return -1;
+    fatalError("glk_get_char_stream() was called for an invalid stream.");
 
   glsi32 c = ((I7GlkStream*)str)->getChar();
   if ((c == -1) || (c >= 0 && c <= 255))
@@ -648,7 +652,7 @@ extern "C" glsi32 glk_get_char_stream(strid_t str)
 extern "C" glui32 glk_get_line_stream(strid_t str, char *buf, glui32 len)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return 0;
+    fatalError("glk_get_line_stream() was called for an invalid stream.");
 
   return ((I7GlkStream*)str)->getLine(buf,len);
 }
@@ -656,7 +660,7 @@ extern "C" glui32 glk_get_line_stream(strid_t str, char *buf, glui32 len)
 extern "C" glui32 glk_get_buffer_stream(strid_t str, char *buf, glui32 len)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return 0;
+    fatalError("glk_get_buffer_stream() was called for an invalid stream.");
 
   return ((I7GlkStream*)str)->getBuffer(buf,len);
 }
@@ -763,7 +767,7 @@ extern "C" void glk_stylehint_clear(glui32 wintype, glui32 styl, glui32 hint)
 extern "C" glui32 glk_style_distinguish(winid_t win, glui32 styl1, glui32 styl2)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return 0;
+    fatalError("glk_style_distinguish() was called for an invalid window.");
 
   I7GlkStyle style1 = ((I7GlkWindow*)win)->getStyle(styl1);
   I7GlkStyle style2 = ((I7GlkWindow*)win)->getStyle(styl2);
@@ -773,7 +777,7 @@ extern "C" glui32 glk_style_distinguish(winid_t win, glui32 styl1, glui32 styl2)
 extern "C" glui32 glk_style_measure(winid_t win, glui32 styl, glui32 hint, glui32 *result)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return 0;
+    fatalError("glk_style_measure() was called for an invalid window.");
 
   I7GlkStyle style = ((I7GlkWindow*)win)->getStyle(styl);
   switch (hint)
@@ -840,7 +844,7 @@ extern "C" frefid_t glk_fileref_create_by_prompt(glui32 usage, glui32 fmode, glu
 extern "C" frefid_t glk_fileref_create_from_fileref(glui32 usage, frefid_t fref, glui32 rock)
 {
   if (glkFiles.find((I7GlkFile*)fref) == glkFiles.end())
-    return 0;
+    fatalError("glk_fileref_create_from_fileref() was called for an invalid file reference.");
 
   return (frefid_t)(new I7GlkFile(usage,rock,(I7GlkFile*)fref));
 }
@@ -848,7 +852,7 @@ extern "C" frefid_t glk_fileref_create_from_fileref(glui32 usage, frefid_t fref,
 extern "C" void glk_fileref_destroy(frefid_t fref)
 {
   if (glkFiles.find((I7GlkFile*)fref) == glkFiles.end())
-    return;
+    fatalError("glk_fileref_destroy() was called for an invalid file reference.");
 
   delete (I7GlkFile*)fref;
 }
@@ -881,7 +885,7 @@ extern "C" glui32 glk_fileref_get_rock(frefid_t fref)
 extern "C" void glk_fileref_delete_file(frefid_t fref)
 {
   if (glkFiles.find((I7GlkFile*)fref) == glkFiles.end())
-    return;
+    fatalError("glk_fileref_delete_file() was called for an invalid file reference.");
 
   ((I7GlkFile*)fref)->deleteFile();
 }
@@ -889,7 +893,7 @@ extern "C" void glk_fileref_delete_file(frefid_t fref)
 extern "C" glui32 glk_fileref_does_file_exist(frefid_t fref)
 {
   if (glkFiles.find((I7GlkFile*)fref) == glkFiles.end())
-    return 0;
+    fatalError("glk_fileref_does_file_exist() was called for an invalid file reference.");
 
   return ((I7GlkFile*)fref)->exists() ? 1 : 0;
 }
@@ -1124,7 +1128,7 @@ extern "C" void glk_request_line_event(winid_t win, char *buf, glui32 maxlen, gl
   }
 
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_request_line_event() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->requestLine(buf,maxlen,initlen);
 }
@@ -1139,7 +1143,7 @@ extern "C" void glk_request_char_event(winid_t win)
   }
 
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_request_char_event() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->requestKey(I7GlkWindow::ReadKeyAscii);
 }
@@ -1147,7 +1151,7 @@ extern "C" void glk_request_char_event(winid_t win)
 extern "C" void glk_request_mouse_event(winid_t win)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_request_mouse_event() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->requestMouse();
 }
@@ -1155,7 +1159,7 @@ extern "C" void glk_request_mouse_event(winid_t win)
 extern "C" void glk_cancel_line_event(winid_t win, event_t *event)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_cancel_line_event() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->endLine(event,true,NULL,0);
 }
@@ -1163,7 +1167,7 @@ extern "C" void glk_cancel_line_event(winid_t win, event_t *event)
 extern "C" void glk_cancel_char_event(winid_t win)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_cancel_char_event() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->endKey(NULL,true,0);
 }
@@ -1171,7 +1175,7 @@ extern "C" void glk_cancel_char_event(winid_t win)
 extern "C" void glk_cancel_mouse_event(winid_t win)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_cancel_mouse_event() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->endMouse(NULL,0,0);
 }
@@ -1179,7 +1183,7 @@ extern "C" void glk_cancel_mouse_event(winid_t win)
 extern "C" glui32 glk_image_draw(winid_t win, glui32 image, glsi32 val1, glsi32 val2)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return 0;
+    fatalError("glk_image_draw() was called for an invalid window.");
 
   return ((I7GlkWindow*)win)->draw(image,val1,val2,(glui32)-1,(glui32)-1);
 }
@@ -1187,7 +1191,7 @@ extern "C" glui32 glk_image_draw(winid_t win, glui32 image, glsi32 val1, glsi32 
 extern "C" glui32 glk_image_draw_scaled(winid_t win, glui32 image, glsi32 val1, glsi32 val2, glui32 width, glui32 height)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return 0;
+    fatalError("glk_image_draw_scaled() was called for an invalid window.");
 
   return ((I7GlkWindow*)win)->draw(image,val1,val2,width,height);
 }
@@ -1207,12 +1211,14 @@ extern "C" glui32 glk_image_get_info(glui32 image, glui32 *width, glui32 *height
 
 extern "C" void glk_window_flow_break(winid_t win)
 {
+  if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
+    fatalError("glk_window_flow_break() was called for an invalid window.");
 }
 
 extern "C" void glk_window_erase_rect(winid_t win, glsi32 left, glsi32 top, glui32 width, glui32 height)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_window_erase_rect() was called for an invalid window.");
 
   I7GlkGfxWindow* gwin = dynamic_cast<I7GlkGfxWindow*>((I7GlkWindow*)win);
   if (gwin != NULL)
@@ -1225,7 +1231,7 @@ extern "C" void glk_window_erase_rect(winid_t win, glsi32 left, glsi32 top, glui
 extern "C" void glk_window_fill_rect(winid_t win, glui32 color, glsi32 left, glsi32 top, glui32 width, glui32 height)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_window_fill_rect() was called for an invalid window.");
 
   I7GlkGfxWindow* gwin = dynamic_cast<I7GlkGfxWindow*>((I7GlkWindow*)win);
   if (gwin != NULL)
@@ -1238,7 +1244,7 @@ extern "C" void glk_window_fill_rect(winid_t win, glui32 color, glsi32 left, gls
 extern "C" void glk_window_set_background_color(winid_t win, glui32 color)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_window_set_background_color() was called for an invalid window.");
 
   I7GlkGfxWindow* gwin = dynamic_cast<I7GlkGfxWindow*>((I7GlkWindow*)win);
   if (gwin != NULL)
@@ -1261,7 +1267,7 @@ extern "C" schanid_t glk_schannel_create_ext(glui32 rock, glui32 volume)
 extern "C" void glk_schannel_destroy(schanid_t chan)
 {
   if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
-    return;
+    fatalError("glk_schannel_destroy() was called for an invalid sound channel.");
 
   ((I7GlkChannel*)chan)->stop(true);
   delete (I7GlkChannel*)chan;
@@ -1288,20 +1294,23 @@ extern "C" schanid_t glk_schannel_iterate(schanid_t chan, glui32 *rockptr)
 extern "C" glui32 glk_schannel_get_rock(schanid_t chan)
 {
   if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
-    return 0;
+    fatalError("glk_schannel_get_rock() was called for an invalid sound channel.");
 
   return ((I7GlkChannel*)chan)->getRock();
 }
 
 extern "C" glui32 glk_schannel_play(schanid_t chan, glui32 snd)
 {
+  if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
+    fatalError("glk_schannel_play() was called for an invalid sound channel.");
+
   return glk_schannel_play_ext(chan,snd,1,0);
 }
 
 extern "C" glui32 glk_schannel_play_ext(schanid_t chan, glui32 snd, glui32 repeats, glui32 notify)
 {
   if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
-    return 0;
+    fatalError("glk_schannel_play_ext() was called for an invalid sound channel.");
 
   if (repeats == 0)
   {
@@ -1315,17 +1324,17 @@ extern "C" glui32 glk_schannel_play_ext(schanid_t chan, glui32 snd, glui32 repea
 extern "C" glui32 glk_schannel_play_multi(schanid_t *chanarray, glui32 chancount, glui32 *sndarray, glui32 soundcount, glui32 notify)
 {
   if (chancount != soundcount)
-    return 0;
+    fatalError("glk_schannel_play_multi() was called with channel and sound arrays of different lengths.");
 
   int* data = (int*)alloca(3*sizeof(int)*chancount);
   glui32 playing = 0;
   for (glui32 i = 0; i < chancount; i++)
   {
-    if (glkChannels.find((I7GlkChannel*)chanarray[i]) != glkChannels.end())
-    {
-      if (((I7GlkChannel*)chanarray[i])->multiPlay(sndarray[i],1,notify,data+(3*playing)))
-        playing++;
-    }
+    if (glkChannels.find((I7GlkChannel*)chanarray[i]) == glkChannels.end())
+      fatalError("glk_schannel_play_multi() was called for an invalid sound channel.");
+
+    if (((I7GlkChannel*)chanarray[i])->multiPlay(sndarray[i],1,notify,data+(3*playing)))
+      playing++;
   }
 
   if (playing > 0)
@@ -1336,7 +1345,7 @@ extern "C" glui32 glk_schannel_play_multi(schanid_t *chanarray, glui32 chancount
 extern "C" void glk_schannel_stop(schanid_t chan)
 {
   if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
-    return;
+    fatalError("glk_schannel_stop() was called for an invalid sound channel.");
 
   ((I7GlkChannel*)chan)->stop(false);
 }
@@ -1344,7 +1353,7 @@ extern "C" void glk_schannel_stop(schanid_t chan)
 extern "C" void glk_schannel_pause(schanid_t chan)
 {
   if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
-    return;
+    fatalError("glk_schannel_pause() was called for an invalid sound channel.");
 
   ((I7GlkChannel*)chan)->pause(true);
 }
@@ -1352,20 +1361,23 @@ extern "C" void glk_schannel_pause(schanid_t chan)
 extern "C" void glk_schannel_unpause(schanid_t chan)
 {
   if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
-    return;
+    fatalError("glk_schannel_unpause() was called for an invalid sound channel.");
 
   ((I7GlkChannel*)chan)->pause(false);
 }
 
 extern "C" void glk_schannel_set_volume(schanid_t chan, glui32 vol)
 {
+  if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
+    fatalError("glk_schannel_set_volume() was called for an invalid sound channel.");
+
   glk_schannel_set_volume_ext(chan,vol,0,0);
 }
 
 extern "C" void glk_schannel_set_volume_ext(schanid_t chan, glui32 vol, glui32 duration, glui32 notify)
 {
   if (glkChannels.find((I7GlkChannel*)chan) == glkChannels.end())
-    return;
+    fatalError("glk_schannel_set_volume_ext() was called for an invalid sound channel.");
 
   ((I7GlkChannel*)chan)->setVolume(vol,duration,notify);
 }
@@ -1382,7 +1394,7 @@ extern "C" void glk_set_hyperlink(glui32 linkval)
 extern "C" void glk_set_hyperlink_stream(strid_t str, glui32 linkval)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return;
+    fatalError("glk_set_hyperlink_stream() was called for an invalid stream.");
 
   return ((I7GlkStream*)str)->setHyperlink(linkval);
 }
@@ -1390,7 +1402,7 @@ extern "C" void glk_set_hyperlink_stream(strid_t str, glui32 linkval)
 extern "C" void glk_request_hyperlink_event(winid_t win)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_request_hyperlink_event() was called for an invalid stream.");
 
   ((I7GlkWindow*)win)->requestLink();
 }
@@ -1398,7 +1410,7 @@ extern "C" void glk_request_hyperlink_event(winid_t win)
 extern "C" void glk_cancel_hyperlink_event(winid_t win)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_cancel_hyperlink_event() was called for an invalid stream.");
 
   ((I7GlkWindow*)win)->endLink(NULL,0);
 }
@@ -1436,7 +1448,7 @@ extern "C" void glk_put_buffer_uni(glui32 *buf, glui32 len)
 extern "C" void glk_put_char_stream_uni(strid_t str, glui32 ch)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return;
+    fatalError("glk_put_char_stream_uni() was called for an invalid stream.");
 
   ((I7GlkStream*)str)->putStr((glui32*)&ch,1,true);
 }
@@ -1444,7 +1456,7 @@ extern "C" void glk_put_char_stream_uni(strid_t str, glui32 ch)
 extern "C" void glk_put_string_stream_uni(strid_t str, glui32 *s)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return;
+    fatalError("glk_put_string_stream_uni() was called for an invalid stream.");
 
   int len = 0;
   while (s[len] != 0)
@@ -1455,7 +1467,7 @@ extern "C" void glk_put_string_stream_uni(strid_t str, glui32 *s)
 extern "C" void glk_put_buffer_stream_uni(strid_t str, glui32 *buf, glui32 len)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return;
+    fatalError("glk_put_buffer_stream_uni() was called for an invalid stream.");
 
   ((I7GlkStream*)str)->putStr(buf,len,true);
 }
@@ -1463,7 +1475,7 @@ extern "C" void glk_put_buffer_stream_uni(strid_t str, glui32 *buf, glui32 len)
 extern "C" glsi32 glk_get_char_stream_uni(strid_t str)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return -1;
+    fatalError("glk_get_char_stream_uni() was called for an invalid stream.");
 
   return ((I7GlkStream*)str)->getChar();
 }
@@ -1471,7 +1483,7 @@ extern "C" glsi32 glk_get_char_stream_uni(strid_t str)
 extern "C" glui32 glk_get_buffer_stream_uni(strid_t str, glui32 *buf, glui32 len)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return 0;
+    fatalError("glk_get_buffer_stream_uni() was called for an invalid stream.");
 
   return ((I7GlkStream*)str)->getBuffer(buf,len);
 }
@@ -1479,7 +1491,7 @@ extern "C" glui32 glk_get_buffer_stream_uni(strid_t str, glui32 *buf, glui32 len
 extern "C" glui32 glk_get_line_stream_uni(strid_t str, glui32 *buf, glui32 len)
 {
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
-    return 0;
+    fatalError("glk_get_line_stream_uni() was called for an invalid stream.");
 
   return ((I7GlkStream*)str)->getLine(buf,len);
 }
@@ -1487,7 +1499,7 @@ extern "C" glui32 glk_get_line_stream_uni(strid_t str, glui32 *buf, glui32 len)
 extern "C" strid_t glk_stream_open_file_uni(frefid_t fileref, glui32 fmode, glui32 rock)
 {
   if (glkFiles.find((I7GlkFile*)fileref) == glkFiles.end())
-    return 0;
+    fatalError("glk_stream_open_file_uni() was called for an invalid file reference.");
 
   I7GlkUniFileStream* str = new I7GlkUniFileStream(rock);
   if (str->open((I7GlkFile*)fileref,fmode) == false)
@@ -1513,7 +1525,7 @@ extern "C" void glk_request_char_event_uni(winid_t win)
   }
 
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_request_char_event_uni() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->requestKey(I7GlkWindow::ReadKeyUnicode);
 }
@@ -1528,7 +1540,7 @@ extern "C" void glk_request_line_event_uni(winid_t win, glui32 *buf, glui32 maxl
   }
 
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_request_line_event_uni() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->requestLine(buf,maxlen,initlen);
 }
@@ -1536,7 +1548,7 @@ extern "C" void glk_request_line_event_uni(winid_t win, glui32 *buf, glui32 maxl
 extern "C" void glk_set_echo_line_event(winid_t win, glui32 val)
 {
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    return;
+    fatalError("glk_set_echo_line_event() was called for an invalid window.");
 
   ((I7GlkWindow*)win)->setNextEchoInput(val != 0);
 }

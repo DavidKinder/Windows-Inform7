@@ -599,7 +599,7 @@ void I7GlkWinStream::putStr(char* s, glui32 len, bool check)
 {
   if (check && m_win->inputActive())
   {
-    fatalError("Writing text to a window that is waiting for line or character input is not allowed.");
+    fatalError("Printing text to a window that is waiting for line or character input is not allowed.");
     return;
   }
 
@@ -629,7 +629,7 @@ void I7GlkWinStream::putStr(glui32* s, glui32 len, bool check)
 {
   if (check && m_win->inputActive())
   {
-    fatalError("Writing text to a window that is waiting for line or character input is not allowed.");
+    fatalError("Printing text to a window that is waiting for line or character input is not allowed.");
     return;
   }
 
