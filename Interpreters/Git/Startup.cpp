@@ -79,7 +79,7 @@ extern "C" void fatalError(const char* s)
 }
 
 #define CACHE_SIZE (256 * 1024)
-#define UNDO_SIZE (768 * 1024)
+#define UNDO_SIZE (2 * 1024 * 1024)
 
 int main(int argc, char** argv)
 {
