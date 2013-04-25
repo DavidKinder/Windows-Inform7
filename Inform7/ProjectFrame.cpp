@@ -1414,9 +1414,12 @@ void ProjectFrame::OnHelpExtensions()
 
 void ProjectFrame::OnHelpRecipes()
 {
+  CString recipePath = theApp.GetAppDir()+"\\Documentation\\Rindex.html";
+  if (::GetFileAttributes(recipePath) == INVALID_FILE_ATTRIBUTES)
+    recipePath = theApp.GetAppDir()+"\\Documentation\\Rdoc1.html";
+
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
-  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(
-    theApp.GetAppDir()+"\\Documentation\\Rdoc1.html");
+  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(recipePath);
   panel->SetActiveTab(Panel::Tab_Doc);
 }
 
