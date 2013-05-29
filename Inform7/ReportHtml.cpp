@@ -324,7 +324,8 @@ void ReportHtml::SetIEPreferences(const char* path)
   {
     // IE9 has a nasty bug: IDocHostUIHandler::GetOptionKeyPath() is never called.
     // To work around this, we intercept and re-direct calls to open the IE registry key.
-    if (theApp.GetIEVersion() >= 9.0)
+    double ieVer = theApp.GetIEVersion();
+    if ((ieVer >= 9.0) && (ieVer < 9.1))
     {
       HMODULE advadi = ::LoadLibrary("advapi32.dll");
       HMODULE mshtml = ::LoadLibrary("mshtml.dll");
