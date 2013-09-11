@@ -415,6 +415,10 @@ void GameWindow::RunInterpreterCommand(void)
 
 void GameWindow::CommandFatalError(char* error, int errLength)
 {
+  // If there are no windows at all, create one
+  if (m_mainWndId == -1)
+    CommandCreateWindow(0,-1,-1,0,0,Window_Text);
+
   WindowMapIt it(m_windows);
   if (it.Iterate(RUNTIME_CLASS(GameText)))
   {
@@ -422,6 +426,12 @@ void GameWindow::CommandFatalError(char* error, int errLength)
     it.Value()->SetStyle(true,false,false,false,0);
     it.Value()->AddText(L"Fatal Error: ",false);
     it.Value()->AddText(CStringW(error,errLength),false);
+  }
+  else
+  {
+    CString msg;
+    msg.Format("The game has caused a fatal error:\n%.*s",errLength,error);
+    MessageBox(msg,INFORM_TITLE,MB_ICONERROR|MB_OK);
   }
 }
 

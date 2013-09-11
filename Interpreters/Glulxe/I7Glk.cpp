@@ -495,6 +495,8 @@ extern "C" strid_t glk_window_get_echo_stream(winid_t win)
 
 extern "C" void glk_set_window(winid_t win)
 {
+  if (win == 0)
+    return; // Otherwise an early Run-time Problem halts the game
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
     fatalError("glk_set_window() was called for an invalid window.");
 
@@ -591,6 +593,8 @@ extern "C" void glk_put_char(unsigned char ch)
 
 extern "C" void glk_put_char_stream(strid_t str, unsigned char ch)
 {
+  if (str == 0)
+    return; // Otherwise an early Run-time Problem halts the game
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
     fatalError("glk_put_char_stream() was called for an invalid stream.");
 
