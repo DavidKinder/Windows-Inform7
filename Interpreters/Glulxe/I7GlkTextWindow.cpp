@@ -1,7 +1,7 @@
+#include "I7GlkCmd.h"
 #include "I7GlkTextWindow.h"
 #include "../../Inform7/InterpreterCommands.h"
 
-#include <deque>
 #include <malloc.h>
 #include <windows.h>
 
@@ -10,21 +10,6 @@ extern int charHeight;
 
 extern gidispatch_rock_t (*registerArrFn)(void *array, glui32 len, char *typecode);
 extern void (*unregisterArrFn)(void *array, glui32 len, char *typecode, gidispatch_rock_t objrock);
-
-struct FrontEndCmd
-{
-  FrontEndCmd();
-  void free(void);
-  void read(void);
-
-  int cmd;
-  int len;
-  void* data;
-};
-extern std::deque<FrontEndCmd> commands;
-
-void sendCommand(int command, int dataLength, const void* data);
-bool readCommand(void);
 
 I7GlkStyle I7GlkTextWindow::defaultStyles[2][style_NUMSTYLES] =
 {
@@ -73,9 +58,9 @@ I7GlkTextWindow::I7GlkTextWindow(glui32 rock) : I7GlkWindow(rock)
 I7GlkTextWindow::~I7GlkTextWindow()
 {
   if ((m_lineBuffer != NULL) && (unregisterArrFn))
-    (*unregisterArrFn)(m_lineBuffer,m_lineLength,"&+#!Cn",m_arrayRock);
+    (*unregisterArrFn)(m_lineBuffer,m_lineLength,(char*)"&+#!Cn",m_arrayRock);
   if ((m_lineUBuffer != NULL) && (unregisterArrFn))
-    (*unregisterArrFn)(m_lineUBuffer,m_lineLength,"&+#!Iu",m_arrayRock);
+    (*unregisterArrFn)(m_lineUBuffer,m_lineLength,(char*)"&+#!Iu",m_arrayRock);
 }
 
 void I7GlkTextWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen)
@@ -85,7 +70,7 @@ void I7GlkTextWindow::requestLine(char *buf, glui32 maxlen, glui32 initlen)
   m_echoInput = m_nextEchoInput;
 
   if (registerArrFn)
-    m_arrayRock = (*registerArrFn)(m_lineBuffer,m_lineLength,"&+#!Cn");
+    m_arrayRock = (*registerArrFn)(m_lineBuffer,m_lineLength,(char*)"&+#!Cn");
 
   if (initlen > 0)
   {
@@ -106,7 +91,7 @@ void I7GlkTextWindow::requestLine(glui32 *buf, glui32 maxlen, glui32 initlen)
   m_echoInput = m_nextEchoInput;
 
   if (registerArrFn)
-    m_arrayRock = (*registerArrFn)(m_lineUBuffer,m_lineLength,"&+#!Iu");
+    m_arrayRock = (*registerArrFn)(m_lineUBuffer,m_lineLength,(char*)"&+#!Iu");
 
   if (initlen > 0)
   {
@@ -201,15 +186,15 @@ void I7GlkTextWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, in
       if (m_lineUBuffer != NULL)
         m_echo->putStr(m_lineUBuffer,lineLen,false);
     }
-    m_stream->putStr("\n",1,false);
+    m_stream->putStr((char*)"\n",1,false);
   }
 
   if (unregisterArrFn)
   {
     if (m_lineBuffer != NULL)
-      (*unregisterArrFn)(m_lineBuffer,m_lineLength,"&+#!Cn",m_arrayRock);
+      (*unregisterArrFn)(m_lineBuffer,m_lineLength,(char*)"&+#!Cn",m_arrayRock);
     if (m_lineUBuffer != NULL)
-      (*unregisterArrFn)(m_lineUBuffer,m_lineLength,"&+#!Iu",m_arrayRock);
+      (*unregisterArrFn)(m_lineUBuffer,m_lineLength,(char*)"&+#!Iu",m_arrayRock);
   }
 
   m_lineBuffer = NULL;

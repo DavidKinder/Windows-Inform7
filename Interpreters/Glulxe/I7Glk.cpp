@@ -5,6 +5,7 @@ extern "C" {
 }
 
 #include "I7GlkChannel.h"
+#include "I7GlkCmd.h"
 #include "I7GlkFile.h"
 #include "I7GlkStream.h"
 #include "I7GlkBlankWindow.h"
@@ -28,8 +29,6 @@ void (*unregisterObjFn)(void *obj, glui32 objclass, gidispatch_rock_t objrock) =
 gidispatch_rock_t (*registerArrFn)(void *array, glui32 len, char *typecode) = NULL;
 void (*unregisterArrFn)(void *array, glui32 len, char *typecode, gidispatch_rock_t objrock) = NULL;
 
-void sendCommand(int command, int dataLength, const void* data);
-void readReturnData(void* data, int length);
 extern "C" void fatalError(const char* s);
 
 giblorb_map_t* blorbMap = NULL;
@@ -48,17 +47,6 @@ DWORD timerLast = 0;
 
 std::deque<event_t> inputEvents;
 std::deque<event_t> otherEvents;
-
-struct FrontEndCmd
-{
-  FrontEndCmd();
-  void free(void);
-  void read(void);
-
-  int cmd;
-  int len;
-  void* data;
-};
 
 std::deque<FrontEndCmd> commands;
 
@@ -496,11 +484,13 @@ extern "C" strid_t glk_window_get_echo_stream(winid_t win)
 extern "C" void glk_set_window(winid_t win)
 {
   if (win == 0)
-    return; // Otherwise an early Run-time Problem halts the game
-  if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
-    fatalError("glk_set_window() was called for an invalid window.");
-
-  glk_stream_set_current(glk_window_get_stream(win));
+    glk_stream_set_current(0);
+  else
+  {
+    if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
+      fatalError("glk_set_window() was called for an invalid window.");
+    glk_stream_set_current(glk_window_get_stream(win));
+  }
 }
 
 extern "C" strid_t glk_stream_open_file(frefid_t fileref, glui32 fmode, glui32 rock)
@@ -594,7 +584,21 @@ extern "C" void glk_put_char(unsigned char ch)
 extern "C" void glk_put_char_stream(strid_t str, unsigned char ch)
 {
   if (str == 0)
+  {
+    static std::string zeroOut;
+
+    if (ch == '\n')
+    {
+      if (zeroOut.size() > 0)
+        sendCommand(Command_NullOutput,zeroOut.size(),&zeroOut[0]);
+      zeroOut.resize(0);
+    }
+    else
+      zeroOut += ch;
+
     return; // Otherwise an early Run-time Problem halts the game
+  }
+
   if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
     fatalError("glk_put_char_stream() was called for an invalid stream.");
 
@@ -837,11 +841,14 @@ extern "C" frefid_t glk_fileref_create_temp(glui32 usage, glui32 rock)
 
 extern "C" frefid_t glk_fileref_create_by_name(glui32 usage, char *name, glui32 rock)
 {
-  return (frefid_t)(new I7GlkFile(usage,rock,name));
+  return (frefid_t)(new I7GlkFile(usage,rock,name,true));
 }
 
 extern "C" frefid_t glk_fileref_create_by_prompt(glui32 usage, glui32 fmode, glui32 rock)
 {
+  std::string name = I7GlkFile::fileDialog(usage,fmode);
+  if (!name.empty())
+    return (frefid_t)(new I7GlkFile(usage,rock,name.c_str(),false));
   return 0;
 }
 

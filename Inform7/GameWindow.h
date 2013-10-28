@@ -72,6 +72,7 @@ private:
   void CommandCreateWindow(int wndId, int splitId, int pairId, int method, int size, TerpWindow type);
   void CommandDestroyWindow(int wndId);
   void CommandPrintOutput(int wndId, wchar_t* text, int textLength);
+  void CommandNullOutput(char* text, int textLength);
   void CommandSetStyle(int wndId, TerpTextStyle style, int size);
   void CommandSetColour(int wndId, int* fore, int* back);
   void CommandSetCursor(int wndId, int row, int column);
@@ -90,6 +91,7 @@ private:
   void CommandSetLink(int wndId, int link);
   void CommandSetParagraph(int wndId, TerpJustify justify);
   void CommandCancelLine(int wndId);
+  void CommandFileDialog(TerpFile file, bool save);
 
   void Resize(bool send);
   void SendReturn(int returnCommand, int dataLength, const void* data);

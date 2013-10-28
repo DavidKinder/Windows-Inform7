@@ -417,7 +417,7 @@ I7GlkMemoryStream::I7GlkMemoryStream(char* buf, glui32 len, glui32 rock) : I7Glk
   m_position = 0;
 
   if (registerArrFn && m_buffer && (m_length > 0))
-    m_arrayRock = ((*registerArrFn)(m_buffer,m_length,"&+#!Cn"));
+    m_arrayRock = ((*registerArrFn)(m_buffer,m_length,(char*)"&+#!Cn"));
   else
     m_arrayRock.num = 0;
 }
@@ -425,7 +425,7 @@ I7GlkMemoryStream::I7GlkMemoryStream(char* buf, glui32 len, glui32 rock) : I7Glk
 I7GlkMemoryStream::~I7GlkMemoryStream()
 {
   if (unregisterArrFn && m_buffer && (m_length > 0))
-    (*unregisterArrFn)(m_buffer,m_length,"&+#!Cn",m_arrayRock);
+    (*unregisterArrFn)(m_buffer,m_length,(char*)"&+#!Cn",m_arrayRock);
 }
 
 void I7GlkMemoryStream::setPosition(glsi32 pos, glui32 mode)
@@ -499,7 +499,7 @@ I7GlkUniMemoryStream::I7GlkUniMemoryStream(glui32* buf, glui32 len, glui32 rock)
   m_position = 0;
 
   if (registerArrFn && m_buffer && (m_length > 0))
-    m_arrayRock = ((*registerArrFn)(m_buffer,m_length,"&+#!Iu"));
+    m_arrayRock = ((*registerArrFn)(m_buffer,m_length,(char*)"&+#!Iu"));
   else
     m_arrayRock.num = 0;
 }
@@ -507,7 +507,7 @@ I7GlkUniMemoryStream::I7GlkUniMemoryStream(glui32* buf, glui32 len, glui32 rock)
 I7GlkUniMemoryStream::~I7GlkUniMemoryStream()
 {
   if (unregisterArrFn && m_buffer && (m_length > 0))
-    (*unregisterArrFn)(m_buffer,m_length,"&+#!Iu",m_arrayRock);
+    (*unregisterArrFn)(m_buffer,m_length,(char*)"&+#!Iu",m_arrayRock);
 }
 
 void I7GlkUniMemoryStream::setPosition(glsi32 pos, glui32 mode)

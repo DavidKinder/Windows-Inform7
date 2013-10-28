@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "Dialogs.h"
 #include "GameWindow.h"
 #include "GameBlank.h"
 #include "GameGraphics.h"
@@ -410,6 +411,12 @@ void GameWindow::RunInterpreterCommand(void)
   case Command_CancelKey:
     m_state = TerpOutput;
     break;
+  case Command_FileDialog:
+    CommandFileDialog((TerpFile)idata[0],idata[1] != 0);
+    break;
+  case Command_NullOutput:
+    CommandNullOutput((char*)data,dataLength);
+    break;
   }
 }
 
@@ -541,6 +548,16 @@ void GameWindow::CommandPrintOutput(int wndId, wchar_t* text, int textLength)
     if (swscanf(str,L"*** Run-time problem P%d",&problem) == 1)
       GetParentFrame()->SendMessage(WM_RUNTIMEPROB,(WPARAM)problem);
   }
+}
+
+void GameWindow::CommandNullOutput(char* text, int textLength)
+{
+  CString str(text,textLength);
+
+  // Has a run-time error occurred?
+  int problem = 0;
+  if (sscanf(str,"*** Run-time problem P%d",&problem) == 1)
+    GetParentFrame()->SendMessage(WM_RUNTIMEPROB,(WPARAM)problem);
 }
 
 void GameWindow::CommandSetStyle(int wndId, TerpTextStyle style, int size)
@@ -936,6 +953,51 @@ void GameWindow::CommandCancelLine(int wndId)
 
   if (wnd->IsKindOf(RUNTIME_CLASS(GameText)))
     PostMessage(WM_ENDLINEINPUT,(WPARAM)wnd->GetSafeHwnd(),0);
+}
+
+void GameWindow::CommandFileDialog(TerpFile file, bool save)
+{
+  LPCSTR ext = NULL, filter = NULL, title = NULL;
+  switch (file)
+  {
+  case File_Save:
+    ext = "save";
+    filter = "Saved games (*.save)|*.save|All Files (*.*)|*.*||";
+    title = save ? "Save Game" : "Open Game";
+    break;
+  case File_Data:
+    filter = "All Files (*.*)|*.*||";
+    title = save ? "Save Data" : "Open Data";
+    break;
+  case File_GlkSave:
+    ext = "glksave";
+    filter = "Saved games (*.glksave)|*.glksave|All Files (*.*)|*.*||";
+    title = save ? "Save Game" : "Open Game";
+    break;
+  case File_GlkData:
+    ext = "glkdata";
+    filter = "Data files (*.glkdata)|*.glkdata|All Files (*.*)|*.*||";
+    title = save ? "Save Data" : "Open Data";
+    break;
+  case File_Text:
+    ext = "txt";
+    filter = "Text files (*.txt)|*.txt|All Files (*.*)|*.*||";
+    title = save ? "Save Text" : "Open Text";
+    break;
+  }
+
+  DWORD flags = OFN_HIDEREADONLY|OFN_ENABLESIZING;
+  if (save)
+    flags |= OFN_OVERWRITEPROMPT;
+  SimpleFileDialog dialog(save ? FALSE : TRUE,ext,NULL,flags,filter,this);
+  dialog.m_ofn.lpstrTitle = title;
+  CString dir = GetFileDir();
+  dialog.m_ofn.lpstrInitialDir = dir;
+
+  CString path;
+  if (dialog.DoModal() == IDOK)
+    path = dialog.GetPathName();
+  SendReturn(Return_FilePath,path.GetLength(),(LPCSTR)path);
 }
 
 bool GameWindow::GameKeyEvent(CWnd* wnd, WPARAM wParam, LPARAM lParam)

@@ -1,4 +1,5 @@
 #include "I7GlkChannel.h"
+#include "I7GlkCmd.h"
 #include "../../Inform7/InterpreterCommands.h"
 
 #include <deque>
@@ -11,8 +12,6 @@ extern std::deque<event_t> otherEvents;
 
 extern gidispatch_rock_t (*registerObjFn)(void *obj, glui32 objclass);
 extern void (*unregisterObjFn)(void *obj, glui32 objclass, gidispatch_rock_t objrock);
-
-void sendCommand(int command, int dataLength, const void* data);
 
 I7GlkChannel::I7GlkChannel(glui32 rock)
 {

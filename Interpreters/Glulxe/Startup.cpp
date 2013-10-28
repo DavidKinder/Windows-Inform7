@@ -32,6 +32,9 @@ void sendCommand(int command, int dataLength, const void* data)
 
 void readReturnData(void* data, int length)
 {
+  if (length == 0)
+    return;
+
   HANDLE in = ::GetStdHandle(STD_INPUT_HANDLE);
   DWORD read = 0;
 

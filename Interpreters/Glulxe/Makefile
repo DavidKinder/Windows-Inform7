@@ -1,11 +1,15 @@
-# Makefile for Inform 7 Glulxe, compiled with Cygwin/MinGW GCC 3.4.4
+# Makefile for Inform 7 Glulxe, compiled with MinGW GCC 2.95
 
-CFLAGS = -O3 -mno-cygwin -mwindows -I ../../../Glk/Include \
-	-DFLOAT_COMPILE_SAFER_POWF -fno-strict-aliasing
-CXXFLAGS = $(CFLAGS) -I ../../../Glk/GlkDll
-VPATH   = ../../../Glk/Glulxe:../../../Glk/GlkDll
+CC = gcc-2 -O3 -mwindows
+CXX= g++-2 -O3 -mwindows
+OPTIONS = -DFLOAT_COMPILE_SAFER_POWF -DWIN32
+LIBS = -lwinmm
 
 OUTPUT = ../../Build/Interpreters/glulxe
+
+CFLAGS = $(OPTIONS) -w -fno-strict-aliasing -I ../../../Glk/Include
+CXXFLAGS = -w -fno-strict-aliasing -I ../../../Glk/Include -I ../../../Glk/GlkDll
+VPATH = ../Glulxe:../../../Glk/Glulxe:../../../Glk/GlkDll
 
 OBJS =	accel.o exec.o files.o float.o funcs.o gestalt.o glkop.o heap.o main.o \
 	operand.o osdepend.o profile.o search.o serial.o string.o vm.o \
@@ -14,11 +18,9 @@ OBJS =	accel.o exec.o files.o float.o funcs.o gestalt.o glkop.o heap.o main.o \
 	I7GlkGridWindow.o I7GlkPairWindow.o I7GlkStream.o I7GlkTextWindow.o \
 	I7GlkWindow.o Startup.o GlkTime.o GlkUnicode.o
 
-all: glulxe
-
 glulxe: $(OBJS)
-	$(CXX) -mno-cygwin -mwindows -s -o $(OUTPUT) $(OBJS) -lwinmm
+	$(CXX) -s -o $(OUTPUT) $(OBJS) $(LIBS)
 
 clean:
-	rm -f *.o *.a
+	del *.o *.a
 

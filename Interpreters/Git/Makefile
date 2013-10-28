@@ -9,7 +9,7 @@ OUTPUT = ../../Build/Interpreters/git
 
 CFLAGS = $(OPTIONS) -w -fno-strict-aliasing -I ../../../Glk/Include
 CXXFLAGS = -w -fno-strict-aliasing -I ../../../Glk/Git -I ../../../Glk/Include -I ../../../Glk/GlkDll
-VPATH = ../Glulxe:../../../Glk/Git:../../../Glk/GlkDll:$(LIBPATH)/zlib
+VPATH = ../Glulxe:../../../Glk/Git:../../../Glk/GlkDll
 
 OBJS =	git.o memory.o compiler.o opcodes.o operands.o peephole.o terp.o \
 	glkop.o search.o savefile.o saveundo.o gestalt.o accel.o heap.o \

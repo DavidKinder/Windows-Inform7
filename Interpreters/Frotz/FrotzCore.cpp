@@ -36,6 +36,9 @@ void sendCommand(int command, int dataLength, const void* data)
 
 void readReturnData(void* data, int length)
 {
+  if (length == 0)
+    return;
+
   HANDLE in = ::GetStdHandle(STD_INPUT_HANDLE);
   DWORD read = 0;
 
@@ -415,8 +418,54 @@ extern "C" int os_read_file_name(char *file_name, const char *default_name, int 
 {
   flushOutput();
 
-  // Always fail
-  return 0;
+  // Tell the UI to prompt for a file
+  int data[2];
+  switch (flag)
+  {
+  case FILE_SAVE:
+    data[0] = File_Save;
+    data[1] = 1;
+    break;
+  case FILE_RESTORE:
+    data[0] = File_Save;
+    data[1] = 0;
+    break;
+  case FILE_SCRIPT:
+    data[0] = File_Text;
+    data[1] = 1;
+    break;
+  case FILE_RECORD:
+    data[0] = File_Text;
+    data[1] = 1;
+    break;
+  case FILE_PLAYBACK:
+    data[0] = File_Text;
+    data[1] = 0;
+    break;
+  case FILE_SAVE_AUX:
+    data[0] = File_Data;
+    data[1] = 1;
+    break;
+  case FILE_LOAD_AUX:
+    data[0] = File_Data;
+    data[1] = 0;
+    break;
+  default:
+    data[0] = File_Text;
+    data[1] = 0;
+    break;
+  }
+  sendCommand(Command_FileDialog,sizeof data,data);
+
+  // Get the returned file name
+  int length = readReturnCommand(Return_FilePath);
+  if (length == 0)
+    return 0;
+  char* name = (char*)alloca(length+1);
+  readReturnData(name,length);
+  name[length] = '\0';
+  strncpy(file_name,name,MAX_FILE_NAME);
+  return 1;
 }
 
 /*

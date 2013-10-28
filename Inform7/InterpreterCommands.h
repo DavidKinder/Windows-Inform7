@@ -25,7 +25,9 @@ enum TerpCommand
   Command_CancelKey,
   Command_ReadLineSilent,
   Command_PlaySounds,
-  Command_PauseSound
+  Command_PauseSound,
+  Command_FileDialog,
+  Command_NullOutput
 };
 
 enum TerpReturn
@@ -36,7 +38,8 @@ enum TerpReturn
   Return_SoundOver,
   Return_Mouse,
   Return_Link,
-  Return_VolumeOver
+  Return_VolumeOver,
+  Return_FilePath
 };
 
 enum TerpWindow
@@ -45,7 +48,7 @@ enum TerpWindow
   Window_Blank = 2,
   Window_Text = 3,
   Window_Grid = 4,
-  Window_Graphics = 5,
+  Window_Graphics = 5
 };
 
 enum TerpTextStyle
@@ -62,7 +65,16 @@ enum TerpJustify
   Just_LeftFlush = 0,
   Just_LeftRight = 1,
   Just_Centred = 2,
-  Just_RightFlush = 3,
+  Just_RightFlush = 3
+};
+
+enum TerpFile
+{
+  File_Save,
+  File_Data,
+  File_GlkSave,
+  File_GlkData,
+  File_Text
 };
 
 #define Method_Left   0

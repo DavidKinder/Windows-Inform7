@@ -11,7 +11,7 @@ extern "C" {
 class I7GlkFile
 {
 public:
-  I7GlkFile(glui32 use, glui32 rock, const char* fileName);
+  I7GlkFile(glui32 use, glui32 rock, const char* fileName, bool checkName);
   I7GlkFile(glui32 use, glui32 rock, I7GlkFile* copy);
   virtual ~I7GlkFile();
 
@@ -23,6 +23,8 @@ public:
   bool isText(void);
   bool exists(void);
   void deleteFile(void);
+
+  static std::string fileDialog(glui32 use, glui32 fmode);
 
 protected:
   glui32 m_use;
