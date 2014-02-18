@@ -49,7 +49,7 @@
 #define ID_RELEASE_MATERIALS            242
 #define ID_RELEASE_IFICTION             243
 #define ID_WINDOW_TAB_SOURCE            250
-#define ID_WINDOW_TAB_ERRORS            251
+#define ID_WINDOW_TAB_RESULTS           251
 #define ID_WINDOW_TAB_INDEX             252
 #define ID_WINDOW_TAB_SKEIN             253
 #define ID_WINDOW_TAB_TRANSCRIPT        254

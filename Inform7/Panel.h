@@ -15,7 +15,7 @@ public:
   enum Tabs
   {
     Tab_Source = 0,
-    Tab_Errors,
+    Tab_Results,
     Tab_Index,
     Tab_Skein,
     Tab_Transcript,

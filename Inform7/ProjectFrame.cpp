@@ -8,9 +8,9 @@
 #include "Dialogs.h"
 
 #include "TabDoc.h"
-#include "TabErrors.h"
 #include "TabGame.h"
 #include "TabIndex.h"
+#include "TabResults.h"
 #include "TabSkein.h"
 #include "TabTranscript.h"
 
@@ -160,8 +160,8 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   GetPanel(0)->SetActiveTab(Panel::Tab_Source);
 
   // Listen for notifications from the tabs
-  ((TabErrors*)GetPanel(0)->GetTab(Panel::Tab_Errors))->SetLinkNotify(this);
-  ((TabErrors*)GetPanel(1)->GetTab(Panel::Tab_Errors))->SetLinkNotify(this);
+  ((TabResults*)GetPanel(0)->GetTab(Panel::Tab_Results))->SetLinkNotify(this);
+  ((TabResults*)GetPanel(1)->GetTab(Panel::Tab_Results))->SetLinkNotify(this);
   ((TabIndex*)GetPanel(0)->GetTab(Panel::Tab_Index))->SetLinkNotify(this);
   ((TabIndex*)GetPanel(1)->GetTab(Panel::Tab_Index))->SetLinkNotify(this);
   ((TabSettings*)GetPanel(0)->GetTab(Panel::Tab_Settings))->SetNotify(this);
@@ -653,7 +653,7 @@ LRESULT ProjectFrame::OnGameWaiting(WPARAM wparam, LPARAM)
 
 LRESULT ProjectFrame::OnPaneHeading(WPARAM wparam, LPARAM)
 {
-  return ((TabErrors*)GetPanel(0)->GetTab(Panel::Tab_Errors))->GetTabHeight();
+  return ((TabResults*)GetPanel(0)->GetTab(Panel::Tab_Results))->GetTabHeight();
 }
 
 LRESULT ProjectFrame::OnSelectSide(WPARAM side, LPARAM)
@@ -671,8 +671,8 @@ LRESULT ProjectFrame::OnSelectView(WPARAM view, LPARAM wnd)
   CString viewName((const char*)view);
   if (viewName == "source")
     GetPanel(panel)->SetActiveTab(Panel::Tab_Source);
-  else if (viewName == "error")
-    GetPanel(panel)->SetActiveTab(Panel::Tab_Errors);
+  else if ((viewName == "error") || (viewName == "results"))
+    GetPanel(panel)->SetActiveTab(Panel::Tab_Results);
   else if (viewName == "game")
     GetPanel(panel)->SetActiveTab(Panel::Tab_Game);
   else if (viewName == "documentation")
@@ -698,8 +698,8 @@ LRESULT ProjectFrame::OnRuntimeProblem(WPARAM problem, LPARAM)
   if (((TabGame*)GetPanel(0)->GetTab(Panel::Tab_Game))->IsActive())
     panel = 1;
 
-  ((TabErrors*)GetPanel(panel)->GetTab(Panel::Tab_Errors))->ShowRuntimeProblem((int)problem);
-  GetPanel(panel)->SetActiveTab(Panel::Tab_Errors);
+  ((TabResults*)GetPanel(panel)->GetTab(Panel::Tab_Results))->ShowRuntimeProblem((int)problem);
+  GetPanel(panel)->SetActiveTab(Panel::Tab_Results);
   return 0;
 }
 
@@ -776,8 +776,8 @@ LRESULT ProjectFrame::OnTerpFailed(WPARAM wparam, LPARAM lparam)
   if (((TabGame*)GetPanel(0)->GetTab(Panel::Tab_Game))->IsActive())
     panel = 0;
 
-  ((TabErrors*)GetPanel(panel)->GetTab(Panel::Tab_Errors))->ShowTerpFailed();
-  GetPanel(panel)->SetActiveTab(Panel::Tab_Errors);
+  ((TabResults*)GetPanel(panel)->GetTab(Panel::Tab_Results))->ShowTerpFailed();
+  GetPanel(panel)->SetActiveTab(Panel::Tab_Results);
   return 0;
 }
 
@@ -1624,7 +1624,7 @@ bool ProjectFrame::CompileProject(bool release)
   HWND focus = GetFocus()->GetSafeHwnd();
 
   // Make the error panel visible
-  GetPanel(ChoosePanel(Panel::Tab_Errors))->SetActiveTab(Panel::Tab_Errors);
+  GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
 
   // Notify panels that compilation is starting
   GetPanel(0)->CompileProject(TabInterface::CompileStart,0);

@@ -5,12 +5,12 @@
 #include "FlatTab.h"
 #include "ReportEdit.h"
 
-class TabErrors : public TabBase, public ReportHtml::LinkConsumer
+class TabResults : public TabBase, public ReportHtml::LinkConsumer
 {
-  DECLARE_DYNAMIC(TabErrors)
+  DECLARE_DYNAMIC(TabResults)
 
 public:
-  TabErrors();
+  TabResults();
 
   // Implementation of TabInterface
   const char* GetName(void);
@@ -37,16 +37,16 @@ public:
   void ShowTerpFailed(void);
 
 private:
-  enum ErrorTabs
+  enum ResultTabs
   {
-    ErrTab_Progress = 0,
-    ErrTab_Problems,
-    Number_ErrTabs,
-    No_ErrTab = -1
+    ResTab_Progress = 0,
+    ResTab_Problems,
+    Number_ResTabs,
+    No_ResTab = -1
   };
 
-  ErrorTabs GetActiveTab(void);
-  void SetActiveTab(ErrorTabs tab, bool focus);
+  ResultTabs GetActiveTab(void);
+  void SetActiveTab(ResultTabs tab, bool focus);
   void GetTabState(TabState& state);
 
   void SetFocusOnContent(void);

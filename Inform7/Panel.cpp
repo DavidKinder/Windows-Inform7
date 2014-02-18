@@ -4,9 +4,9 @@
 #include "Messages.h"
 
 #include "TabDoc.h"
-#include "TabErrors.h"
 #include "TabGame.h"
 #include "TabIndex.h"
+#include "TabResults.h"
 #include "TabSettings.h"
 #include "TabSkein.h"
 #include "TabSource.h"
@@ -26,7 +26,7 @@ END_MESSAGE_MAP()
 Panel::Panel() : m_tab(false)
 {
   m_tabs[Tab_Source] = new TabSource;
-  m_tabs[Tab_Errors] = new TabErrors;
+  m_tabs[Tab_Results] = new TabResults;
   m_tabs[Tab_Index] = new TabIndex;
   m_tabs[Tab_Skein] = new TabSkein;
   m_tabs[Tab_Transcript] = new TabTranscript;
