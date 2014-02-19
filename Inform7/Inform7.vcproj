@@ -232,12 +232,6 @@
 				RelativePath="TabDoc.h">
 			</File>
 			<File
-				RelativePath="TabErrors.cpp">
-			</File>
-			<File
-				RelativePath="TabErrors.h">
-			</File>
-			<File
 				RelativePath="TabGame.cpp">
 			</File>
 			<File
@@ -251,6 +245,12 @@
 			</File>
 			<File
 				RelativePath="TabInterface.h">
+			</File>
+			<File
+				RelativePath="TabResults.cpp">
+			</File>
+			<File
+				RelativePath="TabResults.h">
 			</File>
 			<File
 				RelativePath="TabSettings.cpp">
