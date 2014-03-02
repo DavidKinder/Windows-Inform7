@@ -1,5 +1,7 @@
 #pragma once
 
+class CDibSection;
+
 class FlatTab : public CTabCtrl
 {
   DECLARE_DYNAMIC(FlatTab)
@@ -34,6 +36,8 @@ protected:
   bool IsTabEnabled(int tab);
   int NextEnabledTab(int currentTab, bool wrap);
   int PrevEnabledTab(int currentTab, bool wrap);
+
+  CDibSection* GetImage(const char* name, const CSize& size);
 
   TabController* m_controller;
   bool m_buttons;

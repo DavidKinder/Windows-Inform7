@@ -35,7 +35,8 @@ public:
 private:
   enum IndexTabs
   {
-    IdxTab_Contents = 0,
+    IdxTab_Home = 0,
+    IdxTab_Contents,
     IdxTab_Actions,
     IdxTab_Kinds,
     IdxTab_Phrasebook,

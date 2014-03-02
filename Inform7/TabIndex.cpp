@@ -12,6 +12,7 @@
 
 const char* TabIndex::m_files[TabIndex::Number_IdxTabs] =
 {
+  "\\Index\\????.html",
   "\\Index\\Contents.html",
   "\\Index\\Actions.html",
   "\\Index\\Kinds.html",
@@ -45,8 +46,10 @@ void TabIndex::CreateTab(CWnd* parent)
   // Create the tab control
   CRect zeroRect(0,0,0,0);
   m_tab.Create(WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,zeroRect,this,0);
+  m_tab.SendMessage(TCM_SETMINTABWIDTH,0,8);
 
   // Add tabs
+  m_tab.InsertItem(IdxTab_Home,"?H");
   m_tab.InsertItem(IdxTab_Contents,"Contents");
   m_tab.InsertItem(IdxTab_Actions,"Actions");
   m_tab.InsertItem(IdxTab_Kinds,"Kinds");
@@ -172,7 +175,7 @@ void TabIndex::OnSize(UINT nType, int cx, int cy)
 
   // Get the dimensions of the first and last tab buttons
   CRect firstTabItem, lastTabItem;
-  m_tab.GetItemRect(IdxTab_Contents,firstTabItem);
+  m_tab.GetItemRect(IdxTab_Home,firstTabItem);
   m_tab.GetItemRect(IdxTab_World,lastTabItem);
   int w = lastTabItem.right - firstTabItem.left + 4;
 

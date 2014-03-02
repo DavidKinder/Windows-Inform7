@@ -57,9 +57,16 @@ void FlatTab::OnPaint()
   CRect below(client);
   AdjustRect(FALSE,below);
   client.bottom = below.top;
+  CRect clientPaint(client);
 
-  int sel = GetCurSel();
-  CPaintDC dc(this);
+  CPaintDC dcPaint(this);
+  CDC dc;
+  dc.CreateCompatibleDC(&dcPaint);
+
+  CDibSection bitmap;
+  if (bitmap.CreateBitmap(dc.GetSafeHdc(),client.Width(),client.Height()) == FALSE)
+    return;
+  CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&bitmap);
 
   CPen darkPen(PS_SOLID,0,::GetSysColor(COLOR_BTNTEXT));
   CPen shadowPen(PS_SOLID,0,::GetSysColor(COLOR_BTNSHADOW));
@@ -67,6 +74,8 @@ void FlatTab::OnPaint()
   CFont* oldFont = dc.SelectObject(GetFont());
   CPen* oldPen = dc.SelectObject(&darkPen);
   dc.SetBkMode(TRANSPARENT);
+
+  int sel = GetCurSel();
 
   if (m_buttons)
   {
@@ -134,8 +143,18 @@ void FlatTab::OnPaint()
         dc.LineTo(itemRect.right,itemRect.bottom-gap);
       }
 
-      dc.SetTextColor(::GetSysColor(COLOR_BTNTEXT));
-      dc.DrawText(text,itemRect,DT_SINGLELINE|DT_CENTER|DT_VCENTER);
+      if (text == "?H")
+      {
+        if (itemRect.Width() > itemRect.Height())
+          itemRect.DeflateRect((itemRect.Width() - itemRect.Height())/2,0);
+        CDibSection* dib = GetImage("Home",itemRect.Size());
+        bitmap.AlphaBlend(dib,itemRect.left,itemRect.top,FALSE);
+      }
+      else
+      {
+        dc.SetTextColor(::GetSysColor(COLOR_BTNTEXT));
+        dc.DrawText(text,itemRect,DT_SINGLELINE|DT_CENTER|DT_VCENTER);
+      }
     }
   }
   else
@@ -199,6 +218,9 @@ void FlatTab::OnPaint()
   }
   dc.SelectObject(oldFont);
   dc.SelectObject(oldPen);
+
+  dcPaint.BitBlt(0,0,clientPaint.Width(),clientPaint.Height(),&dc,0,0,SRCCOPY);
+  dc.SelectObject(oldBitmap);
 }
 
 void FlatTab::OnSelChanging(NMHDR*, LRESULT* pResult)
@@ -299,4 +321,23 @@ int FlatTab::PrevEnabledTab(int currentTab, bool wrap)
       return tab;
   }
   return -1;
+}
+
+CDibSection* FlatTab::GetImage(const char* name, const CSize& size)
+{
+  // Is the image in the cache?
+  CString scaleName;
+  scaleName.Format("%s-scaled",name);
+  CDibSection* dib = theApp.GetCachedImage(scaleName);
+  if (dib != NULL)
+    return dib;
+
+  // Create the scaled image
+  CDibSection* original_dib = theApp.GetCachedImage(name);
+  CSize original_size = original_dib->GetSize();
+  double scaleX = (double)size.cx / (double)original_size.cx;
+  double scaleY = (double)size.cy / (double)original_size.cy;
+  dib = theApp.CreateScaledImage(original_dib,scaleX,scaleY);
+  theApp.CacheImage(scaleName,dib);
+  return dib;
 }
