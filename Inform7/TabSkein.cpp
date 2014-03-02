@@ -154,7 +154,7 @@ void TabSkein::OnSize(UINT nType, int cx, int cy)
   // Resize the command buttons
   int pw = theApp.MeasureText(&m_play).cx+(fontSize.cx*3);
   int tw = theApp.MeasureText(&m_trim).cx+(fontSize.cx*3);
-  int lw = theApp.MeasureText(&m_label).cx+(fontSize.cx*6);
+  int lw = theApp.MeasureText(&m_label).cx+(fontSize.cx*3)+16;
   int x = client.Width()-pw-(fontSize.cx/3);
   m_play.MoveWindow(x,h,pw,heading-(2*h),TRUE);
   x -= tw+(fontSize.cx/3);

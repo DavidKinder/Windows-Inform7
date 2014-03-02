@@ -147,9 +147,9 @@ void TabTranscript::OnSize(UINT nType, int cx, int cy)
   SizeTab(client,fontSize,heading,h);
 
   // Resize the command button
-  int nsw = theApp.MeasureText(&m_nextSkein).cx+((fontSize.cx*11)/2);
-  int ndw = theApp.MeasureText(&m_nextDiff).cx+((fontSize.cx*11)/2);
-  int pdw = theApp.MeasureText(&m_prevDiff).cx+((fontSize.cx*11)/2);
+  int nsw = theApp.MeasureText(&m_nextSkein).cx+(fontSize.cx*3)+16;
+  int ndw = theApp.MeasureText(&m_nextDiff).cx+(fontSize.cx*3)+16;
+  int pdw = theApp.MeasureText(&m_prevDiff).cx+(fontSize.cx*3)+16;
   int bw = theApp.MeasureText(&m_blessAll).cx+(fontSize.cx*3);
   int x = client.Width()-bw-(fontSize.cx/3);
   m_blessAll.MoveWindow(x,h,bw,heading-(2*h),TRUE);
