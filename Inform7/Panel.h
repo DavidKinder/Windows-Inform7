@@ -19,7 +19,7 @@ public:
     Tab_Index,
     Tab_Skein,
     Tab_Transcript,
-    Tab_Game,
+    Tab_Story,
     Tab_Doc,
     Tab_Settings,
     Number_Tabs,

@@ -285,7 +285,7 @@ void InformApp::SetIcon(CWnd* wnd)
 CString InformApp::GetAppDir(void)
 {
 #ifdef DEBUG
-  return "C:\\Programs\\Adv\\Inform7\\Build";
+  return "Z:\\Programs\\Adv\\Inform7\\Build";
 #else
   // Get the path to this executable
   char path[_MAX_PATH];

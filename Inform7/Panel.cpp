@@ -4,12 +4,12 @@
 #include "Messages.h"
 
 #include "TabDoc.h"
-#include "TabGame.h"
 #include "TabIndex.h"
 #include "TabResults.h"
 #include "TabSettings.h"
 #include "TabSkein.h"
 #include "TabSource.h"
+#include "TabStory.h"
 #include "TabTranscript.h"
 
 #ifdef _DEBUG
@@ -30,7 +30,7 @@ Panel::Panel() : m_tab(false)
   m_tabs[Tab_Index] = new TabIndex;
   m_tabs[Tab_Skein] = new TabSkein;
   m_tabs[Tab_Transcript] = new TabTranscript;
-  m_tabs[Tab_Game] = new TabGame;
+  m_tabs[Tab_Story] = new TabStory;
   m_tabs[Tab_Doc] = new TabDoc;
   m_tabs[Tab_Settings] = new TabSettings;
 

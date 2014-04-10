@@ -437,7 +437,7 @@ void GameWindow::CommandFatalError(char* error, int errLength)
   else
   {
     CString msg;
-    msg.Format("The game has caused a fatal error:\n%.*s",errLength,error);
+    msg.Format("The story has caused a fatal error:\n%.*s",errLength,error);
     MessageBox(msg,INFORM_TITLE,MB_ICONERROR|MB_OK);
   }
 }
@@ -963,7 +963,7 @@ void GameWindow::CommandFileDialog(TerpFile file, bool save)
   case File_Save:
     ext = "save";
     filter = "Saved games (*.save)|*.save|All Files (*.*)|*.*||";
-    title = save ? "Save Game" : "Open Game";
+    title = save ? "Save Story" : "Open Story";
     break;
   case File_Data:
     filter = "All Files (*.*)|*.*||";
@@ -972,7 +972,7 @@ void GameWindow::CommandFileDialog(TerpFile file, bool save)
   case File_GlkSave:
     ext = "glksave";
     filter = "Saved games (*.glksave)|*.glksave|All Files (*.*)|*.*||";
-    title = save ? "Save Game" : "Open Game";
+    title = save ? "Save Story" : "Open Story";
     break;
   case File_GlkData:
     ext = "glkdata";

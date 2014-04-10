@@ -132,7 +132,7 @@ BEGIN
         MENUITEM "&Stop",                       ID_PLAY_STOP
         MENUITEM SEPARATOR
         MENUITEM "Refresh Inde&x\tF7",          ID_PLAY_REFRESH
-        MENUITEM "&Load Game...",               ID_PLAY_LOAD
+        MENUITEM "&Load Story...",              ID_PLAY_LOAD
     END
     POPUP "Repl&ay"
     BEGIN
@@ -166,7 +166,7 @@ BEGIN
             MENUITEM "Inde&x\tCtrl+F3",         ID_WINDOW_TAB_INDEX
             MENUITEM "Skei&n\tCtrl+F4",         ID_WINDOW_TAB_SKEIN
             MENUITEM "&Transcript\tCtrl+F5",    ID_WINDOW_TAB_TRANSCRIPT
-            MENUITEM "&Game\tCtrl+F6",          ID_WINDOW_TAB_GAME
+            MENUITEM "St&ory\tCtrl+F6",         ID_WINDOW_TAB_STORY
             MENUITEM "&Documentation\tCtrl+F7", ID_WINDOW_TAB_DOCUMENTATION
             MENUITEM "Setti&ngs\tCtrl+F8",      ID_WINDOW_TAB_SETTINGS
             MENUITEM SEPARATOR
@@ -322,7 +322,7 @@ BEGIN
     VK_F6,          ID_WINDOW_SWITCH,       VIRTKEY, NOINVERT
     VK_F7,          ID_WINDOW_TAB_DOCUMENTATION, VIRTKEY, CONTROL, NOINVERT
     VK_F2,          ID_WINDOW_TAB_RESULTS,  VIRTKEY, CONTROL, NOINVERT
-    VK_F6,          ID_WINDOW_TAB_GAME,     VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_WINDOW_TAB_STORY,    VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_WINDOW_TAB_INDEX,    VIRTKEY, CONTROL, NOINVERT
     VK_F8,          ID_WINDOW_TAB_SETTINGS, VIRTKEY, CONTROL, NOINVERT
     VK_F4,          ID_WINDOW_TAB_SKEIN,    VIRTKEY, CONTROL, NOINVERT
@@ -656,7 +656,7 @@ STRINGTABLE
 BEGIN
     ID_FILE_INSTALL_EXT     "Install an extension for use in Inform projects"
     ID_FILE_NEW_EXT         "Start a new extension"
-    ID_FILE_IMPORT_SKEIN    "Import game commands into the skein from a text file"
+    ID_FILE_IMPORT_SKEIN    "Import story commands into the skein from a text file"
     ID_EDIT_DELETE          "Delete the selected text"
     ID_EDIT_SPELLING        "Spell check the source"
 END
@@ -669,19 +669,19 @@ BEGIN
     ID_FORMAT_UNCOMMENT     "Uncomment the selected lines"
     ID_FORMAT_RENUMBER      "Renumber all section headings in the source"
     ID_FORMAT_ELASTIC_TABSTOPS "Turn elastic tabstops on and off"
-    ID_PLAY_GO              "Build the game and run it\nGo!"
-    ID_PLAY_STOP            "Stop the currently running game\nStop"
-    ID_PLAY_TEST            "Build the game and run the ""test me"" command"
-    ID_PLAY_REFRESH         "Build the game and refresh the index\nRefresh"
+    ID_PLAY_GO              "Build the story and run it\nGo!"
+    ID_PLAY_STOP            "Stop the currently running story\nStop"
+    ID_PLAY_TEST            "Build the story and run the ""test me"" command"
+    ID_PLAY_REFRESH         "Build the story and refresh the index\nRefresh"
 END
 
 STRINGTABLE 
 BEGIN
-    ID_PLAY_LOAD            "Load and play a game"
-    ID_REPLAY_LAST          "Build the game and replay the last played thread in the skein\nReplay"
+    ID_PLAY_LOAD            "Load and play a story"
+    ID_REPLAY_LAST          "Build the story and replay the last played thread in the skein\nReplay"
     ID_REPLAY_BLESSED       "Play in sequence all threads in the skein that lead to a blessed knot"
-    ID_REPLAY_SHOW_LAST     "Show the last game command in the transcript"
-    ID_REPLAY_SHOW_LAST_SKEIN "Show the last game command in the skein"
+    ID_REPLAY_SHOW_LAST     "Show the last story command in the transcript"
+    ID_REPLAY_SHOW_LAST_SKEIN "Show the last story command in the skein"
     ID_REPLAY_CHANGED_PREV  "Find the previous command in the transcript with changed text"
     ID_REPLAY_CHANGED_NEXT  "Find the next command in the transcript with changed text"
     ID_REPLAY_DIFF_PREV     "Find the previous command in the transcript for which the transcript and blessed text do not match"
@@ -692,10 +692,10 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_RELEASE_GAME         "Build the game for release\nRelease"
-    ID_RELEASE_TEST         "Build the game for a test release"
+    ID_RELEASE_GAME         "Build the story for release\nRelease"
+    ID_RELEASE_TEST         "Build the story for a test release"
     ID_RELEASE_MATERIALS    "Open an Explorer window in the materials folder"
-    ID_RELEASE_IFICTION     "Export the iFiction record for this game"
+    ID_RELEASE_IFICTION     "Export the iFiction record for this story"
 END
 
 STRINGTABLE 
@@ -777,7 +777,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_SKEIN_PLAY           "Play the game to this knot in the skein, restarting if necessary"
+    ID_SKEIN_PLAY           "Play the story to this knot in the skein, restarting if necessary"
     ID_SKEIN_EDIT           "Edit the text for this knot"
 END
 

@@ -77,15 +77,13 @@ BOOL AboutDialog::OnInitDialog()
     "\\par"
     "\\b Reference Inform front-end written by\\b0\\par"
     "\\tab Andrew Hunter\\par"
-    "\\par"
-    "\\b Inform 6 updates\\b0\\par"
-    "\\tab Jesse McGrew";
-  const char* text2 =
-    "\\par"
-    "\\tab Andrew Plotkin\\par"
-    "\\tab David Kinder\\par"
+    "\\tab Toby Nelson\\par"
     "\\par"
     "\\b Contributions to Inform 6\\b0\\par"
+    "\\tab Jesse McGrew\\par";
+  const char* text2 =
+    "\\tab Andrew Plotkin\\par"
+    "\\tab David Kinder\\par"
     "\\tab Emily Short\\par"
     "\\tab Gunther Schmidl\\par"
     "\\tab Jason Penney\\par"

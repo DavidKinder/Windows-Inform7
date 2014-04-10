@@ -232,12 +232,6 @@
 				RelativePath="TabDoc.h">
 			</File>
 			<File
-				RelativePath="TabGame.cpp">
-			</File>
-			<File
-				RelativePath="TabGame.h">
-			</File>
-			<File
 				RelativePath="TabIndex.cpp">
 			</File>
 			<File
@@ -269,6 +263,12 @@
 			</File>
 			<File
 				RelativePath="TabSource.h">
+			</File>
+			<File
+				RelativePath="TabStory.cpp">
+			</File>
+			<File
+				RelativePath="TabStory.h">
 			</File>
 			<File
 				RelativePath="TabTranscript.cpp">
@@ -710,6 +710,21 @@
 			<Filter
 				Name="libpng"
 				Filter="">
+				<File
+					RelativePath="..\..\..\Libraries\libpng\dk_png.c">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+				</File>
 				<File
 					RelativePath="..\..\..\Libraries\libpng\png.c">
 					<FileConfiguration

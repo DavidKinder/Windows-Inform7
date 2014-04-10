@@ -64,7 +64,7 @@
 #define WM_SHOWSKEIN      WM_APP+16
 
 // Sent to the window frame to indicate that the interpreter running the game
-// in the game tab has failed.
+// in the story tab has failed.
 #define WM_TERPFAILED     WM_APP+17
 
 // Sent to the window frame to get the project directory

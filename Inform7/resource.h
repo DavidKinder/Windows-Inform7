@@ -53,7 +53,7 @@
 #define ID_WINDOW_TAB_INDEX             252
 #define ID_WINDOW_TAB_SKEIN             253
 #define ID_WINDOW_TAB_TRANSCRIPT        254
-#define ID_WINDOW_TAB_GAME              255
+#define ID_WINDOW_TAB_STORY             255
 #define ID_WINDOW_TAB_DOCUMENTATION     256
 #define ID_WINDOW_TAB_SETTINGS          257
 #define ID_WINDOW_SWITCH                258

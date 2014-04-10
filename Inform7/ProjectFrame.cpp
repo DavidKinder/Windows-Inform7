@@ -8,10 +8,10 @@
 #include "Dialogs.h"
 
 #include "TabDoc.h"
-#include "TabGame.h"
 #include "TabIndex.h"
 #include "TabResults.h"
 #include "TabSkein.h"
+#include "TabStory.h"
 #include "TabTranscript.h"
 
 #ifdef _DEBUG
@@ -171,9 +171,9 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   ((TabSource*)GetPanel(1)->GetTab(Panel::Tab_Source))->SetDocument(
     ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source)));
 
-  // Set up the game tabs
-  ((TabGame*)GetPanel(0)->GetTab(Panel::Tab_Game))->SetGame(&m_game);
-  ((TabGame*)GetPanel(1)->GetTab(Panel::Tab_Game))->SetGame(&m_game);
+  // Set up the story tabs
+  ((TabStory*)GetPanel(0)->GetTab(Panel::Tab_Story))->SetGame(&m_game);
+  ((TabStory*)GetPanel(1)->GetTab(Panel::Tab_Story))->SetGame(&m_game);
 
   // Set up the skein tabs
   ((TabSkein*)GetPanel(0)->GetTab(Panel::Tab_Skein))->SetSkein(&m_skein);
@@ -515,7 +515,7 @@ BOOL ProjectFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINF
     // make sure it is routed to the correct panel
     for (int i = 0; i < 2; i++)
     {
-      if (((TabGame*)GetPanel(i)->GetTab(Panel::Tab_Game))->IsActive())
+      if (((TabStory*)GetPanel(i)->GetTab(Panel::Tab_Story))->IsActive())
       {
         if (GetPanel(i)->OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
           return TRUE;
@@ -673,8 +673,8 @@ LRESULT ProjectFrame::OnSelectView(WPARAM view, LPARAM wnd)
     GetPanel(panel)->SetActiveTab(Panel::Tab_Source);
   else if ((viewName == "error") || (viewName == "results"))
     GetPanel(panel)->SetActiveTab(Panel::Tab_Results);
-  else if (viewName == "game")
-    GetPanel(panel)->SetActiveTab(Panel::Tab_Game);
+  else if ((viewName == "game") || (viewName == "story"))
+    GetPanel(panel)->SetActiveTab(Panel::Tab_Story);
   else if (viewName == "documentation")
     GetPanel(panel)->SetActiveTab(Panel::Tab_Doc);
   else if (viewName == "index")
@@ -695,7 +695,7 @@ LRESULT ProjectFrame::OnPasteCode(WPARAM code, LPARAM)
 LRESULT ProjectFrame::OnRuntimeProblem(WPARAM problem, LPARAM)
 {
   int panel = 0;
-  if (((TabGame*)GetPanel(0)->GetTab(Panel::Tab_Game))->IsActive())
+  if (((TabStory*)GetPanel(0)->GetTab(Panel::Tab_Story))->IsActive())
     panel = 1;
 
   ((TabResults*)GetPanel(panel)->GetTab(Panel::Tab_Results))->ShowRuntimeProblem((int)problem);
@@ -773,7 +773,7 @@ LRESULT ProjectFrame::OnShowSkein(WPARAM wparam, LPARAM lparam)
 LRESULT ProjectFrame::OnTerpFailed(WPARAM wparam, LPARAM lparam)
 {
   int panel = 1;
-  if (((TabGame*)GetPanel(0)->GetTab(Panel::Tab_Game))->IsActive())
+  if (((TabStory*)GetPanel(0)->GetTab(Panel::Tab_Story))->IsActive())
     panel = 0;
 
   ((TabResults*)GetPanel(panel)->GetTab(Panel::Tab_Results))->ShowTerpFailed();
@@ -1010,7 +1010,7 @@ void ProjectFrame::OnPlayLoad()
 {
   SimpleFileDialog dialog(TRUE,NULL,NULL,OFN_HIDEREADONLY|OFN_ENABLESIZING,
     "Z-code games (*.z?;*.zblorb)|*.z?;*.zblorb|Glulx games (*.ulx;*.gblorb)|*.ulx;*.gblorb||",this);
-  dialog.m_ofn.lpstrTitle = "Select a game to play";
+  dialog.m_ofn.lpstrTitle = "Select a story to play";
   dialog.m_ofn.nFilterIndex = m_loadFilter;
   if (dialog.DoModal() != IDOK)
     return;
@@ -1023,7 +1023,7 @@ void ProjectFrame::OnPlayLoad()
   m_game.StopInterpreter(false);
   m_skein.Reset(true);
 
-  GetPanel(ChoosePanel(Panel::Tab_Game))->SetActiveTab(Panel::Tab_Game);
+  GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
   m_loadFilter = dialog.m_ofn.nFilterIndex;
   bool glulx = (m_loadFilter == 2);
   m_game.RunInterpreter(path.Left(split),path.Mid(split+1),glulx);
@@ -1243,7 +1243,7 @@ void ProjectFrame::OnReleaseGame(UINT nID)
       // Ask the user where to save
       SimpleFileDialog dialog(FALSE,extension,fileName,
         OFN_HIDEREADONLY|OFN_ENABLESIZING|OFN_OVERWRITEPROMPT,filter,this);
-      dialog.m_ofn.lpstrTitle = "Save the game for release";
+      dialog.m_ofn.lpstrTitle = "Save the story for release";
       if (dialog.DoModal() == IDOK)
         releasePath = dialog.GetPathName();
     }
@@ -1654,7 +1654,7 @@ bool ProjectFrame::CompileProject(bool release)
 
   // Update the status bar
   SetMessageText(code == 0 ?
-    "The game has been successfully compiled" : "The game has not been compiled");
+    "The story has been successfully compiled" : "The story has not been compiled");
 
   // Return the focus to its original point if still visible
   if (::IsWindow(focus) && ::IsWindowVisible(focus))
@@ -1667,8 +1667,8 @@ bool ProjectFrame::CompileProject(bool release)
 
 void ProjectFrame::RunProject(void)
 {
-  // Make the game panel visible
-  GetPanel(ChoosePanel(Panel::Tab_Game))->SetActiveTab(Panel::Tab_Game);
+  // Make the story panel visible
+  GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
 
   // Start the interpreter
   m_game.RunInterpreter(m_projectDir+"\\Build",

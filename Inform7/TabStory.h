@@ -4,12 +4,12 @@
 
 class GameWindow;
 
-class TabGame : public TabBase
+class TabStory : public TabBase
 {
-  DECLARE_DYNAMIC(TabGame)
+  DECLARE_DYNAMIC(TabStory)
 
 public:
-  TabGame();
+  TabStory();
 
   void SetGame(GameWindow* game);
   bool IsActive(void);
