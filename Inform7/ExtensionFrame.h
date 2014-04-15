@@ -28,6 +28,7 @@ protected:
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
   afx_msg void OnActivate(UINT nState, CWnd*, BOOL);
   afx_msg void OnClose();
+  afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
 
   afx_msg LRESULT OnProjectEdited(WPARAM wparam, LPARAM lparam);
 

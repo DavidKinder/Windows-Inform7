@@ -6,6 +6,7 @@
 #include "TextFormat.h"
 #include "NewDialogs.h"
 #include "Dialogs.h"
+#include "Build.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -18,6 +19,7 @@ BEGIN_MESSAGE_MAP(ExtensionFrame, MenuBarFrameWnd)
   ON_WM_ACTIVATE()
   ON_WM_CLOSE()
   ON_WM_SIZE()
+  ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
 
   ON_MESSAGE(WM_PROJECTEDITED, OnProjectEdited)
 
@@ -186,6 +188,18 @@ void ExtensionFrame::GetMessageString(UINT nID, CString& rMessage) const
   }
 
   MenuBarFrameWnd::GetMessageString(nID,rMessage);
+}
+
+LRESULT ExtensionFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
+{
+  if ((wParam == AFX_IDS_IDLEMESSAGE) && (lParam == NULL))
+  {
+    static CString msg;
+    if (msg.IsEmpty())
+      msg.Format(AFX_IDS_IDLEMESSAGE,NI_BUILD);
+    return MenuBarFrameWnd::OnSetMessageString(0,(LPARAM)(LPCSTR)msg);
+  }
+  return MenuBarFrameWnd::OnSetMessageString(wParam,lParam);
 }
 
 LRESULT ExtensionFrame::OnProjectEdited(WPARAM wparam, LPARAM lparam)

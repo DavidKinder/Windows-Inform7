@@ -6,6 +6,7 @@
 #include "ProjectDirDialog.h"
 #include "NewDialogs.h"
 #include "Dialogs.h"
+#include "Build.h"
 
 #include "TabDoc.h"
 #include "TabIndex.h"
@@ -32,6 +33,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_WM_MEASUREITEM()
   ON_WM_DRAWITEM()
   ON_WM_SETTINGCHANGE()
+  ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
 
   ON_MESSAGE(WM_PLAYSKEIN, OnPlaySkein)
   ON_MESSAGE(WM_GAMERUNNING, OnGameRunning)
@@ -498,6 +500,18 @@ void ProjectFrame::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
 void ProjectFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
   UpdateMenuParams();
+}
+
+LRESULT ProjectFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
+{
+  if ((wParam == AFX_IDS_IDLEMESSAGE) && (lParam == NULL))
+  {
+    static CString msg;
+    if (msg.IsEmpty())
+      msg.Format(AFX_IDS_IDLEMESSAGE,NI_BUILD);
+    return MenuBarFrameWnd::OnSetMessageString(0,(LPARAM)(LPCSTR)msg);
+  }
+  return MenuBarFrameWnd::OnSetMessageString(wParam,lParam);
 }
 
 BOOL ProjectFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)

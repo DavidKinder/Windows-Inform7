@@ -60,7 +60,7 @@ void ProjectSettings::Load(const char* path)
     m_output = OutputGlulx;
     break;
   default:
-    m_output = OutputZ5;
+    m_output = OutputGlulx;
     break;
   }
 
@@ -171,7 +171,7 @@ CString ProjectSettings::GetOutputExtension(void)
 
 void ProjectSettings::SetDefaults(void)
 {
-  m_output = OutputZ5;
+  m_output = OutputGlulx;
   m_blorb = true;
   m_predictable = false;
   m_elasticTabStops = true;

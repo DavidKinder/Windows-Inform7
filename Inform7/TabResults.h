@@ -39,8 +39,8 @@ public:
 private:
   enum ResultTabs
   {
-    ResTab_Progress = 0,
-    ResTab_Problems,
+    ResTab_Report = 0,
+    ResTab_Console,
     Number_ResTabs,
     No_ResTab = -1
   };
@@ -52,8 +52,8 @@ private:
   void SetFocusOnContent(void);
 
   FlatTab m_tab;
-  ReportEdit m_progress;
-  ReportHtml* m_problems;
+  ReportHtml* m_report;
+  ReportEdit m_console;
 
   CString m_projectDir;
   LinkNotify* m_notify;

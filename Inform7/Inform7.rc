@@ -718,7 +718,7 @@ END
 STRINGTABLE 
 BEGIN
     AFX_IDS_APP_TITLE       "Inform"
-    AFX_IDS_IDLEMESSAGE     "Inform 7 for Windows"
+    AFX_IDS_IDLEMESSAGE     "Inform 7 for Windows %s"
 END
 
 STRINGTABLE 
