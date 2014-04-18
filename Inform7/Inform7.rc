@@ -401,9 +401,9 @@ CAPTION "Welcome to Inform 7"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     PUSHBUTTON      "Start a &new project...",IDC_NEW_PROJECT,213,125,112,14
-    PUSHBUTTON      "&Reopen last project",IDC_REOPEN_LAST,213,148,112,14
-    DEFPUSHBUTTON   "&Open an existing project...",IDC_OPEN_PROJECT,213,171,112,14
-    LTEXT           "",IDC_INTRO,15,14,177,157
+    DEFPUSHBUTTON   "&Open an existing project...",IDC_OPEN_PROJECT,213,148,112,14
+    PUSHBUTTON      "&Reopen last project",IDC_REOPEN_LAST,213,171,112,14
+    LTEXT           "",IDC_INTRO,15,14,128,160
 END
 
 IDD_SEARCH DIALOGEX 0, 0, 174, 18

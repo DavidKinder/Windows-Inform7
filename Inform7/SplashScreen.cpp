@@ -56,8 +56,6 @@ BOOL SplashScreen::OnInitDialog()
     "Welcome to Inform 7, a design system for interactive fiction based on "
     "natural language."
     "\n\n"
-    "To begin writing, please click one of the three buttons to the right."
-    "\n\n"
     "Inform 7 was created by Graham Nelson, with the help of Emily Short and "
     "many others. The Windows front-end was written by David Kinder.");
 
