@@ -132,11 +132,11 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
       {
       case 0:
         example = false;
-        findPath.Format("%s\\Documentation\\sections\\doc*.html",theApp.GetAppDir());
+        findPath.Format("%s\\Documentation\\doc*.html",theApp.GetAppDir());
         break;
       case 1:
         example = true;
-        findPath.Format("%s\\Documentation\\sections\\ex*.html",theApp.GetAppDir());
+        findPath.Format("%s\\Documentation\\rdoc*.html",theApp.GetAppDir());
         break;
       }
 
@@ -330,6 +330,7 @@ static struct Tag tags[] =
   L"TR",         2,false,false,
   L"div",        3,false,false,
   L"pre",        3,false,false,
+  L"span",       4,true, false,
 };
 
 struct Literal
