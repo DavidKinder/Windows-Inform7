@@ -51,7 +51,7 @@ Section "DoInstall"
   RMDir /r "$INSTDIR\Library"
   File /r "..\Build\*.*"
   WriteUninstaller "Uninstall.exe"
-  CallInstDLL $INSTDIR\Install.dll ImageAlpha
+;  CallInstDLL $INSTDIR\Install.dll ImageAlpha
 
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
     SetShellVarContext all
