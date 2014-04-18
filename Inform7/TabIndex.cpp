@@ -12,7 +12,7 @@
 
 const char* TabIndex::m_files[TabIndex::Number_IdxTabs] =
 {
-  "\\Index\\????.html",
+  "\\Index\\Welcome.html",
   "\\Index\\Contents.html",
   "\\Index\\Actions.html",
   "\\Index\\Kinds.html",
