@@ -1846,7 +1846,7 @@ CString ProjectFrame::InformCommandLine(bool release)
   CString extension = m_settings.GetOutputExtension();
 
   CString executable, arguments;
-  executable.Format("%s\\Compilers\\inform-%d",(LPCSTR)dir,m_settings.m_compiler);
+  executable.Format("%s\\Compilers\\inform6",(LPCSTR)dir);
   arguments.Format("%s +include_path=..\\Source,.\\ auto.inf output.%s",
     (LPCSTR)switches,(LPCSTR)extension);
 

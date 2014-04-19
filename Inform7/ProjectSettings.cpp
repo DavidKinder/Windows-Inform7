@@ -9,26 +9,8 @@
 
 #define SETTINGS_FILE "\\Settings.plist"
 
-std::set<int> ProjectSettings::m_compilers;
-
 ProjectSettings::ProjectSettings()
 {
-  if (m_compilers.empty())
-  {
-    // Find versions of the Inform 6 compiler
-    CFileFind compilers;
-    BOOL found = compilers.FindFile(theApp.GetAppDir()+"\\Compilers\\inform-*.exe");
-    while (found)
-    {
-      found = compilers.FindNextFile();
-
-      // Extract the version number from the executable name
-      int version = 0;
-      if (sscanf(compilers.GetFileTitle(),"inform-%d",&version) == 1)
-        m_compilers.insert(version);
-    }
-  }
-
   SetDefaults();
 }
 
@@ -175,13 +157,5 @@ void ProjectSettings::SetDefaults(void)
   m_blorb = true;
   m_predictable = false;
   m_elasticTabStops = true;
-
-  m_compiler = 0;
-  if (!m_compilers.empty())
-  {
-    // Use the latest available compiler
-    m_compiler = *m_compilers.rbegin();
-  }
-
   m_changed = false;
 }

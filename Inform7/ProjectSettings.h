@@ -25,9 +25,6 @@ public:
   bool m_predictable;
   bool m_elasticTabStops;
 
-  int m_compiler;
-  static std::set<int> m_compilers;
-
   bool m_changed;
 
 private:
