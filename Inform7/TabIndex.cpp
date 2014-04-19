@@ -53,7 +53,7 @@ void TabIndex::CreateTab(CWnd* parent)
   m_tab.InsertItem(IdxTab_Contents,"Contents");
   m_tab.InsertItem(IdxTab_Actions,"Actions");
   m_tab.InsertItem(IdxTab_Kinds,"Kinds");
-  m_tab.InsertItem(IdxTab_Phrasebook,"Phrases");
+  m_tab.InsertItem(IdxTab_Phrasebook,"Phrasebook");
   m_tab.InsertItem(IdxTab_Rules,"Rules");
   m_tab.InsertItem(IdxTab_Scenes,"Scenes");
   m_tab.InsertItem(IdxTab_World,"World");
@@ -181,12 +181,10 @@ void TabIndex::OnSize(UINT nType, int cx, int cy)
 
   // Resize the tab control
   CRect tabSize;
-  tabSize.left = (client.Width()-w)/2;
-  tabSize.right = tabSize.left+w;
+  tabSize.right = client.Width()-(fontSize.cx/3);
+  tabSize.left = tabSize.right-w;
   if (tabSize.left < 0)
     tabSize.left = 0;
-  if (tabSize.right > client.right)
-    tabSize.right = client.right;
   tabSize.top = 2;
   tabSize.bottom = client.Height()-tabSize.top-2;
   m_tab.MoveWindow(tabSize,TRUE);

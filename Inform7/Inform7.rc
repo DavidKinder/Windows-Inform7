@@ -179,7 +179,7 @@ BEGIN
             MENUITEM "C&ontents\tCtrl+3",     ID_WINDOW_INDEX_CONTENTS
             MENUITEM "&Actions\tCtrl+4",      ID_WINDOW_INDEX_ACTIONS
             MENUITEM "&Kinds\tCtrl+5",        ID_WINDOW_INDEX_KINDS
-            MENUITEM "&Phrases\tCtrl+6",      ID_WINDOW_INDEX_PHRASES
+            MENUITEM "&Phrasebook\tCtrl+6",   ID_WINDOW_INDEX_PHRASES
             MENUITEM "&Rules\tCtrl+7",        ID_WINDOW_INDEX_RULES
             MENUITEM "S&cenes\tCtrl+8",       ID_WINDOW_INDEX_SCENES
             MENUITEM "&World\tCtrl+9",        ID_WINDOW_INDEX_WORLD
