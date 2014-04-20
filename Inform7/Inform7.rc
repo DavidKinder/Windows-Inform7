@@ -101,15 +101,15 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Headings"
         BEGIN
-            MENUITEM "Show &Headings",          ID_HEAD_SHOW
+            MENUITEM "Show &Headings",              ID_HEAD_SHOW
             MENUITEM SEPARATOR
-            MENUITEM "&Current Section Only",   ID_HEAD_CURRENT
-            MENUITEM "&Increase Restriction",   ID_HEAD_INCREASE
-            MENUITEM "&Reduce Restriction",     ID_HEAD_REDUCE
-            MENUITEM "&Entire Source\tF4",      ID_HEAD_ENTIRE
+            MENUITEM "&Current Section Only",       ID_HEAD_CURRENT
+            MENUITEM "&Increase Restriction",       ID_HEAD_INCREASE
+            MENUITEM "&Reduce Restriction",         ID_HEAD_REDUCE
+            MENUITEM "&Entire Source\tF4",          ID_HEAD_ENTIRE
             MENUITEM SEPARATOR
-            MENUITEM "&Previous Section",       ID_HEAD_PREVIOUS
-            MENUITEM "&Next Section",           ID_HEAD_NEXT
+            MENUITEM "&Previous Section",           ID_HEAD_PREVIOUS
+            MENUITEM "&Next Section",               ID_HEAD_NEXT
         END
         MENUITEM SEPARATOR
         MENUITEM "Prefere&nces...",             ID_APP_PREFS
@@ -161,14 +161,15 @@ BEGIN
     BEGIN
         POPUP "Show &Tab"
         BEGIN
-            MENUITEM "&Source\tCtrl+F1",        ID_WINDOW_TAB_SOURCE
-            MENUITEM "R&esults\tCtrl+F2",       ID_WINDOW_TAB_RESULTS
-            MENUITEM "Inde&x\tCtrl+F3",         ID_WINDOW_TAB_INDEX
-            MENUITEM "Skei&n\tCtrl+F4",         ID_WINDOW_TAB_SKEIN
-            MENUITEM "&Transcript\tCtrl+F5",    ID_WINDOW_TAB_TRANSCRIPT
-            MENUITEM "St&ory\tCtrl+F6",         ID_WINDOW_TAB_STORY
-            MENUITEM "&Documentation\tCtrl+F7", ID_WINDOW_TAB_DOCUMENTATION
-            MENUITEM "Setti&ngs\tCtrl+F8",      ID_WINDOW_TAB_SETTINGS
+            MENUITEM "&Source\tCtrl+F1",            ID_WINDOW_TAB_SOURCE
+            MENUITEM "R&esults\tCtrl+F2",           ID_WINDOW_TAB_RESULTS
+            MENUITEM "Inde&x\tCtrl+F3",             ID_WINDOW_TAB_INDEX
+            MENUITEM "Skei&n\tCtrl+F4",             ID_WINDOW_TAB_SKEIN
+            MENUITEM "&Transcript\tCtrl+F5",        ID_WINDOW_TAB_TRANSCRIPT
+            MENUITEM "St&ory\tCtrl+F6",             ID_WINDOW_TAB_STORY
+            MENUITEM "&Documentation\tCtrl+F7",     ID_WINDOW_TAB_DOCUMENTATION
+
+            MENUITEM "Setti&ngs\tCtrl+F8",          ID_WINDOW_TAB_SETTINGS
             MENUITEM SEPARATOR
             MENUITEM "Go to &Left Pane\tCtrl+1",    ID_WINDOW_LEFTPANE
             MENUITEM "Go to &Right Pane\tCtrl+2",   ID_WINDOW_RIGHTPANE
@@ -176,13 +177,13 @@ BEGIN
         END
         POPUP "Show Inde&x"
         BEGIN
-            MENUITEM "C&ontents\tCtrl+3",     ID_WINDOW_INDEX_CONTENTS
-            MENUITEM "&Actions\tCtrl+4",      ID_WINDOW_INDEX_ACTIONS
-            MENUITEM "&Kinds\tCtrl+5",        ID_WINDOW_INDEX_KINDS
-            MENUITEM "&Phrasebook\tCtrl+6",   ID_WINDOW_INDEX_PHRASES
-            MENUITEM "&Rules\tCtrl+7",        ID_WINDOW_INDEX_RULES
-            MENUITEM "S&cenes\tCtrl+8",       ID_WINDOW_INDEX_SCENES
-            MENUITEM "&World\tCtrl+9",        ID_WINDOW_INDEX_WORLD
+            MENUITEM "C&ontents\tCtrl+3",           ID_WINDOW_INDEX_CONTENTS
+            MENUITEM "&Actions\tCtrl+4",            ID_WINDOW_INDEX_ACTIONS
+            MENUITEM "&Kinds\tCtrl+5",              ID_WINDOW_INDEX_KINDS
+            MENUITEM "&Phrasebook\tCtrl+6",         ID_WINDOW_INDEX_PHRASES
+            MENUITEM "&Rules\tCtrl+7",              ID_WINDOW_INDEX_RULES
+            MENUITEM "S&cenes\tCtrl+8",             ID_WINDOW_INDEX_SCENES
+            MENUITEM "&World\tCtrl+9",              ID_WINDOW_INDEX_WORLD
         END
         MENUITEM SEPARATOR
         MENUITEM "Window List",                 ID_WINDOW_LIST
@@ -367,14 +368,18 @@ END
 //
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 206, 203
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
+    WS_THICKFRAME
 CAPTION "Inform 7 for Windows"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_CREDITS,"RichEdit20A",ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_TABSTOP,1,53,203,120,WS_EX_STATICEDGE
-    CTEXT           "Copyright 2006-2014 David Kinder (front end), Graham Nelson et al (compiler).",IDC_COPYRIGHT,25,182,156,17
+    CONTROL         "",IDC_CREDITS,"RichEdit20A",ES_MULTILINE | ES_READONLY | 
+                    WS_VSCROLL | WS_TABSTOP,1,53,203,120,WS_EX_STATICEDGE
+    CTEXT           "Copyright 2006-2014 David Kinder (front end), Graham Nelson et al (compiler).",
+                    IDC_COPYRIGHT,25,182,156,17
     CTEXT           "Inform",IDC_TITLE,23,22,159,15,SS_CENTERIMAGE
-    CONTROL         "",IDC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,79,1,48,18
+    CONTROL         "",IDC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,79,1,48,
+                    18
     CTEXT           "Inform 7 for Windows (%s; %s)",IDC_VERSION,1,42,203,9
 END
 
@@ -383,26 +388,32 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Story File Format",IDC_STORY_BOX,7,7,247,122
-    CONTROL         "Z-Code version 5 (small textual projects only)",IDC_OUTPUT_Z5,
-                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,45,175,10
-    CONTROL         "Z-Code version 8 (medium-sized textual projects: most portable)",IDC_OUTPUT_Z8,
-                    "Button",BS_AUTORADIOBUTTON,15,56,229,10
-    CONTROL         "Glulx (large and multimedia projects: most capable)",IDC_OUTPUT_GLULX,
-                    "Button",BS_AUTORADIOBUTTON,15,66,197,10
-    CONTROL         "Bind up into a Blorb file on release",IDC_BLORB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,112,131,8
+    CONTROL         "Z-Code version 5 (small textual projects only)",
+                    IDC_OUTPUT_Z5,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    15,45,175,10
+    CONTROL         "Z-Code version 8 (medium-sized textual projects: most portable)",
+                    IDC_OUTPUT_Z8,"Button",BS_AUTORADIOBUTTON,15,56,229,10
+    CONTROL         "Glulx (large and multimedia projects: most capable)",
+                    IDC_OUTPUT_GLULX,"Button",BS_AUTORADIOBUTTON,15,66,197,
+                    10
+    CONTROL         "Bind up into a Blorb file on release",IDC_BLORB,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,112,131,8
     GROUPBOX        "Randomness",IDC_RANDOM_BOX,7,134,247,78
-    CONTROL         "Make random outcomes predictable when testing",IDC_PREDICTABLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,196,184,8
+    CONTROL         "Make random outcomes predictable when testing",
+                    IDC_PREDICTABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
+                    196,184,8
 END
 
-IDD_SPLASH DIALOGEX 0, 0, 330, 192
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SPLASH DIALOGEX 0, 0, 370, 222
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "Welcome to Inform 7"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    PUSHBUTTON      "Start a &new project...",IDC_NEW_PROJECT,213,125,112,14
-    DEFPUSHBUTTON   "&Open an existing project...",IDC_OPEN_PROJECT,213,148,112,14
-    PUSHBUTTON      "&Reopen last project",IDC_REOPEN_LAST,213,171,112,14
+    PUSHBUTTON      "Start a &new project...",IDC_NEW_PROJECT,253,163,112,14
+    DEFPUSHBUTTON   "&Open an existing project...",IDC_OPEN_PROJECT,253,182,
+                    112,14
+    PUSHBUTTON      "&Reopen last project",IDC_REOPEN_LAST,253,201,112,14
     LTEXT           "",IDC_INTRO,15,14,128,160
 END
 
@@ -410,12 +421,15 @@ IDD_SEARCH DIALOGEX 0, 0, 174, 18
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_SEARCH_SOURCE,3,3,81,12,ES_MULTILINE | ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
-    EDITTEXT        IDC_SEARCH_DOCS,91,3,81,12,ES_MULTILINE | ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
+    EDITTEXT        IDC_SEARCH_SOURCE,3,3,81,12,ES_MULTILINE | 
+                    ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
+    EDITTEXT        IDC_SEARCH_DOCS,91,3,81,12,ES_MULTILINE | ES_AUTOHSCROLL | 
+                    NOT WS_BORDER,WS_EX_STATICEDGE
 END
 
 IDD_NEWPROJECT DIALOGEX 0, 0, 291, 123
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "Start a new %s"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -425,22 +439,26 @@ BEGIN
     EDITTEXT        IDC_AUTHOR,7,75,277,12,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "Start",IDOK,177,101,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,234,101,50,14
-    LTEXT           "The &directory in which the new %s will be created",IDC_DIR_TEXT,7,7,199,8
+    LTEXT           "The &directory in which the new %s will be created",
+                    IDC_DIR_TEXT,7,7,199,8
     EDITTEXT        IDC_DIR,7,17,265,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_DIRPOPUP,272,17,12,12
 END
 
 IDD_SPELLING DIALOGEX 0, 0, 299, 139
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "Check spelling"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "&Not in the dictionary",IDC_STATIC,7,7,66,8
     EDITTEXT        IDC_BADWORD,7,19,200,12,ES_AUTOHSCROLL
     LTEXT           "&Suggestions",IDC_STATIC,7,36,40,8
-    LISTBOX         IDC_SUGGESTIONS,7,47,200,67,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_SUGGESTIONS,7,47,200,67,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "&Dictionary language",IDC_STATIC,7,122,72,8
-    COMBOBOX        IDC_LANGUAGE,80,120,127,87,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_LANGUAGE,80,120,127,87,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Ignore word",IDC_IGNORE,216,19,76,14
     PUSHBUTTON      "&Replace word",IDC_REPLACE,216,38,76,14
     PUSHBUTTON      "&Add to dictionary",IDC_ADD_DICTIONARY,216,57,76,14
@@ -448,30 +466,40 @@ BEGIN
 END
 
 IDD_PREFERENCES DIALOGEX 0, 0, 203, 230
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "Preferences"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Fonts",IDC_STATIC,7,7,189,47
     LTEXT           "&Font",IDC_STATIC,13,19,15,8
-    COMBOBOX        IDC_FONT,34,17,114,182,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_FONTSIZE,156,17,32,182,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONT,34,17,114,182,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE,156,17,32,182,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
     LTEXT           "Fixed &width font",IDC_STATIC,13,36,54,8
-    COMBOBOX        IDC_FIXEDFONT,70,34,118,182,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FIXEDFONT,70,34,118,182,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Source",IDC_STATIC,7,58,189,68
     LTEXT           "&Tab width (in spaces)",IDC_STATIC,14,70,73,8
     EDITTEXT        IDC_TABSIZE,93,68,37,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "&Indent wrapped lines",IDC_INDENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,85,95,10
-    CONTROL         "A&uto-indent after newline",IDC_AUTO_INDENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,98,107,10
-    CONTROL         "&Start by loading the last opened project",IDC_STARTLAST,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,110,149,10
+    CONTROL         "&Indent wrapped lines",IDC_INDENT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,85,95,10
+    CONTROL         "A&uto-indent after newline",IDC_AUTO_INDENT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,98,107,10
+    CONTROL         "&Start by loading the last opened project",
+                    IDC_STARTLAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,
+                    110,149,10
     GROUPBOX        "Cleaning",IDC_STATIC,7,130,189,40
-    CONTROL         "&Clean build files from projects before closing",IDC_CLEANFILES,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,14,142,163,10
-    CONTROL         "&Also clean out index files",IDC_CLEANINDEX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,154,126,10
+    CONTROL         "&Clean build files from projects before closing",
+                    IDC_CLEANFILES,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | 
+                    WS_TABSTOP,14,142,163,10
+    CONTROL         "&Also clean out index files",IDC_CLEANINDEX,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,154,126,10
     GROUPBOX        "Interpreters",IDC_STATIC,7,173,189,30
     LTEXT           "Glul&x interpreter",IDC_STATIC,15,186,56,8
-    COMBOBOX        IDC_GLULX,73,184,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GLULX,73,184,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,89,209,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,146,209,50,14
 END
@@ -542,9 +570,9 @@ BEGIN
     IDD_SPLASH, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 325
+        RIGHTMARGIN, 365
         TOPMARGIN, 2
-        BOTTOMMARGIN, 185
+        BOTTOMMARGIN, 215
     END
 
     IDD_NEWPROJECT, DIALOG
@@ -713,6 +741,13 @@ BEGIN
     ID_HELP_RECIPES         "Show the recipe book page, listing all the examples"
     ID_APP_PREFS            "Change the application preferences"
     ID_APP_WEBPAGE          "Go to the Inform 7 web site"
+    ID_HEAD_SHOW            "Show the contents list of the headings in the source"
+    ID_HEAD_CURRENT         "Only show the section containing the cursor in the source"
+    ID_HEAD_INCREASE        "Show the section at the next lower heading level in the source"
+    ID_HEAD_REDUCE          "Show the section at the next higher heading level in the source"
+    ID_HEAD_ENTIRE          "Show the entire source"
+    ID_HEAD_PREVIOUS        "Show the previous section in the source"
+    ID_HEAD_NEXT            "Show the next section in the source"
 END
 
 STRINGTABLE 
@@ -779,10 +814,6 @@ STRINGTABLE
 BEGIN
     ID_SKEIN_PLAY           "Play the story to this knot in the skein, restarting if necessary"
     ID_SKEIN_EDIT           "Edit the text for this knot"
-END
-
-STRINGTABLE 
-BEGIN
     ID_SKEIN_ADD_LABEL      "Add a label to this knot"
     ID_SKEIN_EDIT_LABEL     "Edit the label for this knot"
     ID_SKEIN_TRANSCRIPT     "Show this knot in the transcript tab"
@@ -795,19 +826,12 @@ BEGIN
     ID_SKEIN_DELETE         "Delete this knot"
     ID_SKEIN_DELETE_BELOW   "Delete this knot and all its children"
     ID_SKEIN_DELETE_THREAD  "Delete this knot and all knots in the same thread"
-    ID_SKEIN_SAVE_TRANSCRIPT 
-                            "Save the transcript of play from the start down to this knot"
 END
 
 STRINGTABLE 
 BEGIN
-    ID_HEAD_SHOW            "Show the contents list of the headings in the source"
-    ID_HEAD_CURRENT         "Only show the section containing the cursor in the source"
-    ID_HEAD_INCREASE        "Show the section at the next lower heading level in the source"
-    ID_HEAD_REDUCE          "Show the section at the next higher heading level in the source"
-    ID_HEAD_PREVIOUS        "Show the previous section in the source"
-    ID_HEAD_NEXT            "Show the next section in the source"
-    ID_HEAD_ENTIRE          "Show the entire source"
+    ID_SKEIN_SAVE_TRANSCRIPT 
+                            "Save the transcript of play from the start down to this knot"
 END
 
 #endif    // English (U.K.) resources

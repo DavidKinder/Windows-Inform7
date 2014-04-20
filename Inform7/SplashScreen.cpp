@@ -81,6 +81,31 @@ BOOL SplashScreen::OnInitDialog()
     // Get the unscaled background
     CDibSection* back = theApp.GetCachedImage("Welcome Background");
     ASSERT(back != NULL);
+    CSize backSize = back->GetSize();
+
+    // Adjust the dialog to the same aspect ratio as the background
+    int heightAdjust =
+      ((client.Width() * backSize.cy) / backSize.cx) - client.Height();
+    CRect windowRect;
+    GetWindowRect(windowRect);
+    windowRect.bottom += heightAdjust;
+    MoveWindow(windowRect,FALSE);
+    GetClientRect(client);
+
+    // Adjust the button positions
+    CWnd* btns[3];
+    btns[0] = &m_newProject;
+    btns[1] = &m_reopenLast;
+    btns[2] = &m_openProject;
+    for (int i = 0; i < (sizeof btns / sizeof btns[0]); i++)
+    {
+      CRect btnRect;
+      btns[i]->GetWindowRect(btnRect);
+      ScreenToClient(btnRect);
+      btnRect.top += heightAdjust;
+      btnRect.bottom += heightAdjust;
+      btns[i]->MoveWindow(btnRect,FALSE);
+    }
 
     // Create a bitmap for the scaled background
     CDC* dc = GetDesktopWindow()->GetDC();
@@ -88,7 +113,7 @@ BOOL SplashScreen::OnInitDialog()
     GetDesktopWindow()->ReleaseDC(dc);
 
     // Scale and stretch the background
-    ScaleGfx(back->GetBits(),back->GetSize().cx,back->GetSize().cy,
+    ScaleGfx(back->GetBits(),backSize.cx,backSize.cy,
       m_back.GetBits(),client.Width(),client.Height());
   }
 
