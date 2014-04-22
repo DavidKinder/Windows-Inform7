@@ -953,6 +953,29 @@ CharClassify::cc Document::WordCharClass(unsigned char ch) {
 	return charClass.GetClass(ch);
 }
 
+/*XXXXDK quotes */
+CharClassify::cc Document::WordCharClassX(int pos) {
+	unsigned char ch = CharAt(pos);
+	if ((SC_CP_UTF8 == dbcsCodePage) && (ch >= 0x80))
+	{
+		// Check for Unicode left- and right-double quotes (0x201C and 0x201D)
+		// In UTF-8, 0x201C is 0xE2 0x80 0x9C
+		if (ch == 0xe2)
+		{
+			unsigned char ch1 = CharAt(pos+1);
+			if (ch1 == 0x80)
+			{
+				unsigned char ch2 = CharAt(pos+2);
+				if ((ch2 == 0x9c) || (ch2 == 0x9d))
+					return CharClassify::ccPunctuation;
+			}
+		}
+		return CharClassify::ccWord;
+	}
+	return charClass.GetClass(ch);
+}
+/*XXXXDK quotes */
+
 /**
  * Used by commmands that want to select whole words.
  * Finds the start of word at pos when delta < 0 or the end of the word when delta >= 0.
@@ -961,13 +984,13 @@ int Document::ExtendWordSelect(int pos, int delta, bool onlyWordCharacters) {
 	CharClassify::cc ccStart = CharClassify::ccWord;
 	if (delta < 0) {
 		if (!onlyWordCharacters)
-			ccStart = WordCharClass(cb.CharAt(pos-1));
-		while (pos > 0 && (WordCharClass(cb.CharAt(pos - 1)) == ccStart))
+			ccStart = WordCharClassX(pos-1);/*XXXXDK quotes */
+		while (pos > 0 && (WordCharClassX(pos - 1) == ccStart))/*XXXXDK quotes */
 			pos--;
 	} else {
 		if (!onlyWordCharacters && pos < Length())
-			ccStart = WordCharClass(cb.CharAt(pos));
-		while (pos < (Length()) && (WordCharClass(cb.CharAt(pos)) == ccStart))
+			ccStart = WordCharClassX(pos);/*XXXXDK quotes */
+		while (pos < (Length()) && (WordCharClassX(pos) == ccStart))/*XXXXDK quotes */
 			pos++;
 	}
 	return MovePositionOutsideChar(pos, delta);

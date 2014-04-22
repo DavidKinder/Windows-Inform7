@@ -315,6 +315,7 @@ public:
 
 private:
 	CharClassify::cc WordCharClass(unsigned char ch);
+	CharClassify::cc WordCharClassX(int pos);/*XXXXDK quotes */
 	bool IsWordStartAt(int pos);
 	bool IsWordEndAt(int pos);
 	bool IsWordAt(int start, int end);
