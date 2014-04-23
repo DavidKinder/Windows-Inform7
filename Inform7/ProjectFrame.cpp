@@ -1270,12 +1270,12 @@ void ProjectFrame::OnReleaseGame(UINT nID)
 
 void ProjectFrame::OnReleaseMaterials()
 {
-  // Get the path to the "Materials" directory
+  // Get the path to the ".materials" directory
   int projectExt = m_projectDir.Find(".inform");
   if (projectExt == -1)
     return;
   CString path;
-  path.Format("%s Materials",m_projectDir.Left(projectExt));
+  path.Format("%s.materials",m_projectDir.Left(projectExt));
 
   // If it doesn't exist, create it
   if (::GetFileAttributes(path) == INVALID_FILE_ATTRIBUTES)

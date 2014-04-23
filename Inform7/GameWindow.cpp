@@ -1430,7 +1430,7 @@ CString GameWindow::GetMediaPath(const wchar_t* section, int resource)
   if (projectExt == -1)
     return "";
   CString path;
-  path.Format("%s Materials\\%S",projectDir.Left(projectExt),file);
+  path.Format("%s.materials\\%S",projectDir.Left(projectExt),file);
   return path;
 }
 
@@ -1494,7 +1494,7 @@ void GameWindow::WriteImageSizes(void)
     if (num > 0)
     {
       CString imagePath;
-      imagePath.Format("%s Materials\\%S",projectDir.Left(projectExt),it.Value());
+      imagePath.Format("%s.materials\\%S",projectDir.Left(projectExt),it.Value());
       CSize size = theApp.GetImageSize(imagePath);
 
       CString sizeLine;
@@ -1512,9 +1512,9 @@ CString GameWindow::GetFileDir(void)
   if (projectExt == -1)
     return "";
 
-  // Check if a "Materials/Files" directory exists
+  // Check if a ".materials/Files" directory exists
   CString path;
-  path.Format("%s Materials\\Files",projectDir.Left(projectExt));
+  path.Format("%s.materials\\Files",projectDir.Left(projectExt));
   if (::GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES)
     return path;
 
