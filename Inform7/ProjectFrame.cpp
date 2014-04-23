@@ -1576,6 +1576,16 @@ void ProjectFrame::OpenProject(const char* project)
   // Set the project directory
   m_projectDir = project;
 
+  // Rename any old-style " Materials" folder to ".materials"
+  int projectExt = m_projectDir.Find(".inform");
+  if (projectExt > 0)
+  {
+    CString fromPath, toPath;
+    fromPath.Format("%s Materials",m_projectDir.Left(projectExt));
+    toPath.Format("%s.materials",m_projectDir.Left(projectExt));
+    ::MoveFile(fromPath,toPath);
+  }
+
   // Open files in the project
   GetPanel(0)->OpenProject(m_projectDir,true);
   GetPanel(1)->OpenProject(m_projectDir,false);
