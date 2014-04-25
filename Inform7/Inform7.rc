@@ -753,7 +753,7 @@ END
 STRINGTABLE 
 BEGIN
     AFX_IDS_APP_TITLE       "Inform"
-    AFX_IDS_IDLEMESSAGE     "Inform 7 for Windows %s"
+    AFX_IDS_IDLEMESSAGE     "Windows Inform 7 build %s"
 END
 
 STRINGTABLE 

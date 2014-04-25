@@ -17,13 +17,19 @@ IMPLEMENT_DYNAMIC(TabDoc, TabBase)
 
 BEGIN_MESSAGE_MAP(TabDoc, TabBase)
   ON_WM_SIZE()
-  ON_COMMAND(ID_DOC_CONTENTS, OnContents)
   ON_MESSAGE(WM_USERNAVIGATE, OnUserNavigate)
 END_MESSAGE_MAP()
 
+const char* TabDoc::m_files[TabDoc::Number_DocTabs] =
+{
+  "\\Documentation\\index.html",
+  "\\Documentation\\examples_alphabetical.html",
+  "\\Documentation\\general_index.html"
+};
+
 CArray<TabDoc::DocText> TabDoc::m_docTexts;
 
-TabDoc::TabDoc() : m_html(NULL), m_initialised(false)
+TabDoc::TabDoc() : m_tab(true), m_html(NULL), m_initialised(false)
 {
 }
 
@@ -37,9 +43,15 @@ void TabDoc::CreateTab(CWnd* parent)
   // Create the pane window
   Create(parent);
 
-  // Create the command button
-  m_contents.Create("Contents",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_DOC_CONTENTS);
-  m_contents.SetFont(theApp.GetFont(InformApp::FontSystem));
+  // Create the tab control
+  CRect zeroRect(0,0,0,0);
+  m_tab.Create(WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,zeroRect,this,0);
+  m_tab.SendMessage(TCM_SETMINTABWIDTH,0,8);
+
+  // Add tabs
+  m_tab.InsertItem(DocTab_Home,"?H");
+  m_tab.InsertItem(DocTab_Examples,"Examples");
+  m_tab.InsertItem(DocTab_Index,"General Index");
 
   // Create the HTML control window
   m_html = (ReportHtml*)(RUNTIME_CLASS(ReportHtml)->CreateObject());
@@ -59,8 +71,7 @@ void TabDoc::MakeActive(TabState& state)
   if (!m_initialised)
   {
     // Show the index page
-    m_html->Navigate(theApp.GetAppDir()+"\\Documentation\\index.html",true);
-    m_initialised = true;
+    Show(theApp.GetAppDir()+m_files[DocTab_Home]);
   }
 
   // Make the window visible
@@ -101,6 +112,7 @@ void TabDoc::Show(const char* url)
 {
   m_html->Navigate(url,true);
   m_initialised = true;
+  UpdateActiveTab();
 }
 
 void TabDoc::SetFocusFlag(bool set)
@@ -231,6 +243,7 @@ void TabDoc::Highlight(const SearchWindow::Result& result)
     result.inContext.cpMin,result.inContext.cpMax-result.inContext.cpMin);
   m_html->Navigate(result.sourceFile.c_str(),false,search.c_str());
   m_initialised = true;
+  UpdateActiveTab();
   Panel::GetPanel(this)->SetActiveTab(Panel::Tab_Doc);
 }
 
@@ -246,11 +259,30 @@ CRect TabDoc::WindowRect(void)
   return r;
 }
 
+BOOL TabDoc::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+  // Pick up a tab change
+  if (((LPNMHDR)lParam)->code == TCN_SELCHANGE)
+  {
+    DocTabs tab = GetActiveTab();
+    if (tab != No_DocTab)
+    {
+      Show(theApp.GetAppDir()+m_files[tab]);
+
+      TabState state;
+      GetTabState(state);
+      Panel::GetPanel(this)->AddToTabHistory(state);
+    }
+  }
+
+  return TabBase::OnNotify(wParam, lParam, pResult);
+}
+
 void TabDoc::OnSize(UINT nType, int cx, int cy)
 {
   TabBase::OnSize(nType,cx,cy);
 
-  if (m_html->GetSafeHwnd() == 0)
+  if (m_tab.GetSafeHwnd() == 0)
     return;
 
   CRect client;
@@ -261,22 +293,36 @@ void TabDoc::OnSize(UINT nType, int cx, int cy)
   int heading, h;
   SizeTab(client,fontSize,heading,h);
 
-  int cw = theApp.MeasureText(&m_contents).cx+(fontSize.cx*3);
-  m_contents.MoveWindow(client.Width()-cw-(fontSize.cx/3),h,cw,heading-(2*h),TRUE);
+  // Get the dimensions of the first and last tab buttons
+  CRect firstTabItem, lastTabItem;
+  m_tab.GetItemRect(DocTab_Home,firstTabItem);
+  m_tab.GetItemRect(DocTab_Index,lastTabItem);
+  int w = lastTabItem.right - firstTabItem.left + 4;
+
+  // Resize the tab control
+  CRect tabSize;
+  tabSize.right = client.Width()-(fontSize.cx/3);
+  tabSize.left = tabSize.right-w;
+  if (tabSize.left < 0)
+    tabSize.left = 0;
+  tabSize.top = 2;
+  tabSize.bottom = client.Height()-tabSize.top-2;
+  m_tab.MoveWindow(tabSize,TRUE);
+
+  // Work out the display area of the tab control
+  CRect tabArea = tabSize;
+  m_tab.AdjustRect(FALSE,tabArea);
+  client.top = tabArea.top+2;
 
   m_html->MoveWindow(client,TRUE);
-}
-
-void TabDoc::OnContents()
-{
-  Show(theApp.GetAppDir()+"\\Documentation\\index.html");
-  Panel::GetPanel(this)->SetActiveTab(Panel::Tab_Doc);
 }
 
 LRESULT TabDoc::OnUserNavigate(WPARAM, LPARAM)
 {
   if (IsWindowVisible())
   {
+    UpdateActiveTab();
+
     TabState state;
     GetTabState(state);
     Panel::GetPanel(this)->AddToTabHistory(state);
@@ -284,20 +330,32 @@ LRESULT TabDoc::OnUserNavigate(WPARAM, LPARAM)
   return 0;
 }
 
+TabDoc::DocTabs TabDoc::GetActiveTab(void)
+{
+  return (DocTabs)m_tab.GetCurSel();
+}
+
+void TabDoc::UpdateActiveTab(void)
+{
+  CString url = m_html->GetURL();
+  int idx = No_DocTab;
+  for (int i = 0; i < sizeof m_files / sizeof m_files[0]; i++)
+  {
+    CString check(m_files[i]);
+    if (url.Find(check) > 0)
+      idx = i;
+    check.Replace('\\','/');
+    if (url.Find(check) > 0)
+      idx = i;
+  }
+  if (idx != GetActiveTab())
+    m_tab.SetCurSel(idx);
+}
+
 void TabDoc::GetTabState(TabState& state)
 {
   state.tab = Panel::Tab_Doc;
   state.url = m_html->GetURL();
-}
-
-CString TabDoc::GetToolTip(UINT_PTR id)
-{
-  switch (id)
-  {
-  case ID_DOC_CONTENTS:
-    return "Show the contents page of the documentation";
-  }
-  return TabBase::GetToolTip(id);
 }
 
 struct Tag

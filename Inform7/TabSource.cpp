@@ -142,8 +142,8 @@ void TabSource::OnSize(UINT nType, int cx, int cy)
 
     // Resize the tab control
     CRect tabSize;
-    tabSize.left = (client.Width()-w)/2;
-    tabSize.right = tabSize.left+w;
+    tabSize.right = client.Width()-(fontSize.cx/3);
+    tabSize.left = tabSize.right-w;
     if (tabSize.left < 0)
       tabSize.left = 0;
     if (tabSize.right > client.right)

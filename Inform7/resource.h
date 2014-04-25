@@ -99,7 +99,6 @@
 #define ID_SKEIN_SAVE_TRANSCRIPT        416
 #define ID_SKEIN_PLAY_ALL               417
 #define ID_TRANSCRIPT_BLESS_ALL         420
-#define ID_DOC_CONTENTS                 421
 #define ID_SEARCH_SOURCE                450
 #define ID_SEARCH_DOCS                  451
 #define ID_NAVIGATE_BACK                500

@@ -986,7 +986,7 @@ void ProjectFrame::OnUpdateCompile(CCmdUI *pCmdUI)
 
 void ProjectFrame::OnPlayGo()
 {
-  if (CompileProject(false))
+  if (CompileProject(0))
   {
     m_skein.Reset(true);
     RunProject();
@@ -995,7 +995,7 @@ void ProjectFrame::OnPlayGo()
 
 void ProjectFrame::OnPlayTest()
 {
-  if (CompileProject(false))
+  if (CompileProject(0))
   {
     m_skein.Reset(true);
     m_skein.NewLine(L"test me");
@@ -1016,7 +1016,7 @@ void ProjectFrame::OnPlayStop()
 
 void ProjectFrame::OnPlayRefresh()
 {
-  if (CompileProject(false))
+  if (CompileProject(0))
     GetPanel(ChoosePanel(Panel::Tab_Index))->SetActiveTab(Panel::Tab_Index);
 }
 
@@ -1045,7 +1045,7 @@ void ProjectFrame::OnPlayLoad()
 
 void ProjectFrame::OnReplayLast()
 {
-  if (CompileProject(false))
+  if (CompileProject(0))
   {
     m_skein.Reset(false);
     RunProject();
@@ -1198,7 +1198,7 @@ void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)
 
 void ProjectFrame::OnReleaseGame(UINT nID)
 {
-  if (CompileProject(nID == ID_RELEASE_GAME))
+  if (CompileProject((nID == ID_RELEASE_GAME) ? 2 : 1))
   {
     CString releasePath;
     const char* blorbExt = NULL;
@@ -1289,7 +1289,7 @@ void ProjectFrame::OnReleaseIFiction()
 {
   // Compile the project
   bool fileCreated = false;
-  if (CompileProject(false))
+  if (CompileProject(0))
   {
     // Check for an iFiction file
     CString iFictionFile;
@@ -1612,7 +1612,7 @@ bool ProjectFrame::SaveProject(const char* project)
   return saved;
 }
 
-bool ProjectFrame::CompileProject(bool release)
+bool ProjectFrame::CompileProject(int release)
 {
   // Stop the game if running
   m_game.StopInterpreter(false);
@@ -1655,7 +1655,7 @@ bool ProjectFrame::CompileProject(bool release)
   GetPanel(1)->CompileProject(TabInterface::CompileStart,0);
 
   // Run Natural Inform
-  int code = theApp.RunCommand(NULL,NaturalCommandLine(release),*this);
+  int code = theApp.RunCommand(NULL,NaturalCommandLine(release >= 1),*this);
 
   // Notify panels that Natural Inform has been run
   GetPanel(0)->CompileProject(TabInterface::RanNaturalInform,code);
@@ -1665,7 +1665,7 @@ bool ProjectFrame::CompileProject(bool release)
   if (code == 0)
   {
     SetMessageText("Running Inform 6");
-    code = theApp.RunCommand(m_projectDir+"\\Build",InformCommandLine(release),*this);
+    code = theApp.RunCommand(m_projectDir+"\\Build",InformCommandLine(release >= 2),*this);
 
     GetPanel(0)->CompileProject(TabInterface::RanInform6,code);
     GetPanel(1)->CompileProject(TabInterface::RanInform6,code);

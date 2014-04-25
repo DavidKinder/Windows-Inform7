@@ -996,8 +996,16 @@ void InformApp::FindExtensions(void)
           if (!find.IsDirectory())
           {
             CString ext = ::PathFindExtension(find.GetFilePath());
-            if (ext.IsEmpty() || (ext.CompareNoCase(".i7x") == 0))
+            if (ext.CompareNoCase(".i7x") == 0)
               m_extensions.push_back(ExtLocation(author,find.GetFileTitle(),(i == 0),find.GetFilePath()));
+            else if (ext.IsEmpty() && (i == 1))
+            {
+              // Rename an old-style extension (with no file extension) to end with ".i7x"
+              CString newPath = find.GetFilePath();
+              newPath.Append(".i7x");
+              if (::MoveFile(find.GetFilePath(),newPath))
+                m_extensions.push_back(ExtLocation(author,find.GetFileTitle(),(i == 0),newPath));
+            }
           }
         }
         find.Close();

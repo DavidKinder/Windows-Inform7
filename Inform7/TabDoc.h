@@ -3,6 +3,7 @@
 #include "TabBase.h"
 #include "ReportHtml.h"
 #include "SearchWindow.h"
+#include "FlatTab.h"
 
 class TabDoc : public TabBase, public SearchWindow::Source
 {
@@ -31,17 +32,32 @@ public:
   CRect WindowRect(void);
 
 protected:
+  virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+
   DECLARE_MESSAGE_MAP()
 
   afx_msg void OnSize(UINT nType, int cx, int cy);
-  afx_msg void OnContents();
   afx_msg LRESULT OnUserNavigate(WPARAM, LPARAM);
 
-  void GetTabState(TabState& state);
-  CString GetToolTip(UINT_PTR id);
-
 private:
-  CButton m_contents;
+  enum DocTabs
+  {
+    DocTab_Home = 0,
+    DocTab_Examples,
+    DocTab_Index,
+    Number_DocTabs,
+    No_DocTab = -1
+  };
+
+  static const char* m_files[TabDoc::Number_DocTabs];
+
+  DocTabs GetActiveTab(void);
+  void UpdateActiveTab(void);
+  void GetTabState(TabState& state);
+
+  FlatTab m_tab;
+  ReportHtml* m_html;
+  bool m_initialised;
 
   struct DocText
   {
@@ -57,9 +73,6 @@ private:
   };
 
   bool DecodeHTML(const char* file, DocText& docText);
-
-  ReportHtml* m_html;
-  bool m_initialised;
 
   static CArray<DocText> m_docTexts;
 };
