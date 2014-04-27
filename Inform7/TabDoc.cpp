@@ -134,7 +134,6 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
 
   if (m_docTexts.IsEmpty())
   {
-    bool example = false;
     CFileFind findDoc;
 
     for (int i = 0; i < 2; i++)
@@ -143,11 +142,9 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
       switch (i)
       {
       case 0:
-        example = false;
         findPath.Format("%s\\Documentation\\doc*.html",theApp.GetAppDir());
         break;
       case 1:
-        example = true;
         findPath.Format("%s\\Documentation\\rdoc*.html",theApp.GetAppDir());
         break;
       }
@@ -160,10 +157,10 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
 
         // Extract the title and body text
         DocText docText;
-        docText.example = example;
         if (DecodeHTML(findDoc.GetFilePath(),docText))
         {
           docText.file = findDoc.GetFilePath();
+          docText.colourScheme = i;
           m_docTexts.Add(docText);
         }
         theApp.RunMessagePump();
@@ -208,9 +205,10 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
       result.sourceLocation = location;
       result.sourceSort = docText.sort;
       result.sourceFile = docText.file;
+      result.colourScheme = docText.colourScheme;
 
       // For examples, add a reference to the example section
-      if (docText.example)
+      if (0)//XXXXDK
       {
         int sep = docText.file.ReverseFind('\\');
         if (sep != -1)
@@ -440,6 +438,7 @@ bool TabDoc::DecodeHTML(const char* filename, DocText& docText)
 
   // Scan the text, removing markup
   bool example = false;
+  bool ignore = false;
   bool white = false;
   const wchar_t* p1 = bodyHtml;
   const wchar_t* p2 = p1+len;
@@ -491,24 +490,28 @@ bool TabDoc::DecodeHTML(const char* filename, DocText& docText)
       ASSERT(*p1 == L'>');
 
       // Add a carriage return for appropriate markup
-      if (found && !closing && tags[i].cr)
+      if (found && !closing && tags[i].cr && !ignore)
         docText.AddToBody(L'\n',example);
       white = false;
     }
     else if ((*p1 == L'<') && (*(p1+1) == L'!'))
     {
       // Extract metadata from comments
-      wchar_t meta[256];
-      if (swscanf(p1,L"<!-- SEARCH TITLE \"%[^\"]",meta) == 1)
-        docText.title = meta;
-      else if (swscanf(p1,L"<!-- SEARCH SECTION \"%[^\"]",meta) == 1)
-        docText.section = meta;
-      else if (swscanf(p1,L"<!-- SEARCH SORT \"%[^\"]",meta) == 1)
-        docText.sort = meta;
-      else if (wcsncmp(p1,L"<!-- EXAMPLE START -->",22) == 0)
-        example = true;
-      else if (wcsncmp(p1,L"<!-- EXAMPLE END -->",20) == 0)
+      wchar_t meta1[256], meta2[256];
+      if (swscanf(p1,L"<!-- SEARCH TITLE \"%[^\"]",meta1) == 1)
+        docText.title = meta1;
+      else if (swscanf(p1,L"<!-- SEARCH SECTION \"%[^\"]",meta1) == 1)
+        docText.section = meta1;
+      else if (swscanf(p1,L"<!-- SEARCH SORT \"%[^\"]",meta1) == 1)
+        docText.sort = meta1;
+      else if (swscanf(p1,L"<!-- START EXAMPLE \"%[^\"] \"%[^\"]",meta1,meta2) == 2)
+        example = true; /*XXXXDK*/
+      else if (wcsncmp(p1,L"<!-- END EXAMPLE -->",20) == 0)
         example = false;
+      else if (wcsncmp(p1,L"<!-- START IGNORE ",18) == 0)
+        ignore = true;
+      else if (wcsncmp(p1,L"<!-- END IGNORE -->",19) == 0)
+        ignore = false;
 
       p1 = wcsstr(p1,L"-->");
       if (p1 != NULL)
@@ -532,22 +535,27 @@ bool TabDoc::DecodeHTML(const char* filename, DocText& docText)
       // Replace the literal
       if (found)
       {
-        docText.AddToBody(literals[i].replace,example);
+        if (!ignore)
+          docText.AddToBody(literals[i].replace,example);
         p1 += literals[i].len;
       }
       else
-        docText.AddToBody(*p1,example);
+      {
+        if (!ignore)
+          docText.AddToBody(*p1,example);
+      }
       white = false;
     }
     else if (iswspace(*p1))
     {
-      if (!white)
+      if (!white && !ignore)
         docText.AddToBody(L' ',example);
       white = true;
     }
     else
     {
-      docText.AddToBody(*p1,example);
+      if (!ignore)
+        docText.AddToBody(*p1,example);
       white = false;
     }
     p1++;
@@ -560,12 +568,13 @@ bool TabDoc::DecodeHTML(const char* filename, DocText& docText)
   return true;
 }
 
-TabDoc::DocText::DocText() : example(false)
+TabDoc::DocText::DocText()
 {
+  colourScheme = 0;
 }
 
 void TabDoc::DocText::AddToBody(WCHAR ch, bool inExample)
 {
-  if (!example || (example && inExample))
+  if (!inExample)/*XXXXDK*/
     body += ch;
 }

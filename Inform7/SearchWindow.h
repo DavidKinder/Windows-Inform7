@@ -39,6 +39,8 @@ public:
     std::string sourceLocation;
     std::string sourceFile;
     CHARRANGE inSource;
+    
+    int colourScheme;
   };
 
   class Source

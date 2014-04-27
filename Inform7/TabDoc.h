@@ -64,12 +64,12 @@ private:
     DocText();
     void AddToBody(WCHAR ch, bool inExample);
 
-    bool example;
     CString section;
     CString title;
     CString sort;
     CStringW body;
     CString file;
+    int colourScheme;
   };
 
   bool DecodeHTML(const char* file, DocText& docText);

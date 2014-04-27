@@ -111,69 +111,86 @@ void SearchWindow::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
     *result = CDRF_NOTIFYSUBITEMDRAW;
     break;
   case CDDS_ITEMPREPAINT|CDDS_SUBITEM:
-    // Override painting of the first column
-    if (custom->iSubItem == 0)
     {
-      // Get the item text
+      // Work out the background colour
+      COLORREF backColour = 0;
       int item = (int)custom->nmcd.dwItemSpec;
-      CStringW text = (LPCWSTR)m_resultsList.GetItemData(item);
-
-      // Get if the item is selected
-      bool selected = false;
-      if (GetFocus() == &m_resultsList)
+      if (m_results[item].colourScheme == 1)
       {
-        if (item == m_resultsList.GetNextItem(-1,LVNI_SELECTED))
-          selected = true;
+        backColour = ((item % 2) == 0) ?
+          RGB(0xff,0xff,0xe5) : RGB(0xee,0xee,0xd4);
+      }
+      else
+      {
+        backColour = ((item % 2) == 0) ?
+          RGB(0xff,0xff,0xff) : RGB(0xee,0xee,0xee);
       }
 
-      // Get the bounding rectangle for drawing the text
-      CRect rect;
-      m_resultsList.GetSubItemRect(item,custom->iSubItem,LVIR_LABEL,rect);
-
-      // Set up the device context
-      CDC* dc = CDC::FromHandle(custom->nmcd.hdc);
-      dc->SetTextColor(::GetSysColor(selected ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
-      dc->SetBkMode(TRANSPARENT);
-
-      // Draw the background
-      rect.bottom--;
-      dc->FillSolidRect(rect,::GetSysColor(selected ? COLOR_HIGHLIGHT : COLOR_WINDOW));
-      rect.bottom++;
-
-      // Create a bold font
-      LOGFONT logFont;
-      m_resultsList.GetFont()->GetLogFont(&logFont);
-      logFont.lfWeight = FW_BOLD;
-      CFont boldFont;
-      boldFont.CreateFontIndirect(&logFont);
-
-      // Get position information on the text
-      CRect textRect = rect;
-      textRect.DeflateRect(2,0);
-      int high1 = m_results[item].inContext.cpMin;
-      int high2 = m_results[item].inContext.cpMax;
-
-      // Draw the text
-      DrawText(dc,text.GetString(),high1,textRect,DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
-      CFont* oldFont = dc->SelectObject(&boldFont);
-      DrawText(dc,text.GetString()+high1,high2-high1,textRect,DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
-      dc->SelectObject(oldFont);
-      DrawText(dc,text.GetString()+high2,text.GetLength()-high2,textRect,
-        DT_VCENTER|DT_SINGLELINE|DT_WORD_ELLIPSIS|DT_NOPREFIX);
-
-      // Draw the focus rectangle
-      if (selected)
+      // Override painting of the first column
+      if (custom->iSubItem == 0)
       {
-        CRgn clip;
-        ::GetClipRgn(dc->GetSafeHdc(),clip);
-        dc->IntersectClipRect(rect);
-        rect.right += 8;
-        rect.bottom += 8;
-        dc->DrawFocusRect(rect);
-        dc->SelectClipRgn(&clip);
-      }
+        // Get the item text
+        CStringW text = (LPCWSTR)m_resultsList.GetItemData(item);
 
-      *result = CDRF_SKIPDEFAULT;
+        // Get if the item is selected
+        bool selected = false;
+        if (GetFocus() == &m_resultsList)
+        {
+          if (item == m_resultsList.GetNextItem(-1,LVNI_SELECTED))
+            selected = true;
+        }
+
+        // Get the bounding rectangle for drawing the text
+        CRect rect;
+        m_resultsList.GetSubItemRect(item,custom->iSubItem,LVIR_LABEL,rect);
+
+        // Set up the device context
+        CDC* dc = CDC::FromHandle(custom->nmcd.hdc);
+        dc->SetTextColor(::GetSysColor(selected ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
+        dc->SetBkMode(TRANSPARENT);
+
+        // Draw the background
+        rect.bottom--;
+        dc->FillSolidRect(rect,selected ? ::GetSysColor(COLOR_HIGHLIGHT) : backColour);
+        rect.bottom++;
+
+        // Create a bold font
+        LOGFONT logFont;
+        m_resultsList.GetFont()->GetLogFont(&logFont);
+        logFont.lfWeight = FW_BOLD;
+        CFont boldFont;
+        boldFont.CreateFontIndirect(&logFont);
+
+        // Get position information on the text
+        CRect textRect = rect;
+        textRect.DeflateRect(2,0);
+        int high1 = m_results[item].inContext.cpMin;
+        int high2 = m_results[item].inContext.cpMax;
+
+        // Draw the text
+        DrawText(dc,text.GetString(),high1,textRect,DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
+        CFont* oldFont = dc->SelectObject(&boldFont);
+        DrawText(dc,text.GetString()+high1,high2-high1,textRect,DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
+        dc->SelectObject(oldFont);
+        DrawText(dc,text.GetString()+high2,text.GetLength()-high2,textRect,
+          DT_VCENTER|DT_SINGLELINE|DT_WORD_ELLIPSIS|DT_NOPREFIX);
+
+        // Draw the focus rectangle
+        if (selected)
+        {
+          CRgn clip;
+          ::GetClipRgn(dc->GetSafeHdc(),clip);
+          dc->IntersectClipRect(rect);
+          rect.right += 8;
+          rect.bottom += 8;
+          dc->DrawFocusRect(rect);
+          dc->SelectClipRgn(&clip);
+        }
+
+        *result = CDRF_SKIPDEFAULT;
+      }
+      else
+        custom->clrTextBk = backColour;
     }
     break;
   }
@@ -295,4 +312,5 @@ SearchWindow::Result::Result()
   inContext.cpMax = 0;
   inSource.cpMin = 0;
   inSource.cpMax = 0;
+  colourScheme = 0;
 }
