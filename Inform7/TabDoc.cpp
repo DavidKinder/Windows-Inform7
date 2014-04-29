@@ -27,7 +27,7 @@ const char* TabDoc::m_files[TabDoc::Number_DocTabs] =
   "\\Documentation\\general_index.html"
 };
 
-CArray<TabDoc::DocText> TabDoc::m_docTexts;
+CArray<TabDoc::DocText*> TabDoc::m_docTexts;
 
 TabDoc::TabDoc() : m_tab(true), m_html(NULL), m_initialised(false)
 {
@@ -155,14 +155,8 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
         // Get the filename of a documentation file
         found = findDoc.FindNextFile();
 
-        // Extract the title and body text
-        DocText docText;
-        if (DecodeHTML(findDoc.GetFilePath(),docText))
-        {
-          docText.file = findDoc.GetFilePath();
-          docText.colourScheme = i;
-          m_docTexts.Add(docText);
-        }
+        // Extract the title and text
+        DecodeHTML(findDoc.GetFilePath(),i);
         theApp.RunMessagePump();
       }
     }
@@ -170,10 +164,10 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
 
   for (int i = 0; i < m_docTexts.GetSize(); i++)
   {
-    DocText& docText = m_docTexts[i];
+    DocText* docText = m_docTexts[i];
 
     // Make everything lower case
-    CStringW bodyLow(docText.body);
+    CStringW bodyLow(docText->body);
     bodyLow.MakeLower();
 
     // Look for a match
@@ -187,11 +181,11 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
       if (context1 < 0)
         context1 = 0;
       int context2 = found2+32;
-      if (context2 > docText.body.GetLength()-1)
-        context2 = docText.body.GetLength()-1;
+      if (context2 > docText->body.GetLength()-1)
+        context2 = docText->body.GetLength()-1;
 
       // Get the surrounding text as context
-      CStringW context = docText.body.Mid(context1,context2-context1);
+      CStringW context = docText->body.Mid(context1,context2-context1);
       context.Replace(L'\n',L' ');
       context.Replace(L'\r',L' ');
       context.Replace(L'\t',L' ');
@@ -201,31 +195,11 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
       result.inContext.cpMin = found1-context1;
       result.inContext.cpMax = found2-context1;
       CString location;
-      location.Format("%s: %s",docText.section,docText.title);
+      location.Format("%s: %s",docText->section,docText->title);
       result.sourceLocation = location;
-      result.sourceSort = docText.sort;
-      result.sourceFile = docText.file;
-      result.colourScheme = docText.colourScheme;
-
-      // For examples, add a reference to the example section
-      if (0)//XXXXDK
-      {
-        int sep = docText.file.ReverseFind('\\');
-        if (sep != -1)
-        {
-          CString name = docText.file.Mid(sep+1);
-          name.MakeLower();
-
-          int number = 0;
-          if (sscanf(name,"ex%d.html",&number) == 1)
-          {
-            CString section;
-            section.Format("#e%d",number);
-            result.sourceFile += section;
-          }
-        }
-      }
-
+      result.sourceSort = docText->sort;
+      result.sourceFile = docText->file;
+      result.colourScheme = docText->colourScheme;
       results.push_back(result);
     }
     theApp.RunMessagePump();
@@ -402,14 +376,16 @@ static struct Literal literals[] =
   L"nbsp;",5,' ',
   L"lt;",3,'<',
   L"gt;",3,'>',
+  L"amp;",4,'&',
+  L"#160;",5,' ',
 };
 
-bool TabDoc::DecodeHTML(const char* filename, DocText& docText)
+void TabDoc::DecodeHTML(const char* filename, int scheme)
 {
   // Open the file
   CFile htmlFile;
   if (htmlFile.Open(filename,CFile::modeRead) == 0)
-    return false;
+    return;
 
   // Read it into memory
   CString htmlText;
@@ -423,21 +399,27 @@ bool TabDoc::DecodeHTML(const char* filename, DocText& docText)
   // Get the body text
   int body1 = html.Find(L"<body");
   if (body1 == -1)
-    return false;
+    return;
   body1 = html.Find(L">",body1);
   if (body1 == -1)
-    return false;
+    return;
   int body2 = html.Find(L"</body>");
   if (body2 <= body1)
-    return false;
+    return;
   CStringW bodyHtml = html.Mid(body1+1,body2-body1-1);
+
+  // Create a DocText instance for this file
+  DocText* mainDocText = new DocText();
+  mainDocText->file = filename;
+  mainDocText->colourScheme = scheme;
+  m_docTexts.Add(mainDocText);
 
   // Reserve space for the main text
   len = bodyHtml.GetLength();
-  docText.body.Preallocate(bodyHtml.GetLength());
+  mainDocText->body.Preallocate(len);
 
   // Scan the text, removing markup
-  bool example = false;
+  DocText* docText = mainDocText;
   bool ignore = false;
   bool white = false;
   const wchar_t* p1 = bodyHtml;
@@ -491,7 +473,7 @@ bool TabDoc::DecodeHTML(const char* filename, DocText& docText)
 
       // Add a carriage return for appropriate markup
       if (found && !closing && tags[i].cr && !ignore)
-        docText.AddToBody(L'\n',example);
+        docText->AddToBody(L'\n');
       white = false;
     }
     else if ((*p1 == L'<') && (*(p1+1) == L'!'))
@@ -499,15 +481,24 @@ bool TabDoc::DecodeHTML(const char* filename, DocText& docText)
       // Extract metadata from comments
       wchar_t meta1[256], meta2[256];
       if (swscanf(p1,L"<!-- SEARCH TITLE \"%[^\"]",meta1) == 1)
-        docText.title = meta1;
+        docText->title = meta1;
       else if (swscanf(p1,L"<!-- SEARCH SECTION \"%[^\"]",meta1) == 1)
-        docText.section = meta1;
+        docText->section = meta1;
       else if (swscanf(p1,L"<!-- SEARCH SORT \"%[^\"]",meta1) == 1)
-        docText.sort = meta1;
-      else if (swscanf(p1,L"<!-- START EXAMPLE \"%[^\"] \"%[^\"]",meta1,meta2) == 2)
-        example = true; /*XXXXDK*/
+        docText->sort = meta1;
+      else if (swscanf(p1,L"<!-- START EXAMPLE \"%[^\"]\" \"%[^\"]",meta1,meta2) == 2)
+      {
+        docText = new DocText();
+        docText->file = mainDocText->file + "#" + CStringA(meta2);
+        docText->colourScheme = mainDocText->colourScheme;
+        docText->title = "Example " + CStringA(meta1);
+        docText->section = mainDocText->section;
+        docText->sort = mainDocText->sort;
+        docText->body.Preallocate(len/2);
+        m_docTexts.Add(docText);
+      }
       else if (wcsncmp(p1,L"<!-- END EXAMPLE -->",20) == 0)
-        example = false;
+        docText = mainDocText;
       else if (wcsncmp(p1,L"<!-- START IGNORE ",18) == 0)
         ignore = true;
       else if (wcsncmp(p1,L"<!-- END IGNORE -->",19) == 0)
@@ -536,36 +527,43 @@ bool TabDoc::DecodeHTML(const char* filename, DocText& docText)
       if (found)
       {
         if (!ignore)
-          docText.AddToBody(literals[i].replace,example);
+          docText->AddToBody(literals[i].replace);
         p1 += literals[i].len;
       }
       else
       {
+        ASSERT(FALSE);
         if (!ignore)
-          docText.AddToBody(*p1,example);
+          docText->AddToBody(*p1);
       }
       white = false;
     }
     else if (iswspace(*p1))
     {
       if (!white && !ignore)
-        docText.AddToBody(L' ',example);
+        docText->AddToBody(L' ');
       white = true;
     }
     else
     {
       if (!ignore)
-        docText.AddToBody(*p1,example);
+        docText->AddToBody(*p1);
       white = false;
     }
     p1++;
   }
 
 /*
-  CString bodyA(docText.body);
+  CString bodyA(docText->body);
   AfxMessageBox(bodyA);
 */
-  return true;
+}
+
+void TabDoc::ExitInstance(void)
+{
+  for (int i = 0; i < m_docTexts.GetSize(); i++)
+    delete m_docTexts[i];
+  m_docTexts.RemoveAll();
 }
 
 TabDoc::DocText::DocText()
@@ -573,8 +571,7 @@ TabDoc::DocText::DocText()
   colourScheme = 0;
 }
 
-void TabDoc::DocText::AddToBody(WCHAR ch, bool inExample)
+void TabDoc::DocText::AddToBody(WCHAR ch)
 {
-  if (!inExample)/*XXXXDK*/
-    body += ch;
+  body += ch;
 }

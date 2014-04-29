@@ -31,6 +31,8 @@ public:
   CString Description(void);
   CRect WindowRect(void);
 
+  static void ExitInstance(void);
+
 protected:
   virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 
@@ -62,7 +64,7 @@ private:
   struct DocText
   {
     DocText();
-    void AddToBody(WCHAR ch, bool inExample);
+    void AddToBody(WCHAR ch);
 
     CString section;
     CString title;
@@ -72,7 +74,7 @@ private:
     int colourScheme;
   };
 
-  bool DecodeHTML(const char* file, DocText& docText);
+  void DecodeHTML(const char* filename, int scheme);
 
-  static CArray<DocText> m_docTexts;
+  static CArray<DocText*> m_docTexts;
 };

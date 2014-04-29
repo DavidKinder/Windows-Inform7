@@ -8,6 +8,7 @@
 #include "ProjectFrame.h"
 #include "ExtensionFrame.h"
 #include "SpellCheck.h"
+#include "TabDoc.h"
 
 #include "png.h"
 #include "jpeglib.h"
@@ -98,6 +99,7 @@ int InformApp::ExitInstance()
     delete it->second;
 
   GameWindow::ExitInstance();
+  TabDoc::ExitInstance();
   SpellCheck::Finalize();
   Scintilla_ReleaseResources();
 
