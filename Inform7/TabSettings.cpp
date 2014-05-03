@@ -46,9 +46,7 @@ void TabSettings::UpdateSettings(void)
 
   // Output format
   m_settings->m_blorb = (m_blorb.GetCheck() == BST_CHECKED);
-  if (m_outputZ5.GetCheck() == BST_CHECKED)
-    m_settings->m_output = ProjectSettings::OutputZ5;
-  else if (m_outputZ8.GetCheck() == BST_CHECKED)
+  if (m_outputZ8.GetCheck() == BST_CHECKED)
     m_settings->m_output = ProjectSettings::OutputZ8;
   else if (m_outputGlulx.GetCheck() == BST_CHECKED)
     m_settings->m_output = ProjectSettings::OutputGlulx;
@@ -67,19 +65,12 @@ void TabSettings::UpdateFromSettings(void)
   m_blorb.SetCheck(m_settings->m_blorb ? BST_CHECKED : BST_UNCHECKED);
   switch (m_settings->m_output)
   {
-  case ProjectSettings::OutputZ5:
-  default:
-    m_outputZ5.SetCheck(BST_CHECKED);
-    m_outputZ8.SetCheck(BST_UNCHECKED);
-    m_outputGlulx.SetCheck(BST_UNCHECKED);
-    break;
   case ProjectSettings::OutputZ8:
-    m_outputZ5.SetCheck(BST_UNCHECKED);
     m_outputZ8.SetCheck(BST_CHECKED);
     m_outputGlulx.SetCheck(BST_UNCHECKED);
     break;
   case ProjectSettings::OutputGlulx:
-    m_outputZ5.SetCheck(BST_UNCHECKED);
+  default:
     m_outputZ8.SetCheck(BST_UNCHECKED);
     m_outputGlulx.SetCheck(BST_CHECKED);
     break;
@@ -104,7 +95,6 @@ void TabSettings::CreateTab(CWnd* parent)
   // Set up the dialog controls
   m_predictable.SubclassDlgItem(IDC_PREDICTABLE,this);
   m_blorb.SubclassDlgItem(IDC_BLORB,this);
-  m_outputZ5.SubclassDlgItem(IDC_OUTPUT_Z5,this);
   m_outputZ8.SubclassDlgItem(IDC_OUTPUT_Z8,this);
   m_outputGlulx.SubclassDlgItem(IDC_OUTPUT_GLULX,this);
 }
@@ -215,13 +205,13 @@ void TabSettings::OnInitialUpdate()
   CFormView::OnInitialUpdate();
 
   CRect story = getRect(this,IDC_STORY_BOX);
-  CRect outputZ5 = getRect(this,IDC_OUTPUT_Z5);
   CRect outputZ8 = getRect(this,IDC_OUTPUT_Z8);
+  CRect outputG = getRect(this,IDC_OUTPUT_GLULX);
   CRect check = getRect(this,IDC_BLORB);
   for (int i = 0; i < 3; i++)
   {
-    m_labelRects[i].left = outputZ5.left;
-    m_labelRects[i].right = story.right-(2*(outputZ5.left-story.left));
+    m_labelRects[i].left = outputZ8.left;
+    m_labelRects[i].right = story.right-(2*(outputZ8.left-story.left));
   }
 
   LOGFONT lf;
@@ -233,16 +223,15 @@ void TabSettings::OnInitialUpdate()
   CFont* oldFont = dc->SelectObject(&m_labelFont);
 
   sizeText(dc,m_labelTexts[0],m_labelRects[0],story.top+(2*fh));
-  moveWnd(this,IDC_OUTPUT_Z5,outputZ5.left,m_labelRects[0].bottom+fh);
-  moveWnd(this,IDC_OUTPUT_Z8,outputZ5.left,m_labelRects[0].bottom+fh+outputZ8.top-outputZ5.top);
-  moveWnd(this,IDC_OUTPUT_GLULX,outputZ5.left,m_labelRects[0].bottom+fh+(2*(outputZ8.top-outputZ5.top)));
-  sizeText(dc,m_labelTexts[1],m_labelRects[1],m_labelRects[0].bottom+(2*fh)+(3*(outputZ8.top-outputZ5.top)));
-  moveWnd(this,IDC_BLORB,outputZ5.left,m_labelRects[1].bottom+fh);
+  moveWnd(this,IDC_OUTPUT_Z8,outputZ8.left,m_labelRects[0].bottom+fh);
+  moveWnd(this,IDC_OUTPUT_GLULX,outputZ8.left,m_labelRects[0].bottom+fh+(outputG.top-outputZ8.top));
+  sizeText(dc,m_labelTexts[1],m_labelRects[1],m_labelRects[0].bottom+(2*fh)+(2*(outputG.top-outputZ8.top)));
+  moveWnd(this,IDC_BLORB,outputZ8.left,m_labelRects[1].bottom+fh);
   int sb = m_labelRects[1].bottom+(2*fh)+check.Height();
   moveWnd(this,IDC_STORY_BOX,story.left,story.top,story.Width(),sb-story.top);
 
   sizeText(dc,m_labelTexts[2],m_labelRects[2],sb+(fh*5/2));
-  moveWnd(this,IDC_PREDICTABLE,outputZ5.left,m_labelRects[2].bottom+fh);
+  moveWnd(this,IDC_PREDICTABLE,outputZ8.left,m_labelRects[2].bottom+fh);
   moveWnd(this,IDC_RANDOM_BOX,story.left,sb+(fh/2),story.Width(),m_labelRects[2].bottom+(fh*3/2)+check.Height()-sb);
 
   dc->SelectObject(oldFont);
@@ -255,7 +244,6 @@ BOOL TabSettings::OnCommand(WPARAM wParam, LPARAM lParam)
   {
   case IDC_PREDICTABLE:
   case IDC_BLORB:
-  case IDC_OUTPUT_Z5:
   case IDC_OUTPUT_Z8:
   case IDC_OUTPUT_GLULX:
     UpdateSettings();

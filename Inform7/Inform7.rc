@@ -383,25 +383,22 @@ BEGIN
     CTEXT           "Inform 7 for Windows (%s; %s)",IDC_VERSION,1,42,203,9
 END
 
-IDD_SETTINGS DIALOGEX 0, 0, 261, 227
+IDD_SETTINGS DIALOGEX 0, 0, 261, 216
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Story File Format",IDC_STORY_BOX,7,7,247,122
-    CONTROL         "Z-Code version 5 (small textual projects only)",
-                    IDC_OUTPUT_Z5,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
-                    15,45,175,10
+    GROUPBOX        "Story File Format",IDC_STORY_BOX,7,7,247,111
     CONTROL         "Z-Code version 8 (medium-sized textual projects: most portable)",
-                    IDC_OUTPUT_Z8,"Button",BS_AUTORADIOBUTTON,15,56,229,10
+                    IDC_OUTPUT_Z8,"Button",BS_AUTORADIOBUTTON,15,45,229,10
     CONTROL         "Glulx (large and multimedia projects: most capable)",
-                    IDC_OUTPUT_GLULX,"Button",BS_AUTORADIOBUTTON,15,66,197,
+                    IDC_OUTPUT_GLULX,"Button",BS_AUTORADIOBUTTON,15,55,197,
                     10
     CONTROL         "Bind up into a Blorb file on release",IDC_BLORB,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,112,131,8
-    GROUPBOX        "Randomness",IDC_RANDOM_BOX,7,134,247,78
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,101,131,8
+    GROUPBOX        "Randomness",IDC_RANDOM_BOX,7,123,247,78
     CONTROL         "Make random outcomes predictable when testing",
                     IDC_PREDICTABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
-                    196,184,8
+                    185,184,8
 END
 
 IDD_SPLASH DIALOGEX 0, 0, 370, 222

@@ -15,7 +15,6 @@ public:
 
   enum Output
   {
-    OutputZ5 = 5,
     OutputZ8 = 8,
     OutputGlulx = 256
   };

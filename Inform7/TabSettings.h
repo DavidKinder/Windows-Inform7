@@ -52,7 +52,7 @@ protected:
   BOOL CreateDlgIndirect(LPCDLGTEMPLATE, CWnd*, HINSTANCE);
 
 private:
-  CButton m_outputZ5, m_outputZ8, m_outputGlulx;
+  CButton m_outputZ8, m_outputGlulx;
   CButton m_blorb, m_predictable;
   CFont m_labelFont;
 

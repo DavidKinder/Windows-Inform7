@@ -105,7 +105,6 @@
 #define ID_NAVIGATE_FORE                501
 #define ID_MENU_PROPERTIES              550
 #define IDC_CREDITS                     1000
-#define IDC_OUTPUT_Z5                   1001
 #define IDC_OUTPUT_Z8                   1002
 #define IDC_OUTPUT_GLULX                1003
 #define IDC_BLORB                       1004

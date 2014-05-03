@@ -33,8 +33,7 @@ void ProjectSettings::Load(const char* path)
   switch (propList.GetNumber(L"IFOutputSettings",L"IFSettingZCodeVersion"))
   {
   case 5:
-    m_output = OutputZ5;
-    break;
+  case 6:
   case 8:
     m_output = OutputZ8;
     break;
@@ -123,9 +122,6 @@ CString ProjectSettings::GetInformSwitches(bool release)
 
   switch (m_output)
   {
-  case OutputZ5:
-    switches += "v5";
-    break;
   case OutputZ8:
     switches += "v8";
     break;
@@ -141,8 +137,6 @@ CString ProjectSettings::GetOutputExtension(void)
 {
   switch (m_output)
   {
-  case OutputZ5:
-    return "z5";
   case OutputZ8:
     return "z8";
   case OutputGlulx:
