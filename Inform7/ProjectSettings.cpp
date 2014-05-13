@@ -115,11 +115,10 @@ bool ProjectSettings::Save(const char* path)
   return true;
 }
 
-CString ProjectSettings::GetInformSwitches(bool release)
+CString ProjectSettings::GetInformSwitches(bool release, bool debugFile)
 {
-  CString switches("-kw");
+  CString switches("-w");
   switches += (!release) ? "SD" : "~S~D";
-
   switch (m_output)
   {
   case OutputZ8:
@@ -129,7 +128,8 @@ CString ProjectSettings::GetInformSwitches(bool release)
     switches += "G";
     break;
   }
-
+  if (debugFile)
+    switches += "k";
   return switches;
 }
 

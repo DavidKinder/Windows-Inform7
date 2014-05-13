@@ -195,6 +195,7 @@ protected:
 
   ProjectSettings m_settings;
   bool m_compiling;
+  bool m_I6debug;
 
   CString m_outputFileLoc;
   int m_loadFilter;

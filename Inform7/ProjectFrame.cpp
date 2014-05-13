@@ -125,7 +125,8 @@ static UINT indicators[] =
 };
 
 ProjectFrame::ProjectFrame()
-  : m_compiling(false), m_game(m_skein), m_focus(0), m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0)
+  : m_compiling(false), m_I6debug(false), m_game(m_skein), m_focus(0),
+    m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0)
 {
 }
 
@@ -882,6 +883,10 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
       CRegKey registryKey;
       if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
       {
+        DWORD I6debug = 0;
+        if (registryKey.QueryDWORDValue("Generate I6 Debug",I6debug) == ERROR_SUCCESS)
+          m_I6debug = (I6debug != 0);
+
         GetPanel(0)->PrefsChanged(registryKey);
         GetPanel(1)->PrefsChanged(registryKey);
       }
@@ -1501,6 +1506,11 @@ void ProjectFrame::SetFromRegistryPath(const char* path)
     if (m_registryKey.QueryStringValue("Last Project",dir,&len) == ERROR_SUCCESS)
       m_projectDir = dir;
 
+    // Restore whether or not to generate Inform 6 debugging output
+    DWORD I6debug = 0;
+    if (m_registryKey.QueryDWORDValue("Generate I6 Debug",I6debug) == ERROR_SUCCESS)
+      m_I6debug = (I6debug != 0);
+    
     // Allow tabs to load settings
     for (int i = 0; i < 2; i++)
       GetPanel(i)->LoadSettings(m_registryKey);
@@ -1852,7 +1862,7 @@ CString ProjectFrame::NaturalCommandLine(bool release)
 CString ProjectFrame::InformCommandLine(bool release)
 {
   CString dir = theApp.GetAppDir();
-  CString switches = m_settings.GetInformSwitches(release);
+  CString switches = m_settings.GetInformSwitches(release,m_I6debug);
   CString extension = m_settings.GetOutputExtension();
 
   CString executable, arguments;

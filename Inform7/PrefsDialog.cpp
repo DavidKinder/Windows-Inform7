@@ -18,6 +18,7 @@ PrefsDialog::PrefsDialog() : I7BaseDialog(PrefsDialog::IDD)
   m_startWithLast = FALSE;
   m_cleanFiles = TRUE;
   m_cleanIndexes = TRUE;
+  m_I6debug = FALSE;
   m_glulxTerp = "Glulxe";
 }
 
@@ -38,6 +39,7 @@ void PrefsDialog::DoDataExchange(CDataExchange* pDX)
   DDV_MinMaxUInt(pDX, m_tabSize, 1, 32);
   DDX_Check(pDX, IDC_CLEANFILES, m_cleanFiles);
   DDX_Check(pDX, IDC_CLEANINDEX, m_cleanIndexes);
+  DDX_Check(pDX, IDC_I6DEBUGGING, m_I6debug);
   DDX_Control(pDX, IDC_CLEANFILES, m_cleanFilesCheck);
   DDX_Control(pDX, IDC_CLEANINDEX, m_cleanIndexCheck);
   DDX_CBString(pDX, IDC_GLULX, m_glulxTerp);
@@ -101,6 +103,8 @@ INT_PTR PrefsDialog::DoModal()
         m_cleanFiles = (value != 0);
       if (registryKey.QueryDWORDValue("Clean Up Indexes",value) == ERROR_SUCCESS)
         m_cleanIndexes = (value != 0);
+      if (registryKey.QueryDWORDValue("Generate I6 Debug",value) == ERROR_SUCCESS)
+        m_I6debug = (value != 0);
     }
 
     m_startWithLast = (theApp.GetProfileInt("Start","Open Last Project",0) != 0);
@@ -126,6 +130,7 @@ INT_PTR PrefsDialog::DoModal()
       registryKey.SetDWORDValue("Auto Indent",m_autoIndent);
       registryKey.SetDWORDValue("Clean Up Files",m_cleanFiles);
       registryKey.SetDWORDValue("Clean Up Indexes",m_cleanIndexes);
+      registryKey.SetDWORDValue("Generate I6 Debug",m_I6debug);
     }
     theApp.WriteProfileInt("Start","Open Last Project",m_startWithLast ? 1 : 0);
     theApp.CWinApp::WriteProfileString("Game","Glulx Interpreter",m_glulxTerp);

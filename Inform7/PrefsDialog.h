@@ -37,6 +37,7 @@ protected:
 
   BOOL m_cleanFiles;
   BOOL m_cleanIndexes;
+  BOOL m_I6debug;
   CButton m_cleanFilesCheck;
   CButton m_cleanIndexCheck;
   CString m_glulxTerp;

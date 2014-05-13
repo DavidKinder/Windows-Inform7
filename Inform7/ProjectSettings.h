@@ -10,7 +10,7 @@ public:
   void Load(const char* path);
   bool Save(const char* path);
 
-  CString GetInformSwitches(bool release);
+  CString GetInformSwitches(bool release, bool debugFile);
   CString GetOutputExtension(void);
 
   enum Output

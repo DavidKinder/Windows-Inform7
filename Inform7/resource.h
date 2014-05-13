@@ -136,16 +136,17 @@
 #define IDC_TABSIZE                     1034
 #define IDC_CLEANFILES                  1035
 #define IDC_CLEANINDEX                  1036
-#define IDC_LANGUAGE                    1037
-#define IDC_STARTLAST                   1038
-#define IDC_GLULX                       1039
-#define IDC_INDENT                      1040
-#define IDC_AUTO_INDENT                 1041
-#define IDC_STORY_BOX                   1042
-#define IDC_RANDOM_BOX                  1043
-#define IDC_FONT                        1044
-#define IDC_FONTSIZE                    1045
-#define IDC_FIXEDFONT                   1046
+#define IDC_I6DEBUGGING                 1037
+#define IDC_LANGUAGE                    1038
+#define IDC_STARTLAST                   1039
+#define IDC_GLULX                       1040
+#define IDC_INDENT                      1041
+#define IDC_AUTO_INDENT                 1042
+#define IDC_STORY_BOX                   1043
+#define IDC_RANDOM_BOX                  1044
+#define IDC_FONT                        1045
+#define IDC_FONTSIZE                    1046
+#define IDC_FIXEDFONT                   1047
 #define ID_EXTENSIONS_LIST              2000
 
 // Next default values for new objects
