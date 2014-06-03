@@ -232,6 +232,12 @@
 				RelativePath="TabDoc.h">
 			</File>
 			<File
+				RelativePath="TabExtensions.cpp">
+			</File>
+			<File
+				RelativePath="TabExtensions.h">
+			</File>
+			<File
 				RelativePath="TabIndex.cpp">
 			</File>
 			<File

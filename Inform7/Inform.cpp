@@ -1023,6 +1023,16 @@ const std::vector<InformApp::ExtLocation>& InformApp::GetExtensions(void)
   return m_extensions;
 }
 
+const InformApp::ExtLocation* InformApp::GetExtension(const char* author, const char* title)
+{
+  for (std::vector<ExtLocation>::const_iterator it = m_extensions.begin(); it != m_extensions.end(); ++it)
+  {
+    if ((it->author == author) && (it->title == title))
+      return &(*it);
+  }
+  return NULL;
+}
+
 static char hex(int digit)
 {
   if (digit < 10)

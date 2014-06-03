@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "ReportHtml.h"
+#include "ExtensionFrame.h"
 #include "Inform.h"
 #include "Panel.h"
 #include "Messages.h"
@@ -27,7 +28,7 @@ public:
 
 IMPLEMENT_DYNCREATE(ReportHtml, CHtmlView)
 
-ReportHtml::ReportHtml() : m_consumer(NULL),
+ReportHtml::ReportHtml() : m_consumer(NULL), m_rewriter(NULL),
   m_setFocus(true), m_goToFound(false), m_notify(true),
   m_scriptExternal(this), m_scriptProject(this)
 {
@@ -63,10 +64,26 @@ void ReportHtml::OnBeforeNavigate2(LPCTSTR lpszURL, DWORD, LPCTSTR, CByteArray&,
       m_consumer->SourceLink(lpszURL);
       *pbCancel = TRUE;
     }
+    else if (strncmp(lpszURL,"library:",8) == 0)
+    {
+      // Got a library: URL
+      m_consumer->LibraryLink(lpszURL);
+      *pbCancel = TRUE;
+    }
     else if (strncmp(lpszURL,"inform:",7) == 0)
     {
       // Got an inform: documentation URL
-      m_consumer->DocLink(theApp.GetUrlProtocol().TranslateUrl(CStringW(lpszURL)));
+      if (m_consumer->DocLink(theApp.GetUrlProtocol().TranslateUrl(CStringW(lpszURL))))
+        *pbCancel = TRUE;
+    }
+  }
+
+  if (*pbCancel == FALSE)
+  {
+    // Open links to the Int-Fiction forum (from the Public Library) in a browser
+    if (strncmp(lpszURL,"http://www.intfiction.org/",26) == 0)
+    {
+      ::ShellExecute(0,NULL,lpszURL,NULL,NULL,SW_SHOWNORMAL);
       *pbCancel = TRUE;
     }
   }
@@ -88,6 +105,16 @@ void ReportHtml::OnBeforeNavigate2(LPCTSTR lpszURL, DWORD, LPCTSTR, CByteArray&,
   m_notify = true;
 }
 
+void ReportHtml::OnNavigateError(LPCTSTR lpszURL, LPCTSTR, DWORD, BOOL* pbCancel)
+{
+  *pbCancel = FALSE;
+  if (m_consumer)
+  {
+    if (m_consumer->LinkError(lpszURL))
+      *pbCancel = TRUE;
+  }
+}
+
 void ReportHtml::OnDocumentComplete(LPCTSTR lpszURL)
 {
   CHtmlView::OnDocumentComplete(lpszURL);
@@ -95,6 +122,16 @@ void ReportHtml::OnDocumentComplete(LPCTSTR lpszURL)
   // Make this the active window, except for blank URLs
   if (m_setFocus && (strcmp(lpszURL,"about:blank") != 0))
     SetFocusOnContent();
+
+  // Let the rewriter modify the page
+  if (m_rewriter)
+  {
+    IDispatch* disp = GetHtmlDocument();
+    CComQIPtr<IHTMLDocument2> doc(disp);
+    disp->Release();
+    if (doc != NULL)
+      m_rewriter->ModifyPage(lpszURL,doc);
+  }
 
   // Highlight found text
   if (!m_find.IsEmpty())
@@ -369,6 +406,11 @@ void ReportHtml::SetLinkConsumer(LinkConsumer* consumer)
   m_consumer = consumer;
 }
 
+void ReportHtml::SetPageRewriter(PageRewriter* rewriter)
+{
+  m_rewriter = rewriter;
+}
+
 void ReportHtml::SetFocusOnContent(void)
 {
   CPoint point(0,0);
@@ -443,6 +485,9 @@ BEGIN_DISPATCH_MAP(ScriptProject,CCmdTarget)
   DISP_FUNCTION(ScriptProject,"pasteCode",PasteCode,VT_EMPTY,VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"openFile",OpenFile,VT_EMPTY,VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"openUrl",OpenUrl,VT_EMPTY,VTS_WBSTR)
+  DISP_FUNCTION(ScriptProject,"askInterfaceForLocalVersion",ExtCompareVersion,VT_BSTR,VTS_WBSTR VTS_WBSTR VTS_WBSTR)
+  DISP_FUNCTION(ScriptProject,"askInterfaceForLocalVersionText",ExtGetVersion,VT_BSTR,VTS_WBSTR VTS_WBSTR)
+  DISP_FUNCTION(ScriptProject,"downloadMultipleExtensions",ExtDownload,VT_EMPTY,VTS_VARIANT)
 END_DISPATCH_MAP()
 
 ScriptProject::ScriptProject(ReportHtml* html) : m_html(html)
@@ -506,6 +551,80 @@ void ScriptProject::OpenUrl(LPCWSTR url)
   // Open an Explorer window
   CString urlA(url);
   ::ShellExecute(0,0,urlA,NULL,NULL,SW_SHOWNORMAL);
+}
+
+BSTR ScriptProject::ExtCompareVersion(LPCWSTR author, LPCWSTR title, LPCWSTR compare)
+{
+  const InformApp::ExtLocation* ext = theApp.GetExtension(CString(author),CString(title));
+  if (ext != NULL)
+  {
+    if (ext->system)
+      return ::SysAllocString(L"!");
+
+    CStringW extLine = ExtensionFrame::ReadExtensionFirstLine(ext->path.c_str());
+    if (!extLine.IsEmpty())
+    {
+      CStringW extName, extAuthor, extVersion;
+      if (ExtensionFrame::IsValidExtension(extLine,extName,extAuthor,extVersion))
+      {
+        int c = extVersion.Compare(compare);
+        if (c == 0)
+          return ::SysAllocString(L"=");
+        else if (c < 0)
+          return ::SysAllocString(L"<");
+        else
+          return ::SysAllocString(L">");
+      }
+    }
+  }
+  return ::SysAllocString(L"");
+}
+
+BSTR ScriptProject::ExtGetVersion(LPCWSTR author, LPCWSTR title)
+{
+  const InformApp::ExtLocation* ext = theApp.GetExtension(CString(author),CString(title));
+  if (ext != NULL)
+  {
+    CStringW extLine = ExtensionFrame::ReadExtensionFirstLine(ext->path.c_str());
+    if (!extLine.IsEmpty())
+    {
+      CStringW extName, extAuthor, extVersion;
+      if (ExtensionFrame::IsValidExtension(extLine,extName,extAuthor,extVersion))
+        return extVersion.AllocSysString();
+    }
+  }
+  return ::SysAllocString(L"");
+}
+
+void ScriptProject::ExtDownload(VARIANT& extArray)
+{
+  if (extArray.vt != VT_DISPATCH)
+    return;
+
+  DISPID lengthId;
+  OLECHAR* lengthName = L"length";
+  if (FAILED(extArray.pdispVal->GetIDsOfNames(IID_NULL,&lengthName,1,LOCALE_SYSTEM_DEFAULT,&lengthId)))
+    return;
+
+  COleDispatchDriver driver(extArray.pdispVal,FALSE);
+  long length = 0;
+  driver.GetProperty(lengthId,VT_I4,&length);
+
+  CStringArray* libraryUrls = new CStringArray();
+  for (long i = 0; i < length; i += 3)
+  {
+    DISPID indexId;
+    CStringW indexName;
+    indexName.Format(L"%d",i+1);
+    LPCWSTR indexStr = indexName;
+    if (SUCCEEDED(extArray.pdispVal->GetIDsOfNames(IID_NULL,(LPOLESTR*)&indexStr,1,LOCALE_SYSTEM_DEFAULT,&indexId)))
+    {
+      CString libraryUrl;
+      driver.GetProperty(indexId,VT_BSTR,&libraryUrl);
+      libraryUrls->Add(libraryUrl);
+    }
+  }
+  m_html->GetParentFrame()->PostMessage(WM_EXTDOWNLOAD,(WPARAM)libraryUrls);
 }
 
 // Internet Explorer window, used to set the context menu

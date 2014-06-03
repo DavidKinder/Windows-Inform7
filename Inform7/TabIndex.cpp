@@ -143,10 +143,20 @@ void TabIndex::SourceLink(const char* url)
     m_notify->OnSourceLink(url,this,theApp.GetColour(InformApp::ColourHighlight));
 }
 
-void TabIndex::DocLink(const wchar_t* url)
+void TabIndex::LibraryLink(const char* url)
+{
+}
+
+bool TabIndex::DocLink(const wchar_t* url)
 {
   if (m_notify)
     m_notify->OnDocLink(url,this);
+  return true;
+}
+
+bool TabIndex::LinkError(const char* url)
+{
+  return false;
 }
 
 BOOL TabIndex::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)

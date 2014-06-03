@@ -28,7 +28,9 @@ public:
 
   // Implementation of ReportHtml::LinkConsumer
   void SourceLink(const char* url);
-  void DocLink(const wchar_t* url);
+  void LibraryLink(const char* url);
+  bool DocLink(const wchar_t* url);
+  bool LinkError(const char* url);
 
   void SetLinkNotify(LinkNotify* notify);
   int GetTabHeight(void);

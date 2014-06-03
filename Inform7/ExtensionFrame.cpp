@@ -423,42 +423,15 @@ bool ExtensionFrame::InstallExtensions(CWnd* parent)
   POSITION pos = dialog.GetStartPosition();
   while (pos != NULL)
   {
-    // Get the extension file path
+    // Get the first line of the extension
     CString path = dialog.GetNextPathName(pos);
-
-    // Get the first line of the file
-    CStdioFile extFile;
-    if (!extFile.Open(path,CFile::modeRead|CFile::typeBinary))
+    CStringW extLine = ReadExtensionFirstLine(path);
+    if (extLine.IsEmpty())
       continue;
-    CString extLineUTF8;
-    if (!extFile.ReadString(extLineUTF8))
-      continue;
-    extFile.Close();
-    extLineUTF8.Trim();
-
-    // Check for a line-end
-    int lfPos = extLineUTF8.FindOneOf("\r\n");
-    if (lfPos != -1)
-      extLineUTF8.Truncate(lfPos);
-
-    // Check for a Unicode line-end
-    int uniPos = extLineUTF8.Find("\xE2\x80\xA8");
-    if (uniPos != -1)
-      extLineUTF8.Truncate(uniPos);
-
-    // Check for a UTF-8 BOM
-    if (extLineUTF8.GetLength() >= 3)
-    {
-      if (extLineUTF8.Left(3) == "\xEF\xBB\xBF")
-        extLineUTF8 = extLineUTF8.Mid(3);
-    }
-
-    // Convert from UTF-8 to Unicode
-    CStringW extLine = TextFormat::UTF8ToUnicode(extLineUTF8);
 
     // Check for a valid extension
-    CStringW extName, extAuthor;
-    if (!IsValidExtension(extLine,extName,extAuthor))
+    CStringW extName, extAuthor, extVersion;
+    if (!IsValidExtension(extLine,extName,extAuthor,extVersion))
     {
       CString msg;
       msg.Format(
@@ -478,8 +451,7 @@ bool ExtensionFrame::InstallExtensions(CWnd* parent)
     target.Format("%s\\Inform\\Extensions\\%S",
       (LPCSTR)theApp.GetHomeDir(),(LPCWSTR)extAuthor);
     ::CreateDirectory(target,NULL);
-    target.Format("%s\\Inform\\Extensions\\%S\\%S.i7x",
-      (LPCSTR)theApp.GetHomeDir(),(LPCWSTR)extAuthor,(LPCWSTR)extName);
+    target.AppendFormat("\\%S.i7x",(LPCWSTR)extName);
 
     // Check if the extension already exists
     bool exists = (::GetFileAttributes(target) != INVALID_FILE_ATTRIBUTES);
@@ -512,22 +484,199 @@ bool ExtensionFrame::InstallExtensions(CWnd* parent)
   return true;
 }
 
-ExtensionFrame* ExtensionFrame::NewFrame(const ProjectSettings& settings)
+// Implementation of IBindStatusCallback used to wait for the downloading of
+// extensions to complete
+class WaitForDownload : public IBindStatusCallback
 {
-  ExtensionFrame* frame = new ExtensionFrame;
-  theApp.NewFrame(frame);
+public:
+  WaitForDownload() : m_refCount(0)
+  {
+  }
 
-  frame->LoadFrame(IDR_EXTFRAME,WS_OVERLAPPEDWINDOW|FWS_ADDTOTITLE,NULL,NULL);
-  frame->SetFromRegistryPath(REGISTRY_PATH_WINDOW);
-  frame->ShowWindow(SW_SHOW);
-  frame->UpdateWindow();
+  void waitForEnd(void)
+  {
+    theApp.RunMessagePump();
+    while (m_refCount > 0)
+    {
+      theApp.RunMessagePump();
+      ::Sleep(50);
+    }
+  }
 
-  frame->m_edit.SetElasticTabStops(settings.m_elasticTabStops);
+  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj)
+  {
+    if (ppvObj == NULL)
+      return E_INVALIDARG;
 
-  return frame;
+    if ((riid == IID_IUnknown) || (riid == IID_IBindStatusCallback))
+    {
+      *ppvObj = (LPVOID)this;
+      AddRef();
+      return S_OK;
+    }
+
+    *ppvObj = NULL;
+    return E_NOINTERFACE;
+  }
+
+  ULONG STDMETHODCALLTYPE AddRef(void)
+  {
+    return ::InterlockedIncrement(&m_refCount);
+  }
+
+  ULONG STDMETHODCALLTYPE Release(void)
+  {
+    return ::InterlockedDecrement(&m_refCount);
+  }
+
+  HRESULT STDMETHODCALLTYPE OnStartBinding(DWORD, IBinding*)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE GetPriority(LONG*)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnLowResource(DWORD)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnProgress(ULONG, ULONG, ULONG, LPCWSTR)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnStopBinding(HRESULT hr, LPCWSTR)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE GetBindInfo(DWORD*, BINDINFO*)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnDataAvailable(DWORD, DWORD, FORMATETC*, STGMEDIUM*)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnObjectAvailable(REFIID, IUnknown*)
+  {
+    return E_NOTIMPL;
+  }
+
+private:
+  volatile long m_refCount;
+};
+
+void ExtensionFrame::DownloadExtensions(CStringArray* urls)
+{
+  {
+    CWaitCursor wc;
+
+    int installed = 0;
+    for (int i = 0; i < urls->GetSize(); i++)
+    {
+      CString url = urls->GetAt(i);
+      if (url.Left(8) != "library:")
+        continue;
+
+      // Determine the path for downloaded extension files
+      CString downPath;
+      ::GetTempPath(MAX_PATH,downPath.GetBuffer(MAX_PATH));
+	    downPath.ReleaseBuffer();
+      int downLen = downPath.GetLength();
+      if (downLen > 0)
+      {
+        if (downPath.GetAt(downLen-1) != '\\')
+          downPath.AppendChar('\\');
+      }
+      downPath.Append("PubLibDownload.i7x");
+
+      // Download from the public library
+      url.Format("http://www.emshort.com/pl%s",(LPCSTR)url.Mid(8));
+      WaitForDownload wait;
+      if (FAILED(::URLDownloadToFile(NULL,url,(LPCSTR)downPath,0,&wait)))
+        continue;
+      wait.waitForEnd();
+
+      // Check for a valid extension
+      CStringW extLine = ReadExtensionFirstLine(downPath);
+      if (!extLine.IsEmpty())
+      {
+        CStringW extName, extAuthor, extVersion;
+        if (IsValidExtension(extLine,extName,extAuthor,extVersion))
+        {
+          // Work out the path to copy the extension to
+          CString target;
+          target.Format("%s\\Inform\\Extensions\\%S",
+            (LPCSTR)theApp.GetHomeDir(),(LPCWSTR)extAuthor);
+          ::CreateDirectory(target,NULL);
+          target.AppendFormat("\\%S.i7x",(LPCWSTR)extName);
+
+          // Copy the extension
+          if (::CopyFile(downPath,target,FALSE))
+          {
+            DeleteOldExtension(target);
+            installed++;
+          }
+        }
+      }
+
+      // Delete the downloaded file
+      ::DeleteFile(downPath);
+    }
+
+    CString msg;
+    msg.Format("Attempted to download %d extensions, %d failed.",urls->GetSize(),urls->GetSize()-installed);
+    AfxMessageBox(msg);
+  }
+
+  // Update the extensions menu and documentation
+  theApp.FindExtensions();
+  theApp.SendAllFrames(InformApp::Extensions,0);
+  theApp.RunCensus(true);
 }
 
-bool ExtensionFrame::IsValidExtension(const CStringW& firstLine, CStringW& name, CStringW& author)
+CStringW ExtensionFrame::ReadExtensionFirstLine(const char* path)
+{
+  // Get the first line of the file
+  CStdioFile extFile;
+  if (!extFile.Open(path,CFile::modeRead|CFile::typeBinary))
+    return L"";
+  CString extLineUTF8;
+  if (!extFile.ReadString(extLineUTF8))
+    return L"";
+  extFile.Close();
+  extLineUTF8.Trim();
+
+  // Check for a line-end
+  int lfPos = extLineUTF8.FindOneOf("\r\n");
+  if (lfPos != -1)
+    extLineUTF8.Truncate(lfPos);
+
+  // Check for a Unicode line-end
+  int uniPos = extLineUTF8.Find("\xE2\x80\xA8");
+  if (uniPos != -1)
+    extLineUTF8.Truncate(uniPos);
+
+  // Check for a UTF-8 BOM
+  if (extLineUTF8.GetLength() >= 3)
+  {
+    if (extLineUTF8.Left(3) == "\xEF\xBB\xBF")
+      extLineUTF8 = extLineUTF8.Mid(3);
+  }
+
+  // Convert from UTF-8 to Unicode
+  return TextFormat::UTF8ToUnicode(extLineUTF8);
+}
+
+bool ExtensionFrame::IsValidExtension(const CStringW& firstLine,
+  CStringW& name, CStringW& author, CStringW& version)
 {
   CArray<CStringW> tokens;
   int pos = 0;
@@ -549,10 +698,13 @@ bool ExtensionFrame::IsValidExtension(const CStringW& firstLine, CStringW& name,
       return false;
     if (tokens[2] != L"of")
       return false;
+    version.Format(L"%s %s",tokens[0],tokens[1]);
     tokens.RemoveAt(0);
     tokens.RemoveAt(0);
     tokens.RemoveAt(0);
   }
+  else
+    version = L"Version 1";
 
   // Remove trailing "begins here", if present
   int size = (int)tokens.GetSize();
@@ -599,11 +751,24 @@ bool ExtensionFrame::IsValidExtension(const CStringW& firstLine, CStringW& name,
     tokens.RemoveAt(0);
   }
 
-  if (name.IsEmpty())
-    return false;
-  if (author.IsEmpty())
+  if (name.IsEmpty() || author.IsEmpty() || version.IsEmpty())
     return false;
   return true;
+}
+
+ExtensionFrame* ExtensionFrame::NewFrame(const ProjectSettings& settings)
+{
+  ExtensionFrame* frame = new ExtensionFrame;
+  theApp.NewFrame(frame);
+
+  frame->LoadFrame(IDR_EXTFRAME,WS_OVERLAPPEDWINDOW|FWS_ADDTOTITLE,NULL,NULL);
+  frame->SetFromRegistryPath(REGISTRY_PATH_WINDOW);
+  frame->ShowWindow(SW_SHOW);
+  frame->UpdateWindow();
+
+  frame->m_edit.SetElasticTabStops(settings.m_elasticTabStops);
+
+  return frame;
 }
 
 bool ExtensionFrame::RemoveI7X(CString& path)

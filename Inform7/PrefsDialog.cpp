@@ -50,6 +50,13 @@ BOOL PrefsDialog::OnInitDialog()
   I7BaseDialog::OnInitDialog();
   theApp.SetIcon(this);
 
+  // Set a smaller font for the "Also clean out ..." checkbox
+  LOGFONT smallFont;
+  GetFont()->GetLogFont(&smallFont);
+  smallFont.lfHeight = (LONG)(smallFont.lfHeight*0.9);
+  m_smallFont.CreateFontIndirect(&smallFont);
+  m_cleanIndexCheck.SetFont(&m_smallFont);
+
   // Get all the possible fonts
   CDC* dc = GetDC();
   LOGFONT font;

@@ -22,6 +22,9 @@ public:
   void PasteCode(LPCWSTR code);
   void OpenFile(LPCWSTR path);
   void OpenUrl(LPCWSTR url);
+  BSTR ExtCompareVersion(LPCWSTR author, LPCWSTR title, LPCWSTR compare);
+  BSTR ExtGetVersion(LPCWSTR author, LPCWSTR title);
+  void ExtDownload(VARIANT& extArray);
 
 private:
   DECLARE_DISPATCH_MAP()
@@ -37,12 +40,21 @@ public:
   {
   public:
     virtual void SourceLink(const char* url) = 0;
-    virtual void DocLink(const wchar_t* url) = 0;
+    virtual void LibraryLink(const char* url) = 0;
+    virtual bool DocLink(const wchar_t* url) = 0;
+    virtual bool LinkError(const char* url) = 0;
+  };
+
+  class PageRewriter
+  {
+  public:
+    virtual void ModifyPage(const char* url, IHTMLDocument2* doc) = 0;
   };
 
   static void SetIEPreferences(const char* path);
 
   void SetLinkConsumer(LinkConsumer* consumer);
+  void SetPageRewriter(PageRewriter* rewriter);
   void SetFocusOnContent(void);
   void SetFocusFlag(bool focus);
   void Navigate(const char* url, bool focus, const wchar_t* find = NULL);
@@ -53,6 +65,7 @@ protected:
 
   virtual HRESULT OnGetOptionKeyPath(LPOLESTR* pchKey, DWORD dwReserved);
   virtual void OnBeforeNavigate2(LPCTSTR lpszURL, DWORD nFlags, LPCTSTR lpszTargetFrameName, CByteArray& baPostedData, LPCTSTR lpszHeaders, BOOL* pbCancel);
+  virtual void OnNavigateError(LPCTSTR lpszURL, LPCTSTR lpszFrame, DWORD dwError, BOOL *pbCancel);
   virtual void OnDocumentComplete(LPCTSTR lpszURL);
   virtual void OnStatusTextChange(LPCTSTR lpszText);
   virtual HRESULT OnShowContextMenu(DWORD dwID,  LPPOINT ppt, LPUNKNOWN pcmdTarget, LPDISPATCH);
@@ -71,6 +84,7 @@ private:
 
   static CString m_registryPath;
   LinkConsumer* m_consumer;
+  PageRewriter* m_rewriter;
 
   CString m_url;
   bool m_setFocus;

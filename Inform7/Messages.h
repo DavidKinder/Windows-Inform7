@@ -111,3 +111,12 @@ struct SourceRange
 // the current project has been edited since it was last saved
 // should be checked, and updated if necessary.
 #define WM_PROJECTEDITED  WM_APP+26
+
+// Sent to the window frame to download and install the extensions
+// given by the string array in wParam. This string array is
+// allocated on the heap and is freed by the recipient.
+#define WM_EXTDOWNLOAD    WM_APP+27
+
+// Sent to the extensions tab window to indicate that navigating
+// to a Public Library web page has failed.
+#define WM_PUBLIBERROR    WM_APP+28

@@ -4,6 +4,7 @@
 #include "Messages.h"
 
 #include "TabDoc.h"
+#include "TabExtensions.h"
 #include "TabIndex.h"
 #include "TabResults.h"
 #include "TabSettings.h"
@@ -32,6 +33,7 @@ Panel::Panel() : m_tab(false)
   m_tabs[Tab_Transcript] = new TabTranscript;
   m_tabs[Tab_Story] = new TabStory;
   m_tabs[Tab_Doc] = new TabDoc;
+  m_tabs[Tab_Extensions] = new TabExtensions;
   m_tabs[Tab_Settings] = new TabSettings;
 
   m_tabHistoryPos = 0;
@@ -73,6 +75,14 @@ int Panel::OnCreate(LPCREATESTRUCT lpCreateStruct)
   // Add the individual tabs
   for (int i = 0; i < Number_Tabs; i++)
     m_tab.InsertItem(i,m_tabs[i]->GetName());
+
+  // Create a font for the tab control
+  LOGFONT fontInfo;
+  ::ZeroMemory(&fontInfo,sizeof fontInfo);
+  theApp.GetFont(InformApp::FontSystem)->GetLogFont(&fontInfo);
+  fontInfo.lfHeight = (LONG)(GetFontScale() * fontInfo.lfHeight);
+  m_tabFont.CreateFontIndirect(&fontInfo);
+  m_tab.SetFont(&m_tabFont);
 
   // Create the tab windows
   for (int i = 0; i < Number_Tabs; i++)
@@ -327,6 +337,39 @@ void Panel::AddToTabHistory(TabState state)
   // Discard the start of the history if it has grown too large
   if (m_tabHistory.GetSize() > 150)
     m_tabHistory.RemoveAt(0,50);
+}
+
+double Panel::GetFontScale(void)
+{
+  // Build up a string of tab names and work out its width
+  CString tabNames;
+  for (int i = 0; i < Number_Tabs; i++)
+  {
+    tabNames.Append(m_tabs[i]->GetName());
+    tabNames.Append(" | ");
+  }
+  CDC* dc = GetDC();
+  int tabWidth = dc->GetTextExtent(tabNames).cx;
+  ReleaseDC(dc);
+
+  // Get the width of the monitor
+  int monWidth = 0;
+  MONITORINFO monInfo;
+  ::ZeroMemory(&monInfo,sizeof monInfo);
+  monInfo.cbSize = sizeof monInfo;
+  HMONITOR mon = ::MonitorFromWindow(GetSafeHwnd(),MONITOR_DEFAULTTOPRIMARY);
+  if (::GetMonitorInfo(mon,&monInfo))
+    monWidth = monInfo.rcWork.right - monInfo.rcWork.left;
+  else
+    monWidth = ::GetSystemMetrics(SM_CXSCREEN);
+
+  // Work out a scaling factor for the tab font
+  double scale = monWidth / (2.1*tabWidth);
+  if (scale > 1.0)
+    scale = 1.0;
+  else if (scale < 0.6)
+    scale = 0.6;
+  return scale;
 }
 
 Panel* Panel::GetPanel(CWnd* wnd)

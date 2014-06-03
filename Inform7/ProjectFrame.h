@@ -69,7 +69,8 @@ protected:
   afx_msg LRESULT OnTranscriptEnd(WPARAM, LPARAM);
   afx_msg LRESULT OnPlayNextThread(WPARAM, LPARAM);
   afx_msg LRESULT OnCanPlayAll(WPARAM, LPARAM);
-  afx_msg LRESULT OnProjectEdited(WPARAM wparam, LPARAM lparam);
+  afx_msg LRESULT OnProjectEdited(WPARAM, LPARAM);
+  afx_msg LRESULT OnExtDownload(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();

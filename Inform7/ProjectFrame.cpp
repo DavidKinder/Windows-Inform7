@@ -9,6 +9,7 @@
 #include "Build.h"
 
 #include "TabDoc.h"
+#include "TabExtensions.h"
 #include "TabIndex.h"
 #include "TabResults.h"
 #include "TabSkein.h"
@@ -53,6 +54,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_PLAYNEXTTHREAD, OnPlayNextThread)
   ON_MESSAGE(WM_CANPLAYALL, OnCanPlayAll)
   ON_MESSAGE(WM_PROJECTEDITED, OnProjectEdited)
+  ON_MESSAGE(WM_EXTDOWNLOAD, OnExtDownload)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -102,7 +104,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_WINDOW_LEFTPANE, OnWindowLeftPane)
   ON_COMMAND(ID_WINDOW_RIGHTPANE, OnWindowRightPane)
   ON_COMMAND(ID_WINDOW_SWITCH, OnWindowSwitchPanes)
-  ON_COMMAND_RANGE(ID_WINDOW_TAB_SOURCE, ID_WINDOW_TAB_SOURCE+7, OnWindowShowTab)
+  ON_COMMAND_RANGE(ID_WINDOW_TAB_SOURCE, ID_WINDOW_TAB_SOURCE+8, OnWindowShowTab)
   ON_COMMAND_RANGE(ID_WINDOW_INDEX_CONTENTS, ID_WINDOW_INDEX_CONTENTS+6, OnWindowShowIndex)
   ON_UPDATE_COMMAND_UI(ID_WINDOW_LIST, OnUpdateWindowList)
   ON_COMMAND_RANGE(ID_WINDOW_LIST, ID_WINDOW_LIST+8, OnWindowList)
@@ -167,6 +169,8 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   ((TabResults*)GetPanel(1)->GetTab(Panel::Tab_Results))->SetLinkNotify(this);
   ((TabIndex*)GetPanel(0)->GetTab(Panel::Tab_Index))->SetLinkNotify(this);
   ((TabIndex*)GetPanel(1)->GetTab(Panel::Tab_Index))->SetLinkNotify(this);
+  ((TabExtensions*)GetPanel(0)->GetTab(Panel::Tab_Extensions))->SetLinkNotify(this);
+  ((TabExtensions*)GetPanel(1)->GetTab(Panel::Tab_Extensions))->SetLinkNotify(this);
   ((TabSettings*)GetPanel(0)->GetTab(Panel::Tab_Settings))->SetNotify(this);
   ((TabSettings*)GetPanel(1)->GetTab(Panel::Tab_Settings))->SetNotify(this);
 
@@ -858,6 +862,14 @@ LRESULT ProjectFrame::OnProjectEdited(WPARAM wparam, LPARAM lparam)
   return 0;
 }
 
+LRESULT ProjectFrame::OnExtDownload(WPARAM urls, LPARAM)
+{
+  CStringArray* libraryUrls = (CStringArray*)urls;
+  ExtensionFrame::DownloadExtensions(libraryUrls);
+  delete libraryUrls;
+  return 0;
+}
+
 CString ProjectFrame::GetDisplayName(bool showEdited)
 {
   CString name = m_projectDir;
@@ -1425,10 +1437,10 @@ void ProjectFrame::OnHelpWindows()
 
 void ProjectFrame::OnHelpExtensions()
 {
-  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
-  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(
+  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Extensions));
+  ((TabExtensions*)panel->GetTab(Panel::Tab_Extensions))->Show(
     theApp.GetHomeDir()+"\\Inform\\Documentation\\Extensions.html");
-  panel->SetActiveTab(Panel::Tab_Doc);
+  panel->SetActiveTab(Panel::Tab_Extensions);
 }
 
 void ProjectFrame::OnHelpRecipes()

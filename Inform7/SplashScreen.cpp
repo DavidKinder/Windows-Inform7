@@ -79,7 +79,7 @@ BOOL SplashScreen::OnInitDialog()
     GetClientRect(client);
 
     // Get the unscaled background
-    CDibSection* back = theApp.GetCachedImage("Welcome Background");
+    CDibSection* back = theApp.GetCachedImage("Welcome Background@4x");
     ASSERT(back != NULL);
     CSize backSize = back->GetSize();
 

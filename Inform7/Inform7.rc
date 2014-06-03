@@ -162,14 +162,14 @@ BEGIN
         POPUP "Show &Tab"
         BEGIN
             MENUITEM "&Source\tCtrl+F1",            ID_WINDOW_TAB_SOURCE
-            MENUITEM "R&esults\tCtrl+F2",           ID_WINDOW_TAB_RESULTS
+            MENUITEM "&Results\tCtrl+F2",           ID_WINDOW_TAB_RESULTS
             MENUITEM "Inde&x\tCtrl+F3",             ID_WINDOW_TAB_INDEX
             MENUITEM "Skei&n\tCtrl+F4",             ID_WINDOW_TAB_SKEIN
             MENUITEM "&Transcript\tCtrl+F5",        ID_WINDOW_TAB_TRANSCRIPT
             MENUITEM "St&ory\tCtrl+F6",             ID_WINDOW_TAB_STORY
             MENUITEM "&Documentation\tCtrl+F7",     ID_WINDOW_TAB_DOCUMENTATION
-
-            MENUITEM "Setti&ngs\tCtrl+F8",          ID_WINDOW_TAB_SETTINGS
+            MENUITEM "&Extensions\tCtrl+F8",        ID_WINDOW_TAB_EXTENSIONS
+            MENUITEM "Sett&ings\tCtrl+F9",          ID_WINDOW_TAB_SETTINGS
             MENUITEM SEPARATOR
             MENUITEM "Go to &Left Pane\tCtrl+1",    ID_WINDOW_LEFTPANE
             MENUITEM "Go to &Right Pane\tCtrl+2",   ID_WINDOW_RIGHTPANE
@@ -325,7 +325,8 @@ BEGIN
     VK_F2,          ID_WINDOW_TAB_RESULTS,  VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_WINDOW_TAB_STORY,    VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_WINDOW_TAB_INDEX,    VIRTKEY, CONTROL, NOINVERT
-    VK_F8,          ID_WINDOW_TAB_SETTINGS, VIRTKEY, CONTROL, NOINVERT
+    VK_F8,          ID_WINDOW_TAB_EXTENSIONS, VIRTKEY, CONTROL, NOINVERT
+    VK_F9,          ID_WINDOW_TAB_SETTINGS, VIRTKEY, CONTROL, NOINVERT
     VK_F4,          ID_WINDOW_TAB_SKEIN,    VIRTKEY, CONTROL, NOINVERT
     VK_F1,          ID_WINDOW_TAB_SOURCE,   VIRTKEY, CONTROL, NOINVERT
     VK_F5,          ID_WINDOW_TAB_TRANSCRIPT, VIRTKEY, CONTROL, NOINVERT
@@ -492,7 +493,7 @@ BEGIN
                     IDC_CLEANFILES,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | 
                     WS_TABSTOP,14,142,163,10
     CONTROL         "&Also clean out index files",IDC_CLEANINDEX,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,154,126,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,24,154,126,10
     LTEXT           "Glul&x interpreter",IDC_STATIC,14,183,56,8
     COMBOBOX        IDC_GLULX,73,181,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP

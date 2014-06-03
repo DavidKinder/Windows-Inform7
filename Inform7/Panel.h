@@ -21,6 +21,7 @@ public:
     Tab_Transcript,
     Tab_Story,
     Tab_Doc,
+    Tab_Extensions,
     Tab_Settings,
     Number_Tabs,
     No_Tab = -1
@@ -67,6 +68,7 @@ protected:
   CRect GetTabSize(void);
 
   FlatTab m_tab;
+  CFont m_tabFont;
   TabInterface* m_tabs[Number_Tabs];
 
   // Position in tab history, counting from the end of the array
@@ -76,6 +78,7 @@ protected:
 
 public:
   void AddToTabHistory(TabState state);
+  double GetFontScale(void);
   static Panel* GetPanel(CWnd* wnd);
 
   class FreezeHistory

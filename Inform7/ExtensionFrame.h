@@ -48,13 +48,17 @@ public:
   static void StartExisting(const char* path, const ProjectSettings& settings);
   static bool StartHighlight(const char* url, COLORREF colour, const ProjectSettings& settings);
   static bool InstallExtensions(CWnd* parent);
+  static void DownloadExtensions(CStringArray* urls);
+
+  static CStringW ReadExtensionFirstLine(const char* path);
+  static bool IsValidExtension(const CStringW& firstLine,
+    CStringW& name, CStringW& author, CStringW& version);
 
   CString GetDisplayName(bool showEdited);
   void SendChanged(InformApp::Changed changed, int value);
 
 protected:
   static ExtensionFrame* NewFrame(const ProjectSettings& settings);
-  static bool IsValidExtension(const CStringW& firstLine, CStringW& name, CStringW& author);
   static bool RemoveI7X(CString& path);
   static void DeleteOldExtension(CString path);
 

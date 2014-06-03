@@ -41,4 +41,6 @@ protected:
   CButton m_cleanFilesCheck;
   CButton m_cleanIndexCheck;
   CString m_glulxTerp;
+
+  CFont m_smallFont;
 };

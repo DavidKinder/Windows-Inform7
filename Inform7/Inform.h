@@ -141,6 +141,7 @@ public:
 
   void FindExtensions(void);
   const std::vector<ExtLocation>& GetExtensions(void);
+  const ExtLocation* GetExtension(const char* author, const char* title);
 
 protected:
   void ClearScaledImages(void);
