@@ -567,6 +567,18 @@ BSTR ScriptProject::ExtCompareVersion(LPCWSTR author, LPCWSTR title, LPCWSTR com
       CStringW extName, extAuthor, extVersion;
       if (ExtensionFrame::IsValidExtension(extLine,extName,extAuthor,extVersion))
       {
+        int extNumber, compareNumber;
+        if (swscanf(extVersion,L"Version %d",&extNumber) == 1)
+        {
+          if (swscanf(compare,L"Version %d",&compareNumber) == 1)
+          {
+            if (extNumber < compareNumber)
+              return ::SysAllocString(L"<");
+            else if (extNumber > compareNumber)
+              return ::SysAllocString(L">");
+          }
+        }
+
         int c = extVersion.Compare(compare);
         if (c == 0)
           return ::SysAllocString(L"=");
