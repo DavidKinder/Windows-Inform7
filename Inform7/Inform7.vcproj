@@ -637,6 +637,12 @@
 				RelativePath="ArrowButton.h">
 			</File>
 			<File
+				RelativePath="FlatButton.cpp">
+			</File>
+			<File
+				RelativePath="FlatButton.h">
+			</File>
+			<File
 				RelativePath="FlatSplitter.cpp">
 			</File>
 			<File

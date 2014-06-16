@@ -55,6 +55,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_CANPLAYALL, OnCanPlayAll)
   ON_MESSAGE(WM_PROJECTEDITED, OnProjectEdited)
   ON_MESSAGE(WM_EXTDOWNLOAD, OnExtDownload)
+  ON_MESSAGE(WM_PROGRESS, OnProgress)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -865,8 +866,31 @@ LRESULT ProjectFrame::OnProjectEdited(WPARAM wparam, LPARAM lparam)
 LRESULT ProjectFrame::OnExtDownload(WPARAM urls, LPARAM)
 {
   CStringArray* libraryUrls = (CStringArray*)urls;
-  ExtensionFrame::DownloadExtensions(libraryUrls);
+  ExtensionFrame::DownloadExtensions(this,libraryUrls);
   delete libraryUrls;
+  return 0;
+}
+
+LRESULT ProjectFrame::OnProgress(WPARAM wp, LPARAM)
+{
+  int pos = (int)wp;
+  if (pos >= 0)
+  {
+    m_progress.SetPos(pos);
+
+    CRect progressRect;
+    m_statusBar.GetItemRect(0,progressRect);
+    progressRect.left += progressRect.Width()*3/4;
+
+    // Make the progress bar visible
+    m_progress.MoveWindow(progressRect,FALSE);
+    m_progress.ShowWindow(SW_SHOW);
+  }
+  else
+  {
+    // Make the progress bar invisible
+    m_progress.ShowWindow(SW_HIDE);
+  }
   return 0;
 }
 
@@ -1943,22 +1967,12 @@ void ProjectFrame::Output(const char* msg)
       if (sscanf(line,"++ %d%% (%[^)]",&percent,progress) == 2)
       {
         SetMessageText(progress);
-        m_progress.SetPos(percent);
-
-        CRect progressRect;
-        m_statusBar.GetItemRect(0,progressRect);
-        progressRect.left += progressRect.Width()*3/4;
-
-        // Make the progress bar visible
-        m_progress.MoveWindow(progressRect,FALSE);
-        m_progress.ShowWindow(SW_SHOW);
+        SendMessage(WM_PROGRESS,percent);
       }
     }
     else
     {
-      // Make the progress bar invisible
-      m_progress.ShowWindow(SW_HIDE);
-
+      SendMessage(WM_PROGRESS,-1);
       GetPanel(0)->Progress(line);
       GetPanel(1)->Progress(line);
     }

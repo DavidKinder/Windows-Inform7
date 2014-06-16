@@ -350,19 +350,31 @@ void ReportHtml::SetIEPreferences(const char* path)
   }
 
   // Force the use of the latest IE version
+  double ieVer = theApp.GetIEVersion();
   CRegKey featureKey;
   result = featureKey.Create(HKEY_CURRENT_USER,
     "Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION",
     REG_NONE,REG_OPTION_NON_VOLATILE,KEY_READ|KEY_WRITE,NULL,&disposition);
   if (result == ERROR_SUCCESS)
-    featureKey.SetDWORDValue("Inform7.exe",8000);
+  {
+/*
+    if (ieVer >= 11.0)
+      featureKey.SetDWORDValue("Inform7.exe",11001);
+    else if (ieVer >= 10.0)
+      featureKey.SetDWORDValue("Inform7.exe",10001);
+    else if (ieVer >= 9.0)
+      featureKey.SetDWORDValue("Inform7.exe",9999);
+    else
+      featureKey.SetDWORDValue("Inform7.exe",8888);
+*/
+    featureKey.SetDWORDValue("Inform7.exe",8888);
+  }
 
   if (path != NULL)
   {
     // IE9 has a nasty bug: IDocHostUIHandler::GetOptionKeyPath() is never called.
     // To work around this, we intercept and re-direct calls to open the IE registry key.
-    double ieVer = theApp.GetIEVersion();
-    if ((ieVer >= 9.0) && (ieVer < 9.1))
+    if ((ieVer >= 9.0) && (ieVer < 10.0))
     {
       HMODULE advadi = ::LoadLibrary("advapi32.dll");
       HMODULE mshtml = ::LoadLibrary("mshtml.dll");
@@ -621,6 +633,8 @@ void ScriptProject::ExtDownload(VARIANT& extArray)
   COleDispatchDriver driver(extArray.pdispVal,FALSE);
   long length = 0;
   driver.GetProperty(lengthId,VT_I4,&length);
+  if (length <= 0)
+    return;
 
   CStringArray* libraryUrls = new CStringArray();
   for (long i = 0; i < length; i += 3)

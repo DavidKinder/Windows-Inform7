@@ -29,14 +29,14 @@ void TabBase::Create(CWnd* parent)
   EnableToolTips();
 
   // Create the navigation buttons
-  CFont* font = theApp.GetFont(InformApp::FontSystem);
-  m_navigate[0].Create("<",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_NAVIGATE_BACK);
+  CFont* font = theApp.GetFont(InformApp::FontPanel);
+  m_navigate[0].Create("?<",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_NAVIGATE_BACK);
   m_navigate[0].SetFont(font);
-  m_navigate[1].Create(">",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_NAVIGATE_FORE);
+  m_navigate[1].Create("?>",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_NAVIGATE_FORE);
   m_navigate[1].SetFont(font);
 }
 
-void TabBase::SizeTab(CRect& client, CSize& fontSize, int& heading, int& h)
+void TabBase::SizeTab(CRect& client, CSize& fontSize, int& heading)
 {
   // Make space for the buttons
   heading = (int)GetParentFrame()->SendMessage(WM_PANEHEADING);
@@ -44,10 +44,9 @@ void TabBase::SizeTab(CRect& client, CSize& fontSize, int& heading, int& h)
 
   // Resize the navigation buttons
   fontSize = theApp.MeasureFont(m_navigate[0].GetFont());
-  h = fontSize.cy/5;
   int nw = theApp.MeasureText(m_navigate).cx+(fontSize.cx*2);
-  m_navigate[0].MoveWindow(fontSize.cx/3,h,nw,heading-(2*h),TRUE);
-  m_navigate[1].MoveWindow(nw+(fontSize.cx/3),h,nw,heading-(2*h),TRUE);
+  m_navigate[0].MoveWindow(0,0,nw,heading,TRUE);
+  m_navigate[1].MoveWindow(nw,0,nw,heading,TRUE);
 }
 
 CString TabBase::GetToolTip(UINT_PTR id)

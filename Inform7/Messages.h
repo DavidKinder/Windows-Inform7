@@ -120,3 +120,6 @@ struct SourceRange
 // Sent to the extensions tab window to indicate that navigating
 // to a Public Library web page has failed.
 #define WM_PUBLIBERROR    WM_APP+28
+
+// Sent to the window frame to set the progress control position
+#define WM_PROGRESS       WM_APP+29

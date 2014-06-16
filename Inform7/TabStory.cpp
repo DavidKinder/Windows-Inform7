@@ -50,8 +50,8 @@ void TabStory::MoveTab(CRect& rect)
     m_parent->MapWindowPoints(m_game->GetParent(),m_rect);
 
     CSize fontSize;
-    int heading, h;
-    SizeTab(m_rect,fontSize,heading,h);
+    int heading;
+    SizeTab(m_rect,fontSize,heading);
 
     if (m_active)
       m_game->MoveWindow(m_rect,TRUE);

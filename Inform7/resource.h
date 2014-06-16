@@ -9,7 +9,7 @@
 #define IDR_TBAR_DISABLED               103
 #define IDR_SKEIN                       104
 #define IDR_EXTFRAME                    105
-#define IDR_TAB_SELECT                  106
+#define IDR_FLAT_SELECT                 106
 #define IDR_BIG_LOGO                    107
 #define IDR_SMALL_LOGO                  108
 #define IDD_ABOUTBOX                    150

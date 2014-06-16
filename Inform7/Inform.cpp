@@ -726,12 +726,19 @@ double InformApp::GetIEVersion(void)
   CRegKey ieKey;
   if (ieKey.Open(HKEY_LOCAL_MACHINE,"SOFTWARE\\Microsoft\\Internet Explorer",KEY_READ) == ERROR_SUCCESS)
   {
+    // Return the major and minor components of the version number
     char version[256];
     ULONG len = sizeof version;
+    if (ieKey.QueryStringValue("svcVersion",version,&len) == ERROR_SUCCESS)
+    {
+      if (len > 0)
+        return atof(version);
+    }
+    len = sizeof version;
     if (ieKey.QueryStringValue("Version",version,&len) == ERROR_SUCCESS)
     {
-      // Return the major and minor components of the version number
-      return atof(version);
+      if (len > 0)
+        return atof(version);
     }
   }
   return 0.0;
@@ -1145,7 +1152,8 @@ void InformApp::SetFonts(void)
   }
 
   // Get a device context for the display
-  CDC* dc = CWnd::GetDesktopWindow()->GetDC();
+  CWnd* wnd = CWnd::GetDesktopWindow();
+  CDC* dc = wnd->GetDC();
 
   if (m_fontNames[FontFixedWidth].IsEmpty())
   {
@@ -1189,8 +1197,20 @@ void InformApp::SetFonts(void)
       m_fontSizes[i] = fontSize;
   }
 
+  if ((HFONT)m_fonts[FontPanel] == 0)
+  {
+    LOGFONT fontInfo;
+    ::ZeroMemory(&fontInfo,sizeof fontInfo);
+    GetFont(InformApp::FontSystem)->GetLogFont(&fontInfo);
+    fontInfo.lfHeight = (LONG)(Panel::GetFontScale(wnd,dc) * fontInfo.lfHeight);
+
+    m_fontNames[FontPanel] = m_fontNames[FontSystem];
+    m_fontSizes[FontPanel] = abs(::MulDiv(fontInfo.lfHeight,72,dc->GetDeviceCaps(LOGPIXELSY)));
+    m_fonts[FontPanel].CreateFontIndirect(&fontInfo);
+  }
+
   // Release the desktop device context
-  CWnd::GetDesktopWindow()->ReleaseDC(dc);
+  wnd->ReleaseDC(dc);
 }
 
 InformApp::ExtLocation::ExtLocation(const char* a, const char* t, bool s, const char* p)

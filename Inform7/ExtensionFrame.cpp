@@ -491,6 +491,7 @@ class WaitForDownload : public IBindStatusCallback
 public:
   WaitForDownload() : m_refCount(0)
   {
+    m_timeout = ::GetTickCount() + 10000;
   }
 
   void waitForEnd(void)
@@ -546,7 +547,9 @@ public:
 
   HRESULT STDMETHODCALLTYPE OnProgress(ULONG, ULONG, ULONG, LPCWSTR)
   {
-    return E_NOTIMPL;
+    if (::GetTickCount() > m_timeout)
+      return E_ABORT;
+    return S_OK;
   }
 
   HRESULT STDMETHODCALLTYPE OnStopBinding(HRESULT hr, LPCWSTR)
@@ -571,16 +574,21 @@ public:
 
 private:
   volatile long m_refCount;
+  volatile DWORD m_timeout;
 };
 
-void ExtensionFrame::DownloadExtensions(CStringArray* urls)
+void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
 {
   {
     CWaitCursor wc;
+    parent->SetMessageText("Downloading extensions");
 
     int installed = 0;
     for (int i = 0; i < urls->GetSize(); i++)
     {
+      parent->SendMessage(WM_PROGRESS,
+        (int)(100 * ((double)i / (double)urls->GetSize())));
+
       CString url = urls->GetAt(i);
       if (url.Left(8) != "library:")
         continue;
@@ -631,9 +639,13 @@ void ExtensionFrame::DownloadExtensions(CStringArray* urls)
       ::DeleteFile(downPath);
     }
 
+    parent->SendMessage(WM_PROGRESS,100);
     CString msg;
+    msg.Format("Downloaded and installed %d extension%s",installed,(installed != 1) ? "s" : "");
+    parent->SetMessageText(msg);
     msg.Format("Attempted to download %d extensions, %d failed.",urls->GetSize(),urls->GetSize()-installed);
-    AfxMessageBox(msg);
+    parent->MessageBox(msg,INFORM_TITLE,MB_ICONINFORMATION|MB_OK);
+    parent->SendMessage(WM_PROGRESS,-1);
   }
 
   // Update the extensions menu and documentation

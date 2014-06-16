@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TabInterface.h"
+#include "FlatButton.h"
 
 class TabBase : public CWnd, public TabInterface
 {
@@ -30,10 +31,10 @@ protected:
   afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM, LPARAM);
 
   void Create(CWnd* parent);
-  void SizeTab(CRect& client, CSize& fontSize, int& heading, int& h);
+  void SizeTab(CRect& client, CSize& fontSize, int& heading);
 
   virtual CString GetToolTip(UINT_PTR id);
 
 private:
-  CButton m_navigate[2];
+  FlatButton m_navigate[2];
 };

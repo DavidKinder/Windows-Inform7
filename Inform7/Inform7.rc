@@ -625,7 +625,7 @@ IDR_SMALL_LOGO          ICON                    "res\\SmallLogo.ico"
 
 IDR_TBAR_ENABLED        BITMAP                  "res\\Toolbar.bmp"
 IDR_TBAR_DISABLED       BITMAP                  "res\\ToolbarGrey.bmp"
-IDR_TAB_SELECT          BITMAP                  "res\\TabSelect.bmp"
+IDR_FLAT_SELECT         BITMAP                  "res\\TabSelect.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

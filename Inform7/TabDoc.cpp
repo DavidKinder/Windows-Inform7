@@ -262,8 +262,8 @@ void TabDoc::OnSize(UINT nType, int cx, int cy)
 
   // Call the base class to resize and get parameters
   CSize fontSize;
-  int heading, h;
-  SizeTab(client,fontSize,heading,h);
+  int heading;
+  SizeTab(client,fontSize,heading);
 
   // Get the dimensions of the first and last tab buttons
   CRect firstTabItem, lastTabItem;
@@ -273,18 +273,18 @@ void TabDoc::OnSize(UINT nType, int cx, int cy)
 
   // Resize the tab control
   CRect tabSize;
-  tabSize.right = client.Width()-(fontSize.cx/3);
+  tabSize.right = client.Width();
   tabSize.left = tabSize.right-w;
   if (tabSize.left < 0)
     tabSize.left = 0;
-  tabSize.top = 2;
-  tabSize.bottom = client.Height()-tabSize.top-2;
+  tabSize.top = 0;
+  tabSize.bottom = client.Height()-tabSize.top;
   m_tab.MoveWindow(tabSize,TRUE);
 
   // Work out the display area of the tab control
   CRect tabArea = tabSize;
   m_tab.AdjustRect(FALSE,tabArea);
-  client.top = tabArea.top+2;
+  client.top = tabArea.top;
 
   m_html->MoveWindow(client,TRUE);
 }

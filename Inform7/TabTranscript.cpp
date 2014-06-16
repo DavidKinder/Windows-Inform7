@@ -38,7 +38,7 @@ void TabTranscript::CreateTab(CWnd* parent)
   Create(parent);
 
   // Create the command buttons
-  CFont* font = theApp.GetFont(InformApp::FontSystem);
+  CFont* font = theApp.GetFont(InformApp::FontPanel);
   m_nextSkein.Create("Next in skein",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_REPLAY_DIFF_NEXT_SKEIN);
   m_nextSkein.SetFont(font);
   m_nextDiff.Create("Next diff",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_REPLAY_DIFF_NEXT);
@@ -143,22 +143,24 @@ void TabTranscript::OnSize(UINT nType, int cx, int cy)
 
   // Call the base class to resize and get parameters
   CSize fontSize;
-  int heading, h;
-  SizeTab(client,fontSize,heading,h);
+  int heading;
+  SizeTab(client,fontSize,heading);
 
   // Resize the command button
   int nsw = theApp.MeasureText(&m_nextSkein).cx+(fontSize.cx*3)+16;
   int ndw = theApp.MeasureText(&m_nextDiff).cx+(fontSize.cx*3)+16;
   int pdw = theApp.MeasureText(&m_prevDiff).cx+(fontSize.cx*3)+16;
   int bw = theApp.MeasureText(&m_blessAll).cx+(fontSize.cx*3);
-  int x = client.Width()-bw-(fontSize.cx/3);
-  m_blessAll.MoveWindow(x,h,bw,heading-(2*h),TRUE);
-  x -= pdw+(fontSize.cx/3);
-  m_prevDiff.MoveWindow(x,h,pdw,heading-(2*h),TRUE);
-  x -= ndw+(fontSize.cx/3);
-  m_nextDiff.MoveWindow(x,h,ndw,heading-(2*h),TRUE);
-  x -= nsw+(fontSize.cx/3);
-  m_nextSkein.MoveWindow(x,h,nsw,heading-(2*h),TRUE);
+  int gapx = (fontSize.cx/4);
+  int gapy = (fontSize.cx/4);
+  int x = client.Width()-bw-gapx;
+  m_blessAll.MoveWindow(x,gapy,bw,heading-(2*gapy),TRUE);
+  x -= pdw+gapx;
+  m_prevDiff.MoveWindow(x,gapy,pdw,heading-(2*gapy),TRUE);
+  x -= ndw+gapx;
+  m_nextDiff.MoveWindow(x,gapy,ndw,heading-(2*gapy),TRUE);
+  x -= nsw+gapx;
+  m_nextSkein.MoveWindow(x,gapy,nsw,heading-(2*gapy),TRUE);
 
   // Resize the transcript window
   m_window.MoveWindow(client,TRUE);

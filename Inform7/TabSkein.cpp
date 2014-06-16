@@ -36,7 +36,7 @@ void TabSkein::CreateTab(CWnd* parent)
   Create(parent);
 
   // Create the command buttons
-  CFont* font = theApp.GetFont(InformApp::FontSystem);
+  CFont* font = theApp.GetFont(InformApp::FontPanel);
   m_label.Create("Labels",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_LABEL);
   m_label.SetFont(font);
   m_trim.Create("Trim",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_TRIM);
@@ -148,19 +148,21 @@ void TabSkein::OnSize(UINT nType, int cx, int cy)
 
   // Call the base class to resize and get parameters
   CSize fontSize;
-  int heading, h;
-  SizeTab(client,fontSize,heading,h);
+  int heading;
+  SizeTab(client,fontSize,heading);
 
   // Resize the command buttons
   int pw = theApp.MeasureText(&m_play).cx+(fontSize.cx*3);
   int tw = theApp.MeasureText(&m_trim).cx+(fontSize.cx*3);
   int lw = theApp.MeasureText(&m_label).cx+(fontSize.cx*3)+16;
-  int x = client.Width()-pw-(fontSize.cx/3);
-  m_play.MoveWindow(x,h,pw,heading-(2*h),TRUE);
-  x -= tw+(fontSize.cx/3);
-  m_trim.MoveWindow(x,h,tw,heading-(2*h),TRUE);
-  x -= lw+(fontSize.cx/3);
-  m_label.MoveWindow(x,h,lw,heading-(2*h),TRUE);
+  int gapx = (fontSize.cx/4);
+  int gapy = (fontSize.cx/4);
+  int x = client.Width()-pw-gapx;
+  m_play.MoveWindow(x,gapy,pw,heading-(2*gapy),TRUE);
+  x -= tw+gapx;
+  m_trim.MoveWindow(x,gapy,tw,heading-(2*gapy),TRUE);
+  x -= lw+gapx;
+  m_label.MoveWindow(x,gapy,lw,heading-(2*gapy),TRUE);
 
   // Resize the skein window
   m_window.MoveWindow(client,TRUE);

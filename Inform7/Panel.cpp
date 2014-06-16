@@ -76,18 +76,9 @@ int Panel::OnCreate(LPCREATESTRUCT lpCreateStruct)
   for (int i = 0; i < Number_Tabs; i++)
     m_tab.InsertItem(i,m_tabs[i]->GetName());
 
-  // Create a font for the tab control
-  LOGFONT fontInfo;
-  ::ZeroMemory(&fontInfo,sizeof fontInfo);
-  theApp.GetFont(InformApp::FontSystem)->GetLogFont(&fontInfo);
-  fontInfo.lfHeight = (LONG)(GetFontScale() * fontInfo.lfHeight);
-  m_tabFont.CreateFontIndirect(&fontInfo);
-  m_tab.SetFont(&m_tabFont);
-
   // Create the tab windows
   for (int i = 0; i < Number_Tabs; i++)
     m_tabs[i]->CreateTab(&m_tab);
-
   return 0;
 }
 
@@ -339,25 +330,29 @@ void Panel::AddToTabHistory(TabState state)
     m_tabHistory.RemoveAt(0,50);
 }
 
-double Panel::GetFontScale(void)
+Panel* Panel::GetPanel(CWnd* wnd)
 {
-  // Build up a string of tab names and work out its width
-  CString tabNames;
-  for (int i = 0; i < Number_Tabs; i++)
+  while (wnd != NULL)
   {
-    tabNames.Append(m_tabs[i]->GetName());
-    tabNames.Append(" | ");
+    if (wnd->IsKindOf(RUNTIME_CLASS(Panel)))
+      return (Panel*)wnd;
+    wnd = wnd->GetParent();
   }
-  CDC* dc = GetDC();
-  int tabWidth = dc->GetTextExtent(tabNames).cx;
-  ReleaseDC(dc);
+  return NULL;
+}
+
+double Panel::GetFontScale(CWnd* wnd, CDC* dc)
+{
+  // Get the approximate width of the tabs
+  int tabWidth = dc->GetTextExtent(
+    " Source | Results | Index | Skein | Transcript | Story | Documentation | Extensions | Settings |").cx;
 
   // Get the width of the monitor
   int monWidth = 0;
   MONITORINFO monInfo;
   ::ZeroMemory(&monInfo,sizeof monInfo);
   monInfo.cbSize = sizeof monInfo;
-  HMONITOR mon = ::MonitorFromWindow(GetSafeHwnd(),MONITOR_DEFAULTTOPRIMARY);
+  HMONITOR mon = ::MonitorFromWindow(wnd->GetSafeHwnd(),MONITOR_DEFAULTTOPRIMARY);
   if (::GetMonitorInfo(mon,&monInfo))
     monWidth = monInfo.rcWork.right - monInfo.rcWork.left;
   else
@@ -370,17 +365,6 @@ double Panel::GetFontScale(void)
   else if (scale < 0.6)
     scale = 0.6;
   return scale;
-}
-
-Panel* Panel::GetPanel(CWnd* wnd)
-{
-  while (wnd != NULL)
-  {
-    if (wnd->IsKindOf(RUNTIME_CLASS(Panel)))
-      return (Panel*)wnd;
-    wnd = wnd->GetParent();
-  }
-  return NULL;
 }
 
 Panel::FreezeHistory::FreezeHistory(Panel* panel) : m_panel(panel)

@@ -41,7 +41,7 @@ int FlatTab::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
   if (CTabCtrl::OnCreate(lpCreateStruct) == -1)
     return -1;
-  SetFont(theApp.GetFont(InformApp::FontSystem));
+  SetFont(theApp.GetFont(InformApp::FontPanel));
   return 0;
 }
 
@@ -82,23 +82,6 @@ void FlatTab::OnPaint()
     CPen highPen(PS_SOLID,0,::GetSysColor(COLOR_BTNHILIGHT));
     dc.FillSolidRect(client,::GetSysColor(COLOR_BTNFACE));
 
-    // Draw the buttons the same size as any real buttons on the tab heading
-    int off = theApp.MeasureFont(GetFont()).cy/5;
-    client.InflateRect(0,2-off);
-
-    if (theOS.IsAppThemed())
-    {
-      HTHEME theme = theOS.OpenThemeData(this,L"Button");
-      if (theme)
-      {
-        theOS.DrawThemeBackground(theme,&dc,BP_PUSHBUTTON,PBS_NORMAL,client);
-        theOS.GetThemeBackgroundContentRect(theme,&dc,BP_PUSHBUTTON,PBS_NORMAL,client);
-        theOS.CloseThemeData(theme);
-      }
-    }
-    else
-      dc.DrawFrameControl(client,DFC_BUTTON,DFCS_BUTTONPUSH|DFCS_ADJUSTRECT);
-
     for (int i = 0; i < GetItemCount(); i++)
     {
       TCITEM item;
@@ -120,7 +103,7 @@ void FlatTab::OnPaint()
       {
         // Get the bitmap to indicate a selected button
         CBitmap selectBitmap;
-        selectBitmap.LoadBitmap(IDR_TAB_SELECT);
+        selectBitmap.LoadBitmap(IDR_FLAT_SELECT);
         CDC selectDC;
         selectDC.CreateCompatibleDC(&dc);
         CBitmap* oldBitmap = selectDC.SelectObject(&selectBitmap);
@@ -135,18 +118,29 @@ void FlatTab::OnPaint()
         selectDC.SelectObject(oldBitmap);
       }
 
-      if ((i != sel) && (i != sel-1) && (i != GetItemCount()-1))
+      if (i != sel)
       {
-        dc.SelectObject(shadowPen);
-        int gap = itemRect.Height()/6;
-        dc.MoveTo(itemRect.right,itemRect.top+gap);
-        dc.LineTo(itemRect.right,itemRect.bottom-gap);
+        if (i == 0)
+        {
+          dc.SelectObject(shadowPen);
+          int gap = itemRect.Height()/6;
+          dc.MoveTo(itemRect.left,itemRect.top+gap);
+          dc.LineTo(itemRect.left,itemRect.bottom-gap);
+        }
+        if ((i != sel-1) && (i != GetItemCount()-1))
+        {
+          dc.SelectObject(shadowPen);
+          int gap = itemRect.Height()/6;
+          dc.MoveTo(itemRect.right,itemRect.top+gap);
+          dc.LineTo(itemRect.right,itemRect.bottom-gap);
+        }
       }
 
       if (text == "?H")
       {
         if (itemRect.Width() > itemRect.Height())
           itemRect.DeflateRect((itemRect.Width() - itemRect.Height())/2,0);
+        itemRect.DeflateRect(itemRect.Height()/6,itemRect.Height()/6);
         CDibSection* dib = GetImage("Home",itemRect.Size());
         bitmap.AlphaBlend(dib,itemRect.left,itemRect.top,FALSE);
       }
@@ -202,14 +196,6 @@ void FlatTab::OnPaint()
         dc.SelectObject(&highPen);
         dc.LineTo(itemRect.left,itemRect.top);
         dc.LineTo(itemRect.left,itemRect.bottom);
-      }
-
-      if ((i != sel) && (i != sel-1))
-      {
-        dc.SelectObject(shadowPen);
-        int gap = itemRect.Height()/5;
-        dc.MoveTo(itemRect.right,gap);
-        dc.LineTo(itemRect.right,base+1-gap);
       }
 
       dc.SetTextColor(::GetSysColor(IsTabEnabled(i) ? COLOR_BTNTEXT : COLOR_GRAYTEXT));
