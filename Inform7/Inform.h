@@ -15,6 +15,7 @@
 
 // Title
 #define INFORM_TITLE "Inform"
+#define L_INFORM_TITLE L"Inform"
 
 // Registry locations
 #define REGISTRY_PATH_BROWSER "Software\\David Kinder\\Inform\\WebBrowser"
@@ -104,6 +105,7 @@ public:
     Extensions,
     Preferences,
     Spelling,
+    DownloadedExt
   };
   void SendAllFrames(Changed changed, int value);
 
@@ -122,7 +124,8 @@ public:
 
   void RunMessagePump(void);
   int RunCommand(const char* dir, CString& command, OutputSink& output);
-  void RunCensus(bool wait);
+  HANDLE RunCensus(bool wait);
+  void WaitForProcessEnd(HANDLE process);
   void WriteLog(const char* msg);
   bool IsWaitCursor(void);
 

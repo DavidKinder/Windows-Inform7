@@ -470,6 +470,17 @@ CString ReportHtml::GetURL(void)
   return m_url;
 }
 
+void ReportHtml::Invoke(LPCWSTR method, VARIANT* arg)
+{
+  IDispatch* disp = GetHtmlDocument();
+  CComQIPtr<IHTMLDocument> doc(disp);
+  disp->Release();
+
+  CComPtr<IDispatch> script;
+  doc->get_Script(&script);
+  script.Invoke1(method,arg);
+}
+
 // COM object for the root Javascript external object
 
 BEGIN_DISPATCH_MAP(ScriptExternal,CCmdTarget)

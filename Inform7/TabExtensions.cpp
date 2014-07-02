@@ -115,6 +115,15 @@ void TabExtensions::Show(const char* url)
   UpdateActiveTab();
 }
 
+void TabExtensions::DownloadedExt(int id)
+{
+  if (GetActiveTab() == ExtTab_Library)
+  {
+    CComVariant vid(id);
+    m_html->Invoke(L"downloadSucceeded",&vid);
+  }
+}
+
 void TabExtensions::SourceLink(const char* url)
 {
 }

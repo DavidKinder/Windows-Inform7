@@ -59,6 +59,7 @@ public:
   void SetFocusFlag(bool focus);
   void Navigate(const char* url, bool focus, const wchar_t* find = NULL);
   CString GetURL(void);
+  void Invoke(LPCWSTR method, VARIANT* arg);
 
 protected:
   ReportHtml();

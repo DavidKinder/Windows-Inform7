@@ -23,6 +23,7 @@ public:
   void PrefsChanged(CRegKey& key);
 
   void Show(const char* url);
+  void DownloadedExt(int id);
 
   // Implementation of ReportHtml::LinkConsumer
   void SourceLink(const char* url);

@@ -128,7 +128,7 @@ static UINT indicators[] =
 };
 
 ProjectFrame::ProjectFrame()
-  : m_compiling(false), m_I6debug(false), m_game(m_skein), m_focus(0),
+  : m_busy(false), m_I6debug(false), m_game(m_skein), m_focus(0),
     m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0)
 {
 }
@@ -865,9 +865,11 @@ LRESULT ProjectFrame::OnProjectEdited(WPARAM wparam, LPARAM lparam)
 
 LRESULT ProjectFrame::OnExtDownload(WPARAM urls, LPARAM)
 {
+  m_busy = true;
   CStringArray* libraryUrls = (CStringArray*)urls;
   ExtensionFrame::DownloadExtensions(this,libraryUrls);
   delete libraryUrls;
+  m_busy = false;
   return 0;
 }
 
@@ -933,6 +935,10 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
     ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->UpdateSpellCheck();
     ((TabSource*)GetPanel(1)->GetTab(Panel::Tab_Source))->UpdateSpellCheck();
     break;
+  case InformApp::DownloadedExt:
+    for (int i = 0; i < 2; i++)
+      ((TabExtensions*)GetPanel(i)->GetTab(Panel::Tab_Extensions))->DownloadedExt(value);
+    break;
   }
 }
 
@@ -976,19 +982,19 @@ void ProjectFrame::OnFileOpenExt(UINT nID)
 
 void ProjectFrame::OnFileClose()
 {
-  if (!m_compiling)
+  if (!m_busy)
     SendMessage(WM_CLOSE);
 }
 
 void ProjectFrame::OnFileSave()
 {
-  if (!m_compiling)
+  if (!m_busy)
     SaveProject(m_projectDir);
 }
 
 void ProjectFrame::OnFileSaveAs()
 {
-  if (!m_compiling)
+  if (!m_busy)
   {
     // Ask for a project to save as
     ProjectDirDialog dialog(false,m_projectDir,"Save the project",this);
@@ -1022,7 +1028,7 @@ void ProjectFrame::OnFormatElasticTabStops()
 
 void ProjectFrame::OnUpdateCompile(CCmdUI *pCmdUI)
 {
-  pCmdUI->Enable(!m_compiling);
+  pCmdUI->Enable(!m_busy);
 }
 
 void ProjectFrame::OnPlayGo()
@@ -1057,8 +1063,16 @@ void ProjectFrame::OnPlayStop()
 
 void ProjectFrame::OnPlayRefresh()
 {
+  // Get the current focus window
+  HWND focus = GetFocus()->GetSafeHwnd();
+
+  // Compile the project and show the index
   if (CompileProject(0))
     GetPanel(ChoosePanel(Panel::Tab_Index))->SetActiveTab(Panel::Tab_Index);
+
+  // Return the focus to its original point if still visible
+  if (::IsWindow(focus) && ::IsWindowVisible(focus))
+    ::SetFocus(focus);
 }
 
 void ProjectFrame::OnPlayLoad()
@@ -1095,7 +1109,10 @@ void ProjectFrame::OnReplayLast()
 
 void ProjectFrame::OnUpdateReplayBlessed(CCmdUI *pCmdUI)
 {
-  pCmdUI->Enable(SendMessage(WM_CANPLAYALL) != 0);
+  bool enable = !m_busy;
+  if (enable)
+    enable = SendMessage(WM_CANPLAYALL) != 0;
+  pCmdUI->Enable(enable);
 }
 
 void ProjectFrame::OnReplayBlessed()
@@ -1234,7 +1251,7 @@ void ProjectFrame::OnReplayDifferSkein()
 
 void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)
 {
-  pCmdUI->Enable(!m_compiling);
+  pCmdUI->Enable(!m_busy);
 }
 
 void ProjectFrame::OnReleaseGame(UINT nID)
@@ -1688,13 +1705,10 @@ bool ProjectFrame::CompileProject(int release)
   }
 
   // Start compiling ...
-  m_compiling = true;
+  m_busy = true;
 
   // Get the current focus window
   HWND focus = GetFocus()->GetSafeHwnd();
-
-  // Make the error panel visible
-  GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
 
   // Notify panels that compilation is starting
   GetPanel(0)->CompileProject(TabInterface::CompileStart,0);
@@ -1710,8 +1724,9 @@ bool ProjectFrame::CompileProject(int release)
   // Run Inform 6
   if (code == 0)
   {
-    SetMessageText("Running Inform 6");
     code = theApp.RunCommand(m_projectDir+"\\Build",InformCommandLine(release >= 2),*this);
+    if (code != 0)
+      SetMessageText("Creating the story file with Inform 6 has failed");
 
     GetPanel(0)->CompileProject(TabInterface::RanInform6,code);
     GetPanel(1)->CompileProject(TabInterface::RanInform6,code);
@@ -1722,16 +1737,15 @@ bool ProjectFrame::CompileProject(int release)
   final.Format("\nCompiler finished with code %d\n",code);
   Output(final);
 
-  // Update the status bar
-  SetMessageText(code == 0 ?
-    "The story has been successfully compiled" : "The story has not been compiled");
+  // Make the results panel visible
+  GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
 
   // Return the focus to its original point if still visible
   if (::IsWindow(focus) && ::IsWindowVisible(focus))
     ::SetFocus(focus);
 
   // Finished compiling
-  m_compiling = false;
+  m_busy = false;
   return (code == 0);
 }
 
@@ -1968,6 +1982,11 @@ void ProjectFrame::Output(const char* msg)
       {
         SetMessageText(progress);
         SendMessage(WM_PROGRESS,percent);
+      }
+      else if (sscanf(line,"++ Ended: %[^^]",progress) == 1)
+      {
+        SetMessageText(progress);
+        SendMessage(WM_PROGRESS,-1);
       }
     }
     else

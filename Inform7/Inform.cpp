@@ -772,9 +772,14 @@ void InformApp::RunMessagePump(void)
   MSG msg;
   while (::PeekMessage(&msg,NULL,0,0,PM_NOREMOVE))
   {
-    if (PumpMessage() == FALSE)
+    if (msg.message == WM_COMMAND)
+      ::PeekMessage(&msg,NULL,0,0,PM_REMOVE);
+    else if (PumpMessage() == FALSE)
       exit(ExitInstance());
   }
+
+  if (IsWaitCursor())
+    RestoreWaitCursor();
 }
 
 int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
@@ -866,7 +871,7 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
   return result;
 }
 
-void InformApp::RunCensus(bool wait)
+HANDLE InformApp::RunCensus(bool wait)
 {
   CString command, dir = GetAppDir();
   command.Format("\"%s\\Compilers\\ni\" -rules \"%s\\Inform7\\Extensions\" -census",
@@ -886,20 +891,25 @@ void InformApp::RunCensus(bool wait)
 
   if (created)
   {
-    if (wait)
-    {
-      DWORD result = STILL_ACTIVE;
-      while (result == STILL_ACTIVE)
-      {
-        ::MsgWaitForMultipleObjects(0,NULL,FALSE,INFINITE,QS_ALLINPUT);
-        RunMessagePump();
-        ::GetExitCodeProcess(process.hProcess,&result);
-      }
-    }
-
-    ::CloseHandle(process.hProcess);
     ::CloseHandle(process.hThread);
+    if (wait)
+      return process.hProcess;
+    else
+      ::CloseHandle(process.hProcess);
   }
+  return 0;
+}
+
+void InformApp::WaitForProcessEnd(HANDLE process)
+{
+  DWORD result = STILL_ACTIVE;
+  while (result == STILL_ACTIVE)
+  {
+    ::MsgWaitForMultipleObjects(0,NULL,FALSE,INFINITE,QS_ALLINPUT);
+    RunMessagePump();
+    ::GetExitCodeProcess(process,&result);
+  }
+  ::CloseHandle(process);
 }
 
 void InformApp::WriteLog(const char* msg)

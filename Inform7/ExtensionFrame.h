@@ -61,7 +61,9 @@ protected:
   static ExtensionFrame* NewFrame(const ProjectSettings& settings);
   static bool RemoveI7X(CString& path);
   static void DeleteOldExtension(CString path);
-
+  static void SetDownloadProgress(CFrameWnd* parent, int total, int current, int installed);
+  static void ShowInstalledMessage(CWnd* parent, int installed, int total, LPCWSTR lastExt);
+  
   void OpenFile(const char* path);
   void SetFromRegistryPath(const char* path);
   bool IsProjectEdited(void);

@@ -196,7 +196,7 @@ protected:
   CString m_projectDir;
 
   ProjectSettings m_settings;
-  bool m_compiling;
+  bool m_busy;
   bool m_I6debug;
 
   CString m_outputFileLoc;

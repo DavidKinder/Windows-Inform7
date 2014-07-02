@@ -6,6 +6,7 @@
 #include "TextFormat.h"
 #include "NewDialogs.h"
 #include "Dialogs.h"
+#include "OSLayer.h"
 #include "Build.h"
 
 #ifdef _DEBUG
@@ -420,9 +421,13 @@ bool ExtensionFrame::InstallExtensions(CWnd* parent)
     return false;
 
   // Iterate over the selected extensions
+  CStringW lastExt;
+  int installed = 0, total = 0;
   POSITION pos = dialog.GetStartPosition();
   while (pos != NULL)
   {
+    total++;
+
     // Get the first line of the extension
     CString path = dialog.GetNextPathName(pos);
     CStringW extLine = ReadExtensionFirstLine(path);
@@ -474,13 +479,19 @@ bool ExtensionFrame::InstallExtensions(CWnd* parent)
 
     // Copy the extension
     if (::CopyFile(path,target,FALSE))
+    {
       DeleteOldExtension(target);
+      lastExt.Format(L"\"%s\" by %s (%s)",(LPCWSTR)extName,(LPCWSTR)extAuthor,(LPCWSTR)extVersion);
+      installed++;
+    }
   }
 
   // Update the extensions menu and documentation
+  HANDLE process = theApp.RunCensus(true);
+  ShowInstalledMessage(parent,installed,total,lastExt);
   theApp.FindExtensions();
   theApp.SendAllFrames(InformApp::Extensions,0);
-  theApp.RunCensus(true);
+  theApp.WaitForProcessEnd(process);
   return true;
 }
 
@@ -581,17 +592,22 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
 {
   {
     CWaitCursor wc;
-    parent->SetMessageText("Downloading extensions");
 
-    int installed = 0;
-    for (int i = 0; i < urls->GetSize(); i++)
+    CStringW lastExt;
+    int installed = 0, total = urls->GetSize();
+    for (int i = 0; i < total; i++)
     {
-      parent->SendMessage(WM_PROGRESS,
-        (int)(100 * ((double)i / (double)urls->GetSize())));
+      SetDownloadProgress(parent,total,i,installed);
 
       CString url = urls->GetAt(i);
       if (url.Left(8) != "library:")
         continue;
+
+      // Get the ID of the download
+      int idIdx = url.Find("?id=");
+      if (idIdx <= 0)
+        continue;
+      int id = atoi(((LPCSTR)url)+idIdx+4);
 
       // Determine the path for downloaded extension files
       CString downPath;
@@ -630,6 +646,8 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
           if (::CopyFile(downPath,target,FALSE))
           {
             DeleteOldExtension(target);
+            theApp.SendAllFrames(InformApp::DownloadedExt,id);
+            lastExt.Format(L"\"%s\" by %s (%s)",(LPCWSTR)extName,(LPCWSTR)extAuthor,(LPCWSTR)extVersion);
             installed++;
           }
         }
@@ -638,20 +656,17 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
       // Delete the downloaded file
       ::DeleteFile(downPath);
     }
+    SetDownloadProgress(parent,total,total,installed);
 
-    parent->SendMessage(WM_PROGRESS,100);
-    CString msg;
-    msg.Format("Downloaded and installed %d extension%s",installed,(installed != 1) ? "s" : "");
-    parent->SetMessageText(msg);
-    msg.Format("Attempted to download %d extensions, %d failed.",urls->GetSize(),urls->GetSize()-installed);
-    parent->MessageBox(msg,INFORM_TITLE,MB_ICONINFORMATION|MB_OK);
+    // Notify the user of what happened
+    theApp.RunCensus(false);
+    ShowInstalledMessage(parent,installed,total,lastExt);
     parent->SendMessage(WM_PROGRESS,-1);
   }
 
-  // Update the extensions menu and documentation
+  // Update the extensions menu
   theApp.FindExtensions();
   theApp.SendAllFrames(InformApp::Extensions,0);
-  theApp.RunCensus(true);
 }
 
 CStringW ExtensionFrame::ReadExtensionFirstLine(const char* path)
@@ -802,6 +817,49 @@ void ExtensionFrame::DeleteOldExtension(CString path)
   // Does the extension file name have the new '.i7x' ending?
   if (RemoveI7X(path))
     ::DeleteFile(path);
+}
+
+void ExtensionFrame::SetDownloadProgress(CFrameWnd* parent, int total, int current, int installed)
+{
+  parent->SendMessage(WM_PROGRESS,(int)(100 * ((double)current / (double)total)));
+
+  CString status;
+  status.Format("Installed %d of %d",installed,total);
+  if (current > installed)
+    status.AppendFormat(" (%d failed)",current-installed);
+  parent->SetMessageText(status);
+}
+
+void ExtensionFrame::ShowInstalledMessage(CWnd* parent, int installed, int total, LPCWSTR lastExt)
+{
+  CStringW msg;
+  if (total > installed)
+  {
+    // One or more errors
+    if (installed > 0)
+    {
+      if (installed == 1)
+        msg.Format(L"One extension installed successfully, %d failed.",total-installed);
+      else
+        msg.Format(L"%d extensions installed successfully, %d failed.",installed,total-installed);
+    }
+    else
+    {
+      if (total > 1)
+        msg.Format(L"Failed to install %d extensions.",total);
+      else
+        msg = "Failed to install extension.";
+    }
+  }
+  else
+  {
+    // No errors
+    if (installed > 1)
+      msg.Format(L"Installation complete.\n\n%d extensions installed successfully.",installed);
+    else
+      msg.Format(L"Installation complete.\n\nExtension %s installed successfully.",lastExt);
+  }
+  theOS.MessageBox(parent,msg,L_INFORM_TITLE,MB_ICONINFORMATION|MB_OK);
 }
 
 CString ExtensionFrame::GetDisplayName(bool showEdited)

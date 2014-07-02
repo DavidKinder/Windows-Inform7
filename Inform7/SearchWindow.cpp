@@ -224,7 +224,7 @@ void SearchWindow::Search(Source* source, LPCWSTR text, CRect& windowRect)
 
     CStringW msg;
     msg.Format(L"Nothing was found when searching for '%s'",text);
-    theOS.MessageBox(m_parent,msg,L"Inform",MB_ICONWARNING|MB_OK);
+    theOS.MessageBox(m_parent,msg,L_INFORM_TITLE,MB_ICONWARNING|MB_OK);
     return;
   }
 

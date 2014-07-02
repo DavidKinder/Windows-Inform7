@@ -119,9 +119,6 @@ void TabResults::CompileProject(CompileStage stage, int code)
     m_report->Navigate("about:blank",false);
     m_console.ClearText();
     m_inform6 = NoError;
-
-    // Switch to the console tab
-    SetActiveTab(ResTab_Console,false);
     break;
 
   case RanNaturalInform:
