@@ -360,7 +360,11 @@ void InformApp::FrameClosing(CFrameWnd* frame)
 
 void InformApp::GetWindowFrames(CArray<CFrameWnd*>& frames)
 {
-  frames.Add((CFrameWnd*)m_pMainWnd);
+  if (m_pMainWnd)
+  {
+    if (m_pMainWnd->IsKindOf(RUNTIME_CLASS(CFrameWnd)))
+      frames.Add((CFrameWnd*)m_pMainWnd);
+  }
   frames.Append(m_frames);
 }
 

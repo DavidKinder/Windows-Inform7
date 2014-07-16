@@ -506,6 +506,7 @@ void ScriptExternal::SetProject(LPUNKNOWN)
 BEGIN_DISPATCH_MAP(ScriptProject,CCmdTarget)
   DISP_FUNCTION(ScriptProject,"selectView",SelectView,VT_EMPTY,VTS_BSTR)
   DISP_FUNCTION(ScriptProject,"pasteCode",PasteCode,VT_EMPTY,VTS_WBSTR)
+  DISP_FUNCTION(ScriptProject,"createNewProject",CreateNewProject,VT_EMPTY,VTS_WBSTR VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"openFile",OpenFile,VT_EMPTY,VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"openUrl",OpenUrl,VT_EMPTY,VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"askInterfaceForLocalVersion",ExtCompareVersion,VT_BSTR,VTS_WBSTR VTS_WBSTR VTS_WBSTR)
@@ -527,6 +528,11 @@ void ScriptProject::SelectView(LPCSTR view)
 void ScriptProject::PasteCode(LPCWSTR code)
 {
   m_html->GetParentFrame()->SendMessage(WM_PASTECODE,(WPARAM)code);
+}
+
+void ScriptProject::CreateNewProject(LPCWSTR title, LPCWSTR code)
+{
+  m_html->GetParentFrame()->SendMessage(WM_NEWPROJECT,(WPARAM)code,(LPARAM)title);
 }
 
 void ScriptProject::OpenFile(LPCWSTR path)

@@ -123,3 +123,8 @@ struct SourceRange
 
 // Sent to the window frame to set the progress control position
 #define WM_PROGRESS       WM_APP+29
+
+// Sent to the window frame to create a new project, named by the
+// string in lParam, and to paste the string in wParam into the
+// source code panel.
+#define WM_NEWPROJECT     WM_APP+30

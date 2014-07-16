@@ -20,6 +20,7 @@ public:
   ScriptProject(ReportHtml* html);
   void SelectView(LPCSTR view);
   void PasteCode(LPCWSTR code);
+  void CreateNewProject(LPCWSTR title, LPCWSTR code);
   void OpenFile(LPCWSTR path);
   void OpenUrl(LPCWSTR url);
   BSTR ExtCompareVersion(LPCWSTR author, LPCWSTR title, LPCWSTR compare);

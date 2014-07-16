@@ -290,7 +290,7 @@ void ExtensionFrame::OnFormatElasticTabStops()
 
 void ExtensionFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
 {
-  CMenu* windowMenu = GetMenu()->GetSubMenu(2);
+  CMenu* windowMenu = GetMenu()->GetSubMenu(3);
   int maximum = 9;
 
   // Remove any existing items in the window list
@@ -348,6 +348,22 @@ void ExtensionFrame::StartNew(CWnd* parent, const ProjectSettings& settings)
 
 void ExtensionFrame::StartExisting(const char* path, const ProjectSettings& settings)
 {
+  // Is the extension already open?
+  CArray<CFrameWnd*> frames;
+  theApp.GetWindowFrames(frames);
+  for (int i = 0; i < frames.GetSize(); i++)
+  {
+    if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
+    {
+      ExtensionFrame* extFrame = (ExtensionFrame*)frames[i];
+      if (extFrame->m_extension.CompareNoCase(path) == 0)
+      {
+        extFrame->ActivateFrame();
+        return;
+      }
+    }
+  }
+
   ExtensionFrame* frame = NewFrame(settings);
   frame->OpenFile(path);
 }

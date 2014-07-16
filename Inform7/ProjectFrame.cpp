@@ -56,6 +56,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_PROJECTEDITED, OnProjectEdited)
   ON_MESSAGE(WM_EXTDOWNLOAD, OnExtDownload)
   ON_MESSAGE(WM_PROGRESS, OnProgress)
+  ON_MESSAGE(WM_NEWPROJECT, OnCreateNewProject)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -896,6 +897,19 @@ LRESULT ProjectFrame::OnProgress(WPARAM wp, LPARAM)
   return 0;
 }
 
+LRESULT ProjectFrame::OnCreateNewProject(WPARAM code, LPARAM title)
+{
+  CString projectDir;
+  projectDir.Format("%s\\Inform\\Projects\\%S.inform",(LPCSTR)theApp.GetHomeDir(),(LPCWSTR)title);
+
+  ProjectFrame* frame = NewFrame();
+  ((TabSource*)frame->GetPanel(0)->GetTab(Panel::Tab_Source))->PasteCode((LPCWSTR)code);
+
+  frame->SaveProject(projectDir);
+  frame->GetPanel(0)->SetActiveTab(Panel::Tab_Source);
+  return 0;
+}
+
 CString ProjectFrame::GetDisplayName(bool showEdited)
 {
   CString name = m_projectDir;
@@ -1615,9 +1629,26 @@ bool ProjectFrame::StartExistingProject(const char* dir, CWnd* parent)
   ProjectDirDialog dialog(true,dir,"Open a project",parent);
   if (dialog.ShowDialog() != IDOK)
     return false;
+  CString project = dialog.GetProjectDir();
+
+  // Is the project already open?
+  CArray<CFrameWnd*> frames;
+  theApp.GetWindowFrames(frames);
+  for (int i = 0; i < frames.GetSize(); i++)
+  {
+    if (frames[i]->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
+    {
+      ProjectFrame* projFrame = (ProjectFrame*)frames[i];
+      if (projFrame->m_projectDir.CompareNoCase(project) == 0)
+      {
+        projFrame->ActivateFrame();
+        return false;
+      }
+    }
+  }
 
   ProjectFrame* frame = NewFrame();
-  frame->OpenProject(dialog.GetProjectDir());
+  frame->OpenProject(project);
   return true;
 }
 
