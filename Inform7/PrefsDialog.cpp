@@ -15,6 +15,7 @@ PrefsDialog::PrefsDialog() : I7BaseDialog(PrefsDialog::IDD)
   m_tabSize = 8;
   m_indentWrapped = TRUE;
   m_autoIndent = TRUE;
+  m_autoSpaceTables = TRUE;
   m_startWithLast = FALSE;
   m_cleanFiles = TRUE;
   m_cleanIndexes = TRUE;
@@ -35,6 +36,7 @@ void PrefsDialog::DoDataExchange(CDataExchange* pDX)
   DDX_Text(pDX, IDC_TABSIZE, m_tabSize);
   DDX_Check(pDX, IDC_INDENT, m_indentWrapped);
   DDX_Check(pDX, IDC_AUTO_INDENT, m_autoIndent);
+  DDX_Check(pDX, IDC_ELASTIC_TABS, m_autoSpaceTables);
   DDX_Check(pDX, IDC_STARTLAST, m_startWithLast);
   DDV_MinMaxUInt(pDX, m_tabSize, 1, 32);
   DDX_Check(pDX, IDC_CLEANFILES, m_cleanFiles);
@@ -105,6 +107,8 @@ INT_PTR PrefsDialog::DoModal()
         m_indentWrapped = value;
       if (registryKey.QueryDWORDValue("Auto Indent",value) == ERROR_SUCCESS)
         m_autoIndent = value;
+      if (registryKey.QueryDWORDValue("Auto Space Tables",value) == ERROR_SUCCESS)
+        m_autoSpaceTables = value;
 
       if (registryKey.QueryDWORDValue("Clean Up Files",value) == ERROR_SUCCESS)
         m_cleanFiles = (value != 0);
@@ -135,6 +139,7 @@ INT_PTR PrefsDialog::DoModal()
       registryKey.SetDWORDValue("Source Tab Size Chars",m_tabSize);
       registryKey.SetDWORDValue("Indent Wrapped Lines",m_indentWrapped);
       registryKey.SetDWORDValue("Auto Indent",m_autoIndent);
+      registryKey.SetDWORDValue("Auto Space Tables",m_autoSpaceTables);
       registryKey.SetDWORDValue("Clean Up Files",m_cleanFiles);
       registryKey.SetDWORDValue("Clean Up Indexes",m_cleanIndexes);
       registryKey.SetDWORDValue("Generate I6 Debug",m_I6debug);

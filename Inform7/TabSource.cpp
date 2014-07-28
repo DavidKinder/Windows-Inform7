@@ -551,9 +551,10 @@ bool TabSource::CheckNeedReopen(const char* path)
   return false;
 }
 
-void TabSource::SetElasticTabStops(bool enable)
+void TabSource::UpdateElasticTabStops(void)
 {
-  m_source.GetEdit().SetElasticTabStops(enable);
+  SourceEdit& edit = m_source.GetEdit();
+  edit.SetElasticTabStops(edit.GetElasticTabStops());
 }
 
 void TabSource::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)

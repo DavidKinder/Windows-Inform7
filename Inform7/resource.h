@@ -29,7 +29,6 @@
 #define ID_FORMAT_COMMENT               212
 #define ID_FORMAT_UNCOMMENT             213
 #define ID_FORMAT_RENUMBER              214
-#define ID_FORMAT_ELASTIC_TABSTOPS      215
 #define ID_PLAY_GO                      220
 #define ID_PLAY_STOP                    221
 #define ID_PLAY_TEST                    222
@@ -148,6 +147,7 @@
 #define IDC_FONT                        1045
 #define IDC_FONTSIZE                    1046
 #define IDC_FIXEDFONT                   1047
+#define IDC_ELASTIC_TABS                1048
 #define ID_EXTENSIONS_LIST              2000
 
 // Next default values for new objects

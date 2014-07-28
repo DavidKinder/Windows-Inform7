@@ -71,9 +71,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
   ON_COMMAND(ID_FILE_IMPORT_SKEIN, OnFileImportSkein)
 
-  ON_UPDATE_COMMAND_UI(ID_FORMAT_ELASTIC_TABSTOPS, OnUpdateElasticTabStops)
-  ON_COMMAND(ID_FORMAT_ELASTIC_TABSTOPS, OnFormatElasticTabStops)
-
   ON_UPDATE_COMMAND_UI(ID_PLAY_GO, OnUpdateCompile)
   ON_COMMAND(ID_PLAY_GO, OnPlayGo)
   ON_UPDATE_COMMAND_UI(ID_PLAY_TEST, OnUpdateCompile)
@@ -303,7 +300,7 @@ void ProjectFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
       GetPanel(1)->GetTab(Panel::Tab_Source)->OpenProject(m_projectDir,false);
 
       // Update elastic tabstops, if in use
-      ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->SetElasticTabStops(m_settings.m_elasticTabStops);
+      ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->UpdateElasticTabStops();
     }
 
     // Restore the focus window
@@ -1027,19 +1024,6 @@ void ProjectFrame::OnFileImportSkein()
     m_skein.Import(dialog.GetPathName());
 }
 
-void ProjectFrame::OnUpdateElasticTabStops(CCmdUI *pCmdUI)
-{
-  pCmdUI->SetCheck(m_settings.m_elasticTabStops);
-}
-
-void ProjectFrame::OnFormatElasticTabStops()
-{
-  m_settings.m_elasticTabStops = !m_settings.m_elasticTabStops;
-  m_settings.m_changed = true;
-
-  ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->SetElasticTabStops(m_settings.m_elasticTabStops);
-}
-
 void ProjectFrame::OnUpdateCompile(CCmdUI *pCmdUI)
 {
   pCmdUI->Enable(!m_busy);
@@ -1684,9 +1668,6 @@ void ProjectFrame::OpenProject(const char* project)
   GetPanel(0)->OpenProject(m_projectDir,true);
   GetPanel(1)->OpenProject(m_projectDir,false);
   GetPanel(0)->SetActiveTab(Panel::Tab_Source);
-
-  // Update elastic tabstops, if in use
-  ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->SetElasticTabStops(m_settings.m_elasticTabStops);
 }
 
 bool ProjectFrame::SaveProject(const char* project)

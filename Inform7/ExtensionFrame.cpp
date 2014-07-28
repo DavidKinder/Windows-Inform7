@@ -29,9 +29,6 @@ BEGIN_MESSAGE_MAP(ExtensionFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_SAVE, OnFileSave)
   ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
 
-  ON_UPDATE_COMMAND_UI(ID_FORMAT_ELASTIC_TABSTOPS, OnUpdateElasticTabStops)
-  ON_COMMAND(ID_FORMAT_ELASTIC_TABSTOPS, OnFormatElasticTabStops)
-
   ON_UPDATE_COMMAND_UI(ID_WINDOW_LIST, OnUpdateWindowList)
   ON_COMMAND_RANGE(ID_WINDOW_LIST, ID_WINDOW_LIST+8, OnWindowList)
 END_MESSAGE_MAP()
@@ -275,17 +272,6 @@ void ExtensionFrame::OnFileSaveAs()
 
   m_extension = dialog.GetPathName();
   OnFileSave();
-}
-
-void ExtensionFrame::OnUpdateElasticTabStops(CCmdUI *pCmdUI)
-{
-  pCmdUI->SetCheck(m_edit.GetElasticTabStops());
-}
-
-void ExtensionFrame::OnFormatElasticTabStops()
-{
-  bool elastic = !(m_edit.GetElasticTabStops());
-  m_edit.SetElasticTabStops(elastic);
 }
 
 void ExtensionFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
@@ -808,9 +794,6 @@ ExtensionFrame* ExtensionFrame::NewFrame(const ProjectSettings& settings)
   frame->SetFromRegistryPath(REGISTRY_PATH_WINDOW);
   frame->ShowWindow(SW_SHOW);
   frame->UpdateWindow();
-
-  frame->m_edit.SetElasticTabStops(settings.m_elasticTabStops);
-
   return frame;
 }
 

@@ -22,7 +22,6 @@ public:
   Output m_output;
   bool m_blorb;
   bool m_predictable;
-  bool m_elasticTabStops;
 
   bool m_changed;
 

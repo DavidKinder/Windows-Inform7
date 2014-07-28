@@ -33,6 +33,7 @@ protected:
   DWORD m_tabSize;
   BOOL m_indentWrapped;
   BOOL m_autoIndent;
+  BOOL m_autoSpaceTables;
   BOOL m_startWithLast;
 
   BOOL m_cleanFiles;

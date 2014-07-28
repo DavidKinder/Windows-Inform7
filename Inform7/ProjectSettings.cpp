@@ -29,7 +29,6 @@ void ProjectSettings::Load(const char* path)
   // Get the settings from the XML
   m_blorb = propList.GetBoolean(L"IFOutputSettings",L"IFSettingCreateBlorb",true);
   m_predictable = propList.GetBoolean(L"IFOutputSettings",L"IFSettingNobbleRng",false);
-  m_elasticTabStops = propList.GetBoolean(L"IFMiscSettings",L"IFSettingElasticTabs",true);
   switch (propList.GetNumber(L"IFOutputSettings",L"IFSettingZCodeVersion"))
   {
   case 5:
@@ -84,12 +83,9 @@ bool ProjectSettings::Save(const char* path)
   fprintf(settingsFile,
     "\t<key>IFMiscSettings</key>\n"
     "\t<dict>\n"
-    "\t\t<key>IFSettingElasticTabs</key>\n"
-    "\t\t<%s/>\n"
     "\t\t<key>IFSettingInfix</key>\n"
     "\t\t<false/>\n"
-    "\t</dict>\n",
-    m_elasticTabStops ? "true" : "false");
+    "\t</dict>\n");
 
   fprintf(settingsFile,
     "\t<key>IFOutputSettings</key>\n"
@@ -150,6 +146,5 @@ void ProjectSettings::SetDefaults(void)
   m_output = OutputGlulx;
   m_blorb = true;
   m_predictable = false;
-  m_elasticTabStops = true;
   m_changed = false;
 }

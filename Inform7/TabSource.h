@@ -34,7 +34,7 @@ public:
   void PasteCode(const wchar_t* code);
   void UpdateSpellCheck(void);
   bool CheckNeedReopen(const char* path);
-  void SetElasticTabStops(bool enable);
+  void UpdateElasticTabStops(void);
 
   // Implementation of SearchWindow::Source
   void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results);

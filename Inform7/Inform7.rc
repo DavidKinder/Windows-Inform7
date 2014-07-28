@@ -122,8 +122,6 @@ BEGIN
         MENUITEM "&Uncomment Selection\tAlt+Shift+/", ID_FORMAT_UNCOMMENT
         MENUITEM SEPARATOR
         MENUITEM "Renu&mber All Sections\tCtrl+M", ID_FORMAT_RENUMBER
-        MENUITEM SEPARATOR
-        MENUITEM "Enable &Elastic Tabstops",    ID_FORMAT_ELASTIC_TABSTOPS
     END
     POPUP "&Play"
     BEGIN
@@ -274,8 +272,6 @@ BEGIN
         MENUITEM "Shift Selection &Left\tAlt+[", ID_FORMAT_SHIFT_LEFT
         MENUITEM "&Comment Out Selection\tAlt+/", ID_FORMAT_COMMENT
         MENUITEM "&Uncomment Selection\tAlt+Shift+/", ID_FORMAT_UNCOMMENT
-        MENUITEM SEPARATOR
-        MENUITEM "Enable &Elastic Tabstops",    ID_FORMAT_ELASTIC_TABSTOPS
     END
     POPUP "&Window"
     BEGIN
@@ -463,7 +459,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,216,100,76,14
 END
 
-IDD_PREFERENCES DIALOGEX 0, 0, 203, 226
+IDD_PREFERENCES DIALOGEX 0, 0, 203, 234
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "Preferences"
@@ -478,30 +474,33 @@ BEGIN
     LTEXT           "Fixed &width font",IDC_STATIC,13,36,54,8
     COMBOBOX        IDC_FIXEDFONT,70,34,118,182,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Source",IDC_STATIC,7,58,189,68
+    GROUPBOX        "Source",IDC_STATIC,7,58,189,78
     LTEXT           "&Tab width (in spaces)",IDC_STATIC,14,70,73,8
     EDITTEXT        IDC_TABSIZE,93,68,37,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "&Indent wrapped lines",IDC_INDENT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,85,95,10
     CONTROL         "A&uto-indent after newline",IDC_AUTO_INDENT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,98,107,10
+    CONTROL         "Auto-space ta&ble columns",
+                    IDC_ELASTIC_TABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    14,110,149,10
     CONTROL         "&Start by loading the last opened project",
                     IDC_STARTLAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,
-                    110,149,10
-    GROUPBOX        "Advanced",IDC_STATIC,7,130,189,70
+                    122,149,10
+    GROUPBOX        "Advanced",IDC_STATIC,7,140,189,70
     CONTROL         "&Clean build files from projects before closing",
                     IDC_CLEANFILES,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | 
-                    WS_TABSTOP,14,142,163,10
+                    WS_TABSTOP,14,152,163,10
     CONTROL         "&Also clean out index files",IDC_CLEANINDEX,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,24,154,126,10
-    LTEXT           "Glul&x interpreter",IDC_STATIC,14,183,56,8
-    COMBOBOX        IDC_GLULX,73,181,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    DEFPUSHBUTTON   "OK",IDOK,89,205,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,146,205,50,14
+                    BS_AUTOCHECKBOX | WS_TABSTOP,24,164,126,10
     CONTROL         "Generate Inform &6 debugging information",
                     IDC_I6DEBUGGING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,
-                    166,158,10
+                    176,158,10
+    LTEXT           "Glul&x interpreter",IDC_STATIC,14,193,56,8
+    COMBOBOX        IDC_GLULX,73,191,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,89,215,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,146,215,50,14
 END
 
 
@@ -695,7 +694,6 @@ BEGIN
     ID_FORMAT_COMMENT       "Comment out the selected lines"
     ID_FORMAT_UNCOMMENT     "Uncomment the selected lines"
     ID_FORMAT_RENUMBER      "Renumber all section headings in the source"
-    ID_FORMAT_ELASTIC_TABSTOPS "Turn elastic tabstops on and off"
     ID_PLAY_GO              "Build the story and run it\nGo!"
     ID_PLAY_STOP            "Stop the currently running story\nStop"
     ID_PLAY_TEST            "Build the story and run the ""test me"" command"

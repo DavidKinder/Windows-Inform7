@@ -37,9 +37,6 @@ protected:
   afx_msg void OnFileSave();
   afx_msg void OnFileSaveAs();
 
-  afx_msg void OnUpdateElasticTabStops(CCmdUI *pCmdUI);
-  afx_msg void OnFormatElasticTabStops();
-
   afx_msg void OnUpdateWindowList(CCmdUI *pCmdUI);
   afx_msg void OnWindowList(UINT nID);
 
