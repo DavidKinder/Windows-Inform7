@@ -675,6 +675,13 @@ extern "C" glui32 glk_get_buffer_stream(strid_t str, char *buf, glui32 len)
 
 extern "C" void glk_stylehint_set(glui32 wintype, glui32 styl, glui32 hint, glsi32 val)
 {
+  if (wintype == wintype_AllTypes)
+  {
+    glk_stylehint_set(wintype_TextBuffer,styl,hint,val);
+    glk_stylehint_set(wintype_TextGrid,styl,hint,val);
+    return;
+  }
+
   I7GlkStyle* style = NULL;
   if ((styl >= 0) && (styl < style_NUMSTYLES))
   {
@@ -723,6 +730,13 @@ extern "C" void glk_stylehint_set(glui32 wintype, glui32 styl, glui32 hint, glsi
 
 extern "C" void glk_stylehint_clear(glui32 wintype, glui32 styl, glui32 hint)
 {
+  if (wintype == wintype_AllTypes)
+  {
+    glk_stylehint_clear(wintype_TextBuffer,styl,hint);
+    glk_stylehint_clear(wintype_TextGrid,styl,hint);
+    return;
+  }
+
   I7GlkStyle* from = NULL;
   I7GlkStyle* style = NULL;
   if ((styl >= 0) && (styl < style_NUMSTYLES))
