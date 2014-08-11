@@ -773,6 +773,16 @@ bool Editor::RangeContainsProtected(int start, int end) const {
 				return true;
 		}
 	}
+/*XXXXDK Show only part of document */
+  if (xVisibleStart > 0 || xVisibleEnd > 0) {
+  	int line = pdoc->LineFromPosition(start);
+    if (xVisibleStart > 0 && xVisibleStart < pdoc->LinesTotal() && line < xVisibleStart)
+      return true;
+  	line = pdoc->LineFromPosition(end);
+    if (xVisibleEnd > 0 && xVisibleEnd < pdoc->LinesTotal() && line > xVisibleEnd)
+      return true;
+  }
+/*XXXXDK Show only part of document */
 	return false;
 }
 

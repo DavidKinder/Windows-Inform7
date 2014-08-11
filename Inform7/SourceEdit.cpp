@@ -783,6 +783,13 @@ void SourceEdit::Highlight(int line, COLORREF colour, bool centre)
 
 void SourceEdit::ShowBetween(int startLine, int endLine)
 {
+  if (endLine > startLine)
+  {
+    int endLen = CallEdit(SCI_LINELENGTH,endLine);
+    if (endLen <= 1)
+      endLine--;
+  }
+
   CallEdit(SCIX_VISIBLEREGION,startLine,endLine);
   Highlight(startLine,-1,false);
 }
