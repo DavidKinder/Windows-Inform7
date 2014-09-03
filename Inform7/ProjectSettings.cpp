@@ -129,7 +129,7 @@ CString ProjectSettings::GetInformSwitches(bool release, bool debugFile)
   return switches;
 }
 
-CString ProjectSettings::GetOutputExtension(void)
+CString ProjectSettings::GetOutputFormat(void)
 {
   switch (m_output)
   {

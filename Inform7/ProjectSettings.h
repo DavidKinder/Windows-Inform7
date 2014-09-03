@@ -11,7 +11,7 @@ public:
   bool Save(const char* path);
 
   CString GetInformSwitches(bool release, bool debugFile);
-  CString GetOutputExtension(void);
+  CString GetOutputFormat(void);
 
   enum Output
   {

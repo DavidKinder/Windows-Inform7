@@ -1300,7 +1300,7 @@ void ProjectFrame::OnReleaseGame(UINT nID)
     }
 
     // Get the appropriate file name extension
-    CString extension = m_settings.m_blorb ? blorbExt : m_settings.GetOutputExtension();
+    CString extension = m_settings.m_blorb ? blorbExt : m_settings.GetOutputFormat();
 
     // Should we ask the user where to copy to?
     if (releasePath.IsEmpty())
@@ -1768,7 +1768,7 @@ void ProjectFrame::RunProject(void)
 
   // Start the interpreter
   m_game.RunInterpreter(m_projectDir+"\\Build",
-    "output."+m_settings.GetOutputExtension(),
+    "output."+m_settings.GetOutputFormat(),
     m_settings.m_output == ProjectSettings::OutputGlulx);
 
   // Send out a skein notification now that the game is running
@@ -1902,15 +1902,15 @@ void ProjectFrame::UpdateExtensionsMenu(void)
 CString ProjectFrame::NaturalCommandLine(bool release)
 {
   CString dir = theApp.GetAppDir();
-  CString extension = m_settings.GetOutputExtension();
+  CString format = m_settings.GetOutputFormat();
 
   CString executable, arguments;
   executable.Format("%s\\Compilers\\ni",(LPCSTR)dir);
   arguments.Format(
-    "%s%s-rules \"%s\\Inform7\\Extensions\" -package \"%s\" -extension=%s",
+    "%s%s-internal \"%s\\Internal\" -project \"%s\" -format=%s",
     (release ? "-release " : ""),
     ((m_settings.m_predictable && !release)) ? "-rng " : "",
-    (LPCSTR)dir,(LPCSTR)m_projectDir,(LPCSTR)extension);
+    (LPCSTR)dir,(LPCSTR)m_projectDir,(LPCSTR)format);
 
   CString output;
   output.Format("%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
@@ -1925,12 +1925,12 @@ CString ProjectFrame::InformCommandLine(bool release)
 {
   CString dir = theApp.GetAppDir();
   CString switches = m_settings.GetInformSwitches(release,m_I6debug);
-  CString extension = m_settings.GetOutputExtension();
+  CString format = m_settings.GetOutputFormat();
 
   CString executable, arguments;
   executable.Format("%s\\Compilers\\inform6",(LPCSTR)dir);
   arguments.Format("%s +include_path=..\\Source,.\\ auto.inf output.%s",
-    (LPCSTR)switches,(LPCSTR)extension);
+    (LPCSTR)switches,(LPCSTR)format);
 
   CString output;
   output.Format("\n%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);

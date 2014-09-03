@@ -878,7 +878,7 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
 HANDLE InformApp::RunCensus(bool wait)
 {
   CString command, dir = GetAppDir();
-  command.Format("\"%s\\Compilers\\ni\" -rules \"%s\\Inform7\\Extensions\" -census",
+  command.Format("\"%s\\Compilers\\ni\" -internal \"%s\\Internal\" -census",
     (LPCSTR)dir,(LPCSTR)dir);
 
   STARTUPINFO start;
