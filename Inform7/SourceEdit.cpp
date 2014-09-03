@@ -975,8 +975,12 @@ void SourceEdit::LoadSettings(CRegKey& key)
 
   if (key.QueryDWORDValue("Auto Indent",value) == ERROR_SUCCESS)
     m_autoIndent = (value != 0);
+
+  // Adjust elastic tabstops
+  bool elastic = true;
   if (key.QueryDWORDValue("Auto Space Tables",value) == ERROR_SUCCESS)
-    SetElasticTabStops(value != 0);
+    elastic = (value != 0);
+  SetElasticTabStops(elastic);
 
   // Adjust wrapped line indentation
   bool indent = true;
