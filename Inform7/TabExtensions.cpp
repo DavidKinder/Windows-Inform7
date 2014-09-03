@@ -166,31 +166,6 @@ void TabExtensions::ModifyPage(const char* url, IHTMLDocument2* doc)
   CString plUrl = GetUrlForTab(ExtTab_Library);
   if (strncmp(url,plUrl,plUrl.GetLength()) == 0)
   {
-    CComPtr<IHTMLElementCollection> elements;
-    doc->get_scripts(&elements);
-
-    long count = 0;
-    elements->get_length(&count);
-    for (long i = 0; i < count; i++)
-    {
-      CComVariant index = i;
-      CComPtr<IDispatch> item;
-      if (SUCCEEDED(elements->item(index,index,&item)))
-      {
-        CComQIPtr<IHTMLScriptElement> script(item);
-        if (script != NULL)
-        {
-          CComBSTR src;
-          if (SUCCEEDED(script->get_text(&src)))
-          {
-            CStringW theSrc(src);
-            if (theSrc.Replace(L"window.Project",L"external.Project") > 0)
-              script->put_text(CComBSTR(theSrc));
-          }
-        }
-      }
-    }
-
     CComPtr<IHTMLElement> body;
     doc->get_body(&body);
     if (body != NULL)
@@ -200,8 +175,6 @@ void TabExtensions::ModifyPage(const char* url, IHTMLDocument2* doc)
       {
         bool update = false;
         CStringW theHtml(html);
-        if (theHtml.Replace(L"window.Project",L"external.Project") > 0)
-          update = true;
         if (theHtml.Replace(L"inform:/doc_images",m_imagesUrl) > 0)
           update = true;
         if (update)
