@@ -989,7 +989,7 @@ void InformApp::FindExtensions(void)
     switch (i)
     {
     case 0:
-      path.Format("%s\\Inform7\\Extensions\\*.*",(LPCSTR)GetAppDir());
+      path.Format("%s\\Internal\\Extensions\\*.*",(LPCSTR)GetAppDir());
       break;
     case 1:
       path.Format("%s\\Inform\\Extensions\\*.*",(LPCSTR)GetHomeDir());
