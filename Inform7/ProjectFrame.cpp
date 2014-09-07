@@ -2043,14 +2043,29 @@ void ProjectFrame::OnSourceLink(const char* url, TabInterface* from, COLORREF hi
 
 void ProjectFrame::OnDocLink(const wchar_t* url, TabInterface* from)
 {
-  // Select the panel to show the documentation in
+  // Select the tab to show the page in
+  Panel::Tabs tab = Panel::Tab_Doc;
+  CStringW extUrlBase;
+  extUrlBase.Format(L"file://%S\\Inform\\Documentation",(LPCSTR)theApp.GetHomeDir());
+  if (wcsncmp(url,extUrlBase,extUrlBase.GetLength()) == 0)
+    tab = Panel::Tab_Extensions;
+
+  // Select the panel to show the page in
   int thisPanel = 1;
   if (GetPanel(0)->ContainsTab(from))
     thisPanel = 0;
 
-  // Show the source tab
-  ((TabDoc*)GetPanel(thisPanel)->GetTab(Panel::Tab_Doc))->Show(CString(url));
-  GetPanel(thisPanel)->SetActiveTab(Panel::Tab_Doc);
+  // Show the appropriate tab
+  if (tab == Panel::Tab_Extensions)
+  {
+    ((TabExtensions*)GetPanel(thisPanel)->GetTab(Panel::Tab_Extensions))->Show(CString(url));
+    GetPanel(thisPanel)->SetActiveTab(Panel::Tab_Extensions);
+  }
+  else
+  {
+    ((TabDoc*)GetPanel(thisPanel)->GetTab(Panel::Tab_Doc))->Show(CString(url));
+    GetPanel(thisPanel)->SetActiveTab(Panel::Tab_Doc);
+  }
 }
 
 void ProjectFrame::OnSettingsChange(TabSettings* changed)
