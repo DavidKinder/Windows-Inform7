@@ -45,6 +45,9 @@ public:
     const RECT* target, BP_BUFFERFORMAT format, HANDLE* pb);
   void EndBufferedPaint(HANDLE pb, BOOL updateTarget);
 
+  int TaskDialog(CWnd* wnd,
+    LPCWSTR main, LPCWSTR content, LPCWSTR caption, UINT msgBoxType);
+
 private:
   OSVERSIONINFO m_osVer;
   HMODULE m_kernelDll;
@@ -53,6 +56,7 @@ private:
   HMODULE m_shellDll;
   HMODULE m_shellApiDll;
   HMODULE m_themeDll;
+  HMODULE m_comCtlDll;
 };
 
 extern OSLayer theOS;

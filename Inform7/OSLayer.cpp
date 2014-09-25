@@ -19,6 +19,7 @@ OSLayer::OSLayer()
   m_shellDll = 0;
   m_shellApiDll = 0;
   m_themeDll = 0;
+  m_comCtlDll = 0;
 }
 
 void OSLayer::Init(void)
@@ -29,6 +30,7 @@ void OSLayer::Init(void)
   m_shellDll = ::LoadLibrary("shell32.dll");
   m_shellApiDll = ::LoadLibrary("shlwapi.dll");
   m_themeDll = ::LoadLibrary("uxtheme.dll");
+  m_comCtlDll = ::LoadLibrary("comctl32.dll");
 }
 
 bool OSLayer::IsWindows9X(void)
@@ -390,4 +392,56 @@ void OSLayer::EndBufferedPaint(HANDLE pb, BOOL updateTarget)
     if (endBufferedPaint)
       (*endBufferedPaint)(pb,updateTarget);
   }
+}
+
+int OSLayer::TaskDialog(CWnd* wnd, LPCWSTR main, LPCWSTR content, LPCWSTR caption, UINT msgBoxType)
+{
+  if (m_comCtlDll)
+  {
+    typedef HRESULT(__stdcall *TASKDIALOG)
+      (HWND, HINSTANCE, PCWSTR, PCWSTR, PCWSTR, TASKDIALOG_COMMON_BUTTON_FLAGS, PCWSTR, int*);
+
+    TASKDIALOG taskDialog = (TASKDIALOG)
+      ::GetProcAddress(m_comCtlDll,"TaskDialog");
+    if (taskDialog != NULL)
+    {
+      TASKDIALOG_COMMON_BUTTON_FLAGS buttons = TDCBF_OK_BUTTON;
+      switch (msgBoxType & 0xF)
+      {
+      case MB_OK:
+        buttons = TDCBF_OK_BUTTON;
+        break;
+      case MB_YESNO:
+        buttons = (TASKDIALOG_COMMON_BUTTON_FLAGS)
+          (TDCBF_YES_BUTTON|TDCBF_NO_BUTTON);
+        break;
+      default:
+        ASSERT(FALSE);
+        break;
+      }
+
+      PCWSTR icon = 0;
+      switch (msgBoxType & 0xF0)
+      {
+      case MB_ICONINFORMATION:
+        icon = TD_INFORMATION_ICON;
+        break;
+      case MB_ICONWARNING:
+        icon = TD_WARNING_ICON;
+        break;
+      default:
+        ASSERT(FALSE);
+        break;
+      }
+
+      int result = 0;
+      if (SUCCEEDED((*taskDialog)(wnd->GetSafeHwnd(),0,caption,main,content,buttons,icon,&result)))
+        return result;
+      return 0;
+    }
+  }
+
+  CStringW msg;
+  msg.Format(L"%s\n\n%s",main,content);
+  return MessageBox(wnd,msg,caption,msgBoxType);
 }

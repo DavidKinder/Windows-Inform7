@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "TabTranscript.h"
 #include "Inform.h"
+#include "OSLayer.h"
 #include "Panel.h"
 #include "Messages.h"
 #include "Resource.h"
@@ -192,11 +193,10 @@ void TabTranscript::OnActionButton(UINT nID)
 
 void TabTranscript::OnBlessAll()
 {
-  const char* msg =
-    "Are you sure you want to bless all the items in the transcript?\n\n"
-    "This will bless all the items currently in the transcript so that\n"
-    "they appear as the expected text in the right-hand column.\n"
-    "This operation cannot be undone.";
-  if (MessageBox(msg,INFORM_TITLE,MB_ICONWARNING|MB_YESNO) == IDYES)
+  LPCWSTR head = L"Are you sure you want to bless all the items in the transcript?";
+  LPCWSTR msg =
+    L"This will bless all the items currently in the transcript so that they appear as "
+    L"the expected text in the right-hand column. This operation cannot be undone.";
+  if (theOS.TaskDialog(this,head,msg,L_INFORM_TITLE,MB_ICONWARNING|MB_YESNO) == IDYES)
     m_window.BlessAll();
 }

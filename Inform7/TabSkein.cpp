@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "TabSkein.h"
 #include "Inform.h"
+#include "OSLayer.h"
 #include "Panel.h"
 #include "Messages.h"
 #include "Resource.h"
@@ -217,12 +218,11 @@ void TabSkein::OnSkeinLabel()
 
 void TabSkein::OnSkeinTrim()
 {
-  const char* msg =
-    "Trim the skein?\n\n"
-    "This will remove all knots from the skein and\n"
-    "transcript that have not been locked.\n"
-    "This operation cannot be undone.";
-  if (MessageBox(msg,INFORM_TITLE,MB_ICONWARNING|MB_YESNO) == IDYES)
+  LPCWSTR head = L"Trim the skein?";
+  LPCWSTR msg =
+    L"This will remove all knots from the skein and transcript that have not been locked. "
+    L"This operation cannot be undone.";
+  if (theOS.TaskDialog(this,head,msg,L_INFORM_TITLE,MB_ICONWARNING|MB_YESNO) == IDYES)
   {
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
     m_skein->Trim(m_skein->GetRoot(),gameRunning);

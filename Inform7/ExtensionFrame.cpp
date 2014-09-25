@@ -831,7 +831,7 @@ void ExtensionFrame::SetDownloadProgress(CFrameWnd* parent, int total, int curre
 
 void ExtensionFrame::ShowInstalledMessage(CWnd* parent, int installed, int total, LPCWSTR lastExt)
 {
-  CStringW msg;
+  CStringW head, msg;
   if (total > installed)
   {
     // One or more errors
@@ -853,12 +853,13 @@ void ExtensionFrame::ShowInstalledMessage(CWnd* parent, int installed, int total
   else
   {
     // No errors
+    head = L"Installation complete.";
     if (installed > 1)
-      msg.Format(L"Installation complete.\n\n%d extensions installed successfully.",installed);
+      msg.Format(L"%d extensions installed successfully.",installed);
     else
-      msg.Format(L"Installation complete.\n\nExtension %s installed successfully.",lastExt);
+      msg.Format(L"Extension %s installed successfully.",lastExt);
   }
-  theOS.MessageBox(parent,msg,L_INFORM_TITLE,MB_ICONINFORMATION|MB_OK);
+  theOS.TaskDialog(parent,head,msg,L_INFORM_TITLE,MB_ICONINFORMATION|MB_OK);
 }
 
 CString ExtensionFrame::GetDisplayName(bool showEdited)
