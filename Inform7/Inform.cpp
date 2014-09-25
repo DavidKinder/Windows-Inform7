@@ -1009,6 +1009,8 @@ void InformApp::FindExtensions(void)
         CString author = find.GetFileName();
         if (author == "Reserved")
           continue;
+        if ((author.GetLength() > 0) && (author.GetAt(0) == '.'))
+          continue;
 
         path.Format("%s\\*.*",(LPCSTR)find.GetFilePath());
         CFileFind find;
