@@ -13,6 +13,8 @@
 #include "TabStory.h"
 #include "TabTranscript.h"
 
+#include <MultiMon.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
