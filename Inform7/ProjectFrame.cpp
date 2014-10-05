@@ -104,6 +104,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_WINDOW_RIGHTPANE, OnWindowRightPane)
   ON_COMMAND(ID_WINDOW_SWITCH, OnWindowSwitchPanes)
   ON_COMMAND_RANGE(ID_WINDOW_TAB_SOURCE, ID_WINDOW_TAB_SOURCE+8, OnWindowShowTab)
+  ON_UPDATE_COMMAND_UI_RANGE(ID_WINDOW_TAB_SOURCE, ID_WINDOW_TAB_SOURCE+8, OnUpdateWindowShowTab)
   ON_COMMAND_RANGE(ID_WINDOW_INDEX_CONTENTS, ID_WINDOW_INDEX_CONTENTS+6, OnWindowShowIndex)
   ON_UPDATE_COMMAND_UI(ID_WINDOW_LIST, OnUpdateWindowList)
   ON_COMMAND_RANGE(ID_WINDOW_LIST, ID_WINDOW_LIST+8, OnWindowList)
@@ -1398,6 +1399,14 @@ void ProjectFrame::OnWindowShowTab(UINT nID)
   Panel::Tabs tab = (Panel::Tabs)(Panel::Tab_Source+index);
   int panel = GetPanel(0)->IsChild(GetFocus()) ? 0 : 1;
   GetPanel(panel)->SetActiveTab(tab);
+}
+
+void ProjectFrame::OnUpdateWindowShowTab(CCmdUI *pCmdUI)
+{
+  int index = pCmdUI->m_nID-ID_WINDOW_TAB_SOURCE;
+  Panel::Tabs tab = (Panel::Tabs)(Panel::Tab_Source+index);
+  int panel = GetPanel(0)->IsChild(GetFocus()) ? 0 : 1;
+  pCmdUI->Enable(GetPanel(panel)->IsTabEnabled(tab));
 }
 
 void ProjectFrame::OnWindowShowIndex(UINT nID)

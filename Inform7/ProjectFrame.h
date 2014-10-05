@@ -113,6 +113,7 @@ protected:
   afx_msg void OnWindowRightPane();
   afx_msg void OnWindowSwitchPanes();
   afx_msg void OnWindowShowTab(UINT nID);
+  afx_msg void OnUpdateWindowShowTab(CCmdUI *pCmdUI);
   afx_msg void OnWindowShowIndex(UINT nID);
   afx_msg void OnUpdateWindowList(CCmdUI *pCmdUI);
   afx_msg void OnWindowList(UINT nID);
