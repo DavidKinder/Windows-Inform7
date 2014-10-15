@@ -4,6 +4,7 @@
 #include "Messages.h"
 #include "EditFind.h"
 #include "TextFormat.h"
+#include "OSLayer.h"
 
 #include "SciLexer.h"
 #include <MultiMon.h>
@@ -838,6 +839,17 @@ void SourceEdit::MoveShowSelect(CWnd* child)
   // Get the size and position of the dialog
   CRect wndR;
   child->GetWindowRect(wndR);
+
+  CRect extWndR;
+  if (theOS.DwmGetWindowAttribute(child,
+    DWMWA_EXTENDED_FRAME_BOUNDS,(LPRECT)extWndR,sizeof (RECT)))
+  {
+    // If Aero Glass or similar means that the windows frame extends
+    // beyond the window bounds, work out by how much, and make sure that
+    // the window is moved to avoid overlap by the extended frame.
+    wordR.InflateRect(
+      (extWndR.Width()-wndR.Width())/2,(extWndR.Height()-wndR.Height())/2);
+  }
 
   // If the dialog is over the word, move it
   CRect intersectR;

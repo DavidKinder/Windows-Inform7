@@ -20,6 +20,7 @@ OSLayer::OSLayer()
   m_shellApiDll = 0;
   m_themeDll = 0;
   m_comCtlDll = 0;
+  m_dwmDll = 0;
 }
 
 void OSLayer::Init(void)
@@ -31,6 +32,7 @@ void OSLayer::Init(void)
   m_shellApiDll = ::LoadLibrary("shlwapi.dll");
   m_themeDll = ::LoadLibrary("uxtheme.dll");
   m_comCtlDll = ::LoadLibrary("comctl32.dll");
+  m_dwmDll = ::LoadLibrary("dwmapi.dll");
 }
 
 bool OSLayer::IsWindows9X(void)
@@ -444,4 +446,20 @@ int OSLayer::TaskDialog(CWnd* wnd, LPCWSTR main, LPCWSTR content, LPCWSTR captio
   CStringW msg;
   msg.Format(L"%s\n\n%s",main,content);
   return MessageBox(wnd,msg,caption,msgBoxType);
+}
+
+bool OSLayer::DwmGetWindowAttribute(CWnd* wnd, DWORD attr, PVOID attrPtr, DWORD attrSize)
+{
+  if (m_dwmDll)
+  {
+    typedef HRESULT(__stdcall *PFNDWMGETWINDOWATTRIBUTE)(HWND, DWORD, PVOID, DWORD);
+    PFNDWMGETWINDOWATTRIBUTE dwmGetWindowAttribute =
+      (PFNDWMGETWINDOWATTRIBUTE)::GetProcAddress(m_dwmDll,"DwmGetWindowAttribute");
+    if (dwmGetWindowAttribute)
+    {
+      if (SUCCEEDED((*dwmGetWindowAttribute)(wnd->GetSafeHwnd(),attr,attrPtr,attrSize)))
+        return true;
+    }
+  }
+  return false;
 }

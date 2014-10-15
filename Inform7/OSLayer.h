@@ -48,6 +48,9 @@ public:
   int TaskDialog(CWnd* wnd,
     LPCWSTR main, LPCWSTR content, LPCWSTR caption, UINT msgBoxType);
 
+  bool DwmGetWindowAttribute(CWnd* wnd,
+    DWORD attr, PVOID attrPtr, DWORD attrSize);
+
 private:
   OSVERSIONINFO m_osVer;
   HMODULE m_kernelDll;
@@ -57,6 +60,7 @@ private:
   HMODULE m_shellApiDll;
   HMODULE m_themeDll;
   HMODULE m_comCtlDll;
+  HMODULE m_dwmDll;
 };
 
 extern OSLayer theOS;
