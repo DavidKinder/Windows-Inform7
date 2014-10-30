@@ -29,7 +29,7 @@ public:
 IMPLEMENT_DYNCREATE(ReportHtml, CHtmlView)
 
 ReportHtml::ReportHtml() : m_consumer(NULL), m_rewriter(NULL),
-  m_setFocus(true), m_goToFound(false), m_notify(true),
+  m_setFocus(true), m_notify(true), m_findTimer(0),
   m_scriptExternal(this), m_scriptProject(this)
 {
 }
@@ -38,6 +38,7 @@ BEGIN_MESSAGE_MAP(ReportHtml, CHtmlView)
   ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
   ON_UPDATE_COMMAND_UI(ID_EDIT_FIND, OnUpdateEditFind)
   ON_COMMAND(ID_EDIT_FIND, OnEditFind)
+  ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 HRESULT ReportHtml::OnGetOptionKeyPath(LPOLESTR* pchKey, DWORD dwReserved)
@@ -134,56 +135,16 @@ void ReportHtml::OnDocumentComplete(LPCTSTR lpszURL)
   }
 
   // Highlight found text
-  if (!m_find.IsEmpty())
+  if (strchr(lpszURL,'#') != NULL)
   {
-    IDispatch* disp = GetHtmlDocument();
-    CComQIPtr<IHTMLDocument2> doc(disp);
-    disp->Release();
-    if (doc == NULL)
-      return;
-
-    CComPtr<IHTMLElement> element;
-    doc->get_body(&element);
-    if (element == NULL)
-      return;
-    CComQIPtr<IHTMLBodyElement> body(element);
-    if (body == NULL)
-      return;
-
-    CComPtr<IHTMLTxtRange> range;
-    body->createTextRange(&range);
-    if (range == NULL)
-      return;
-
-    bool first = m_goToFound;
-    VARIANT_BOOL found = VARIANT_TRUE;
-    while (found == VARIANT_TRUE)
-    {
-      range->findText(CComBSTR(m_find),0,0,&found);
-      if (found == VARIANT_TRUE)
-      {
-        COLORREF colour = theApp.GetColour(InformApp::ColourHighlight);
-        CString colourStr;
-        colourStr.Format("#%02X%02X%02X",GetRValue(colour),GetGValue(colour),GetBValue(colour));
-
-        VARIANT_BOOL result;
-        range->execCommand(CComBSTR("BackColor"),VARIANT_FALSE,CComVariant(colourStr),&result);
-
-        if (first)
-        {
-          range->scrollIntoView(VARIANT_TRUE);
-          first = false;
-        }
-
-        long moved;
-        range->collapse(VARIANT_FALSE);
-        range->moveEnd(CComBSTR("textedit"),1,&moved);
-      }
-    }
-
-    // Don't highlight any more
+    HighlightFound(false);
+    m_findTimer = 5;
+    SetTimer(1,200,NULL);
+  }
+  else
+  {
+    HighlightFound(true);
     m_find.Empty();
-    m_goToFound = false;
   }
 }
 
@@ -447,17 +408,9 @@ void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
   m_setFocus = focus;
 
   if (find != NULL)
-  {
     m_find = find;
-
-    // Go to the first found occurence if the link does not contain a section reference
-    m_goToFound = (strchr(url,'#') == NULL);
-  }
   else
-  {
     m_find.Empty();
-    m_goToFound = false;
-  }
 
   // Don't send a navigation notification for programmatic navigation
   m_notify = false;
@@ -479,6 +432,74 @@ void ReportHtml::Invoke(LPCWSTR method, VARIANT* arg)
   CComPtr<IDispatch> script;
   doc->get_Script(&script);
   script.Invoke1(method,arg);
+}
+
+void ReportHtml::HighlightFound(bool goToFound)
+{
+  if (m_find.IsEmpty())
+    return;
+
+  IDispatch* disp = GetHtmlDocument();
+  CComQIPtr<IHTMLDocument2> doc(disp);
+  disp->Release();
+  if (doc == NULL)
+    return;
+
+  CComPtr<IHTMLElement> element;
+  doc->get_body(&element);
+  if (element == NULL)
+    return;
+  CComQIPtr<IHTMLBodyElement> body(element);
+  if (body == NULL)
+    return;
+
+  CComPtr<IHTMLTxtRange> range;
+  body->createTextRange(&range);
+  if (range == NULL)
+    return;
+
+  bool first = goToFound;
+  VARIANT_BOOL found = VARIANT_TRUE;
+  while (found == VARIANT_TRUE)
+  {
+    range->findText(CComBSTR(m_find),0,0,&found);
+    if (found == VARIANT_TRUE)
+    {
+      COLORREF colour = theApp.GetColour(InformApp::ColourHighlight);
+      CString colourStr;
+      colourStr.Format("#%02X%02X%02X",GetRValue(colour),GetGValue(colour),GetBValue(colour));
+
+      VARIANT_BOOL result;
+      range->execCommand(CComBSTR("BackColor"),VARIANT_FALSE,CComVariant(colourStr),&result);
+
+      if (first)
+      {
+        range->scrollIntoView(VARIANT_TRUE);
+        first = false;
+      }
+
+      long moved;
+      range->collapse(VARIANT_FALSE);
+      range->moveEnd(CComBSTR("textedit"),1,&moved);
+    }
+  }
+}
+
+void ReportHtml::OnTimer(UINT nIDEvent)
+{
+  if (nIDEvent == 1)
+  {
+    HighlightFound(false);
+
+    if (m_findTimer > 0)
+      m_findTimer--;
+    if (m_findTimer <= 0)
+    {
+      // Don't highlight any more
+      KillTimer(1);
+      m_find.Empty();
+    }
+  }
 }
 
 // COM object for the root Javascript external object

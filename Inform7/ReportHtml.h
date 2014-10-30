@@ -79,8 +79,11 @@ protected:
   afx_msg void OnEditSelectAll();
   afx_msg void OnUpdateEditFind(CCmdUI* pCmdUI);
   afx_msg void OnEditFind();
+  afx_msg void OnTimer(UINT nIDEvent);
 
 private:
+  void HighlightFound(bool goToFound);
+
   static LONG WINAPI HookRegOpenKeyExW(
     HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
 
@@ -90,9 +93,10 @@ private:
 
   CString m_url;
   bool m_setFocus;
-  bool m_goToFound;
-  CStringW m_find;
   bool m_notify;
+
+  CStringW m_find;
+  int m_findTimer;
 
   ScriptExternal m_scriptExternal;
   ScriptProject m_scriptProject;
