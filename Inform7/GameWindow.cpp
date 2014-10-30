@@ -184,8 +184,8 @@ void GameWindow::RunInterpreter(const char* dir, const char* file, bool glulx)
     m_outputPipe2 = outputWrite;
 
     // Check the interpreter every 100ms and the sounds every 500ms
-    SetTimer(0,100,NULL);
-    SetTimer(1,500,NULL);
+    SetTimer(1,100,NULL);
+    SetTimer(2,500,NULL);
   }
   else
     StopInterpreter(false);
@@ -195,7 +195,10 @@ void GameWindow::StopInterpreter(bool clear)
 {
   // Stop the timer events
   if (GetSafeHwnd())
-    KillTimer(0);
+  {
+    KillTimer(1);
+    KillTimer(2);
+  }
 
   // Close any open pipes
   ::CloseHandle(m_inputPipe);
@@ -1174,7 +1177,7 @@ void GameWindow::OnTimer(UINT nIDEvent)
 
   switch (nIDEvent)
   {
-  case 0:
+  case 1:
     if (m_interpreter != 0)
     {
       while (true)
@@ -1237,7 +1240,7 @@ void GameWindow::OnTimer(UINT nIDEvent)
     }
     break;
 
-  case 1:
+  case 2:
     {
       // Find any sounds and volume fades that have finished
       SoundMap sounds;
