@@ -109,6 +109,8 @@ I7GlkWindow::~I7GlkWindow()
 
   glkWindows.erase(this);
 
+  delete m_stream;
+
   if (mainWindow == this)
     mainWindow = NULL;
 }
