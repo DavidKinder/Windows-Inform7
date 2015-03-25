@@ -11,6 +11,7 @@
 #include "SearchBar.h"
 #include "SearchWindow.h"
 #include "MenuBar.h"
+#include "ProgressWnd.h"
 
 #include <queue>
 
@@ -36,7 +37,7 @@ protected:
   CToolBar m_helpBar;
   SearchBar m_searchBar;
   CStatusBar m_statusBar;
-  CProgressCtrl m_progress;
+  ProgressWnd m_progress;
   FlatSplitter m_splitter;
 
   DECLARE_MESSAGE_MAP()

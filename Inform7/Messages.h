@@ -122,6 +122,8 @@ struct SourceRange
 #define WM_PUBLIBERROR    WM_APP+28
 
 // Sent to the window frame to set the progress control position
+// (in wParam) and progress text (in lParam). If the position is
+// -1 then the progress window is hidden.
 #define WM_PROGRESS       WM_APP+29
 
 // Sent to the window frame to create a new project, named by the

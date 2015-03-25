@@ -66,7 +66,7 @@ void GameWindow::ExitInstance(void)
 void GameWindow::Create(CWnd* parent)
 {
   // Create the containing window
-  if (!CWnd::Create(NULL,"",WS_CLIPCHILDREN,CRect(0,0,0,0),parent,0))
+  if (!CWnd::Create(NULL,"",WS_CLIPCHILDREN|WS_CLIPSIBLINGS,CRect(0,0,0,0),parent,0))
     TRACE("Failed to create game display\n");
 }
 

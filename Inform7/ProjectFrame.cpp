@@ -138,7 +138,7 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
 
   // Create a splitter to occupy the client area of the frame
-  if (!m_splitter.CreateStatic(this,1,2))
+  if (!m_splitter.CreateStatic(this,1,2,WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS))
   {
     TRACE("Failed to create splitter window\n");
     return -1;
@@ -241,10 +241,10 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
   }
 
-  // Create an invisible progress control for the status bar
-  if (!m_progress.Create(WS_CHILD,CRect(0,0,0,0),&m_statusBar,IDC_PROGRESS))
+  // Create a progress window
+  if (!m_progress.Create(this,WS_CLIPSIBLINGS))
   {
-    TRACE("Failed to create progress control\n");
+    TRACE("Failed to create progress window\n");
     return -1;
   }
 
@@ -872,25 +872,18 @@ LRESULT ProjectFrame::OnExtDownload(WPARAM urls, LPARAM)
   return 0;
 }
 
-LRESULT ProjectFrame::OnProgress(WPARAM wp, LPARAM)
+LRESULT ProjectFrame::OnProgress(WPARAM wp, LPARAM lp)
 {
   int pos = (int)wp;
+  const char* text = (const char*)lp;
+
   if (pos >= 0)
-  {
-    m_progress.SetPos(pos);
-
-    CRect progressRect;
-    m_statusBar.GetItemRect(0,progressRect);
-    progressRect.left += progressRect.Width()*3/4;
-
-    // Make the progress bar visible
-    m_progress.MoveWindow(progressRect,FALSE);
-    m_progress.ShowWindow(SW_SHOW);
-  }
+    m_progress.ShowProgress(text,pos);
   else
   {
     // Make the progress bar invisible
-    m_progress.ShowWindow(SW_HIDE);
+    if (m_progress.IsWindowVisible())
+      m_progress.ShowWindow(SW_HIDE);
   }
   return 0;
 }
@@ -1745,6 +1738,7 @@ bool ProjectFrame::CompileProject(int release)
   // Run Inform 6
   if (code == 0)
   {
+    SendMessage(WM_PROGRESS,100,(LPARAM)"Compiling Inform 6 source");
     code = theApp.RunCommand(m_projectDir+"\\Build",InformCommandLine(release >= 2),*this);
     if (code != 0)
       SetMessageText("Creating the story file with Inform 6 has failed");
@@ -1981,6 +1975,12 @@ int ProjectFrame::ChoosePanel(Panel::Tabs newTab)
 // Implementation of InformApp::OutputSink
 void ProjectFrame::Output(const char* msg)
 {
+  if (msg == NULL)
+  {
+    SendMessage(WM_PROGRESS,-1);
+    return;
+  }
+
   // Split the output message into lines
   const char* start = msg;
   while (*start != '\0')
@@ -2000,10 +2000,7 @@ void ProjectFrame::Output(const char* msg)
       int percent;
       char progress[256];
       if (sscanf(line,"++ %d%% (%[^)]",&percent,progress) == 2)
-      {
-        SetMessageText(progress);
-        SendMessage(WM_PROGRESS,percent);
-      }
+        SendMessage(WM_PROGRESS,percent,(LPARAM)progress);
       else if (sscanf(line,"++ Ended: %[^^]",progress) == 1)
       {
         SetMessageText(progress);
@@ -2012,7 +2009,6 @@ void ProjectFrame::Output(const char* msg)
     }
     else
     {
-      SendMessage(WM_PROGRESS,-1);
       GetPanel(0)->Progress(line);
       GetPanel(1)->Progress(line);
     }

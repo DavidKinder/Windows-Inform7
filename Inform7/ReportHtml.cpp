@@ -128,10 +128,13 @@ void ReportHtml::OnDocumentComplete(LPCTSTR lpszURL)
   if (m_rewriter)
   {
     IDispatch* disp = GetHtmlDocument();
-    CComQIPtr<IHTMLDocument2> doc(disp);
-    disp->Release();
-    if (doc != NULL)
-      m_rewriter->ModifyPage(lpszURL,doc);
+    if (disp != NULL)
+    {
+      CComQIPtr<IHTMLDocument2> doc(disp);
+      disp->Release();
+      if (doc != NULL)
+        m_rewriter->ModifyPage(lpszURL,doc);
+    }
   }
 
   // Highlight found text

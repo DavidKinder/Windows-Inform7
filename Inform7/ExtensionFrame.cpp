@@ -662,8 +662,8 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
 
     // Notify the user of what happened
     theApp.RunCensus(false);
-    ShowInstalledMessage(parent,installed,total,lastExt);
     parent->SendMessage(WM_PROGRESS,-1);
+    ShowInstalledMessage(parent,installed,total,lastExt);
   }
 
   // Update the extensions menu
@@ -820,13 +820,12 @@ void ExtensionFrame::DeleteOldExtension(CString path)
 
 void ExtensionFrame::SetDownloadProgress(CFrameWnd* parent, int total, int current, int installed)
 {
-  parent->SendMessage(WM_PROGRESS,(int)(100 * ((double)current / (double)total)));
-
   CString status;
-  status.Format("Installed %d of %d",installed,total);
+  status.Format("Downloaded and installed %d of %d extensions",installed,total);
   if (current > installed)
     status.AppendFormat(" (%d failed)",current-installed);
-  parent->SetMessageText(status);
+
+  parent->SendMessage(WM_PROGRESS,(int)(100 * ((double)current / (double)total)),(LPARAM)(LPCSTR)status);
 }
 
 void ExtensionFrame::ShowInstalledMessage(CWnd* parent, int installed, int total, LPCWSTR lastExt)

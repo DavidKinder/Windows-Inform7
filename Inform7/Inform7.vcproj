@@ -323,6 +323,12 @@
 				RelativePath="PrefsDialog.h">
 			</File>
 			<File
+				RelativePath="ProgressWnd.cpp">
+			</File>
+			<File
+				RelativePath="ProgressWnd.h">
+			</File>
+			<File
 				RelativePath="ProjectDirDialog.cpp">
 			</File>
 			<File
