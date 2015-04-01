@@ -13,7 +13,7 @@ IMPLEMENT_DYNAMIC(TabSettings, CFormView)
 
 CString TabSettings::m_labelTexts[3] =
 {
-  "Inform translates the source text into a story file which can have any of three standard "
+  "Inform translates the source text into a story file which can be in either of two standard "
     "formats. You can change your mind about the format at any time.",
   "When released, the story file is normally bound up into a Blorb file along with bibliographic "
     "data, cover art and any other resources it needs. If you need the raw story file, "
