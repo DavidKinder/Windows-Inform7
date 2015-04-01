@@ -1751,6 +1751,7 @@ bool ProjectFrame::CompileProject(int release)
   CString final;
   final.Format("\nCompiler finished with code %d\n",code);
   Output(final);
+  SendMessage(WM_PROGRESS,-1);
 
   // Make the results panel visible
   GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
@@ -1975,12 +1976,6 @@ int ProjectFrame::ChoosePanel(Panel::Tabs newTab)
 // Implementation of InformApp::OutputSink
 void ProjectFrame::Output(const char* msg)
 {
-  if (msg == NULL)
-  {
-    SendMessage(WM_PROGRESS,-1);
-    return;
-  }
-
   // Split the output message into lines
   const char* start = msg;
   while (*start != '\0')
@@ -2002,10 +1997,7 @@ void ProjectFrame::Output(const char* msg)
       if (sscanf(line,"++ %d%% (%[^)]",&percent,progress) == 2)
         SendMessage(WM_PROGRESS,percent,(LPARAM)progress);
       else if (sscanf(line,"++ Ended: %[^^]",progress) == 1)
-      {
         SetMessageText(progress);
-        SendMessage(WM_PROGRESS,-1);
-      }
     }
     else
     {

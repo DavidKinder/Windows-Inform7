@@ -872,7 +872,6 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
 
   ::CloseHandle(pipeRead);
   ::CloseHandle(pipeWrite);
-  output.Output(NULL);
   return result;
 }
 
