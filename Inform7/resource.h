@@ -5,8 +5,7 @@
 #define IDR_MANIFEST                    1
 #define IDR_MAINFRAME                   100
 #define IDR_HTMLMENU                    101
-#define IDR_TBAR_ENABLED                102
-#define IDR_TBAR_DISABLED               103
+#define IDR_TOOLBAR                     102
 #define IDR_SKEIN                       104
 #define IDR_EXTFRAME                    105
 #define IDR_FLAT_SELECT                 106

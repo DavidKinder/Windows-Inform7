@@ -75,8 +75,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_PLAY_GO, OnPlayGo)
   ON_UPDATE_COMMAND_UI(ID_PLAY_TEST, OnUpdateCompile)
   ON_COMMAND(ID_PLAY_TEST, OnPlayTest)
-  ON_UPDATE_COMMAND_UI(ID_PLAY_STOP, OnUpdatePlayStop)
-  ON_COMMAND(ID_PLAY_STOP, OnPlayStop)
   ON_UPDATE_COMMAND_UI(ID_PLAY_REFRESH, OnUpdateCompile)
   ON_COMMAND(ID_PLAY_REFRESH, OnPlayRefresh)
   ON_COMMAND(ID_PLAY_LOAD, OnPlayLoad)
@@ -207,11 +205,6 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     TRACE("Failed to create main toolbar\n");
     return -1;
   }
-  if (!m_helpBar.CreateEx(this,ctrlStyle,style) || !LoadHelpBar())
-  {
-    TRACE("Failed to create help toolbar\n");
-    return -1;
-  }
   style = CBRS_ALIGN_TOP|CBRS_TOOLTIPS|CBRS_FLYBY;
   if (!m_searchBar.Create(this,style,AFX_IDW_DIALOGBAR))
   {
@@ -226,8 +219,7 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
   }
   if (!m_coolBar.AddBar(&m_toolBar,NULL,NULL,RBBS_NOGRIPPER|RBBS_BREAK) ||
-      !m_coolBar.AddBar(&m_searchBar,NULL,NULL,RBBS_NOGRIPPER) ||
-      !m_coolBar.AddBar(&m_helpBar,NULL,NULL,RBBS_NOGRIPPER))
+      !m_coolBar.AddBar(&m_searchBar,NULL,NULL,RBBS_NOGRIPPER))
   {
     TRACE("Failed to add toolbars\n");
     return -1;
@@ -373,7 +365,6 @@ void ProjectFrame::OnSize(UINT nType, int cx, int cy)
     m_coolBar.GetReBarCtrl().MinimizeBand(2);
     m_toolBar.Invalidate();
     m_searchBar.Invalidate();
-    m_helpBar.Invalidate();
   }
 }
 
@@ -1041,16 +1032,6 @@ void ProjectFrame::OnPlayTest()
     m_skein.Reset(false);
     RunProject();
   }
-}
-
-void ProjectFrame::OnUpdatePlayStop(CCmdUI *pCmdUI)
-{
-  pCmdUI->Enable(m_game.IsRunning() ? TRUE : FALSE);
-}
-
-void ProjectFrame::OnPlayStop()
-{
-  m_game.StopInterpreter(false);
 }
 
 void ProjectFrame::OnPlayRefresh()
@@ -2085,7 +2066,6 @@ bool ProjectFrame::LoadToolBar(void)
   {
     ID_PLAY_GO,
     ID_REPLAY_LAST,
-    ID_PLAY_STOP,
     ID_RELEASE_GAME
   };
   m_toolBar.SetButtons(buttons,sizeof buttons/sizeof buttons[0]);
@@ -2107,110 +2087,38 @@ bool ProjectFrame::LoadToolBar(void)
     m_toolBar.SendMessage(TB_ADDBITMAP,1,(LPARAM)&add);
     add.nID = (UINT_PTR)theApp.GetCachedImage("Replay")->GetSafeHandle();
     m_toolBar.SendMessage(TB_ADDBITMAP,1,(LPARAM)&add);
-    add.nID = (UINT_PTR)theApp.GetCachedImage("Stop")->GetSafeHandle();
-    m_toolBar.SendMessage(TB_ADDBITMAP,1,(LPARAM)&add);
     add.nID = (UINT_PTR)theApp.GetCachedImage("Release")->GetSafeHandle();
     m_toolBar.SendMessage(TB_ADDBITMAP,1,(LPARAM)&add);
   }
   else
   {
-    // Load the bitmaps
-    HBITMAP enabled = (HBITMAP)::LoadImage(AfxGetResourceHandle(),
-      MAKEINTRESOURCE(IDR_TBAR_ENABLED),IMAGE_BITMAP,0,0,
+    HBITMAP imgBitmap = (HBITMAP)::LoadImage(AfxGetResourceHandle(),
+      MAKEINTRESOURCE(IDR_TOOLBAR),IMAGE_BITMAP,0,0,
       LR_LOADMAP3DCOLORS|LR_LOADTRANSPARENT);
-    HBITMAP disabled = (HBITMAP)::LoadImage(AfxGetResourceHandle(),
-      MAKEINTRESOURCE(IDR_TBAR_DISABLED),IMAGE_BITMAP,0,0,
-      LR_LOADMAP3DCOLORS|LR_LOADTRANSPARENT);
-
-    // Create image lists
-    HIMAGELIST enabledList = ::ImageList_Create(32,32,ILC_COLOR24,0,5);
-    ::ImageList_Add(enabledList,enabled,0);
-    HIMAGELIST disabledList = ::ImageList_Create(32,32,ILC_COLOR24,0,5);
-    ::ImageList_Add(disabledList,disabled,0);
-
-    // Add to the toolbar
-    ctrl.SetImageList(CImageList::FromHandle(enabledList));
-    ctrl.SetDisabledImageList(CImageList::FromHandle(disabledList));
+    HIMAGELIST imgList = ::ImageList_Create(32,32,ILC_COLOR24,0,5);
+    ::ImageList_Add(imgList,imgBitmap,0);
+    ctrl.SetImageList(CImageList::FromHandle(imgList));
+    ctrl.SetDisabledImageList(CImageList::FromHandle(imgList));
   }
 
   // Add selective text for buttons
-  if (SetToolbarText(m_toolBar))
-    m_toolBar.SetButtonStyle(0,m_toolBar.GetButtonStyle(0)|BTNS_SHOWTEXT);
-
-  return true;
-}
-
-bool ProjectFrame::LoadHelpBar(void)
-{
-  static const UINT buttons[] =
-  {
-    ID_HELP_INDEX
-  };
-  m_helpBar.SetButtons(buttons,sizeof buttons/sizeof buttons[0]);
-
-  int w = 32, h = 32;
-  m_helpBar.SetSizes(CSize(w+8,h+7),CSize(w,h));
-
-  DWORD commonVer = theOS.GetDllVersion("comctl32.dll");
-  if ((commonVer >= DLLVERSION(6,0)) && (theApp.GetColourDepth() >= 32))
-  {
-    // Use true colour for comctrl32 6.0 or higher
-    TBADDBITMAP add;
-    add.hInst = NULL;
-
-    add.nID = (UINT_PTR)theApp.GetCachedImage("Index")->GetSafeHandle();
-    m_helpBar.SendMessage(TB_ADDBITMAP,1,(LPARAM)&add);
-  }
-  else
-  {
-    HBITMAP enabled = (HBITMAP)::LoadImage(AfxGetResourceHandle(),
-      MAKEINTRESOURCE(IDR_TBAR_ENABLED),IMAGE_BITMAP,0,0,
-      LR_LOADMAP3DCOLORS|LR_LOADTRANSPARENT);
-    HBITMAP disabled = (HBITMAP)::LoadImage(AfxGetResourceHandle(),
-      MAKEINTRESOURCE(IDR_TBAR_DISABLED),IMAGE_BITMAP,0,0,
-      LR_LOADMAP3DCOLORS|LR_LOADTRANSPARENT);
-
-    HIMAGELIST enabledList = ::ImageList_Create(32,32,ILC_COLOR24,0,5);
-    ::ImageList_Add(enabledList,enabled,0);
-    for (int i = 0; i < 5; i++)
-      ::ImageList_Remove(enabledList,0);
-
-    HIMAGELIST disabledList = ::ImageList_Create(32,32,ILC_COLOR24,0,5);
-    ::ImageList_Add(disabledList,disabled,0);
-    for (int i = 0; i < 5; i++)
-      ::ImageList_Remove(disabledList,0);
-
-    m_helpBar.GetToolBarCtrl().SetImageList(
-      CImageList::FromHandle(enabledList));
-    m_helpBar.GetToolBarCtrl().SetDisabledImageList(
-      CImageList::FromHandle(disabledList));
-  }
-
-  // Add text for buttons
-  SetToolbarText(m_helpBar);
-  return true;
-}
-
-bool ProjectFrame::SetToolbarText(CToolBar& toolbar)
-{
   if (theOS.GetDllVersion("comctl32.dll") >= DLLVERSION(5,81)) // comctrl32 5.81 or higher
   {
-    toolbar.GetToolBarCtrl().SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
-
-    for (int i = 0; i < toolbar.GetToolBarCtrl().GetButtonCount(); i++)
+    ctrl.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
+    for (int i = 0; i < ctrl.GetButtonCount(); i++)
     {
-      UINT id = toolbar.GetItemID(i);
+      UINT id = m_toolBar.GetItemID(i);
       if (id != ID_SEPARATOR)
       {
         CString btnText, tipText;
         btnText.LoadString(id);
         AfxExtractSubString(tipText,btnText,1,'\n');
-        toolbar.SetButtonText(i,tipText);
+        m_toolBar.SetButtonText(i,tipText);
+        m_toolBar.SetButtonStyle(i,m_toolBar.GetButtonStyle(i)|BTNS_SHOWTEXT);
       }
     }
-    return true;
   }
-  return false;
+  return true;
 }
 
 CRect ProjectFrame::GetInitialSearchRect(void)

@@ -34,7 +34,6 @@ public:
 
 protected:
   CToolBar m_toolBar;
-  CToolBar m_helpBar;
   SearchBar m_searchBar;
   CStatusBar m_statusBar;
   ProgressWnd m_progress;
@@ -88,8 +87,6 @@ protected:
   afx_msg void OnUpdateCompile(CCmdUI *pCmdUI);
   afx_msg void OnPlayGo();
   afx_msg void OnPlayTest();
-  afx_msg void OnUpdatePlayStop(CCmdUI *pCmdUI);
-  afx_msg void OnPlayStop();
   afx_msg void OnPlayRefresh();
   afx_msg void OnPlayLoad();
 
@@ -168,8 +165,6 @@ protected:
   int ChoosePanel(Panel::Tabs newTab);
 
   bool LoadToolBar(void);
-  bool LoadHelpBar(void);
-  bool SetToolbarText(CToolBar& toolbar);
 
   CRect GetInitialSearchRect(void);
 

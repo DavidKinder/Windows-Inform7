@@ -24,13 +24,20 @@ public:
 
   BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 
+  CString GetToolTip(UINT_PTR id);
+
 private:
   CWnd* m_parent;
   GameWindow* m_game;
+  CButton m_stop;
 
   CRect m_rect;
   bool m_active;
 
 protected:
   DECLARE_MESSAGE_MAP()
+
+  afx_msg void OnSize(UINT nType, int cx, int cy);
+  afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM, LPARAM);
+  afx_msg void OnPlayStop();
 };
