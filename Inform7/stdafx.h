@@ -33,12 +33,18 @@
 #include <dlgs.h>
 #include <msxml2.h>
 #include <richole.h>
-#include <shfolder.h>
 #include <shobjidl.h>
 #include <textserv.h>
 #include <tom.h>
-#include <tmschema.h>
 #include <uxtheme.h>
+
+#if (_MSC_VER >= 1400)
+#include <shlobj.h>
+#include <vssym32.h>
+#else
+#include <shfolder.h>
+#include <tmschema.h>
+#endif
 
 // Definitions for Windows Vista
 

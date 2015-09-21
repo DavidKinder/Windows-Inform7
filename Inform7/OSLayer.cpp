@@ -138,6 +138,8 @@ CString OSLayer::SHGetFolderPath(CWnd* wnd, int folder, HANDLE token, DWORD flag
 {
   if (m_folderDll)
   {
+    typedef HRESULT(__stdcall *PFNSHGETFOLDERPATHA)(HWND, int, HANDLE, DWORD, LPSTR);
+
     PFNSHGETFOLDERPATHA getFolderPath = (PFNSHGETFOLDERPATHA)
       ::GetProcAddress(m_folderDll,"SHGetFolderPathA");
     if (getFolderPath != NULL)
