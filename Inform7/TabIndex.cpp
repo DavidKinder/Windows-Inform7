@@ -68,7 +68,7 @@ void TabIndex::CreateTab(CWnd* parent)
 
   // Make contents the initial tab
   Panel::FreezeHistory freeze(Panel::GetPanel(this));
-  SetActiveTab(IdxTab_Contents,false);
+  SetActiveTab(IdxTab_Home,false);
 }
 
 void TabIndex::MoveTab(CRect& rect)
