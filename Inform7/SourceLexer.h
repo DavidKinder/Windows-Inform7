@@ -45,6 +45,8 @@ public:
 
   const CArray<Heading>& GetHeadings(void);
 
+  static const int StyleMask;
+
 private:
   void ApplyStyle(int& start, int pos, int& style, int newStyle, int mask);
   void AddHeading(HeadingLevel level, LPCSTR name, int pos);

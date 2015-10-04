@@ -420,26 +420,61 @@ void SourceEdit::OnCharAdded(NMHDR* hdr, LRESULT* res)
 {
   SCNotification* notify = (SCNotification*)hdr;
 
-  // Detect a new line
+  // Detect and indent a new line
   if (m_autoIndent && ((notify->ch == '\r') || (notify->ch == '\n')))
   {
-    // Add the same number of leading tabs and spaces as the previous line
-    int line = CallEdit(SCI_LINEFROMPOSITION,CallEdit(SCI_GETCURRENTPOS));
-    if (line > 0)
+    // Get the current style
+    int pos = CallEdit(SCI_GETCURRENTPOS);
+    int style = (int)CallEdit(SCI_GETSTYLEAT,pos) & SourceLexer::StyleMask;
+    if ((style != STYLE_QUOTE) && (style != STYLE_QUOTEBRACKET))
     {
-      int len = CallEdit(SCI_LINELENGTH,line-1);
-      char* buffer = (char*)alloca(len+1);
-      CallEdit(SCI_GETLINE,line-1,(LONG_PTR)buffer);
-      buffer[len] = '\0';
-      for (int i = 0; buffer[i]; i++)
+      // Get the previous line
+      int line = CallEdit(SCI_LINEFROMPOSITION,pos);
+      if (line > 0)
       {
-        if ((buffer[i] != '\t') && (buffer[i] != ' '))
+        int len = CallEdit(SCI_LINELENGTH,line-1);
+        char* buffer = (char*)alloca(len+1);
+        CallEdit(SCI_GETLINE,line-1,(LONG_PTR)buffer);
+        buffer[len] = '\0';
+
+        // Count the number of leading tabs in the previous line
+        int tabs = 0;
+        for (int i = 0; buffer[i]; i++)
         {
-          buffer[i] = '\0';
-          break;
+          if (buffer[i] == '\t')
+            tabs++;
+          else
+            break;
         }
+
+        // Increase tab depth if the last character of the previous line was ':'
+        char last = 0;
+        for (int i = len-1; (last == 0) && (i >= 0); i--)
+        {
+          char c = buffer[i];
+          if ((c != '\n') && (c != '\r'))
+            last = c;
+        }
+        if (last == ':')
+          tabs++;
+
+        // If the previous line is entirely white space then reduce tabs to 0
+        bool white = true;
+        for (int i = 0; white && buffer[i]; i++)
+        {
+          char c = buffer[i];
+          if ((c != '\n') && (c != '\r') && (c != '\t') && (c != ' '))
+            white = false;
+        }
+        if (white)
+          tabs = 0;
+
+        // Add the required number of tabs
+        buffer = (char*)alloca(tabs+1);
+        memset(buffer,'\t',tabs);
+        buffer[tabs] = '\0';
+        CallEdit(SCI_REPLACESEL,0,(LONG_PTR)buffer);
       }
-      CallEdit(SCI_REPLACESEL,0,(LONG_PTR)buffer);
     }
   }
 }
@@ -536,7 +571,7 @@ void SourceEdit::OnConvertPaste(NMHDR* hdr, LRESULT* res)
     }
 
     CString newTextUtf = TextFormat::UnicodeToUTF8(newText);
-		cp->text = new char[newTextUtf.GetLength() + 1];
+    cp->text = new char[newTextUtf.GetLength() + 1];
     strcpy(cp->text,newTextUtf);
     *res = 1;
   }

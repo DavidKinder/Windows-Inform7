@@ -12,6 +12,8 @@ const char* headings[] = { "volume", "book", "part", "chapter", "section" };
 const char* beforeQuote = " \t\r\n.,:;?!(){}[]";
 }
 
+const int SourceLexer::StyleMask = 0x1F;
+
 SourceLexer::SourceLexer(SourceEdit* edit, LexAction action)
 {
   m_edit = edit;
@@ -20,8 +22,6 @@ SourceLexer::SourceLexer(SourceEdit* edit, LexAction action)
 
 void SourceLexer::Process(int startPos, int endPos)
 {
-  const int mask = 0x1F;
-
   // Find where to start applying styles
   int line = (int)CallEdit(SCI_LINEFROMPOSITION,startPos);
   startPos = (int)CallEdit(SCI_POSITIONFROMLINE,line);
@@ -34,7 +34,7 @@ void SourceLexer::Process(int startPos, int endPos)
   // Get the initial style to start with
   int style = STYLE_TEXT;
   if (startPos > 0)
-    style = (int)CallEdit(SCI_GETSTYLEAT,startPos-1) & mask;
+    style = (int)CallEdit(SCI_GETSTYLEAT,startPos-1) & StyleMask;
 
   // Set the character to '\n' to indicate that we always start at the start of a line
   unsigned char c = '\n';
@@ -50,29 +50,29 @@ void SourceLexer::Process(int startPos, int endPos)
     if (style == STYLE_QUOTE)
     {
       if (IsQuote(c,pos,true))
-        ApplyStyle(startPos,pos+1,style,STYLE_TEXT,mask);
+        ApplyStyle(startPos,pos+1,style,STYLE_TEXT,StyleMask);
       else if (c == '[')
-        ApplyStyle(startPos,pos,style,STYLE_QUOTEBRACKET,mask);
+        ApplyStyle(startPos,pos,style,STYLE_QUOTEBRACKET,StyleMask);
     }
     else if (style == STYLE_QUOTEBRACKET)
     {
       if (IsQuote(c,pos,true))
-        ApplyStyle(startPos,pos+1,style,STYLE_TEXT,mask);
+        ApplyStyle(startPos,pos+1,style,STYLE_TEXT,StyleMask);
       else if (c == ']')
-        ApplyStyle(startPos,pos+1,style,STYLE_QUOTE,mask);
+        ApplyStyle(startPos,pos+1,style,STYLE_QUOTE,StyleMask);
     }
     else if (style == STYLE_INFORM6)
     {
       if (c == ')')
       {
         if ((char)CallEdit(SCI_GETCHARAT,pos-1) == '-')
-          ApplyStyle(startPos,pos+1,style,STYLE_TEXT,mask);
+          ApplyStyle(startPos,pos+1,style,STYLE_TEXT,StyleMask);
       }
     }
     else if (style == STYLE_HEADING)
     {
       if ((c == '\r') || (c == '\n'))
-        ApplyStyle(startPos,pos,style,STYLE_TEXT,mask);
+        ApplyStyle(startPos,pos,style,STYLE_TEXT,StyleMask);
     }
     else if ((style >= STYLE_COMMENT) && (style < STYLE_COMMENT+NEST_COMMENTS))
     {
@@ -82,15 +82,15 @@ void SourceLexer::Process(int startPos, int endPos)
       {
         // For a nested comment, increase the nesting value
         if (nested < NEST_COMMENTS-1)
-          ApplyStyle(startPos,pos,style,style+1,mask);
+          ApplyStyle(startPos,pos,style,style+1,StyleMask);
       }
       else if (c == ']')
       {
         // For the end of a comment, either decrease the nesting value, or end the comment
         if (nested < 1)
-          ApplyStyle(startPos,pos+1,style,STYLE_TEXT,mask);
+          ApplyStyle(startPos,pos+1,style,STYLE_TEXT,StyleMask);
         else
-          ApplyStyle(startPos,pos+1,style,style-1,mask);
+          ApplyStyle(startPos,pos+1,style,style-1,StyleMask);
       }
     }
     else
@@ -129,11 +129,11 @@ void SourceLexer::Process(int startPos, int endPos)
 
           if (title)
           {
-            ApplyStyle(startPos,pos,style,STYLE_HEADING,mask);
+            ApplyStyle(startPos,pos,style,STYLE_HEADING,StyleMask);
             pos = endPos;
             c = (unsigned char)CallEdit(SCI_GETCHARAT,pos);
             AddHeading(Title,range.lpstrText,startPos);
-            ApplyStyle(startPos,pos,style,STYLE_TEXT,mask);
+            ApplyStyle(startPos,pos,style,STYLE_TEXT,StyleMask);
             pos++;
             continue;
           }
@@ -164,14 +164,14 @@ void SourceLexer::Process(int startPos, int endPos)
             wchar_t follow = text[hlen];
             if ((follow == L' ') || (follow == L'\t'))
             {
-              ApplyStyle(startPos,pos,style,STYLE_HEADING,mask);
+              ApplyStyle(startPos,pos,style,STYLE_HEADING,StyleMask);
 
               // Style the whole line
               int line = (int)CallEdit(SCI_LINEFROMPOSITION,pos);
               pos = (int)CallEdit(SCI_GETLINEENDPOSITION,line);
               c = (unsigned char)CallEdit(SCI_GETCHARAT,pos);
               AddHeading((HeadingLevel)(Volume+i),NULL,startPos);
-              ApplyStyle(startPos,pos,style,STYLE_TEXT,mask);
+              ApplyStyle(startPos,pos,style,STYLE_TEXT,StyleMask);
               pos++;
               continue;
             }
@@ -181,18 +181,18 @@ void SourceLexer::Process(int startPos, int endPos)
 
       // Plain text
       if (c == '[')
-        ApplyStyle(startPos,pos,style,STYLE_COMMENT,mask);
+        ApplyStyle(startPos,pos,style,STYLE_COMMENT,StyleMask);
       else if (c == '(')
       {
         if ((char)CallEdit(SCI_GETCHARAT,pos+1) == '-')
-          ApplyStyle(startPos,pos,style,STYLE_INFORM6,mask);
+          ApplyStyle(startPos,pos,style,STYLE_INFORM6,StyleMask);
       }
       else if (IsQuote(c,pos,false))
       {
         // A double quote indicates the start of a string only if it is at the
         // start of a line or preceeded by white space or punctuation
         if (strchr(beforeQuote,(char)CallEdit(SCI_GETCHARAT,pos-1)) != NULL)
-          ApplyStyle(startPos,pos,style,STYLE_QUOTE,mask);
+          ApplyStyle(startPos,pos,style,STYLE_QUOTE,StyleMask);
       }
     }
     pos++;
@@ -201,7 +201,7 @@ void SourceLexer::Process(int startPos, int endPos)
   // Apply the final style
   if (pos > len)
     pos = len;
-  ApplyStyle(startPos,pos,style,style,mask);
+  ApplyStyle(startPos,pos,style,style,StyleMask);
 }
 
 const CArray<SourceLexer::Heading>& SourceLexer::GetHeadings(void)
