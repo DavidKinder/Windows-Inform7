@@ -70,6 +70,7 @@ SourceEdit::SourceEdit() : m_fileTime(CTime::GetCurrentTime()), m_spell(this)
 
   // Default preferences values
   m_autoIndent = true;
+  m_autoNumber = false;
   m_elasticTabStops = false;
 }
 
@@ -351,50 +352,8 @@ void SourceEdit::OnFormatComment(UINT id)
 
 void SourceEdit::OnFormatRenumber()
 {
-  CArray<SourceLexer::Heading> headings;
-  GetAllHeadings(headings);
-
-  int indexes[SourceLexer::Section+1];
-  for (int j = 0; j < sizeof(indexes) / sizeof(indexes[0]); j++)
-    indexes[j] = 1;
-
   CallEdit(SCI_BEGINUNDOACTION);
-  for (int i = 0; i < headings.GetSize(); i++)
-  {
-    const SourceLexer::Heading& heading = headings.GetAt(i);
-    switch (heading.level)
-    {
-    case SourceLexer::Volume:
-    case SourceLexer::Book:
-    case SourceLexer::Part:
-    case SourceLexer::Chapter:
-    case SourceLexer::Section:
-      {
-        int pos = 0;
-        CStringW sectionName = heading.name.Tokenize(L" ",pos);
-        if (pos <= 0)
-          break;
-        CStringW sectionNumber = heading.name.Tokenize(L" ",pos);
-        if (pos <= 0)
-          break;
-
-        CString replace;
-        replace.Format("%S %d ",(LPCWSTR)sectionName,indexes[heading.level]);
-        indexes[heading.level]++;
-        for (int j = heading.level+1; j < sizeof(indexes) / sizeof(indexes[0]); j++)
-          indexes[j] = 1;
-
-        int linePos = CallEdit(SCI_POSITIONFROMLINE,heading.line);
-        int lineEndPos = CallEdit(SCI_GETLINEENDPOSITION,heading.line);
-        if (linePos+pos < lineEndPos)
-          lineEndPos = linePos+pos;
-        CallEdit(SCI_SETTARGETSTART,linePos);
-        CallEdit(SCI_SETTARGETEND,lineEndPos);
-        CallEdit(SCI_REPLACETARGET,replace.GetLength(),(LONG_PTR)(LPCSTR)replace);
-      }
-      break;
-    }
-  }
+  RenumberHeadings();
   CallEdit(SCI_ENDUNDOACTION);
 }
 
@@ -474,6 +433,49 @@ void SourceEdit::OnCharAdded(NMHDR* hdr, LRESULT* res)
         memset(buffer,'\t',tabs);
         buffer[tabs] = '\0';
         CallEdit(SCI_REPLACESEL,0,(LONG_PTR)buffer);
+      }
+    }
+  }
+
+  // Auto-number sections
+  if (m_autoNumber && (notify->ch == ' '))
+  {
+    // Get the current style
+    int pos = CallEdit(SCI_GETCURRENTPOS);
+    int style = (int)CallEdit(SCI_GETSTYLEAT,pos) & SourceLexer::StyleMask;
+    if ((style == STYLE_TEXT) || (style == STYLE_HEADING))
+    {
+      // Get the current line
+      int line = CallEdit(SCI_LINEFROMPOSITION,pos);
+      if (line >= 0)
+      {
+        int len = CallEdit(SCI_LINELENGTH,line);
+        char* buffer = (char*)alloca(len+1);
+        CallEdit(SCI_GETLINE,line,(LONG_PTR)buffer);
+        buffer[len] = '\0';
+
+        int white = 0;
+        for (int i = 0; i < len; i++)
+        {
+          char c = buffer[i];
+          if ((c == '\n') || (c == '\r'))
+          {
+            buffer[i] = '\0';
+            break;
+          }
+          else if ((c == L' ') || (c == L'\t'))
+            white++;
+        }
+
+        // Has the user just started a heading?
+        if ((white == 1) && (SourceLexer::IsHeading(buffer) != SourceLexer::No_Heading))
+        {
+          // Give it a number and then renumber the headings
+          CallEdit(SCI_BEGINUNDOACTION);
+          CallEdit(SCI_REPLACESEL,0,(LONG_PTR)"1 - ");
+          RenumberHeadings();
+          CallEdit(SCI_ENDUNDOACTION);
+        }
       }
     }
   }
@@ -1022,6 +1024,8 @@ void SourceEdit::LoadSettings(CRegKey& key)
 
   if (key.QueryDWORDValue("Auto Indent",value) == ERROR_SUCCESS)
     m_autoIndent = (value != 0);
+  if (key.QueryDWORDValue("Auto Number Sections",value) == ERROR_SUCCESS)
+    m_autoNumber = (value != 0);
 
   // Adjust elastic tabstops
   bool elastic = true;
@@ -1173,6 +1177,53 @@ void SourceEdit::TokenizeLine(const CStringW& line, CArray<CStringW>& tokens)
       // Store this token and move to the end of it
       tokens.Add(line.Mid(i,j-i));
       i = j;
+    }
+  }
+}
+
+void SourceEdit::RenumberHeadings(void)
+{
+  CArray<SourceLexer::Heading> headings;
+  GetAllHeadings(headings);
+
+  int indexes[SourceLexer::Section+1];
+  for (int j = 0; j < sizeof(indexes) / sizeof(indexes[0]); j++)
+    indexes[j] = 1;
+
+  for (int i = 0; i < headings.GetSize(); i++)
+  {
+    const SourceLexer::Heading& heading = headings.GetAt(i);
+    switch (heading.level)
+    {
+    case SourceLexer::Volume:
+    case SourceLexer::Book:
+    case SourceLexer::Part:
+    case SourceLexer::Chapter:
+    case SourceLexer::Section:
+      {
+        int pos = 0;
+        CStringW sectionName = heading.name.Tokenize(L" ",pos);
+        if (pos <= 0)
+          break;
+        CStringW sectionNumber = heading.name.Tokenize(L" ",pos);
+        if (pos <= 0)
+          break;
+
+        CString replace;
+        replace.Format("%S %d ",(LPCWSTR)sectionName,indexes[heading.level]);
+        indexes[heading.level]++;
+        for (int j = heading.level+1; j < sizeof(indexes) / sizeof(indexes[0]); j++)
+          indexes[j] = 1;
+
+        int linePos = CallEdit(SCI_POSITIONFROMLINE,heading.line);
+        int lineEndPos = CallEdit(SCI_GETLINEENDPOSITION,heading.line);
+        if (linePos+pos < lineEndPos)
+          lineEndPos = linePos+pos;
+        CallEdit(SCI_SETTARGETSTART,linePos);
+        CallEdit(SCI_SETTARGETEND,lineEndPos);
+        CallEdit(SCI_REPLACETARGET,replace.GetLength(),(LONG_PTR)(LPCSTR)replace);
+      }
+      break;
     }
   }
 }

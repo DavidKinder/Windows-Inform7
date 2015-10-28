@@ -141,12 +141,13 @@
 #define IDC_GLULX                       1040
 #define IDC_INDENT                      1041
 #define IDC_AUTO_INDENT                 1042
-#define IDC_STORY_BOX                   1043
-#define IDC_RANDOM_BOX                  1044
-#define IDC_FONT                        1045
-#define IDC_FONTSIZE                    1046
-#define IDC_FIXEDFONT                   1047
-#define IDC_ELASTIC_TABS                1048
+#define IDC_AUTO_NUMBER                 1043
+#define IDC_FONT                        1044
+#define IDC_FONTSIZE                    1045
+#define IDC_FIXEDFONT                   1046
+#define IDC_ELASTIC_TABS                1047
+#define IDC_STORY_BOX                   1048
+#define IDC_RANDOM_BOX                  1049
 #define ID_EXTENSIONS_LIST              2000
 
 // Next default values for new objects
@@ -155,7 +156,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        283
 #define _APS_NEXT_COMMAND_VALUE         283
-#define _APS_NEXT_CONTROL_VALUE         1047
+#define _APS_NEXT_CONTROL_VALUE         1050
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif

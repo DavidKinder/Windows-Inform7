@@ -155,27 +155,18 @@ void SourceLexer::Process(int startPos, int endPos)
         CallEdit(SCI_GETTEXTRANGE,0,(sptr_t)&range);
 
         // Check for a heading match
-        for (int i = 0; i < sizeof headings / sizeof headings[0]; i++)
+        HeadingLevel hl = IsHeading(text);
+        if (hl != No_Heading)
         {
-          size_t hlen = strlen(headings[i]);
-          if (strnicmp(text,headings[i],hlen) == 0)
-          {
-            // Got a possible match, so check it is followed by whitespace
-            wchar_t follow = text[hlen];
-            if ((follow == L' ') || (follow == L'\t'))
-            {
-              ApplyStyle(startPos,pos,style,STYLE_HEADING,StyleMask);
+          ApplyStyle(startPos,pos,style,STYLE_HEADING,StyleMask);
 
-              // Style the whole line
-              int line = (int)CallEdit(SCI_LINEFROMPOSITION,pos);
-              pos = (int)CallEdit(SCI_GETLINEENDPOSITION,line);
-              c = (unsigned char)CallEdit(SCI_GETCHARAT,pos);
-              AddHeading((HeadingLevel)(Volume+i),NULL,startPos);
-              ApplyStyle(startPos,pos,style,STYLE_TEXT,StyleMask);
-              pos++;
-              continue;
-            }
-          }
+          // Style the whole line
+          int line = (int)CallEdit(SCI_LINEFROMPOSITION,pos);
+          pos = (int)CallEdit(SCI_GETLINEENDPOSITION,line);
+          c = (unsigned char)CallEdit(SCI_GETCHARAT,pos);
+          AddHeading(hl,NULL,startPos);
+          ApplyStyle(startPos,pos,style,STYLE_TEXT,StyleMask);
+          pos++;
         }
       }
 
@@ -204,7 +195,24 @@ void SourceLexer::Process(int startPos, int endPos)
   ApplyStyle(startPos,pos,style,style,StyleMask);
 }
 
-const CArray<SourceLexer::Heading>& SourceLexer::GetHeadings(void)
+SourceLexer::HeadingLevel SourceLexer::IsHeading(const char* line)
+{
+  // Check for a heading match
+  for (int i = 0; i < sizeof headings / sizeof headings[0]; i++)
+  {
+    size_t hlen = strlen(headings[i]);
+    if (strnicmp(line,headings[i],hlen) == 0)
+    {
+      // Got a possible match, so check it is followed by whitespace
+      wchar_t follow = line[hlen];
+      if ((follow == L' ') || (follow == L'\t'))
+        return (HeadingLevel)(Volume+i);
+    }
+  }
+  return No_Heading;
+}
+
+const CArray<SourceLexer::Heading>& SourceLexer::GetHeadings(void) const
 {
   return m_headings;
 }

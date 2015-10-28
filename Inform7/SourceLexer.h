@@ -30,7 +30,8 @@ public:
     Book,
     Part,
     Chapter,
-    Section
+    Section,
+    No_Heading = -1
   };
 
   struct Heading
@@ -43,7 +44,8 @@ public:
     Heading(HeadingLevel lv, LPCSTR n, int ln);
   };
 
-  const CArray<Heading>& GetHeadings(void);
+  static HeadingLevel IsHeading(const char* line);
+  const CArray<Heading>& GetHeadings(void) const;
 
   static const int StyleMask;
 

@@ -99,6 +99,7 @@ private:
 
   bool GetNextLine(const CStringW& text, CStringW& line, int& i);
   void TokenizeLine(const CStringW& line, CArray<CStringW>& tokens);
+  void RenumberHeadings(void);
 
 private:
   sptr_t m_editPtr;
@@ -108,6 +109,7 @@ private:
   CHARRANGE m_markSel;
 
   bool m_autoIndent;
+  bool m_autoNumber;
   bool m_elasticTabStops;
 
   EditFind m_find;
