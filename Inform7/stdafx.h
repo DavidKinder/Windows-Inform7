@@ -63,7 +63,7 @@ public:
 
 typedef enum _SIGDN
 {
-  SIGDN_FILESYSPATH	= 0x80058000
+  SIGDN_FILESYSPATH = 0x80058000
 }
 SIGDN;
 

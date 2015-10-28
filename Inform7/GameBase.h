@@ -23,7 +23,7 @@ public:
   };
 
   virtual bool IsKindOf(const CRuntimeClass* rclass) const = 0;
-	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) = 0;
+  virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) = 0;
   virtual HWND GetSafeHwnd(void) const = 0;
 
   enum Justify

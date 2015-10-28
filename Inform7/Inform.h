@@ -33,7 +33,7 @@ public:
   InformApp();
   virtual BOOL InitInstance();
   virtual int ExitInstance();
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
+  virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 protected:
   DECLARE_MESSAGE_MAP()

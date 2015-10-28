@@ -614,7 +614,7 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
       // Determine the path for downloaded extension files
       CString downPath;
       ::GetTempPath(MAX_PATH,downPath.GetBuffer(MAX_PATH));
-	    downPath.ReleaseBuffer();
+      downPath.ReleaseBuffer();
       int downLen = downPath.GetLength();
       if (downLen > 0)
       {

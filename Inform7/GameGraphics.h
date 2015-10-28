@@ -13,7 +13,7 @@ public:
   ~GameGraphics();
 
   bool IsKindOf(const CRuntimeClass* rclass) const;
-	BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
+  BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
   HWND GetSafeHwnd(void) const;
 
   void Layout(const CRect& r);
