@@ -150,7 +150,7 @@ protected:
 
   void OpenProject(const char* project);
   bool SaveProject(const char* project);
-  bool CompileProject(int release);
+  bool CompileProject(bool release);
   void RunProject(void);
   void CleanProject(void);
   bool IsProjectEdited(void);

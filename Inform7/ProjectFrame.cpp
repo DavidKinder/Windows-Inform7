@@ -1229,7 +1229,7 @@ void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)
 
 void ProjectFrame::OnReleaseGame(UINT nID)
 {
-  if (CompileProject((nID == ID_RELEASE_GAME) ? 2 : 1))
+  if (CompileProject(nID == ID_RELEASE_GAME))
   {
     CString releasePath;
     const char* blorbExt = NULL;
@@ -1670,7 +1670,7 @@ bool ProjectFrame::SaveProject(const char* project)
   return saved;
 }
 
-bool ProjectFrame::CompileProject(int release)
+bool ProjectFrame::CompileProject(bool release)
 {
   // Stop the game if running
   m_game.StopInterpreter(false);
@@ -1710,7 +1710,7 @@ bool ProjectFrame::CompileProject(int release)
   GetPanel(1)->CompileProject(TabInterface::CompileStart,0);
 
   // Run Natural Inform
-  int code = theApp.RunCommand(NULL,NaturalCommandLine(release >= 1),*this);
+  int code = theApp.RunCommand(NULL,NaturalCommandLine(release),*this);
 
   // Notify panels that Natural Inform has been run
   GetPanel(0)->CompileProject(TabInterface::RanNaturalInform,code);
@@ -1720,7 +1720,7 @@ bool ProjectFrame::CompileProject(int release)
   if (code == 0)
   {
     SendMessage(WM_PROGRESS,100,(LPARAM)"Compiling Inform 6 source");
-    code = theApp.RunCommand(m_projectDir+"\\Build",InformCommandLine(release >= 2),*this);
+    code = theApp.RunCommand(m_projectDir+"\\Build",InformCommandLine(release),*this);
     if (code != 0)
       SetMessageText("Creating the story file with Inform 6 has failed");
 
