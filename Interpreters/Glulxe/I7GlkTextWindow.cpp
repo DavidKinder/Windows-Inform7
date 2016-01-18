@@ -150,6 +150,9 @@ void I7GlkTextWindow::endLine(event_t* event, bool cancel, wchar_t* lineData, in
     lineLen = (cancelCmd.len - sizeof(int)) / sizeof(wchar_t);
   }
 
+  if (lineLen > m_lineLength)
+    lineLen = m_lineLength;
+
   if (event != NULL)
   {
     event->type = evtype_LineInput;
