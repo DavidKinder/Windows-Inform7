@@ -37,6 +37,7 @@ protected:
   afx_msg void OnUpdateNeedText(CCmdUI* pCmdUI);
   afx_msg void OnEditFind();
   afx_msg void OnEditReplace();
+  afx_msg void OnEditScroll();
   afx_msg void OnEditSpelling();
   afx_msg void OnEditDelete();
   afx_msg void OnFormatShift(UINT id);

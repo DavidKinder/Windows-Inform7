@@ -134,7 +134,7 @@ void TabIndex::SetLinkNotify(LinkNotify* notify)
 
 void TabIndex::ShowIndex(int index)
 {
-  SetActiveTab((IndexTabs)(IdxTab_Contents+index),true);
+  SetActiveTab((IndexTabs)(IdxTab_Home+index),true);
 }
 
 void TabIndex::SourceLink(const char* url)

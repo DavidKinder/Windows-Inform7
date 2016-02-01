@@ -61,6 +61,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
   ON_COMMAND(ID_FILE_INSTALL_EXT, OnFileInstallExt)
+  ON_COMMAND(ID_FILE_INSTALL_FOLDER, OnFileInstallFolder)
   ON_COMMAND(ID_FILE_NEW_EXT, OnFileNewExt)
   ON_COMMAND_RANGE(ID_EXTENSIONS_LIST, ID_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileOpenExt)
   ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE, OnUpdateCompile)
@@ -73,14 +74,14 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
 
   ON_UPDATE_COMMAND_UI(ID_PLAY_GO, OnUpdateCompile)
   ON_COMMAND(ID_PLAY_GO, OnPlayGo)
+  ON_UPDATE_COMMAND_UI(ID_PLAY_REPLAY, OnUpdateCompile)
+  ON_COMMAND(ID_PLAY_REPLAY, OnPlayReplay)
   ON_UPDATE_COMMAND_UI(ID_PLAY_TEST, OnUpdateCompile)
   ON_COMMAND(ID_PLAY_TEST, OnPlayTest)
   ON_UPDATE_COMMAND_UI(ID_PLAY_REFRESH, OnUpdateCompile)
   ON_COMMAND(ID_PLAY_REFRESH, OnPlayRefresh)
   ON_COMMAND(ID_PLAY_LOAD, OnPlayLoad)
 
-  ON_UPDATE_COMMAND_UI(ID_REPLAY_LAST, OnUpdateCompile)
-  ON_COMMAND(ID_REPLAY_LAST, OnReplayLast)
   ON_UPDATE_COMMAND_UI(ID_REPLAY_BLESSED, OnUpdateReplayBlessed)
   ON_COMMAND(ID_REPLAY_BLESSED, OnReplayBlessed)
   ON_COMMAND(ID_REPLAY_SHOW_LAST, OnReplayShowLast)
@@ -103,7 +104,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_WINDOW_SWITCH, OnWindowSwitchPanes)
   ON_COMMAND_RANGE(ID_WINDOW_TAB_SOURCE, ID_WINDOW_TAB_SOURCE+8, OnWindowShowTab)
   ON_UPDATE_COMMAND_UI_RANGE(ID_WINDOW_TAB_SOURCE, ID_WINDOW_TAB_SOURCE+8, OnUpdateWindowShowTab)
-  ON_COMMAND_RANGE(ID_WINDOW_INDEX_CONTENTS, ID_WINDOW_INDEX_CONTENTS+6, OnWindowShowIndex)
+  ON_COMMAND_RANGE(ID_WINDOW_INDEX_HOME, ID_WINDOW_INDEX_HOME+7, OnWindowShowIndex)
   ON_UPDATE_COMMAND_UI(ID_WINDOW_LIST, OnUpdateWindowList)
   ON_COMMAND_RANGE(ID_WINDOW_LIST, ID_WINDOW_LIST+8, OnWindowList)
 
@@ -593,7 +594,7 @@ void ProjectFrame::GetMessageString(UINT nID, CString& rMessage) const
     rMessage.Format("Go to the %s panel",name);
     return;
   }
-  else if ((nID >= ID_WINDOW_INDEX_CONTENTS) && (nID <= ID_WINDOW_INDEX_WORLD))
+  else if ((nID >= ID_WINDOW_INDEX_HOME) && (nID <= ID_WINDOW_INDEX_WORLD))
   {
     CString name;
     GetMenu()->GetMenuString(nID,name,MF_BYCOMMAND);
@@ -642,9 +643,9 @@ LRESULT ProjectFrame::OnPlaySkein(WPARAM wparam, LPARAM)
 
   // Build and run if the game is not running, or if the new node is unreachable
   if (!m_game.IsRunning())
-    OnReplayLast();
+    OnPlayReplay();
   else if (!reachable)
-    OnReplayLast();
+    OnPlayReplay();
   else
     m_game.InputFromSkein();
 
@@ -959,6 +960,16 @@ void ProjectFrame::OnFileInstallExt()
   }
 }
 
+void ProjectFrame::OnFileInstallFolder()
+{
+  // Get the path to the installed extensions directory
+  CString path;
+  path.Format("%s\\Inform\\Extensions",(LPCSTR)theApp.GetHomeDir());
+
+  // Open an Explorer window
+  ::ShellExecute(0,"explore",path,NULL,NULL,SW_SHOWNORMAL);
+}
+
 void ProjectFrame::OnFileNewExt()
 {
   SaveSettings();
@@ -1023,6 +1034,15 @@ void ProjectFrame::OnPlayGo()
   }
 }
 
+void ProjectFrame::OnPlayReplay()
+{
+  if (CompileProject(0))
+  {
+    m_skein.Reset(false);
+    RunProject();
+  }
+}
+
 void ProjectFrame::OnPlayTest()
 {
   if (CompileProject(0))
@@ -1071,15 +1091,6 @@ void ProjectFrame::OnPlayLoad()
   m_game.RunInterpreter(path.Left(split),path.Mid(split+1),glulx);
 }
 
-void ProjectFrame::OnReplayLast()
-{
-  if (CompileProject(0))
-  {
-    m_skein.Reset(false);
-    RunProject();
-  }
-}
-
 void ProjectFrame::OnUpdateReplayBlessed(CCmdUI *pCmdUI)
 {
   bool enable = !m_busy;
@@ -1118,7 +1129,7 @@ void ProjectFrame::OnReplayBlessed()
 
   // Play the thread leading to the first node
   m_skein.SetCurrent(firstNode);
-  OnReplayLast();
+  OnPlayReplay();
 }
 
 void ProjectFrame::OnReplayShowLast()
@@ -1385,7 +1396,7 @@ void ProjectFrame::OnUpdateWindowShowTab(CCmdUI *pCmdUI)
 
 void ProjectFrame::OnWindowShowIndex(UINT nID)
 {
-  int index = nID-ID_WINDOW_INDEX_CONTENTS;
+  int index = nID-ID_WINDOW_INDEX_HOME;
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Index));
   ((TabIndex*)panel->GetTab(Panel::Tab_Index))->ShowIndex(index);
   panel->SetActiveTab(Panel::Tab_Index);
@@ -1860,8 +1871,8 @@ void ProjectFrame::UpdateMenuParams(void)
 void ProjectFrame::UpdateExtensionsMenu(void)
 {
   CMenu* fileMenu = GetMenu()->GetSubMenu(0);
-  ASSERT(fileMenu->GetMenuItemCount() == 13);
-  CMenu* extMenu = fileMenu->GetSubMenu(9);
+  ASSERT(fileMenu->GetMenuItemCount() == 16);
+  CMenu* extMenu = fileMenu->GetSubMenu(5);
   ASSERT(extMenu != NULL);
 
   while (extMenu->GetMenuItemCount() > 0)
@@ -2065,7 +2076,7 @@ bool ProjectFrame::LoadToolBar(void)
   static const UINT buttons[] =
   {
     ID_PLAY_GO,
-    ID_REPLAY_LAST,
+    ID_PLAY_REPLAY,
     ID_RELEASE_GAME
   };
   m_toolBar.SetButtons(buttons,sizeof buttons/sizeof buttons[0]);

@@ -69,18 +69,21 @@ BEGIN
         MENUITEM "&New Project...\tCtrl+N",     ID_FILE_NEW
         MENUITEM "&Open Project...\tCtrl+O",    ID_FILE_OPEN
         MENUITEM SEPARATOR
+        MENUITEM "Ne&w Extension...",           ID_FILE_NEW_EXT
+        MENUITEM "&Install Extension...",       ID_FILE_INSTALL_EXT
+        POPUP "Open Installed &Extension"
+        BEGIN
+            MENUITEM SEPARATOR
+        END
+        MENUITEM "Show Installed Extensions &Folder", ID_FILE_INSTALL_FOLDER
+        MENUITEM SEPARATOR
+        MENUITEM "Import into S&kein...",       ID_FILE_IMPORT_SKEIN
+        MENUITEM SEPARATOR
         MENUITEM "&Close\tAlt+F4",              ID_FILE_CLOSE
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
-        MENUITEM "&Install Extension...",       ID_FILE_INSTALL_EXT
-        MENUITEM "Ne&w Extension...",           ID_FILE_NEW_EXT
-        POPUP "Open &Extension"
-        BEGIN
-            MENUITEM SEPARATOR
-        END
-        MENUITEM "Import into S&kein...",       ID_FILE_IMPORT_SKEIN
-        MENUITEM SEPARATOR
+        MENUITEM "&Preferences...",             ID_APP_PREFS
         MENUITEM "E&xit Inform",                ID_APP_EXIT
     END
     POPUP "&Edit"
@@ -92,12 +95,15 @@ BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
-        MENUITEM SEPARATOR
         MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECT_ALL
         MENUITEM SEPARATOR
-        MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
-        MENUITEM "R&eplace...\tCtrl+H",         ID_EDIT_REPLACE
-        MENUITEM "&Spelling...\tCtrl+G",        ID_EDIT_SPELLING
+        POPUP "&Find and Replace"
+        BEGIN
+            MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
+            MENUITEM "&Replace...\tCtrl+H",         ID_EDIT_REPLACE
+            MENUITEM "&Scroll to Selection",        ID_EDIT_SCROLL
+        END
+        MENUITEM "Check &Spelling...\tCtrl+G",  ID_EDIT_SPELLING
         MENUITEM SEPARATOR
         POPUP "&Headings"
         BEGIN
@@ -111,8 +117,6 @@ BEGIN
             MENUITEM "&Previous Section",           ID_HEAD_PREVIOUS
             MENUITEM "&Next Section",               ID_HEAD_NEXT
         END
-        MENUITEM SEPARATOR
-        MENUITEM "Prefere&nces...",             ID_APP_PREFS
     END
     POPUP "F&ormat"
     BEGIN
@@ -126,15 +130,15 @@ BEGIN
     POPUP "&Play"
     BEGIN
         MENUITEM "&Go\tF5",                     ID_PLAY_GO
-        MENUITEM "&Test Me",                    ID_PLAY_TEST
+        MENUITEM "&Replay\tF9",                 ID_PLAY_REPLAY
         MENUITEM "&Stop",                       ID_PLAY_STOP
+        MENUITEM "&Test Me",                    ID_PLAY_TEST
         MENUITEM SEPARATOR
         MENUITEM "Refresh Inde&x\tF7",          ID_PLAY_REFRESH
         MENUITEM "&Load Story...",              ID_PLAY_LOAD
     END
     POPUP "Repl&ay"
     BEGIN
-        MENUITEM "&Replay Last Commands\tF9",   ID_REPLAY_LAST
         MENUITEM "Replay Commands Blessed in &Transcript", ID_REPLAY_BLESSED
         MENUITEM SEPARATOR
         MENUITEM "Show &Last Command",          ID_REPLAY_SHOW_LAST
@@ -175,13 +179,14 @@ BEGIN
         END
         POPUP "Show Inde&x"
         BEGIN
-            MENUITEM "C&ontents\tCtrl+3",           ID_WINDOW_INDEX_CONTENTS
-            MENUITEM "&Actions\tCtrl+4",            ID_WINDOW_INDEX_ACTIONS
-            MENUITEM "&Kinds\tCtrl+5",              ID_WINDOW_INDEX_KINDS
-            MENUITEM "&Phrasebook\tCtrl+6",         ID_WINDOW_INDEX_PHRASES
-            MENUITEM "&Rules\tCtrl+7",              ID_WINDOW_INDEX_RULES
-            MENUITEM "S&cenes\tCtrl+8",             ID_WINDOW_INDEX_SCENES
-            MENUITEM "&World\tCtrl+9",              ID_WINDOW_INDEX_WORLD
+            MENUITEM "&Home\tCtrl+3",               ID_WINDOW_INDEX_HOME
+            MENUITEM "C&ontents\tCtrl+4",           ID_WINDOW_INDEX_CONTENTS
+            MENUITEM "&Actions\tCtrl+5",            ID_WINDOW_INDEX_ACTIONS
+            MENUITEM "&Kinds\tCtrl+6",              ID_WINDOW_INDEX_KINDS
+            MENUITEM "&Phrasebook\tCtrl+7",         ID_WINDOW_INDEX_PHRASES
+            MENUITEM "&Rules\tCtrl+8",              ID_WINDOW_INDEX_RULES
+            MENUITEM "S&cenes\tCtrl+9",             ID_WINDOW_INDEX_SCENES
+            MENUITEM "&World\tCtrl+0",              ID_WINDOW_INDEX_WORLD
         END
         MENUITEM SEPARATOR
         MENUITEM "Window List",                 ID_WINDOW_LIST
@@ -259,12 +264,15 @@ BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
-        MENUITEM SEPARATOR
         MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECT_ALL
         MENUITEM SEPARATOR
-        MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
-        MENUITEM "R&eplace...\tCtrl+H",         ID_EDIT_REPLACE
-        MENUITEM "&Spelling...\tCtrl+G",        ID_EDIT_SPELLING
+        POPUP "&Find and Replace"
+        BEGIN
+            MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
+            MENUITEM "&Replace...\tCtrl+H",         ID_EDIT_REPLACE
+            MENUITEM "&Scroll to Selection",        ID_EDIT_SCROLL
+        END
+        MENUITEM "Check &Spelling...\tCtrl+G",  ID_EDIT_SPELLING
     END
     POPUP "F&ormat"
     BEGIN
@@ -306,16 +314,17 @@ BEGIN
     VK_F1,          ID_HELP_INDEX,          VIRTKEY, NOINVERT
     VK_F5,          ID_PLAY_GO,             VIRTKEY, NOINVERT
     VK_F7,          ID_PLAY_REFRESH,        VIRTKEY, NOINVERT
-    VK_F9,          ID_REPLAY_LAST,         VIRTKEY, NOINVERT
+    VK_F9,          ID_PLAY_REPLAY,         VIRTKEY, NOINVERT
     VK_F3,          ID_SEARCH_DOCS,         VIRTKEY, NOINVERT
     VK_F2,          ID_SEARCH_SOURCE,       VIRTKEY, NOINVERT
-    "4",            ID_WINDOW_INDEX_ACTIONS, VIRTKEY, CONTROL, NOINVERT
-    "3",            ID_WINDOW_INDEX_CONTENTS, VIRTKEY, CONTROL, NOINVERT
-    "5",            ID_WINDOW_INDEX_KINDS,  VIRTKEY, CONTROL, NOINVERT
-    "6",            ID_WINDOW_INDEX_PHRASES, VIRTKEY, CONTROL, NOINVERT
-    "7",            ID_WINDOW_INDEX_RULES,  VIRTKEY, CONTROL, NOINVERT
-    "8",            ID_WINDOW_INDEX_SCENES, VIRTKEY, CONTROL, NOINVERT
-    "9",            ID_WINDOW_INDEX_WORLD,  VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_WINDOW_INDEX_HOME,   VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_WINDOW_INDEX_CONTENTS, VIRTKEY, CONTROL, NOINVERT
+    "5",            ID_WINDOW_INDEX_ACTIONS, VIRTKEY, CONTROL, NOINVERT
+    "6",            ID_WINDOW_INDEX_KINDS,  VIRTKEY, CONTROL, NOINVERT
+    "7",            ID_WINDOW_INDEX_PHRASES, VIRTKEY, CONTROL, NOINVERT
+    "8",            ID_WINDOW_INDEX_RULES,  VIRTKEY, CONTROL, NOINVERT
+    "9",            ID_WINDOW_INDEX_SCENES, VIRTKEY, CONTROL, NOINVERT
+    "0",            ID_WINDOW_INDEX_WORLD,  VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_WINDOW_SWITCH,       VIRTKEY, NOINVERT
     VK_F7,          ID_WINDOW_TAB_DOCUMENTATION, VIRTKEY, CONTROL, NOINVERT
     VK_F2,          ID_WINDOW_TAB_RESULTS,  VIRTKEY, CONTROL, NOINVERT
@@ -668,6 +677,7 @@ END
 STRINGTABLE 
 BEGIN
     ID_FILE_INSTALL_EXT     "Install an extension for use in Inform projects"
+    ID_FILE_INSTALL_FOLDER  "Open an Explorer window in the installed extensions folder"
     ID_FILE_NEW_EXT         "Start a new extension"
     ID_FILE_IMPORT_SKEIN    "Import story commands into the skein from a text file"
     ID_EDIT_DELETE          "Delete the selected text"
@@ -690,7 +700,7 @@ END
 STRINGTABLE 
 BEGIN
     ID_PLAY_LOAD            "Load and play a story"
-    ID_REPLAY_LAST          "Build the story and replay the last played thread in the skein\nReplay"
+    ID_PLAY_REPLAY          "Build the story and replay the last played thread in the skein\nReplay"
     ID_REPLAY_BLESSED       "Play in sequence all threads in the skein that lead to a blessed knot"
     ID_REPLAY_SHOW_LAST     "Show the last story command in the transcript"
     ID_REPLAY_SHOW_LAST_SKEIN "Show the last story command in the skein"
@@ -786,6 +796,7 @@ BEGIN
     ID_EDIT_SELECT_ALL      "Select all text in the current panel"
     ID_EDIT_UNDO            "Undo the last change"
     ID_EDIT_REDO            "Redo the last undone change"
+    ID_EDIT_SCROLL          "Scroll to the currently selected text"
 END
 
 STRINGTABLE 

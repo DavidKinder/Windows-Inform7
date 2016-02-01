@@ -77,6 +77,7 @@ protected:
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();
   afx_msg void OnFileInstallExt();
+  afx_msg void OnFileInstallFolder();
   afx_msg void OnFileNewExt();
   afx_msg void OnFileOpenExt(UINT nID);
   afx_msg void OnFileClose();
@@ -90,7 +91,7 @@ protected:
   afx_msg void OnPlayRefresh();
   afx_msg void OnPlayLoad();
 
-  afx_msg void OnReplayLast();
+  afx_msg void OnPlayReplay();
   afx_msg void OnUpdateReplayBlessed(CCmdUI *pCmdUI);
   afx_msg void OnReplayBlessed();
   afx_msg void OnReplayShowLast();

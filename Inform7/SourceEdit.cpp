@@ -43,6 +43,7 @@ BEGIN_MESSAGE_MAP(SourceEdit, CWnd)
   ON_UPDATE_COMMAND_UI(ID_EDIT_REPLACE, OnUpdateNeedText)
   ON_COMMAND(ID_EDIT_REPLACE, OnEditReplace)
   ON_UPDATE_COMMAND_UI(ID_EDIT_SPELLING, OnUpdateNeedText)
+  ON_COMMAND(ID_EDIT_SCROLL, OnEditScroll)
   ON_COMMAND(ID_EDIT_SPELLING, OnEditSpelling)
   ON_UPDATE_COMMAND_UI(ID_EDIT_DELETE, OnUpdateNeedSel)
   ON_COMMAND(ID_EDIT_DELETE, OnEditDelete)
@@ -244,6 +245,12 @@ void SourceEdit::OnEditReplace()
 LRESULT SourceEdit::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
 {
   return m_find.FindReplaceCmd(wParam,lParam);
+}
+
+void SourceEdit::OnEditScroll()
+{
+  CHARRANGE sel = GetSelect();
+  CallEdit(SCI_SETSEL,sel.cpMin,sel.cpMax);
 }
 
 void SourceEdit::OnEditSpelling()
