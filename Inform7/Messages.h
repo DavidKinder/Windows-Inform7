@@ -67,7 +67,7 @@
 // in the story tab has failed.
 #define WM_TERPFAILED     WM_APP+17
 
-// Sent to the window frame to get the project directory
+// Sent to the window frame to get the project directory.
 #define WM_PROJECTDIR     WM_APP+18
 
 // Sent to the window frame to get the end node of the transcript thread.
@@ -130,3 +130,11 @@ struct SourceRange
 // string in lParam, and to paste the string in wParam into the
 // source code panel.
 #define WM_NEWPROJECT     WM_APP+30
+
+// Sent to the window frame to get the file extension for the
+// project (e.g. ".inform").
+#define WM_PROJECTEXT     WM_APP+31
+
+// Sent to the window frame to get the current project type (i.e.
+// the appropriate value of the ProjectType enumeration).
+#define WM_PROJECTTYPE    WM_APP+32

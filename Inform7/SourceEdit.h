@@ -14,7 +14,7 @@ class SourceEdit : public CWnd
 
 public:
   SourceEdit();
-  BOOL Create(CWnd* parent, UINT id);
+  BOOL Create(CWnd* parent, UINT id, COLORREF back);
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -57,7 +57,7 @@ protected:
   virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 public:
-  void SetStyles(void);
+  void SetStyles(COLORREF back);
 
   void SetDocument(SourceEdit* master);
   void OpenFile(CFile* file);
@@ -65,7 +65,7 @@ public:
   bool IsEdited(void);
   const CTime& GetFileTime(void);
 
-  void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results);
+  void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results, const char* sourceFile);
   void Highlight(CHARRANGE range, bool centre);
   void Highlight(int line, COLORREF colour, bool centre);
   void ShowBetween(int startLine, int endLine);
@@ -85,7 +85,7 @@ public:
   CHARRANGE FindText(LPCWSTR text, bool fromSelect, bool down, bool matchCase, bool wholeWord);
 
   void LoadSettings(CRegKey& key);
-  void PrefsChanged(void);
+  void PrefsChanged(COLORREF back);
   bool GetElasticTabStops(void);
   void SetElasticTabStops(bool enable);
 

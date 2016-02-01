@@ -75,8 +75,11 @@ private:
   int FindCurrentHeading(const CArray<SourceLexer::Heading>& headings);
   void ShowHeading(const CArray<SourceLexer::Heading>& headings, int idx);
 
+  CString GetSourcePath(const char* path);
+
   FlatTab m_tab;
 
+  CString m_sourceFile;
   SourceWindow m_source;
   ContentsWindow m_contents;
 };

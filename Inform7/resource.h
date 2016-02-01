@@ -21,10 +21,11 @@
 #define ID_FILE_INSTALL_EXT             200
 #define ID_FILE_INSTALL_FOLDER          201
 #define ID_FILE_NEW_EXT                 202
-#define ID_FILE_IMPORT_SKEIN            203
-#define ID_EDIT_DELETE                  204
-#define ID_EDIT_SPELLING                205
-#define ID_EDIT_SCROLL                  206
+#define ID_FILE_NEW_I7XP                203
+#define ID_FILE_IMPORT_SKEIN            204
+#define ID_EDIT_DELETE                  205
+#define ID_EDIT_SPELLING                206
+#define ID_EDIT_SCROLL                  207
 #define ID_FORMAT_SHIFT_RIGHT           210
 #define ID_FORMAT_SHIFT_LEFT            211
 #define ID_FORMAT_COMMENT               212
@@ -151,7 +152,8 @@
 #define IDC_ELASTIC_TABS                1047
 #define IDC_STORY_BOX                   1048
 #define IDC_RANDOM_BOX                  1049
-#define ID_EXTENSIONS_LIST              2000
+#define ID_OPEN_EXTENSIONS_LIST         2000
+#define ID_NEW_EXTENSIONS_LIST          3000
 
 // Next default values for new objects
 // 

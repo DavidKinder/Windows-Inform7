@@ -1429,11 +1429,12 @@ CString GameWindow::GetMediaPath(const wchar_t* section, int resource)
 
   // Work out the path to the resource file
   CString projectDir = (LPCSTR)GetParentFrame()->SendMessage(WM_PROJECTDIR);
-  int projectExt = projectDir.Find(".inform");
-  if (projectExt == -1)
+  CString projectExt = (LPCSTR)GetParentFrame()->SendMessage(WM_PROJECTEXT);
+  int end = projectDir.Find(projectExt);
+  if (end == -1)
     return "";
   CString path;
-  path.Format("%s.materials\\%S",projectDir.Left(projectExt),file);
+  path.Format("%s.materials\\%S",projectDir.Left(end),file);
   return path;
 }
 
@@ -1474,8 +1475,9 @@ void GameWindow::WriteImageSizes(void)
 {
   // Get the project directory
   CString projectDir = (LPCSTR)GetParentFrame()->SendMessage(WM_PROJECTDIR);
-  int projectExt = projectDir.Find(".inform");
-  if (projectExt == -1)
+  CString projectExt = (LPCSTR)GetParentFrame()->SendMessage(WM_PROJECTEXT);
+  int end = projectDir.Find(projectExt);
+  if (end == -1)
     return;
 
   // Open a file to write the image sizes to
@@ -1497,7 +1499,7 @@ void GameWindow::WriteImageSizes(void)
     if (num > 0)
     {
       CString imagePath;
-      imagePath.Format("%s.materials\\%S",projectDir.Left(projectExt),it.Value());
+      imagePath.Format("%s.materials\\%S",projectDir.Left(end),it.Value());
       CSize size = theApp.GetImageSize(imagePath);
 
       CString sizeLine;
@@ -1511,13 +1513,14 @@ CString GameWindow::GetFileDir(void)
 {
   // Get the project name, minus the extension
   CString projectDir = (LPCSTR)GetParentFrame()->SendMessage(WM_PROJECTDIR);
-  int projectExt = projectDir.Find(".inform");
-  if (projectExt == -1)
+  CString projectExt = (LPCSTR)GetParentFrame()->SendMessage(WM_PROJECTEXT);
+  int end = projectDir.Find(projectExt);
+  if (end == -1)
     return "";
 
   // Check if a ".materials/Files" directory exists
   CString path;
-  path.Format("%s.materials\\Files",projectDir.Left(projectExt));
+  path.Format("%s.materials\\Files",projectDir.Left(end));
   if (::GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES)
     return path;
 

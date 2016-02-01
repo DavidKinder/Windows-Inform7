@@ -27,6 +27,12 @@
 // Logging file name
 #define LOG_FILE "\\Inform\\i7log.txt"
 
+enum ProjectType
+{
+  Project_I7,
+  Project_I7XP
+};
+
 class InformApp : public CWinApp
 {
 public:
@@ -70,6 +76,7 @@ public:
     ColourContents,
     ColourContentsSelect,
     ColourContentsBelow,
+    ColourI7XP
   };
 
   COLORREF GetColour(Colours colour);

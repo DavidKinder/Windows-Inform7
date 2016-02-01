@@ -25,7 +25,7 @@ protected:
   DECLARE_DYNAMIC(ProjectFrame)
 
 public:
-  ProjectFrame();
+  ProjectFrame(ProjectType projectType);
 
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
   virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
@@ -73,13 +73,17 @@ protected:
   afx_msg LRESULT OnExtDownload(WPARAM, LPARAM);
   afx_msg LRESULT OnProgress(WPARAM, LPARAM);
   afx_msg LRESULT OnCreateNewProject(WPARAM, LPARAM);
+  afx_msg LRESULT OnProjectExt(WPARAM, LPARAM);
+  afx_msg LRESULT OnProjectType(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();
   afx_msg void OnFileInstallExt();
   afx_msg void OnFileInstallFolder();
   afx_msg void OnFileNewExt();
+  afx_msg void OnFileNewI7XP();
   afx_msg void OnFileOpenExt(UINT nID);
+  afx_msg void OnFileNewI7XPFromExt(UINT nID);
   afx_msg void OnFileClose();
   afx_msg void OnFileSave();
   afx_msg void OnFileSaveAs();
@@ -127,7 +131,8 @@ protected:
   afx_msg void OnSearchSource();
 
 public:
-  static bool StartNewProject(const char* dir, CWnd* parent);
+  static bool StartNewI7Project(const char* dir, CWnd* parent);
+  static bool StartNewI7XPProject(const char* dir, CWnd* parent, const InformApp::ExtLocation* fromExt);
   static bool StartExistingProject(const char* dir, CWnd* parent);
   static bool StartLastProject(void);
 
@@ -145,7 +150,8 @@ protected:
   void OnSourceLink(const char* url, TabInterface* from, COLORREF highlight);
   void OnDocLink(const wchar_t* url, TabInterface* from);
 
-  static ProjectFrame* NewFrame(void);
+  static ProjectFrame* NewFrame(ProjectType projectType);
+  static ProjectType TypeFromDir(const CString& projectDir);
   void SetFromRegistryPath(const char* path);
   void SaveSettings(void);
 
@@ -155,6 +161,7 @@ protected:
   void RunProject(void);
   void CleanProject(void);
   bool IsProjectEdited(void);
+  const char* GetProjectFileExt(void);
 
   void UpdateMenuParams(void);
   void UpdateExtensionsMenu(void);
@@ -188,8 +195,9 @@ protected:
   SearchWindow m_search;
   HWND m_focus;
 
-  CRegKey m_registryKey;
+  const ProjectType m_projectType;
   CString m_projectDir;
+  CRegKey m_registryKey;
 
   ProjectSettings m_settings;
   bool m_busy;

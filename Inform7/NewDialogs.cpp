@@ -65,7 +65,8 @@ void AbstractNewDialog::OnOK()
     return;
 
   // Save the name of the author
-  theApp.WriteProfileString("User",L"Name",m_author);
+  if (GetDlgItem(IDC_AUTHOR)->IsWindowEnabled())
+    theApp.WriteProfileString("User",L"Name",m_author);
   I7BaseDialog::OnOK();
 }
 
@@ -78,7 +79,8 @@ BOOL AbstractNewDialog::OnInitDialog()
   theOS.SHAutoComplete(GetDlgItem(IDC_DIR),SHACF_FILESYSTEM);
 
   // The create button isn't enabled until all fields are filled in
-  GetDlgItem(IDOK)->EnableWindow(FALSE);
+  GetDlgItem(IDOK)->EnableWindow(
+    !(m_dir.IsEmpty() || m_name.IsEmpty() || m_author.IsEmpty()));
 
   // Adjust all texts
   AddType(this);
@@ -211,7 +213,8 @@ void AbstractNewDialog::AddType(CWnd* wnd)
 
 IMPLEMENT_DYNAMIC(NewProjectDialog, AbstractNewDialog)
 
-NewProjectDialog::NewProjectDialog(LPCSTR dir, CWnd* parent) : AbstractNewDialog(parent)
+NewProjectDialog::NewProjectDialog(ProjectType projectType, LPCSTR dir, CWnd* parent)
+  : AbstractNewDialog(parent), m_projectType(projectType), m_fromExt(false)
 {
   // Find the parent directory of the default project directory
   m_dir = dir;
@@ -222,9 +225,36 @@ NewProjectDialog::NewProjectDialog(LPCSTR dir, CWnd* parent) : AbstractNewDialog
     m_dir.Empty();
 }
 
+void NewProjectDialog::FromExt(const char* name, const char* author)
+{
+  ASSERT(m_projectType == Project_I7XP);
+  m_name = name;
+  m_author = author;
+  m_fromExt = true;
+}
+
+BOOL NewProjectDialog::OnInitDialog()
+{
+  if (AbstractNewDialog::OnInitDialog() == FALSE)
+    return FALSE;
+
+  GetDlgItem(IDC_AUTHOR)->EnableWindow(m_fromExt ? FALSE : TRUE);
+  return TRUE;
+}
+
 const char* NewProjectDialog::GetType(void)
 {
-  return "project";
+  switch (m_projectType)
+  {
+  case Project_I7:
+    return "project";
+  case Project_I7XP:
+    return "extension project";
+  default:
+    ASSERT(0);
+    break;
+  }
+  return 0;
 }
 
 CString NewProjectDialog::GetPath(void)
@@ -237,7 +267,18 @@ CString NewProjectDialog::GetPath(void)
       path.AppendChar('\\');
   }
   path.Append(GetName());
-  path.Append(".inform");
+  switch (m_projectType)
+  {
+  case Project_I7:
+    path.Append(".inform");
+    break;
+  case Project_I7XP:
+    path.Append(".i7xp");
+    break;
+  default:
+    ASSERT(0);
+    break;
+  }
   return path;
 }
 
@@ -300,7 +341,7 @@ CString NewExtensionDialog::GetPath(void)
   path.Append(CString(m_author));
   path.AppendChar('\\');
   path.Append(m_name);
-  path.Append(".i7x");
+  path.Append(".i7xp");
   return path;
 }
 

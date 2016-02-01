@@ -260,11 +260,13 @@ COLORREF InformApp::GetColour(Colours colour)
   case ColourHyperlink:
     return RGB(0x00,0x00,0xff);
   case ColourContents:
-    return RGB(0xff,0xff,0xe6);
+    return RGB(0xff,0xff,0xe8);
   case ColourContentsSelect:
     return RGB(0xc1,0xdb,0xfb);
   case ColourContentsBelow:
     return RGB(0xf0,0xf7,0xeb);
+  case ColourI7XP:
+    return RGB(0xff,0xff,0xe0);
   default:
     return RGB(0x00,0x00,0x00);
   }

@@ -11,8 +11,6 @@
 #define new DEBUG_NEW
 #endif
 
-#define SOURCE_FILE "\\Source\\story.ni"
-
 IMPLEMENT_DYNAMIC(TabSource, TabBase)
 
 BEGIN_MESSAGE_MAP(TabSource, TabBase)
@@ -50,9 +48,24 @@ void TabSource::CreateTab(CWnd* parent)
   m_tab.InsertItem(SrcTab_Source,"Source");
 
   // Create the source and contents windows
-  m_source.Create(this);
+  ProjectType projectType = (ProjectType)GetParentFrame()->SendMessage(WM_PROJECTTYPE);
+  m_source.Create(this,projectType);
   m_contents.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN,CRect(0,0,0,0),this,0);
   SetActiveTab(SrcTab_Source,false);
+
+  // Set the name of the source file
+  switch (projectType)
+  {
+  case Project_I7:
+    m_sourceFile = "story.ni";
+    break;
+  case Project_I7XP:
+    m_sourceFile = "extension.i7x";
+    break;
+  default:
+    ASSERT(0);
+    break;
+  }
 }
 
 void TabSource::MoveTab(CRect& rect)
@@ -417,6 +430,13 @@ void TabSource::ShowHeading(const CArray<SourceLexer::Heading>& headings, int id
   SetActiveTab(SrcTab_Source,false);
 }
 
+CString TabSource::GetSourcePath(const char* path)
+{
+  CString sourcePath;
+  sourcePath.Format("%s\\Source\\%s",path,m_sourceFile);
+  return sourcePath;
+}
+
 void TabSource::OpenProject(const char* path, bool primary)
 {
   // Show the whole of the source in the editor
@@ -425,8 +445,7 @@ void TabSource::OpenProject(const char* path, bool primary)
     return;
 
   // Work out the path of the source file
-  CString fileName = path;
-  fileName += SOURCE_FILE;
+  CString fileName(GetSourcePath(path));
 
   // Open the file
   CFile sourceFile;
@@ -450,8 +469,7 @@ void TabSource::OpenProject(const char* path, bool primary)
 
 bool TabSource::SaveProject(const char* path, bool primary)
 {
-  CString fileName = path;
-  fileName += SOURCE_FILE;
+  CString fileName(GetSourcePath(path));
   bool saved = false;
 
   if (primary)
@@ -509,9 +527,12 @@ void TabSource::SetDocument(TabSource* master)
 bool TabSource::Highlight(const char* url, COLORREF colour)
 {
   int line = 0;
-  if (sscanf(url,"source:Source\\story.ni#line%d",&line) != 1)
+  CString format;
+  format.Format("source:Source\\%s#line%%d",m_sourceFile);
+  if (sscanf(url,format,&line) != 1)
   {
-    if (sscanf(url,"source:story.ni#line%d",&line) != 1)
+    format.Format("source:%s#line%%d",m_sourceFile);
+    if (sscanf(url,format,&line) != 1)
       return false;
   }
 
@@ -540,11 +561,9 @@ bool TabSource::CheckNeedReopen(const char* path)
   // Only re-open if the source has not been edited
   if (!IsProjectEdited())
   {
-    CString fileName = path;
-    fileName += SOURCE_FILE;
-
     // Need re-opening if the current file time is later than the last recorded
     CFileStatus status;
+    CString fileName(GetSourcePath(path));
     if (CFile::GetStatus(fileName,status))
       return status.m_mtime > m_source.GetEdit().GetFileTime();
   }
@@ -559,7 +578,7 @@ void TabSource::UpdateElasticTabStops(void)
 
 void TabSource::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
 {
-  m_source.GetEdit().Search(text,results);
+  m_source.GetEdit().Search(text,results,m_sourceFile);
 }
 
 void TabSource::Highlight(const SearchWindow::Result& result)

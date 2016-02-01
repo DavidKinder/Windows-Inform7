@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BaseDialog.h"
-#include "Resource.h"
+#include "Inform.h"
 
 class AbstractNewDialog : public I7BaseDialog
 {
@@ -42,11 +42,18 @@ class NewProjectDialog : public AbstractNewDialog
   DECLARE_DYNAMIC(NewProjectDialog)
 
 public:
-  NewProjectDialog(LPCSTR dir, CWnd* parent);
+  NewProjectDialog(ProjectType projectType, LPCSTR dir, CWnd* parent);
+  void FromExt(const char* name, const char* author);
+
+  virtual BOOL OnInitDialog();
 
   virtual const char* GetType(void);
   virtual CString GetPath(void);
   virtual bool CheckPath(void);
+
+protected:
+  ProjectType m_projectType;
+  bool m_fromExt;
 };
 
 class NewExtensionDialog : public AbstractNewDialog

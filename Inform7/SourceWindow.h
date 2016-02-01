@@ -2,6 +2,7 @@
 
 #include "SourceEdit.h"
 #include "Dib.h"
+#include "Inform.h"
 #include "Messages.h"
 
 class SourceWindow : public CWnd
@@ -11,7 +12,7 @@ class SourceWindow : public CWnd
 public:
   SourceWindow();
 
-  void Create(CWnd* parent);
+  void Create(CWnd* parent, ProjectType projectType);
   SourceEdit& GetEdit(void);
   void PrefsChanged(void);
 
@@ -41,7 +42,9 @@ private:
   void Resize(void);
   void Draw(CDC& dc);
   CRect PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bool top);
+  CDibSection* CreateTornImage(const char* inputImage, const char* outputName);
 
+  COLORREF m_back;
   SourceEdit m_edit;
   SourceHeading m_heading;
 

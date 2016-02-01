@@ -57,13 +57,17 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_EXTDOWNLOAD, OnExtDownload)
   ON_MESSAGE(WM_PROGRESS, OnProgress)
   ON_MESSAGE(WM_NEWPROJECT, OnCreateNewProject)
+  ON_MESSAGE(WM_PROJECTEXT, OnProjectExt)
+  ON_MESSAGE(WM_PROJECTTYPE, OnProjectType)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
   ON_COMMAND(ID_FILE_INSTALL_EXT, OnFileInstallExt)
   ON_COMMAND(ID_FILE_INSTALL_FOLDER, OnFileInstallFolder)
   ON_COMMAND(ID_FILE_NEW_EXT, OnFileNewExt)
-  ON_COMMAND_RANGE(ID_EXTENSIONS_LIST, ID_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileOpenExt)
+  ON_COMMAND(ID_FILE_NEW_I7XP, OnFileNewI7XP)
+  ON_COMMAND_RANGE(ID_OPEN_EXTENSIONS_LIST, ID_OPEN_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileOpenExt)
+  ON_COMMAND_RANGE(ID_NEW_EXTENSIONS_LIST, ID_NEW_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileNewI7XPFromExt)
   ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE, OnUpdateCompile)
   ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
   ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateCompile)
@@ -125,9 +129,9 @@ static UINT indicators[] =
   ID_INDICATOR_NUM,
 };
 
-ProjectFrame::ProjectFrame()
-  : m_busy(false), m_I6debug(false), m_game(m_skein), m_focus(0),
-    m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0)
+ProjectFrame::ProjectFrame(ProjectType projectType)
+  : m_projectType(projectType), m_busy(false), m_I6debug(false), m_game(m_skein),
+    m_focus(0), m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0)
 {
 }
 
@@ -330,7 +334,7 @@ void ProjectFrame::OnClose()
         bool saved = SaveProject(m_projectDir);
         while (saved == false)
         {
-          ProjectDirDialog dialog(false,m_projectDir,"Save the project",this);
+          ProjectDirDialog dialog(false,m_projectDir,"Save the project",GetProjectFileExt(),this);
           if (dialog.ShowDialog() == IDOK)
             saved = SaveProject(dialog.GetProjectDir());
           else
@@ -384,7 +388,8 @@ void ProjectFrame::OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT mi)
   if (mi->CtlType == ODT_MENU)
   {
     // Custom measurement for extensions menu items
-    if ((mi->itemID >= ID_EXTENSIONS_LIST) && (mi->itemID < ID_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS))
+    if (((mi->itemID >= ID_OPEN_EXTENSIONS_LIST) && (mi->itemID < ID_OPEN_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS)) ||
+        ((mi->itemID >= ID_NEW_EXTENSIONS_LIST ) && (mi->itemID < ID_NEW_EXTENSIONS_LIST +MAX_MENU_EXTENSIONS)))
     {
       InformApp::ExtLocation* ext = (InformApp::ExtLocation*)mi->itemData;
 
@@ -412,7 +417,8 @@ void ProjectFrame::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
   if (di->CtlType == ODT_MENU)
   {
     // Custom drawing for extensions menu items
-    if ((di->itemID >= ID_EXTENSIONS_LIST) && (di->itemID < ID_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS))
+    if (((di->itemID >= ID_OPEN_EXTENSIONS_LIST) && (di->itemID < ID_OPEN_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS)) ||
+        ((di->itemID >= ID_NEW_EXTENSIONS_LIST ) && (di->itemID < ID_NEW_EXTENSIONS_LIST +MAX_MENU_EXTENSIONS)))
     {
       CRect rc(di->rcItem);
       InformApp::ExtLocation* ext = (InformApp::ExtLocation*)di->itemData;
@@ -570,16 +576,26 @@ void ProjectFrame::OnUpdateFrameTitle(BOOL)
 
 void ProjectFrame::GetMessageString(UINT nID, CString& rMessage) const
 {
-  if ((nID >= ID_EXTENSIONS_LIST) && (nID < ID_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS))
+  if ((nID >= ID_OPEN_EXTENSIONS_LIST) && (nID < ID_OPEN_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS))
   {
     const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
-    int i = nID - ID_EXTENSIONS_LIST;
+    int i = nID - ID_OPEN_EXTENSIONS_LIST;
     if (i < (int)extensions.size())
     {
       if (extensions[i].system)
         rMessage.Format("Open the \"%s\" built-in extension",extensions[i].title.c_str());
       else
         rMessage.Format("Open the \"%s\" extension",extensions[i].title.c_str());
+      return;
+    }
+  }
+  else if ((nID >= ID_NEW_EXTENSIONS_LIST) && (nID < ID_NEW_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS))
+  {
+    const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
+    int i = nID - ID_NEW_EXTENSIONS_LIST;
+    if (i < (int)extensions.size())
+    {
+      rMessage.Format("Create an extension project from the \"%s\" extension",extensions[i].title.c_str());
       return;
     }
   }
@@ -885,12 +901,22 @@ LRESULT ProjectFrame::OnCreateNewProject(WPARAM code, LPARAM title)
   CString projectDir;
   projectDir.Format("%s\\Inform\\Projects\\%S.inform",(LPCSTR)theApp.GetHomeDir(),(LPCWSTR)title);
 
-  ProjectFrame* frame = NewFrame();
+  ProjectFrame* frame = NewFrame(Project_I7);
   ((TabSource*)frame->GetPanel(0)->GetTab(Panel::Tab_Source))->PasteCode((LPCWSTR)code);
 
   frame->SaveProject(projectDir);
   frame->GetPanel(0)->SetActiveTab(Panel::Tab_Source);
   return 0;
+}
+
+LRESULT ProjectFrame::OnProjectExt(WPARAM wparam, LPARAM lparam)
+{
+  return (LRESULT)GetProjectFileExt();
+}
+
+LRESULT ProjectFrame::OnProjectType(WPARAM wparam, LPARAM lparam)
+{
+  return (LRESULT)m_projectType;
 }
 
 CString ProjectFrame::GetDisplayName(bool showEdited)
@@ -942,7 +968,7 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
 void ProjectFrame::OnFileNew()
 {
   SaveSettings();
-  StartNewProject(m_projectDir,this);
+  StartNewI7Project(m_projectDir,this);
 }
 
 void ProjectFrame::OnFileOpen()
@@ -976,14 +1002,31 @@ void ProjectFrame::OnFileNewExt()
   ExtensionFrame::StartNew(this,m_settings);
 }
 
+void ProjectFrame::OnFileNewI7XP()
+{
+  SaveSettings();
+  StartNewI7XPProject(m_projectDir,this,NULL);
+}
+
 void ProjectFrame::OnFileOpenExt(UINT nID)
 {
-  int index = nID-ID_EXTENSIONS_LIST;
+  int index = nID-ID_OPEN_EXTENSIONS_LIST;
   const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
   if ((index >= 0) && (index < (int)extensions.size()))
   {
     SaveSettings();
     ExtensionFrame::StartExisting(extensions[index].path.c_str(),m_settings);
+  }
+}
+
+void ProjectFrame::OnFileNewI7XPFromExt(UINT nID)
+{
+  int index = nID-ID_NEW_EXTENSIONS_LIST;
+  const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
+  if ((index >= 0) && (index < (int)extensions.size()))
+  {
+    SaveSettings();
+    StartNewI7XPProject(m_projectDir,this,&(extensions[index]));
   }
 }
 
@@ -1004,7 +1047,7 @@ void ProjectFrame::OnFileSaveAs()
   if (!m_busy)
   {
     // Ask for a project to save as
-    ProjectDirDialog dialog(false,m_projectDir,"Save the project",this);
+    ProjectDirDialog dialog(false,m_projectDir,"Save the project",GetProjectFileExt(),this);
     if (dialog.ShowDialog() == IDOK)
       SaveProject(dialog.GetProjectDir());
   }
@@ -1313,7 +1356,7 @@ void ProjectFrame::OnReleaseGame(UINT nID)
 void ProjectFrame::OnReleaseMaterials()
 {
   // Get the path to the ".materials" directory
-  int projectExt = m_projectDir.Find(".inform");
+  int projectExt = m_projectDir.Find(GetProjectFileExt());
   if (projectExt == -1)
     return;
   CString path;
@@ -1497,9 +1540,9 @@ void ProjectFrame::OnSearchDocs()
   m_searchBar.SearchDocs();
 }
 
-ProjectFrame* ProjectFrame::NewFrame(void)
+ProjectFrame* ProjectFrame::NewFrame(ProjectType projectType)
 {
-  ProjectFrame* frame = new ProjectFrame;
+  ProjectFrame* frame = new ProjectFrame(projectType);
   theApp.NewFrame(frame);
 
   frame->LoadFrame(IDR_MAINFRAME,WS_OVERLAPPEDWINDOW|FWS_ADDTOTITLE,NULL,NULL);
@@ -1513,6 +1556,19 @@ ProjectFrame* ProjectFrame::NewFrame(void)
   frame->SendMessage(WM_CHANGEUISTATE,MAKEWPARAM(cues ? UIS_CLEAR : UIS_SET,UISF_HIDEFOCUS));
 
   return frame;
+}
+
+ProjectType ProjectFrame::TypeFromDir(const CString& projectDir)
+{
+  // Get the last part of the path
+  int i = projectDir.ReverseFind('\\');
+  CString last = projectDir.Mid(i+1);
+
+  // Look at the extension on the last part
+  i = last.ReverseFind('.');
+  if (last.Mid(i).CompareNoCase(".i7xp") == 0)
+    return Project_I7XP;
+  return Project_I7;
 }
 
 void ProjectFrame::SetFromRegistryPath(const char* path)
@@ -1585,16 +1641,16 @@ void ProjectFrame::SaveSettings(void)
   }
 }
 
-bool ProjectFrame::StartNewProject(const char* dir, CWnd* parent)
+bool ProjectFrame::StartNewI7Project(const char* dir, CWnd* parent)
 {
-  NewProjectDialog dialog(dir,parent);
+  NewProjectDialog dialog(Project_I7,dir,parent);
   if (dialog.DoModal() != IDOK)
     return false;
 
   CStringW initialCode;
   initialCode.Format(L"\"%S\" by %s\r\r",dialog.GetName(),dialog.GetAuthor());
 
-  ProjectFrame* frame = NewFrame();
+  ProjectFrame* frame = NewFrame(Project_I7);
   ((TabSource*)frame->GetPanel(0)->GetTab(Panel::Tab_Source))->PasteCode(initialCode);
 
   frame->SaveProject(dialog.GetPath());
@@ -1602,9 +1658,39 @@ bool ProjectFrame::StartNewProject(const char* dir, CWnd* parent)
   return true;
 }
 
+bool ProjectFrame::StartNewI7XPProject(const char* dir, CWnd* parent, const InformApp::ExtLocation* fromExt)
+{
+  NewProjectDialog dialog(Project_I7XP,dir,parent);
+  if (fromExt != NULL)
+    dialog.FromExt(fromExt->title.c_str(),fromExt->author.c_str());
+  if (dialog.DoModal() != IDOK)
+    return false;
+
+  ProjectFrame* frame = NewFrame(Project_I7XP);
+  CString projectDir = dialog.GetPath();
+  if (fromExt)
+  {
+    ::CreateDirectory(projectDir,NULL);
+    ::CreateDirectory(projectDir+"\\Source",NULL);
+    ::CopyFile(fromExt->path.c_str(),projectDir+"\\Source\\extension.i7x",FALSE);
+    ((TabSource*)frame->GetPanel(0)->GetTab(Panel::Tab_Source))->OpenProject(projectDir,true);
+  }
+  else
+  {
+    CStringW initialCode;
+    initialCode.Format(L"%S by %s begins here.\r\r%S ends here.\n",
+      dialog.GetName(),dialog.GetAuthor(),dialog.GetName());
+    ((TabSource*)frame->GetPanel(0)->GetTab(Panel::Tab_Source))->PasteCode(initialCode);
+  }
+
+  frame->SaveProject(projectDir);
+  frame->GetPanel(0)->SetActiveTab(Panel::Tab_Source);
+  return true;
+}
+
 bool ProjectFrame::StartExistingProject(const char* dir, CWnd* parent)
 {
-  ProjectDirDialog dialog(true,dir,"Open a project",parent);
+  ProjectDirDialog dialog(true,dir,"Open a project","",parent);
   if (dialog.ShowDialog() != IDOK)
     return false;
   CString project = dialog.GetProjectDir();
@@ -1625,15 +1711,16 @@ bool ProjectFrame::StartExistingProject(const char* dir, CWnd* parent)
     }
   }
 
-  ProjectFrame* frame = NewFrame();
+  ProjectFrame* frame = NewFrame(TypeFromDir(project));
   frame->OpenProject(project);
   return true;
 }
 
 bool ProjectFrame::StartLastProject(void)
 {
-  ProjectFrame* frame = NewFrame();
-  frame->OpenProject(frame->m_projectDir);
+  CString last = theApp.GetLastProjectDir();
+  ProjectFrame* frame = NewFrame(TypeFromDir(last));
+  frame->OpenProject(last);
   return true;
 }
 
@@ -1649,7 +1736,7 @@ void ProjectFrame::OpenProject(const char* project)
   m_projectDir = project;
 
   // Rename any old-style " Materials" folder to ".materials"
-  int projectExt = m_projectDir.Find(".inform");
+  int projectExt = m_projectDir.Find(GetProjectFileExt());
   if (projectExt > 0)
   {
     CString fromPath, toPath;
@@ -1822,6 +1909,21 @@ bool ProjectFrame::IsProjectEdited(void)
   return GetPanel(0)->IsProjectEdited();
 }
 
+const char* ProjectFrame::GetProjectFileExt(void)
+{
+  switch (m_projectType)
+  {
+  case Project_I7:
+    return ".inform";
+  case Project_I7XP:
+    return ".i7xp";
+  default:
+    ASSERT(0);
+    break;
+  }
+  return 0;
+}
+
 void ProjectFrame::UpdateMenuParams(void)
 {
   m_menuFonts[0].DeleteObject();
@@ -1871,27 +1973,35 @@ void ProjectFrame::UpdateMenuParams(void)
 void ProjectFrame::UpdateExtensionsMenu(void)
 {
   CMenu* fileMenu = GetMenu()->GetSubMenu(0);
-  ASSERT(fileMenu->GetMenuItemCount() == 16);
-  CMenu* extMenu = fileMenu->GetSubMenu(5);
-  ASSERT(extMenu != NULL);
+  ASSERT(fileMenu->GetMenuItemCount() == 17);
+  CMenu* newExtMenu = fileMenu->GetSubMenu(3)->GetSubMenu(1);
+  ASSERT(newExtMenu != NULL);
+  CMenu* openExtMenu = fileMenu->GetSubMenu(6);
+  ASSERT(openExtMenu != NULL);
 
-  while (extMenu->GetMenuItemCount() > 0)
-    extMenu->RemoveMenu(0,MF_BYPOSITION);
+  while (newExtMenu->GetMenuItemCount() > 0)
+    newExtMenu->RemoveMenu(0,MF_BYPOSITION);
+  while (openExtMenu->GetMenuItemCount() > 0)
+    openExtMenu->RemoveMenu(0,MF_BYPOSITION);
 
   int x = -1;
-  HMENU authorMenu = 0;
+  HMENU newAuthorMenu = 0, openAuthorMenu = 0;
   const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
   for (int i = 0; (i < MAX_MENU_EXTENSIONS) && (i < (int)extensions.size()); i++)
   {
     if ((x == -1) || (extensions[i].author != extensions[x].author))
     {
-      authorMenu = ::CreatePopupMenu();
-      extMenu->AppendMenu(MF_POPUP|MF_STRING,(UINT_PTR)authorMenu,extensions[i].author.c_str());
+      newAuthorMenu = ::CreatePopupMenu();
+      newExtMenu->AppendMenu(MF_POPUP|MF_STRING,(UINT_PTR)newAuthorMenu,extensions[i].author.c_str());
+      openAuthorMenu = ::CreatePopupMenu();
+      openExtMenu->AppendMenu(MF_POPUP|MF_STRING,(UINT_PTR)openAuthorMenu,extensions[i].author.c_str());
       x = i;
     }
 
-    ASSERT(authorMenu != 0);
-    ::AppendMenu(authorMenu,MF_OWNERDRAW,ID_EXTENSIONS_LIST+i,(LPCSTR)&(extensions[i]));
+    ASSERT(newAuthorMenu != 0);
+    ::AppendMenu(newAuthorMenu,MF_OWNERDRAW,ID_NEW_EXTENSIONS_LIST+i,(LPCSTR)&(extensions[i]));
+    ASSERT(openAuthorMenu != 0);
+    ::AppendMenu(openAuthorMenu,MF_OWNERDRAW,ID_OPEN_EXTENSIONS_LIST+i,(LPCSTR)&(extensions[i]));
   }
 }
 

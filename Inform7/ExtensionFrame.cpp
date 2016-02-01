@@ -52,7 +52,7 @@ int ExtensionFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
 
   // Create the editing window
-  if (!m_edit.Create(this,AFX_IDW_PANE_FIRST))
+  if (!m_edit.Create(this,AFX_IDW_PANE_FIRST,theApp.GetColour(InformApp::ColourBack)))
   {
     TRACE("Failed to create source edit control\n");
     return -1;
@@ -885,7 +885,7 @@ void ExtensionFrame::SendChanged(InformApp::Changed changed, int value)
       if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
       {
         m_edit.LoadSettings(registryKey);
-        m_edit.PrefsChanged();
+        m_edit.PrefsChanged(theApp.GetColour(InformApp::ColourBack));
       }
     }
     break;

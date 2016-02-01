@@ -6,7 +6,7 @@ class ProjectDirDialogVista;
 class ProjectDirDialog
 {
 public:
-  ProjectDirDialog(bool open, const char* dir, const char* title, CWnd* parentWnd);
+  ProjectDirDialog(bool open, const char* dir, const char* title, const char* saveExt, CWnd* parentWnd);
   ~ProjectDirDialog();
 
   INT_PTR ShowDialog(void);

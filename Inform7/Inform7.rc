@@ -69,6 +69,14 @@ BEGIN
         MENUITEM "&New Project...\tCtrl+N",     ID_FILE_NEW
         MENUITEM "&Open Project...\tCtrl+O",    ID_FILE_OPEN
         MENUITEM SEPARATOR
+        POPUP "New Ex&tension Project"
+        BEGIN
+            MENUITEM "&New Extension...",       ID_FILE_NEW_I7XP
+            POPUP "&Create From Installed Extension"
+            BEGIN
+                MENUITEM SEPARATOR
+            END
+        END
         MENUITEM "Ne&w Extension...",           ID_FILE_NEW_EXT
         MENUITEM "&Install Extension...",       ID_FILE_INSTALL_EXT
         POPUP "Open Installed &Extension"
@@ -443,7 +451,7 @@ BEGIN
     DEFPUSHBUTTON   "Start",IDOK,177,101,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,234,101,50,14
     LTEXT           "The &directory in which the new %s will be created",
-                    IDC_DIR_TEXT,7,7,199,8
+                    IDC_DIR_TEXT,7,7,265,8
     EDITTEXT        IDC_DIR,7,17,265,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_DIRPOPUP,272,17,12,12
 END
@@ -678,6 +686,7 @@ STRINGTABLE
 BEGIN
     ID_FILE_INSTALL_EXT     "Install an extension for use in Inform projects"
     ID_FILE_INSTALL_FOLDER  "Open an Explorer window in the installed extensions folder"
+    ID_FILE_NEW_I7XP        "Start a new extension project"
     ID_FILE_NEW_EXT         "Start a new extension"
     ID_FILE_IMPORT_SKEIN    "Import story commands into the skein from a text file"
     ID_EDIT_DELETE          "Delete the selected text"

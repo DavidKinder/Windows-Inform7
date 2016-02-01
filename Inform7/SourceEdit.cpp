@@ -17,8 +17,6 @@
 void ElasticTabStops_OnModify(sptr_t edit, int start, int end);
 void ElasticTabStops_OnClear(sptr_t edit);
 
-#define SOURCE_FILE "story.ni"
-
 IMPLEMENT_DYNAMIC(SourceEdit, CWnd)
 
 BEGIN_MESSAGE_MAP(SourceEdit, CWnd)
@@ -75,7 +73,7 @@ SourceEdit::SourceEdit() : m_fileTime(CTime::GetCurrentTime()), m_spell(this)
   m_elasticTabStops = false;
 }
 
-BOOL SourceEdit::Create(CWnd* parent, UINT id)
+BOOL SourceEdit::Create(CWnd* parent, UINT id, COLORREF back)
 {
   CREATESTRUCT cs;
   ::ZeroMemory(&cs,sizeof cs);
@@ -120,7 +118,7 @@ BOOL SourceEdit::Create(CWnd* parent, UINT id)
   CallEdit(SCI_INDICSETSTYLE,0,INDIC_SQUIGGLE);
   CallEdit(SCI_INDICSETFORE,0,theApp.GetColour(InformApp::ColourError));
   CallEdit(SCI_SETINDICATORCURRENT,0);
-  SetStyles();
+  SetStyles(back);
 
   // Change the bindings for the Home and End keys
   CallEdit(SCI_ASSIGNCMDKEY,SCK_HOME,SCI_HOMEDISPLAY);
@@ -634,12 +632,12 @@ BOOL SourceEdit::PreTranslateMessage(MSG* pMsg)
   return CWnd::PreTranslateMessage(pMsg);
 }
 
-void SourceEdit::SetStyles(void)
+void SourceEdit::SetStyles(COLORREF back)
 {
   CallEdit(SCI_STYLESETFONT,STYLE_DEFAULT,(sptr_t)(LPCSTR)theApp.GetFontName(InformApp::FontDisplay));
   CallEdit(SCI_STYLESETSIZE,STYLE_DEFAULT,theApp.GetFontSize(InformApp::FontDisplay));
   CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,theApp.GetColour(InformApp::ColourText));
-  CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,theApp.GetColour(InformApp::ColourBack));
+  CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,back);
   CallEdit(SCI_STYLECLEARALL);
   CallEdit(SCI_STYLESETFORE,STYLE_QUOTE,theApp.GetColour(InformApp::ColourQuote));
   CallEdit(SCI_STYLESETFORE,STYLE_QUOTEBRACKET,theApp.GetColour(InformApp::ColourQuoteBracket));
@@ -726,7 +724,7 @@ const CTime& SourceEdit::GetFileTime(void)
   return m_fileTime;
 }
 
-void SourceEdit::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
+void SourceEdit::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results, const char* sourceFile)
 {
   CWaitCursor wc;
 
@@ -757,7 +755,7 @@ void SourceEdit::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results
     result.context = context;
     result.inContext.cpMin = leading.GetLength();
     result.inContext.cpMax = leading.GetLength() + match.GetLength();
-    result.sourceLocation = SOURCE_FILE;
+    result.sourceLocation = sourceFile;
     result.inSource.cpMin = find.chrgText.cpMin;
     result.inSource.cpMax = find.chrgText.cpMax;
     results.push_back(result);
@@ -1057,9 +1055,9 @@ void SourceEdit::LoadSettings(CRegKey& key)
   }
 }
 
-void SourceEdit::PrefsChanged(void)
+void SourceEdit::PrefsChanged(COLORREF back)
 {
-  SetStyles();
+  SetStyles(back);
   Invalidate();
 
   // Somewhat tortuously, this causes Scintilla to update its internal style state, so

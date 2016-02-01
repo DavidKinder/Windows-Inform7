@@ -21,6 +21,7 @@ END_MESSAGE_MAP()
 
 SourceWindow::SourceWindow()
 {
+  m_back = 0;
   m_tearTop = false;
   m_tearBottom = false;
   m_arrowTop.SetRectEmpty();
@@ -29,16 +30,38 @@ SourceWindow::SourceWindow()
   m_imageBottom = NULL;
 }
 
-void SourceWindow::Create(CWnd* parent)
+void SourceWindow::Create(CWnd* parent, ProjectType projectType)
 {
-  // Get the top and bottom margin images
-  m_imageTop = theApp.GetCachedImage("Torn-top");
-  m_imageBottom = theApp.GetCachedImage("Torn-bottom");
+  // Get the background colour
+  switch (projectType)
+  {
+  case Project_I7:
+    m_back = theApp.GetColour(InformApp::ColourBack);
+
+    // Get the top and bottom margin images
+    m_imageTop = theApp.GetCachedImage("Torn-top");
+    m_imageBottom = theApp.GetCachedImage("Torn-bottom");
+    break;
+  case Project_I7XP:
+    m_back = theApp.GetColour(InformApp::ColourI7XP);
+
+    // Create the top and bottom margin images, if not already cached
+    m_imageTop = theApp.GetCachedImage("Torn-top-i7xp");
+    if (m_imageTop == NULL)
+      m_imageTop = CreateTornImage("Torn-top","Torn-top-i7xp");
+    m_imageBottom = theApp.GetCachedImage("Torn-bottom-i7xp");
+    if (m_imageBottom == NULL)
+      m_imageBottom = CreateTornImage("Torn-bottom","Torn-bottom-i7xp");
+    break;
+  default:
+    ASSERT(0);
+    break;
+  }
 
   CWnd::Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VSCROLL,CRect(0,0,0,0),parent,0);
 
   // Create the edit control and make this window in charge of the scroll bar
-  m_edit.Create(this,1);
+  m_edit.Create(this,1,m_back);
 }
 
 SourceEdit& SourceWindow::GetEdit(void)
@@ -48,7 +71,7 @@ SourceEdit& SourceWindow::GetEdit(void)
 
 void SourceWindow::PrefsChanged(void)
 {
-  m_edit.PrefsChanged();
+  m_edit.PrefsChanged(m_back);
   Resize();
   Invalidate();
 }
@@ -212,7 +235,6 @@ void SourceWindow::Draw(CDC& dc)
   GetClientRect(client);
   CSize fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontDisplay));
   int fh = fontSize.cy/4;
-  COLORREF back = theApp.GetColour(InformApp::ColourBack);
 
   m_arrowTop.SetRectEmpty();
   m_arrowBottom.SetRectEmpty();
@@ -220,7 +242,7 @@ void SourceWindow::Draw(CDC& dc)
   if (m_tearTop)
     m_arrowTop = PaintEdge(dc,0,client.Width(),m_imageTop,true);
   else
-    dc.FillSolidRect(0,0,client.Width(),fh,back);
+    dc.FillSolidRect(0,0,client.Width(),fh,m_back);
 
   int y = 0;
   if (m_tearBottom)
@@ -231,14 +253,14 @@ void SourceWindow::Draw(CDC& dc)
   else
   {
     y = client.Height()-fh;
-    dc.FillSolidRect(0,y,client.Width(),fh,back);
+    dc.FillSolidRect(0,y,client.Width(),fh,m_back);
   }
 
   CRect editRect;
   m_edit.GetWindowRect(editRect);
   ScreenToClient(editRect);
   if (y > editRect.bottom)
-    dc.FillSolidRect(0,editRect.bottom,client.Width(),y-editRect.bottom,back);
+    dc.FillSolidRect(0,editRect.bottom,client.Width(),y-editRect.bottom,m_back);
 }
 
 CRect SourceWindow::PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bool top)
@@ -276,4 +298,45 @@ CRect SourceWindow::PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bo
   btnRect.InflateRect(btnSize.cx/2,btnSize.cy/2);
   btnRect.OffsetRect(0,y);
   return btnRect;
+}
+
+CDibSection* SourceWindow::CreateTornImage(const char* inputImage, const char* outputName)
+{
+  CDibSection* input = theApp.GetCachedImage(inputImage);
+  CSize inputSize = input->GetSize();
+
+  CDibSection* output = new CDibSection();
+  CDC* dc = AfxGetMainWnd()->GetDC();
+  BOOL created = output->CreateBitmap(dc->GetSafeHdc(),inputSize.cx,inputSize.cy);
+  ASSERT(created);
+  AfxGetMainWnd()->ReleaseDC(dc);
+
+  int br = GetRValue(m_back);
+  int bg = GetGValue(m_back);
+  int bb = GetBValue(m_back);
+
+  int r, g, b, a;
+  DWORD src;
+  for (int y = 0; y < inputSize.cy; y++)
+  {
+    for (int x = 0; x < inputSize.cx; x++)
+    {
+      src = input->GetPixel(x,y);
+      b = src & 0xFF;
+      src >>= 8;
+      g = src & 0xFF;
+      src >>= 8;
+      r = src & 0xFF;
+      src >>= 8;
+      a = src & 0xFF;
+
+      r = (r * br) >> 8;
+      g = (g * bg) >> 8;
+      b = (b * bb) >> 8;
+      output->SetPixel(x,y,(a<<24)|(r<<16)|(g<<8)|b);
+    }
+  }
+
+  theApp.CacheImage(outputName,output);
+  return output;
 }
