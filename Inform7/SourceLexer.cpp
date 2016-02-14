@@ -8,7 +8,8 @@
 #endif
 
 namespace {
-const char* headings[] = { "volume", "book", "part", "chapter", "section" };
+const char* headings[] = { "volume", "book", "part", "chapter", "section", "example" };
+const char* docHeading = "---- documentation ----";
 const char* beforeQuote = " \t\r\n.,:;?!(){}[]";
 }
 
@@ -20,7 +21,7 @@ SourceLexer::SourceLexer(SourceEdit* edit, LexAction action)
   m_action = action;
 }
 
-void SourceLexer::Process(int startPos, int endPos)
+void SourceLexer::Process(int startPos, int endPos, bool includeExt)
 {
   // Find where to start applying styles
   int line = (int)CallEdit(SCI_LINEFROMPOSITION,startPos);
@@ -143,19 +144,19 @@ void SourceLexer::Process(int startPos, int endPos)
         AddHeading(Title,"The Whole Source Text",0);
 
       // Check for a heading?
-      if (newLine && isalpha(c))
+      if (newLine && (isalpha(c) || (c == '-')))
       {
         // Get the start of the line
         int len = (int)CallEdit(SCI_GETLENGTH);
         TextRange range;
         range.chrg.cpMin = pos;
-        range.chrg.cpMax = min(pos+8,len);
-        char text[10];
+        range.chrg.cpMax = min(pos+24,len);
+        char text[26];
         range.lpstrText = text;
         CallEdit(SCI_GETTEXTRANGE,0,(sptr_t)&range);
 
         // Check for a heading match
-        HeadingLevel hl = IsHeading(text);
+        HeadingLevel hl = IsHeading(text,includeExt);
         if (hl != No_Heading)
         {
           ApplyStyle(startPos,pos,style,STYLE_HEADING,StyleMask);
@@ -193,19 +194,55 @@ void SourceLexer::Process(int startPos, int endPos)
   if (pos > len)
     pos = len;
   ApplyStyle(startPos,pos,style,style,StyleMask);
+
+  if (includeExt && (m_action == LexHeadings))
+  {
+    // Find the documentation part, if present
+    int doc = -1;
+    CStringW dh(docHeading);
+    for (int i = 0; i < m_headings.GetSize(); i++)
+    {
+      const Heading& heading = m_headings.GetAt(i);
+      if (heading.level == ExtensionPart)
+      {
+        if (heading.name.Left(dh.GetLength()).CompareNoCase(dh) == 0)
+        {
+          doc = i;
+          break;
+        }
+      }
+    }
+
+    // If the documentation part is present, rename it and add an "extension" part
+    if (doc > 0)
+    {
+      m_headings.GetAt(doc).name = "Documentation";
+      m_headings.InsertAt(1,Heading(ExtensionPart,"Extension",0));
+    }
+  }
 }
 
-SourceLexer::HeadingLevel SourceLexer::IsHeading(const char* line)
+SourceLexer::HeadingLevel SourceLexer::IsHeading(const char* line, bool includeExt)
 {
+  // Check for an extension documentation heading
+  if (includeExt)
+  {
+    size_t hlen = strlen(docHeading);
+    if (strnicmp(line,docHeading,hlen) == 0)
+      return ExtensionPart;
+  }
+
   // Check for a heading match
   for (int i = 0; i < sizeof headings / sizeof headings[0]; i++)
   {
     size_t hlen = strlen(headings[i]);
     if (strnicmp(line,headings[i],hlen) == 0)
     {
-      // Got a possible match, so check it is followed by whitespace
+      // Got a possible match, so check it is followed by whitespace, or a colon (for extensions)
       wchar_t follow = line[hlen];
       if ((follow == L' ') || (follow == L'\t'))
+        return (HeadingLevel)(Volume+i);
+      if (includeExt && (follow == L':'))
         return (HeadingLevel)(Volume+i);
     }
   }

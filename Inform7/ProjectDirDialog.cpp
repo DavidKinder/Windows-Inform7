@@ -28,7 +28,11 @@ DirResult IsProjectDir(const CString& dir)
   i = last.ReverseFind('.');
   if (i == -1)
     return NoExtension;
-  return (last.Mid(i).CompareNoCase(".inform") == 0) ? IsProject : NotProject;
+  if (last.Mid(i).CompareNoCase(".inform") == 0)
+    return IsProject;
+  if (last.Mid(i).CompareNoCase(".i7xp") == 0)
+    return IsProject;
+  return NotProject;
 }
 
 class FixedTextButton : public CWnd
@@ -46,15 +50,16 @@ BEGIN_MESSAGE_MAP(FixedTextButton, CWnd)
   ON_MESSAGE(WM_SETTEXT, OnSetText)
 END_MESSAGE_MAP()
 
-// Project directory dialog for Windows XP and ealier
+// Project directory dialog for Windows XP and earlier
 
 class ProjectDirDialogXP : public CFileDialog
 {
 public:
-  ProjectDirDialogXP(bool open, const char* dir, const char* title, CWnd* parentWnd)
+  ProjectDirDialogXP(bool open, const char* dir, const char* title, const char* saveExt, CWnd* parentWnd)
     : CFileDialog(open ? TRUE : FALSE,NULL,NULL,OFN_HIDEREADONLY|OFN_ENABLESIZING|OFN_DONTADDTORECENT,
       "Inform 7 projects|:||",parentWnd,0)
   {
+    m_saveExt = saveExt;
     m_ofn.lpstrTitle = title;
 
     // Find the parent directory of the default project directory
@@ -132,7 +137,7 @@ protected:
         return CheckOverwrite() ? 0 : 1;
       case NoExtension:
         // Add the standard extension
-        m_projectDir = dir+".inform";
+        m_projectDir = dir + m_saveExt;
         return CheckOverwrite() ? 0 : 1;
       }
     }
@@ -176,6 +181,7 @@ private:
   FixedTextButton m_okButton;
   CString m_initialDir;
   CString m_projectDir;
+  CString m_saveExt;
 
   friend class ProjectDirDialog;
 };
@@ -185,10 +191,11 @@ private:
 class ProjectDirDialogVista
 {
 public:
-  ProjectDirDialogVista(bool open, const char* dir, const char* title, CWnd* parentWnd) : m_events(this)
+  ProjectDirDialogVista(bool open, const char* dir, const char* title, const char* saveExt, CWnd* parentWnd) : m_events(this)
   {
     m_open = open;
     m_title = title;
+    m_saveExt = saveExt;
     m_parent = parentWnd->GetSafeHwnd();
     m_eventsCookie = 0;
 
@@ -327,7 +334,7 @@ public:
         return CheckOverwrite();
       case NoExtension:
         // Add the standard extension
-        m_projectDir = dir+".inform";
+        m_projectDir = dir + m_saveExt;
         return CheckOverwrite();
       }
     }
@@ -384,6 +391,7 @@ private:
 
   HWND m_parent;
   CString m_projectDir;
+  CString m_saveExt;
   FixedTextButton m_okButton;
 
   CComPtr<IFileDialog> m_dialog;
@@ -476,15 +484,15 @@ ProjectDirDialogVista* ProjectDirDialogVista::m_instance = NULL;
 
 // Implementation of facade class
 
-ProjectDirDialog::ProjectDirDialog(bool open, const char* dir, const char* title, CWnd* parentWnd)
+ProjectDirDialog::ProjectDirDialog(bool open, const char* dir, const char* title, const char* saveExt, CWnd* parentWnd)
 {
   m_dialogXP = NULL;
   m_dialogVista = NULL;
 
   if ((theOS.GetWindowsVersion() >= 6) && theOS.IsAppThemed())
-    m_dialogVista = new ProjectDirDialogVista(open,dir,title,parentWnd);
+    m_dialogVista = new ProjectDirDialogVista(open,dir,title,saveExt,parentWnd);
   else
-    m_dialogXP = new ProjectDirDialogXP(open,dir,title,parentWnd);
+    m_dialogXP = new ProjectDirDialogXP(open,dir,title,saveExt,parentWnd);
 }
 
 ProjectDirDialog::~ProjectDirDialog()

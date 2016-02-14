@@ -52,7 +52,7 @@ int ExtensionFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
 
   // Create the editing window
-  if (!m_edit.Create(this,AFX_IDW_PANE_FIRST,theApp.GetColour(InformApp::ColourBack)))
+  if (!m_edit.Create(this,AFX_IDW_PANE_FIRST,theApp.GetColour(InformApp::ColourBack),true))
   {
     TRACE("Failed to create source edit control\n");
     return -1;
@@ -178,7 +178,7 @@ void ExtensionFrame::GetMessageString(UINT nID, CString& rMessage) const
       }
       else if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
       {
-        rMessage.Format("Switch to the \"%s\" extension project",
+        rMessage.Format("Switch to the extension \"%s\"",
           ((ExtensionFrame*)frames[i])->GetDisplayName(false));
       }
       return;
@@ -861,18 +861,21 @@ void ExtensionFrame::ShowInstalledMessage(CWnd* parent, int installed, int total
   theOS.TaskDialog(parent,head,msg,L_INFORM_TITLE,MB_ICONINFORMATION|MB_OK);
 }
 
-CString ExtensionFrame::GetDisplayName(bool showEdited)
+CString ExtensionFrame::GetDisplayName(bool fullName)
 {
-  CString name = m_extension;
-  RemoveI7X(name);
-  if (name.IsEmpty())
+  CString name;
+  if (m_extension.IsEmpty())
     name = "Untitled";
-
-  if (IsProjectEdited() && showEdited)
+  else
+  {
+    CString extName(m_extension);
+    RemoveI7X(extName);
+    int start = extName.ReverseFind('\\');
+    name = extName.Mid(start+1);
+  }
+  if (IsProjectEdited() && fullName)
     name += '*';
-
-  int start = name.ReverseFind('\\');
-  return ((LPCSTR)name)+start+1;
+  return name;
 }
 
 void ExtensionFrame::SendChanged(InformApp::Changed changed, int value)

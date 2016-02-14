@@ -67,14 +67,18 @@ SourceEdit::SourceEdit() : m_fileTime(CTime::GetCurrentTime()), m_spell(this)
   m_markSel.cpMin = -1;
   m_markSel.cpMax = -1;
 
+  m_includeExt = false;
+
   // Default preferences values
   m_autoIndent = true;
   m_autoNumber = false;
   m_elasticTabStops = false;
 }
 
-BOOL SourceEdit::Create(CWnd* parent, UINT id, COLORREF back)
+BOOL SourceEdit::Create(CWnd* parent, UINT id, COLORREF back, bool includeExt)
 {
+  m_includeExt = includeExt;
+
   CREATESTRUCT cs;
   ::ZeroMemory(&cs,sizeof cs);
   cs.lpszClass = "Scintilla";
@@ -357,8 +361,11 @@ void SourceEdit::OnFormatComment(UINT id)
 
 void SourceEdit::OnFormatRenumber()
 {
+  CArray<SourceLexer::Heading> headings;
+  GetAllHeadings(headings);
+
   CallEdit(SCI_BEGINUNDOACTION);
-  RenumberHeadings();
+  RenumberHeadings(headings);
   CallEdit(SCI_ENDUNDOACTION);
 }
 
@@ -377,7 +384,7 @@ void SourceEdit::OnStyleNeeded(NMHDR* hdr, LRESULT*)
   SCNotification* notify = (SCNotification*)hdr;
 
   SourceLexer lex(this,SourceLexer::LexApply);
-  lex.Process((int)CallEdit(SCI_GETENDSTYLED),notify->position);
+  lex.Process((int)CallEdit(SCI_GETENDSTYLED),notify->position,m_includeExt);
 }
 
 void SourceEdit::OnCharAdded(NMHDR* hdr, LRESULT* res)
@@ -473,13 +480,36 @@ void SourceEdit::OnCharAdded(NMHDR* hdr, LRESULT* res)
         }
 
         // Has the user just started a heading?
-        if ((white == 1) && (SourceLexer::IsHeading(buffer) != SourceLexer::No_Heading))
+        if (white == 1)
         {
-          // Give it a number and then renumber the headings
-          CallEdit(SCI_BEGINUNDOACTION);
-          CallEdit(SCI_REPLACESEL,0,(LONG_PTR)"1 - ");
-          RenumberHeadings();
-          CallEdit(SCI_ENDUNDOACTION);
+          switch (SourceLexer::IsHeading(buffer,false))
+          {
+          case SourceLexer::Volume:
+          case SourceLexer::Book:
+          case SourceLexer::Part:
+          case SourceLexer::Chapter:
+          case SourceLexer::Section:
+            // Give it a number and then renumber the headings
+            {
+              CallEdit(SCI_BEGINUNDOACTION);
+              CallEdit(SCI_REPLACESEL,0,(LONG_PTR)"1 - ");
+
+              CArray<SourceLexer::Heading> headings;
+              GetAllHeadings(headings);
+
+              bool renumbered = false;
+              if (!IsLineInExtDoc(headings,line))
+              {
+                RenumberHeadings(headings);
+                renumbered = true;
+              }
+
+              CallEdit(SCI_ENDUNDOACTION);
+              if (!renumbered)
+                CallEdit(SCI_UNDO);
+            }
+            break;
+          }
         }
       }
     }
@@ -1082,7 +1112,7 @@ void SourceEdit::SetElasticTabStops(bool enable)
 void SourceEdit::GetAllHeadings(CArray<SourceLexer::Heading>& headings)
 {
   SourceLexer lex(this,SourceLexer::LexHeadings);
-  lex.Process(0,-1);
+  lex.Process(0,-1,m_includeExt);
   headings.Copy(lex.GetHeadings());
 }
 
@@ -1186,12 +1216,9 @@ void SourceEdit::TokenizeLine(const CStringW& line, CArray<CStringW>& tokens)
   }
 }
 
-void SourceEdit::RenumberHeadings(void)
+void SourceEdit::RenumberHeadings(const CArray<SourceLexer::Heading>& headings)
 {
-  CArray<SourceLexer::Heading> headings;
-  GetAllHeadings(headings);
-
-  int indexes[SourceLexer::Section+1];
+  int indexes[SourceLexer::Example+1];
   for (int j = 0; j < sizeof(indexes) / sizeof(indexes[0]); j++)
     indexes[j] = 1;
 
@@ -1200,15 +1227,22 @@ void SourceEdit::RenumberHeadings(void)
     const SourceLexer::Heading& heading = headings.GetAt(i);
     switch (heading.level)
     {
+    case SourceLexer::ExtensionPart:
+      // Don't renumber in documentation
+      if (heading.line > 0)
+        return;
     case SourceLexer::Volume:
     case SourceLexer::Book:
     case SourceLexer::Part:
     case SourceLexer::Chapter:
     case SourceLexer::Section:
+    case SourceLexer::Example:
       {
         int pos = 0;
         CStringW sectionName = heading.name.Tokenize(L" ",pos);
         if (pos <= 0)
+          break;
+        if (sectionName.Right(1) == L":")
           break;
         CStringW sectionNumber = heading.name.Tokenize(L" ",pos);
         if (pos <= 0)
@@ -1232,3 +1266,22 @@ void SourceEdit::RenumberHeadings(void)
     }
   }
 }
+
+bool SourceEdit::IsLineInExtDoc(const CArray<SourceLexer::Heading>& headings, int line)
+{
+  if (!m_includeExt)
+    return false;
+
+  CStringW dh(L"Documentation");
+  for (int i = 0; i < headings.GetSize(); i++)
+  {
+    const SourceLexer::Heading& heading = headings.GetAt(i);
+    if (heading.level == SourceLexer::ExtensionPart)
+    {
+      if (heading.name.Left(dh.GetLength()).CompareNoCase(dh) == 0)
+        return (line >= heading.line);
+    }
+  }
+  return false;
+}
+

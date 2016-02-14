@@ -20,7 +20,7 @@ BEGIN_MESSAGE_MAP(ContentsPane, CScrollView)
   ON_MESSAGE(WM_PRINT, OnPrint)
 END_MESSAGE_MAP()
 
-ContentsPane::ContentsPane() : m_smallest(SourceLexer::Section)
+ContentsPane::ContentsPane() : m_smallest(SourceLexer::Example)
 {
 }
 
@@ -195,7 +195,7 @@ void ContentsPane::Draw(CDC* dc, int origin_y)
   if (m_tree->GetCount(m_smallest,false) == 0)
   {
     CString msg;
-    if (m_tree->GetCount(SourceLexer::Section,false) == 0)
+    if (m_tree->GetCount(SourceLexer::Example,false) == 0)
     {
       msg =
         "Larger Inform projects are usually divided up with headings like 'Chapter 2 - Into the Forest'. "
@@ -331,7 +331,7 @@ void ContentsPane::DrawSelectBack(CDC* dc, Node* node, const CRect& textRect)
     CBrush* oldBrush = dc->SelectObject(&brush1);
 
     int y = backRect.bottom;
-    backRect.bottom += ((count-1)*(fs.cy*4/3)+1);
+    backRect.bottom += ((count-1)*fs.cy*4/3)+1;
     dc->RoundRect(backRect,CPoint(fs.cx,fs.cx));
 
     dc->MoveTo(backRect.left,y);
@@ -654,6 +654,7 @@ void ContentsWindow::SetHeadings(
     pos = 3;
     break;
   case SourceLexer::Section:
+  case SourceLexer::Example:
     pos = 4;
     break;
   }
@@ -831,7 +832,7 @@ void ContentsWindow::Draw(CDC* dc)
 
 void ContentsWindow::UpdateSmallest(void)
 {
-  ContentsPane::Level smallest = SourceLexer::Section;
+  ContentsPane::Level smallest = SourceLexer::Example;
   switch (m_depth.GetPos())
   {
   case 0:
@@ -847,7 +848,7 @@ void ContentsWindow::UpdateSmallest(void)
     smallest = SourceLexer::Chapter;
     break;
   case 4:
-    smallest = SourceLexer::Section;
+    smallest = SourceLexer::Example;
     break;
   default:
     ASSERT(FALSE);

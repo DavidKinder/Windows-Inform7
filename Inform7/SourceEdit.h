@@ -14,7 +14,7 @@ class SourceEdit : public CWnd
 
 public:
   SourceEdit();
-  BOOL Create(CWnd* parent, UINT id, COLORREF back);
+  BOOL Create(CWnd* parent, UINT id, COLORREF back, bool includeExt);
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -100,7 +100,8 @@ private:
 
   bool GetNextLine(const CStringW& text, CStringW& line, int& i);
   void TokenizeLine(const CStringW& line, CArray<CStringW>& tokens);
-  void RenumberHeadings(void);
+  void RenumberHeadings(const CArray<SourceLexer::Heading>& headings);
+  bool IsLineInExtDoc(const CArray<SourceLexer::Heading>& headings, int line);
 
 private:
   sptr_t m_editPtr;
@@ -109,6 +110,7 @@ private:
   int m_marker;
   CHARRANGE m_markSel;
 
+  bool m_includeExt;
   bool m_autoIndent;
   bool m_autoNumber;
   bool m_elasticTabStops;

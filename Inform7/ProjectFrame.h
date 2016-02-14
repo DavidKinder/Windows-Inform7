@@ -136,7 +136,7 @@ public:
   static bool StartExistingProject(const char* dir, CWnd* parent);
   static bool StartLastProject(void);
 
-  CString GetDisplayName(bool showEdited);
+  CString GetDisplayName(bool fullName);
   void SendChanged(InformApp::Changed changed, int value);
 
 protected:

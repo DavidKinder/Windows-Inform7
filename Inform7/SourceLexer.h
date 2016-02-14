@@ -20,17 +20,19 @@ public:
   };
 
   SourceLexer(SourceEdit* edit, LexAction action);
-  void Process(int startPos, int endPos);
+  void Process(int startPos, int endPos, bool includeExt);
 
   enum HeadingLevel
   {
     Root = 0,
     Title,
+    ExtensionPart,
     Volume,
     Book,
     Part,
     Chapter,
     Section,
+    Example,
     No_Heading = -1
   };
 
@@ -44,7 +46,7 @@ public:
     Heading(HeadingLevel lv, LPCSTR n, int ln);
   };
 
-  static HeadingLevel IsHeading(const char* line);
+  static HeadingLevel IsHeading(const char* line, bool includeExt);
   const CArray<Heading>& GetHeadings(void) const;
 
   static const int StyleMask;

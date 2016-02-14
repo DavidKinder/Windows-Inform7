@@ -51,7 +51,7 @@ public:
   static bool IsValidExtension(const CStringW& firstLine,
     CStringW& name, CStringW& author, CStringW& version);
 
-  CString GetDisplayName(bool showEdited);
+  CString GetDisplayName(bool fullName);
   void SendChanged(InformApp::Changed changed, int value);
 
 protected:

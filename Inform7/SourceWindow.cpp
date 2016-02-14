@@ -61,7 +61,7 @@ void SourceWindow::Create(CWnd* parent, ProjectType projectType)
   CWnd::Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VSCROLL,CRect(0,0,0,0),parent,0);
 
   // Create the edit control and make this window in charge of the scroll bar
-  m_edit.Create(this,1,m_back);
+  m_edit.Create(this,1,m_back,(projectType == Project_I7XP));
 }
 
 SourceEdit& SourceWindow::GetEdit(void)

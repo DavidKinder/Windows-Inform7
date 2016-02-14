@@ -636,7 +636,7 @@ void ProjectFrame::GetMessageString(UINT nID, CString& rMessage) const
       }
       else if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
       {
-        rMessage.Format("Switch to the \"%s\" extension project",
+        rMessage.Format("Switch to the extension \"%s\"",
           ((ExtensionFrame*)frames[i])->GetDisplayName(false));
       }
       return;
@@ -919,17 +919,22 @@ LRESULT ProjectFrame::OnProjectType(WPARAM wparam, LPARAM lparam)
   return (LRESULT)m_projectType;
 }
 
-CString ProjectFrame::GetDisplayName(bool showEdited)
+CString ProjectFrame::GetDisplayName(bool fullName)
 {
-  CString name = m_projectDir;
-  if (name.IsEmpty())
-    name = "Untitled";
+  CString name;
+  if ((m_projectType == Project_I7XP) && fullName)
+    name = "Extension Project - ";
 
-  if (IsProjectEdited() && showEdited)
+  if (m_projectDir.IsEmpty())
+    name += "Untitled";
+  else
+  {
+    int start = m_projectDir.ReverseFind('\\');
+    name += m_projectDir.Mid(start+1);
+  }
+  if (IsProjectEdited() && fullName)
     name += '*';
-
-  int start = name.ReverseFind('\\');
-  return ((LPCSTR)name)+start+1;
+  return name;
 }
 
 void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
