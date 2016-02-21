@@ -80,14 +80,16 @@ protected:
   afx_msg void OnFileOpen();
   afx_msg void OnFileInstallExt();
   afx_msg void OnFileInstallFolder();
+  afx_msg void OnFileInstallExtProject();
   afx_msg void OnFileNewExt();
-  afx_msg void OnFileNewI7XP();
+  afx_msg void OnFileNewExtProject();
   afx_msg void OnFileOpenExt(UINT nID);
-  afx_msg void OnFileNewI7XPFromExt(UINT nID);
+  afx_msg void OnFileNewXPFromExt(UINT nID);
   afx_msg void OnFileClose();
   afx_msg void OnFileSave();
   afx_msg void OnFileSaveAs();
   afx_msg void OnFileImportSkein();
+  afx_msg void OnFileExportExtProject();
 
   afx_msg void OnUpdateCompile(CCmdUI *pCmdUI);
   afx_msg void OnPlayGo();
@@ -131,8 +133,8 @@ protected:
   afx_msg void OnSearchSource();
 
 public:
-  static bool StartNewI7Project(const char* dir, CWnd* parent);
-  static bool StartNewI7XPProject(const char* dir, CWnd* parent, const InformApp::ExtLocation* fromExt);
+  static bool StartNewProject(const char* dir, CWnd* parent);
+  static bool StartNewExtProject(const char* dir, CWnd* parent, const InformApp::ExtLocation* fromExt);
   static bool StartExistingProject(const char* dir, CWnd* parent);
   static bool StartLastProject(void);
 

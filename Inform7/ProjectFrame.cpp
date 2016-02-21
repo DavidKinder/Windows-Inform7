@@ -64,10 +64,11 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
   ON_COMMAND(ID_FILE_INSTALL_EXT, OnFileInstallExt)
   ON_COMMAND(ID_FILE_INSTALL_FOLDER, OnFileInstallFolder)
+  ON_COMMAND(ID_FILE_INSTALL_XP, OnFileInstallExtProject)
   ON_COMMAND(ID_FILE_NEW_EXT, OnFileNewExt)
-  ON_COMMAND(ID_FILE_NEW_I7XP, OnFileNewI7XP)
+  ON_COMMAND(ID_FILE_NEW_XP, OnFileNewExtProject)
   ON_COMMAND_RANGE(ID_OPEN_EXTENSIONS_LIST, ID_OPEN_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileOpenExt)
-  ON_COMMAND_RANGE(ID_NEW_EXTENSIONS_LIST, ID_NEW_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileNewI7XPFromExt)
+  ON_COMMAND_RANGE(ID_NEW_EXTENSIONS_LIST, ID_NEW_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileNewXPFromExt)
   ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE, OnUpdateCompile)
   ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
   ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateCompile)
@@ -75,6 +76,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, OnUpdateCompile)
   ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
   ON_COMMAND(ID_FILE_IMPORT_SKEIN, OnFileImportSkein)
+  ON_COMMAND(ID_FILE_EXPORT_EXT, OnFileExportExtProject)
 
   ON_UPDATE_COMMAND_UI(ID_PLAY_GO, OnUpdateCompile)
   ON_COMMAND(ID_PLAY_GO, OnPlayGo)
@@ -973,7 +975,7 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
 void ProjectFrame::OnFileNew()
 {
   SaveSettings();
-  StartNewI7Project(m_projectDir,this);
+  StartNewProject(m_projectDir,this);
 }
 
 void ProjectFrame::OnFileOpen()
@@ -984,6 +986,7 @@ void ProjectFrame::OnFileOpen()
 
 void ProjectFrame::OnFileInstallExt()
 {
+  CWaitCursor wc;
   if (ExtensionFrame::InstallExtensions(this))
   {
     // Show the help on installed extensions
@@ -1001,16 +1004,30 @@ void ProjectFrame::OnFileInstallFolder()
   ::ShellExecute(0,"explore",path,NULL,NULL,SW_SHOWNORMAL);
 }
 
+void ProjectFrame::OnFileInstallExtProject()
+{
+  if (m_busy || (m_projectType != Project_I7XP))
+    return;
+  if (SaveProject(m_projectDir) == false)
+    return;
+
+  CStringArray paths;
+  paths.Add(m_projectDir+"\\Source\\extension.i7x");
+
+  CWaitCursor wc;
+  ExtensionFrame::InstallExtensions(this,paths);
+}
+
 void ProjectFrame::OnFileNewExt()
 {
   SaveSettings();
   ExtensionFrame::StartNew(this,m_settings);
 }
 
-void ProjectFrame::OnFileNewI7XP()
+void ProjectFrame::OnFileNewExtProject()
 {
   SaveSettings();
-  StartNewI7XPProject(m_projectDir,this,NULL);
+  StartNewExtProject(m_projectDir,this,NULL);
 }
 
 void ProjectFrame::OnFileOpenExt(UINT nID)
@@ -1024,14 +1041,14 @@ void ProjectFrame::OnFileOpenExt(UINT nID)
   }
 }
 
-void ProjectFrame::OnFileNewI7XPFromExt(UINT nID)
+void ProjectFrame::OnFileNewXPFromExt(UINT nID)
 {
   int index = nID-ID_NEW_EXTENSIONS_LIST;
   const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
   if ((index >= 0) && (index < (int)extensions.size()))
   {
     SaveSettings();
-    StartNewI7XPProject(m_projectDir,this,&(extensions[index]));
+    StartNewExtProject(m_projectDir,this,&(extensions[index]));
   }
 }
 
@@ -1066,6 +1083,30 @@ void ProjectFrame::OnFileImportSkein()
   dialog.m_ofn.lpstrTitle = "Select the file to import into the skein";
   if (dialog.DoModal() == IDOK)
     m_skein.Import(dialog.GetPathName());
+}
+
+void ProjectFrame::OnFileExportExtProject()
+{
+  if (m_busy || (m_projectType != Project_I7XP))
+    return;
+  if (SaveProject(m_projectDir) == false)
+    return;
+
+  CString sourcePath = m_projectDir+"\\Source\\extension.i7x";
+  CStringW extLine = ExtensionFrame::ReadExtensionFirstLine(sourcePath);
+  if (extLine.IsEmpty())
+    return;
+  CStringW extName, extAuthor, extVersion;
+  if (!ExtensionFrame::IsValidExtension(extLine,extName,extAuthor,extVersion))
+    return;
+
+  CString saveName(extName);
+  saveName += ".i7x";
+  SimpleFileDialog dialog(FALSE,"i7x",saveName,OFN_HIDEREADONLY|OFN_ENABLESIZING|OFN_OVERWRITEPROMPT,
+    "Inform extensions (*.i7x)|*.i7x|All Files (*.*)|*.*||",this);
+  dialog.m_ofn.lpstrTitle = "Export this extension";
+  if (dialog.DoModal() == IDOK)
+    ::CopyFile(sourcePath,dialog.GetPathName(),FALSE);
 }
 
 void ProjectFrame::OnUpdateCompile(CCmdUI *pCmdUI)
@@ -1646,7 +1687,7 @@ void ProjectFrame::SaveSettings(void)
   }
 }
 
-bool ProjectFrame::StartNewI7Project(const char* dir, CWnd* parent)
+bool ProjectFrame::StartNewProject(const char* dir, CWnd* parent)
 {
   NewProjectDialog dialog(Project_I7,dir,parent);
   if (dialog.DoModal() != IDOK)
@@ -1663,7 +1704,7 @@ bool ProjectFrame::StartNewI7Project(const char* dir, CWnd* parent)
   return true;
 }
 
-bool ProjectFrame::StartNewI7XPProject(const char* dir, CWnd* parent, const InformApp::ExtLocation* fromExt)
+bool ProjectFrame::StartNewExtProject(const char* dir, CWnd* parent, const InformApp::ExtLocation* fromExt)
 {
   NewProjectDialog dialog(Project_I7XP,dir,parent);
   if (fromExt != NULL)
@@ -1978,7 +2019,7 @@ void ProjectFrame::UpdateMenuParams(void)
 void ProjectFrame::UpdateExtensionsMenu(void)
 {
   CMenu* fileMenu = GetMenu()->GetSubMenu(0);
-  ASSERT(fileMenu->GetMenuItemCount() == 17);
+  ASSERT(fileMenu->GetMenuItemCount() == 18);
   CMenu* newExtMenu = fileMenu->GetSubMenu(3)->GetSubMenu(1);
   ASSERT(newExtMenu != NULL);
   CMenu* openExtMenu = fileMenu->GetSubMenu(6);
@@ -2192,7 +2233,9 @@ bool ProjectFrame::LoadToolBar(void)
   {
     ID_PLAY_GO,
     ID_PLAY_REPLAY,
-    ID_RELEASE_GAME
+    ID_RELEASE_GAME,
+    ID_PLAY_TEST_EXAMPLES,
+    ID_FILE_INSTALL_XP
   };
   m_toolBar.SetButtons(buttons,sizeof buttons/sizeof buttons[0]);
 
@@ -2204,26 +2247,27 @@ bool ProjectFrame::LoadToolBar(void)
   DWORD commonVer = theOS.GetDllVersion("comctl32.dll");
   if ((commonVer >= DLLVERSION(6,0)) && (theApp.GetColourDepth() >= 32))
   {
-    // Use true colour for comctrl32 6.0 or higher
-    TBADDBITMAP add;
-    add.hInst = NULL;
-
     // Use true colour images
-    add.nID = (UINT_PTR)theApp.GetCachedImage("Run")->GetSafeHandle();
-    m_toolBar.SendMessage(TB_ADDBITMAP,1,(LPARAM)&add);
-    add.nID = (UINT_PTR)theApp.GetCachedImage("Replay")->GetSafeHandle();
-    m_toolBar.SendMessage(TB_ADDBITMAP,1,(LPARAM)&add);
-    add.nID = (UINT_PTR)theApp.GetCachedImage("Release")->GetSafeHandle();
-    m_toolBar.SendMessage(TB_ADDBITMAP,1,(LPARAM)&add);
+    HIMAGELIST imgList = ::ImageList_Create(32,32,ILC_COLOR32,0,5);
+    ::ImageList_Add(imgList,theApp.GetCachedImage("Toolbar")->GetSafeHandle(),0);
+    ctrl.SetImageList(CImageList::FromHandle(imgList));
+
+    imgList = ::ImageList_Create(32,32,ILC_COLOR32,0,5);
+    ::ImageList_Add(imgList,theApp.GetCachedImage("Toolbar-disabled")->GetSafeHandle(),0);
+    ctrl.SetDisabledImageList(CImageList::FromHandle(imgList));
   }
   else
   {
-    HBITMAP imgBitmap = (HBITMAP)::LoadImage(AfxGetResourceHandle(),
-      MAKEINTRESOURCE(IDR_TOOLBAR),IMAGE_BITMAP,0,0,
-      LR_LOADMAP3DCOLORS|LR_LOADTRANSPARENT);
     HIMAGELIST imgList = ::ImageList_Create(32,32,ILC_COLOR24,0,5);
+    HBITMAP imgBitmap = (HBITMAP)::LoadImage(AfxGetResourceHandle(),
+      MAKEINTRESOURCE(IDR_TOOLBAR),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS|LR_LOADTRANSPARENT);
     ::ImageList_Add(imgList,imgBitmap,0);
     ctrl.SetImageList(CImageList::FromHandle(imgList));
+
+    imgList = ::ImageList_Create(32,32,ILC_COLOR24,0,5);
+    imgBitmap = (HBITMAP)::LoadImage(AfxGetResourceHandle(),
+      MAKEINTRESOURCE(IDR_TOOLBAR_DISABLED),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS|LR_LOADTRANSPARENT);
+    ::ImageList_Add(imgList,imgBitmap,0);
     ctrl.SetDisabledImageList(CImageList::FromHandle(imgList));
   }
 
@@ -2243,6 +2287,21 @@ bool ProjectFrame::LoadToolBar(void)
         m_toolBar.SetButtonStyle(i,m_toolBar.GetButtonStyle(i)|BTNS_SHOWTEXT);
       }
     }
+  }
+
+  switch (m_projectType)
+  {
+  case Project_I7:
+    ctrl.HideButton(ID_PLAY_TEST_EXAMPLES);
+    ctrl.HideButton(ID_FILE_INSTALL_XP);
+    break;
+  case Project_I7XP:
+    ctrl.HideButton(ID_PLAY_REPLAY);
+    ctrl.HideButton(ID_RELEASE_GAME);
+    break;
+  default:
+    ASSERT(0);
+    break;
   }
   return true;
 }

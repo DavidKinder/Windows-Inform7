@@ -167,7 +167,7 @@ void SplashScreen::OnShowWindow(BOOL bShow, UINT nStatus)
 
 void SplashScreen::OnNewProject()
 {
-  if (ProjectFrame::StartNewI7Project(theApp.GetLastProjectDir(),this))
+  if (ProjectFrame::StartNewProject(theApp.GetLastProjectDir(),this))
     EndDialog(IDOK);
 }
 

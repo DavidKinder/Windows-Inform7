@@ -106,7 +106,7 @@ bool TabStory::IsEnabled(void)
 CString TabStory::GetToolTip(UINT_PTR id)
 {
   if (id == ID_PLAY_STOP)
-    return "Stop the currently playing story";
+    return "Stop the story that is currently running";
   return TabBase::GetToolTip(id);
 }
 

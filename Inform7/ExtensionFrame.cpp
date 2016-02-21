@@ -423,15 +423,24 @@ bool ExtensionFrame::InstallExtensions(CWnd* parent)
     return false;
 
   // Iterate over the selected extensions
-  CStringW lastExt;
-  int installed = 0, total = 0;
+  CStringArray paths;
   POSITION pos = dialog.GetStartPosition();
   while (pos != NULL)
+    paths.Add(dialog.GetNextPathName(pos));
+  return InstallExtensions(parent,paths);
+}
+
+bool ExtensionFrame::InstallExtensions(CWnd* parent, CStringArray& paths)
+{
+  // Iterate over the extensions
+  CStringW lastExt;
+  int installed = 0, total = 0;
+  for (int i = 0; i < paths.GetSize(); i++)
   {
     total++;
 
     // Get the first line of the extension
-    CString path = dialog.GetNextPathName(pos);
+    const CString& path = paths.GetAt(i);
     CStringW extLine = ReadExtensionFirstLine(path);
     if (extLine.IsEmpty())
       continue;

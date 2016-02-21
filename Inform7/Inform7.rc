@@ -71,7 +71,7 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "New Ex&tension Project"
         BEGIN
-            MENUITEM "&New Extension...",       ID_FILE_NEW_I7XP
+            MENUITEM "&New Extension...",       ID_FILE_NEW_XP
             POPUP "&Create From Installed Extension"
             BEGIN
                 MENUITEM SEPARATOR
@@ -84,6 +84,7 @@ BEGIN
             MENUITEM SEPARATOR
         END
         MENUITEM "Show Installed Extensions &Folder", ID_FILE_INSTALL_FOLDER
+        MENUITEM "Expo&rt Extension...",        ID_FILE_EXPORT_EXT
         MENUITEM SEPARATOR
         MENUITEM "Import into S&kein...",       ID_FILE_IMPORT_SKEIN
         MENUITEM SEPARATOR
@@ -389,7 +390,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_CREDITS,"RichEdit20A",ES_MULTILINE | ES_READONLY | 
                     WS_VSCROLL | WS_TABSTOP,1,53,203,120,WS_EX_STATICEDGE
-    CTEXT           "Copyright 2006-2015 David Kinder (front end), Graham Nelson et al (compiler).",
+    CTEXT           "Copyright 2006-2016 David Kinder (front end), Graham Nelson et al (compiler).",
                     IDC_COPYRIGHT,25,182,156,17
     CTEXT           "Inform",IDC_TITLE,23,22,159,15,SS_CENTERIMAGE
     CONTROL         "",IDC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,79,1,48,
@@ -535,7 +536,7 @@ BEGIN
             VALUE "FileDescription", "Inform 7 for Windows"
             VALUE "FileVersion", "7.0"
             VALUE "InternalName", "Inform7"
-            VALUE "LegalCopyright", "(c) 2006-2015 David Kinder"
+            VALUE "LegalCopyright", "(c) 2006-2016 David Kinder"
             VALUE "OriginalFilename", "Inform7.exe"
             VALUE "ProductName", "Inform"
             VALUE "ProductVersion", "7.0"
@@ -628,6 +629,7 @@ IDR_SMALL_LOGO          ICON                    "res\\SmallLogo.ico"
 //
 
 IDR_TOOLBAR             BITMAP                  "res\\Toolbar.bmp"
+IDR_TOOLBAR_DISABLED    BITMAP                  "res\\ToolbarDisable.bmp"
 IDR_FLAT_SELECT         BITMAP                  "res\\TabSelect.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -686,8 +688,10 @@ STRINGTABLE
 BEGIN
     ID_FILE_INSTALL_EXT     "Install an extension for use in Inform projects"
     ID_FILE_INSTALL_FOLDER  "Open an Explorer window in the installed extensions folder"
-    ID_FILE_NEW_I7XP        "Start a new extension project"
+    ID_FILE_INSTALL_XP      "Install this extension\nInstall"
+    ID_FILE_NEW_XP          "Start a new extension project"
     ID_FILE_NEW_EXT         "Start a new extension"
+    ID_FILE_EXPORT_EXT      "Export this extension as a .i7x file"
     ID_FILE_IMPORT_SKEIN    "Import story commands into the skein from a text file"
     ID_EDIT_DELETE          "Delete the selected text"
     ID_EDIT_SPELLING        "Spell check the source"
@@ -700,16 +704,17 @@ BEGIN
     ID_FORMAT_COMMENT       "Comment out the selected lines"
     ID_FORMAT_UNCOMMENT     "Uncomment the selected lines"
     ID_FORMAT_RENUMBER      "Renumber all section headings in the source"
-    ID_PLAY_GO              "Build the story and run it\nGo!"
-    ID_PLAY_STOP            "Stop the currently running story\nStop"
-    ID_PLAY_TEST            "Build the story and run the ""test me"" command"
-    ID_PLAY_REFRESH         "Build the story and refresh the index\nRefresh"
+    ID_PLAY_GO              "Translate and run the story\nGo!"
+    ID_PLAY_STOP            "Stop the story that is currently running\nStop"
+    ID_PLAY_TEST            "Translate the story and run the ""test me"" command"
+    ID_PLAY_REFRESH         "Translate the story and refresh the index\nRefresh"
+    ID_PLAY_TEST_EXAMPLES   "Translate and test the examples\nTest"
 END
 
 STRINGTABLE 
 BEGIN
     ID_PLAY_LOAD            "Load and play a story"
-    ID_PLAY_REPLAY          "Build the story and replay the last played thread in the skein\nReplay"
+    ID_PLAY_REPLAY          "Translate the story, and re-run through the skein to the previously active play point\nReplay"
     ID_REPLAY_BLESSED       "Play in sequence all threads in the skein that lead to a blessed knot"
     ID_REPLAY_SHOW_LAST     "Show the last story command in the transcript"
     ID_REPLAY_SHOW_LAST_SKEIN "Show the last story command in the skein"
@@ -723,8 +728,8 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_RELEASE_GAME         "Build the story for release\nRelease"
-    ID_RELEASE_TEST         "Build the story for a test release"
+    ID_RELEASE_GAME         "Translate the story ready for release (with all debugging features turned off) and save the result\nRelease"
+    ID_RELEASE_TEST         "Translate the story in debug mode and save the result"
     ID_RELEASE_MATERIALS    "Open an Explorer window in the materials folder"
     ID_RELEASE_IFICTION     "Export the iFiction record for this story"
 END
