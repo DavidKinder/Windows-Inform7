@@ -410,7 +410,7 @@ bool ExtensionFrame::StartHighlight(const char* url, COLORREF colour, const Proj
   return false;
 }
 
-bool ExtensionFrame::InstallExtensions(CWnd* parent)
+HANDLE ExtensionFrame::InstallExtensions(CWnd* parent)
 {
   // Ask the user for one or more extensions
   SimpleFileDialog dialog(TRUE,"i7x",NULL,OFN_HIDEREADONLY|OFN_ENABLESIZING|OFN_ALLOWMULTISELECT,
@@ -420,7 +420,7 @@ bool ExtensionFrame::InstallExtensions(CWnd* parent)
   dialog.m_ofn.lpstrFile = (LPSTR)_alloca(dialog.m_ofn.nMaxFile);
   memset(dialog.m_ofn.lpstrFile,0,dialog.m_ofn.nMaxFile);
   if (dialog.DoModal() != IDOK)
-    return false;
+    return INVALID_HANDLE_VALUE;
 
   // Iterate over the selected extensions
   CStringArray paths;
@@ -430,7 +430,7 @@ bool ExtensionFrame::InstallExtensions(CWnd* parent)
   return InstallExtensions(parent,paths);
 }
 
-bool ExtensionFrame::InstallExtensions(CWnd* parent, CStringArray& paths)
+HANDLE ExtensionFrame::InstallExtensions(CWnd* parent, CStringArray& paths)
 {
   // Iterate over the extensions
   CStringW lastExt;
@@ -502,8 +502,7 @@ bool ExtensionFrame::InstallExtensions(CWnd* parent, CStringArray& paths)
   ShowInstalledMessage(parent,installed,total,lastExt);
   theApp.FindExtensions();
   theApp.SendAllFrames(InformApp::Extensions,0);
-  theApp.WaitForProcessEnd(process);
-  return true;
+  return process;
 }
 
 // Implementation of IBindStatusCallback used to wait for the downloading of

@@ -34,6 +34,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_WM_MEASUREITEM()
   ON_WM_DRAWITEM()
   ON_WM_SETTINGCHANGE()
+  ON_WM_TIMER()
   ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
 
   ON_MESSAGE(WM_PLAYSKEIN, OnPlaySkein)
@@ -314,8 +315,13 @@ void ProjectFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 
 void ProjectFrame::OnDestroy()
 {
-  m_game.StopInterpreter(false);
   SaveSettings();
+
+  m_game.StopInterpreter(false);
+  for (int i = 0; i < m_processes.GetSize(); i++)
+    ::CloseHandle(m_processes.GetAt(i).process);
+  m_processes.RemoveAll();
+
   MenuBarFrameWnd::OnDestroy();
 }
 
@@ -987,11 +993,9 @@ void ProjectFrame::OnFileOpen()
 void ProjectFrame::OnFileInstallExt()
 {
   CWaitCursor wc;
-  if (ExtensionFrame::InstallExtensions(this))
-  {
-    // Show the help on installed extensions
-    OnHelpExtensions();
-  }
+  HANDLE process = ExtensionFrame::InstallExtensions(this);
+  if (process != INVALID_HANDLE_VALUE)
+    MonitorProcess(process,ProcessHelpExtensions);
 }
 
 void ProjectFrame::OnFileInstallFolder()
@@ -1795,6 +1799,9 @@ void ProjectFrame::OpenProject(const char* project)
   GetPanel(0)->OpenProject(m_projectDir,true);
   GetPanel(1)->OpenProject(m_projectDir,false);
   GetPanel(0)->SetActiveTab(Panel::Tab_Source);
+
+  if (m_projectType == Project_I7XP)
+    UpdateExampleDrop();
 }
 
 bool ProjectFrame::SaveProject(const char* project)
@@ -2093,6 +2100,102 @@ CString ProjectFrame::InformCommandLine(bool release)
   return cmdLine;
 }
 
+void ProjectFrame::MonitorProcess(HANDLE process, ProcessAction action)
+{
+  // Add to the list of processes being monitored
+  SubProcess sub;
+  sub.process = process;
+  sub.action = action;
+  m_processes.Add(sub);
+
+  // If this is the first process, start a timer
+  if (m_processes.GetSize() == 1)
+    SetTimer(1,200,NULL);
+}
+
+void ProjectFrame::OnTimer(UINT nIDEvent)
+{
+  if (nIDEvent == 1)
+  {
+    // Look for any processes that have completed
+    for (int i = 0; i < m_processes.GetSize();)
+    {
+      const SubProcess& sub = m_processes.GetAt(i);
+
+      DWORD result = STILL_ACTIVE;
+      ::GetExitCodeProcess(sub.process,&result);
+      if (result != STILL_ACTIVE)
+      {
+        switch (sub.action)
+        {
+        case ProcessHelpExtensions:
+          // Show the help on installed extensions
+          OnHelpExtensions();
+          break;
+        }
+
+        // Stop monitoring this process
+        ::CloseHandle(sub.process);
+        m_processes.RemoveAt(i);
+      }
+      else
+        i++;
+    }
+
+    // If there are no processes left, stop the timer
+    if (m_processes.IsEmpty())
+      KillTimer(1);
+  }
+  CWnd::OnTimer(nIDEvent);
+}
+
+class StringOutputSink : public InformApp::OutputSink
+{
+public:
+  StringOutputSink(CStringArray* results) : m_results(results)
+  {
+  }
+
+  void Output(const char* msg)
+  {
+    if (m_results)
+    {
+      for (const char* ptr = msg; *ptr != 0; ptr++)
+      {
+        if ((*ptr == '\n') || (*ptr == '\r'))
+          Done();
+        else
+          m_current.AppendChar(*ptr);
+      }
+    }
+  }
+
+  void Done(void)
+  {
+    if (m_results)
+    {
+      if (!m_current.IsEmpty())
+        m_results->Add(m_current);
+      m_current.Empty();
+    }
+  }
+
+private:
+  CStringArray* m_results;
+  CString m_current;
+};
+
+bool ProjectFrame::RunIntest(CStringArray* results)
+{
+  CString cmdLine;
+  cmdLine.Format("\"%s\\Compilers\\intest\" -no-history -threads=1 -using -extension \"%s\\Source\\extension.i7x\" -do -catalogue",
+    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir);
+  StringOutputSink sink(results);
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
+  sink.Done();
+  return (code == 0);
+}
+
 Panel* ProjectFrame::GetPanel(int column) const
 {
   return (Panel*)m_splitter.GetPane(0,column);
@@ -2296,8 +2399,38 @@ bool ProjectFrame::LoadToolBar(void)
     ctrl.HideButton(ID_FILE_INSTALL_XP);
     break;
   case Project_I7XP:
-    ctrl.HideButton(ID_PLAY_REPLAY);
-    ctrl.HideButton(ID_RELEASE_GAME);
+    {
+      ctrl.HideButton(ID_PLAY_REPLAY);
+      ctrl.HideButton(ID_RELEASE_GAME);
+
+      // Create space for the examples list control
+      const int spacerPos = 4;
+      const int numSpacers = 6;
+      for (int i = 0; i < numSpacers; i++)
+      {
+        TBBUTTON spacer = { -1,0 };
+        ctrl.InsertButton(spacerPos,&spacer);
+      }
+      CRect r1, r2;
+      m_toolBar.GetItemRect(spacerPos,r1);
+      m_toolBar.GetItemRect(spacerPos+numSpacers-1,r2);
+
+      // Create the examples list control and find its height
+      m_exampleDrop.Create(CBS_DROPDOWNLIST|WS_CHILD|WS_VISIBLE,
+        CRect(0,0,100,100),&m_toolBar,IDC_EXAMPLE_DROP);
+      m_exampleDrop.SetFont(m_toolBar.GetFont());
+      COMBOBOXINFO boxInfo = { sizeof COMBOBOXINFO,0 };
+      m_exampleDrop.GetComboBoxInfo(&boxInfo);
+      int h = boxInfo.rcItem.bottom+boxInfo.rcItem.top;
+
+      // Position and size the examples list control
+      m_exampleDrop.MoveWindow(r1.left,(r1.bottom+r1.top-h)/2,r2.right-r1.left,
+        ::GetSystemMetrics(SM_CYSCREEN)/2);
+
+      // Set the initial contents and selection for the examples
+      m_exampleDrop.AddString("Test All");
+      m_exampleDrop.SetCurSel(0);
+    }
     break;
   default:
     ASSERT(0);
@@ -2316,4 +2449,28 @@ CRect ProjectFrame::GetInitialSearchRect(void)
   CRect searchRect(btnRect.left,btnRect.bottom+2,frameRect.right,0);
   searchRect.bottom = searchRect.top+(frameRect.Height()*3/8);
   return searchRect;
+}
+
+void ProjectFrame::UpdateExampleDrop(void)
+{
+  // Get the names of the examples
+  CStringArray examples;
+  if (RunIntest(&examples))
+  {
+    // Remove all but the first entry
+    while (m_exampleDrop.GetCount() > 1)
+      m_exampleDrop.DeleteString(1);
+
+    // Add the examples
+    for (int i = 0; i < examples.GetSize(); i++)
+    {
+      CString example = examples.GetAt(i);
+      if (example.Left(10) == "extension ")
+      {
+        int equals = example.Find('=');
+        if ((equals >= 0) && (equals+2 < example.GetLength()))
+          m_exampleDrop.AddString(example.Mid(equals+2));
+      }
+    }
+  }
 }

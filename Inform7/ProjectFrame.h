@@ -35,6 +35,7 @@ public:
 protected:
   CToolBar m_toolBar;
   SearchBar m_searchBar;
+  CComboBox m_exampleDrop;
   CStatusBar m_statusBar;
   ProgressWnd m_progress;
   FlatSplitter m_splitter;
@@ -50,6 +51,7 @@ protected:
   afx_msg void OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT mi);
   afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di);
   afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
+  afx_msg void OnTimer(UINT nIDEvent);
   afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
 
   afx_msg LRESULT OnPlaySkein(WPARAM, LPARAM);
@@ -168,15 +170,22 @@ protected:
   void UpdateMenuParams(void);
   void UpdateExtensionsMenu(void);
 
+  enum ProcessAction
+  {
+    ProcessHelpExtensions
+  };
+
   CString NaturalCommandLine(bool release);
   CString InformCommandLine(bool release);
+  void MonitorProcess(HANDLE process, ProcessAction action);
+  bool RunIntest(CStringArray* results);
 
   Panel* GetPanel(int column) const;
   int ChoosePanel(Panel::Tabs newTab);
 
   bool LoadToolBar(void);
-
   CRect GetInitialSearchRect(void);
+  void UpdateExampleDrop(void);
 
   enum SkeinAction
   {
@@ -211,4 +220,12 @@ protected:
   CFont m_menuFonts[2];
   int m_menuGutter;
   CSize m_menuTextGap;
+
+  struct SubProcess
+  {
+    HANDLE process;
+    ProcessAction action;
+  };
+
+  CArray<SubProcess> m_processes;
 };

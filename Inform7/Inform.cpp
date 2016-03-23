@@ -906,18 +906,6 @@ HANDLE InformApp::RunCensus(bool wait)
   return 0;
 }
 
-void InformApp::WaitForProcessEnd(HANDLE process)
-{
-  DWORD result = STILL_ACTIVE;
-  while (result == STILL_ACTIVE)
-  {
-    ::MsgWaitForMultipleObjects(0,NULL,FALSE,INFINITE,QS_ALLINPUT);
-    RunMessagePump();
-    ::GetExitCodeProcess(process,&result);
-  }
-  ::CloseHandle(process);
-}
-
 void InformApp::WriteLog(const char* msg)
 {
   FILE* f = fopen(m_home+LOG_FILE,"at");

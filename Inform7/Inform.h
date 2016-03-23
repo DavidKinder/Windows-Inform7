@@ -132,7 +132,6 @@ public:
   void RunMessagePump(void);
   int RunCommand(const char* dir, CString& command, OutputSink& output);
   HANDLE RunCensus(bool wait);
-  void WaitForProcessEnd(HANDLE process);
   void WriteLog(const char* msg);
   bool IsWaitCursor(void);
 

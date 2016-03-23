@@ -156,6 +156,7 @@
 #define IDC_ELASTIC_TABS                1047
 #define IDC_STORY_BOX                   1048
 #define IDC_RANDOM_BOX                  1049
+#define IDC_EXAMPLE_DROP                1050
 #define ID_OPEN_EXTENSIONS_LIST         2000
 #define ID_NEW_EXTENSIONS_LIST          3000
 
@@ -165,7 +166,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        283
 #define _APS_NEXT_COMMAND_VALUE         283
-#define _APS_NEXT_CONTROL_VALUE         1050
+#define _APS_NEXT_CONTROL_VALUE         1051
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif
