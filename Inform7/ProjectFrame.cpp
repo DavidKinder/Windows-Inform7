@@ -2414,6 +2414,8 @@ bool ProjectFrame::LoadToolBar(void)
       CRect r1, r2;
       m_toolBar.GetItemRect(spacerPos,r1);
       m_toolBar.GetItemRect(spacerPos+numSpacers-1,r2);
+      if (theOS.GetDllVersion("comctl32.dll") == DLLVERSION(5,80))
+        r2.right -= 12;
 
       // Create the examples list control
       m_exampleDrop.Create(CBS_DROPDOWNLIST|WS_CHILD|WS_VISIBLE,
