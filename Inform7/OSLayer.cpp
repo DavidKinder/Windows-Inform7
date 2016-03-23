@@ -134,6 +134,23 @@ int OSLayer::MessageBox(CWnd* wnd, LPCWSTR text, LPCWSTR caption, UINT type)
     return ::MessageBoxW(wnd->GetSafeHwnd(),text,caption,type);
 }
 
+bool OSLayer::GetComboBoxInfo(CComboBox* box, COMBOBOXINFO* info)
+{
+  if (m_userDll)
+  {
+    typedef BOOL(__stdcall *PFNGETCOMBOBOXINFO)(HWND, COMBOBOXINFO*);
+
+    PFNGETCOMBOBOXINFO getComboBoxInfo = (PFNGETCOMBOBOXINFO)
+      ::GetProcAddress(m_userDll,"GetComboBoxInfo");
+    if (getComboBoxInfo != NULL)
+    {
+      if ((*getComboBoxInfo)(box->GetSafeHwnd(),info))
+        return true;
+    }
+  }
+  return false;
+}
+
 CString OSLayer::SHGetFolderPath(CWnd* wnd, int folder, HANDLE token, DWORD flags)
 {
   if (m_folderDll)

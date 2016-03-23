@@ -2415,13 +2415,22 @@ bool ProjectFrame::LoadToolBar(void)
       m_toolBar.GetItemRect(spacerPos,r1);
       m_toolBar.GetItemRect(spacerPos+numSpacers-1,r2);
 
-      // Create the examples list control and find its height
+      // Create the examples list control
       m_exampleDrop.Create(CBS_DROPDOWNLIST|WS_CHILD|WS_VISIBLE,
         CRect(0,0,100,100),&m_toolBar,IDC_EXAMPLE_DROP);
       m_exampleDrop.SetFont(m_toolBar.GetFont());
+
+      // Find the height of the examples list control
+      int h = 0;
       COMBOBOXINFO boxInfo = { sizeof COMBOBOXINFO,0 };
-      m_exampleDrop.GetComboBoxInfo(&boxInfo);
-      int h = boxInfo.rcItem.bottom+boxInfo.rcItem.top;
+      if (theOS.GetComboBoxInfo(&m_exampleDrop,&boxInfo))
+        h = boxInfo.rcItem.bottom+boxInfo.rcItem.top;
+      else
+      {
+        LOGFONT lf;
+        m_exampleDrop.GetFont()->GetLogFont(&lf);
+        h = 13+abs(lf.lfHeight);
+      }
 
       // Position and size the examples list control
       m_exampleDrop.MoveWindow(r1.left,(r1.bottom+r1.top-h)/2,r2.right-r1.left,

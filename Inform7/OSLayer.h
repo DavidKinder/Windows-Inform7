@@ -17,6 +17,7 @@ public:
   int DrawText(CDC* dc, LPCWSTR text, int count, CRect& rect, UINT format);
   WCHAR ToUnicode(UINT virtKey, UINT scanCode, UINT flags);
   int MessageBox(CWnd* wnd, LPCWSTR text, LPCWSTR caption, UINT type);
+  bool GetComboBoxInfo(CComboBox* box, COMBOBOXINFO* info);
 
   CString SHGetFolderPath(CWnd* wnd, int folder, HANDLE token, DWORD flags);
   void SHAutoComplete(CWnd* edit, DWORD flags);
