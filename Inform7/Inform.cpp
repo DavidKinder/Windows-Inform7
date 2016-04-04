@@ -47,14 +47,7 @@ BOOL InformApp::InitInstance()
   if (!Scintilla_RegisterClasses(AfxGetInstanceHandle()))
     return FALSE;
 
-  if (GetIEVersion() < 5.0)
-  {
-    CString msg;
-    msg.Format("Internet Explorer version 5 or higher must be installed.");
-    AfxMessageBox(msg,MB_ICONSTOP|MB_OK);
-    exit(0);
-  }
-  CheckMSXML();
+  CheckInstalledVersions();
 
   SetRegistryKey("David Kinder");
   SetFonts();
@@ -750,16 +743,30 @@ double InformApp::GetIEVersion(void)
   return 0.0;
 }
 
-void InformApp::CheckMSXML(void)
+void InformApp::CheckInstalledVersions(void)
 {
-  CComPtr<IXMLDOMDocument> doc;
-  if (SUCCEEDED(doc.CoCreateInstance(CLSID_DOMDocument)))
-    return;
+  if (GetIEVersion() < 5.5)
+  {
+    CString msg;
+    msg.Format("Internet Explorer version 5.5 or higher must be installed.");
+    AfxMessageBox(msg,MB_ICONSTOP|MB_OK);
+    exit(0);
+  }
 
-  AfxMessageBox(
-    "Microsoft Data Access Components (MDAC) 2.6 or higher is required.\n"
-    "MDAC can be downloaded from http://www.microsoft.com/downloads/",MB_ICONSTOP|MB_OK);
-  exit(0);
+  if (theOS.GetDllVersion("comctl32.dll") < DLLVERSION(5,81))
+  {
+    AfxMessageBox("comctrl32 5.81 or higher is required.\n",MB_ICONSTOP|MB_OK);
+    exit(0);
+  }
+
+  CComPtr<IXMLDOMDocument> doc;
+  if (FAILED(doc.CoCreateInstance(CLSID_DOMDocument)))
+  {
+    AfxMessageBox(
+      "Microsoft Data Access Components (MDAC) 2.6 or higher is required.\n"
+      "MDAC can be downloaded from http://www.microsoft.com/downloads/",MB_ICONSTOP|MB_OK);
+    exit(0);
+  }
 }
 
 int InformApp::GetColourDepth(void)

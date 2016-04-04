@@ -155,7 +155,7 @@ public:
 
 protected:
   void ClearScaledImages(void);
-  void CheckMSXML(void);
+  void CheckInstalledVersions(void);
   void SetMyDocuments(void);
   bool CreateHomeDirs(void);
   void SetFonts(void);

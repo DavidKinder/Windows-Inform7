@@ -205,9 +205,7 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
   // Create the toolbars
   DWORD style = WS_CHILD|WS_VISIBLE|CBRS_ALIGN_TOP|CBRS_TOOLTIPS|CBRS_FLYBY;
-  DWORD ctrlStyle = TBSTYLE_FLAT|TBSTYLE_TRANSPARENT;
-  if (theOS.GetDllVersion("comctl32.dll") >= DLLVERSION(5,81)) // comctrl32 5.81 or higher
-    ctrlStyle |= TBSTYLE_LIST;
+  DWORD ctrlStyle = TBSTYLE_FLAT|TBSTYLE_LIST|TBSTYLE_TRANSPARENT;
   if (!m_toolBar.CreateEx(this,ctrlStyle,style) || !LoadToolBar())
   {
     TRACE("Failed to create main toolbar\n");
@@ -2375,20 +2373,17 @@ bool ProjectFrame::LoadToolBar(void)
   }
 
   // Add selective text for buttons
-  if (theOS.GetDllVersion("comctl32.dll") >= DLLVERSION(5,81)) // comctrl32 5.81 or higher
+  ctrl.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
+  for (int i = 0; i < ctrl.GetButtonCount(); i++)
   {
-    ctrl.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
-    for (int i = 0; i < ctrl.GetButtonCount(); i++)
+    UINT id = m_toolBar.GetItemID(i);
+    if (id != ID_SEPARATOR)
     {
-      UINT id = m_toolBar.GetItemID(i);
-      if (id != ID_SEPARATOR)
-      {
-        CString btnText, tipText;
-        btnText.LoadString(id);
-        AfxExtractSubString(tipText,btnText,1,'\n');
-        m_toolBar.SetButtonText(i,tipText);
-        m_toolBar.SetButtonStyle(i,m_toolBar.GetButtonStyle(i)|BTNS_SHOWTEXT);
-      }
+      CString btnText, tipText;
+      btnText.LoadString(id);
+      AfxExtractSubString(tipText,btnText,1,'\n');
+      m_toolBar.SetButtonText(i,tipText);
+      m_toolBar.SetButtonStyle(i,m_toolBar.GetButtonStyle(i)|BTNS_SHOWTEXT);
     }
   }
 
@@ -2414,8 +2409,6 @@ bool ProjectFrame::LoadToolBar(void)
       CRect r1, r2;
       m_toolBar.GetItemRect(spacerPos,r1);
       m_toolBar.GetItemRect(spacerPos+numSpacers-1,r2);
-      if (theOS.GetDllVersion("comctl32.dll") == DLLVERSION(5,80))
-        r2.right -= 12;
 
       // Create the examples list control
       m_exampleDrop.Create(CBS_DROPDOWNLIST|WS_CHILD|WS_VISIBLE,
