@@ -70,11 +70,11 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_NEW_XP, OnFileNewExtProject)
   ON_COMMAND_RANGE(ID_OPEN_EXTENSIONS_LIST, ID_OPEN_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileOpenExt)
   ON_COMMAND_RANGE(ID_NEW_EXTENSIONS_LIST, ID_NEW_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileNewXPFromExt)
-  ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE, OnUpdateCompile)
+  ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE, OnUpdateIfNotBusy)
   ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
-  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateCompile)
+  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateIfNotBusy)
   ON_COMMAND(ID_FILE_SAVE, OnFileSave)
-  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, OnUpdateCompile)
+  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, OnUpdateIfNotBusy)
   ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
   ON_COMMAND(ID_FILE_IMPORT_SKEIN, OnFileImportSkein)
   ON_COMMAND(ID_FILE_EXPORT_EXT, OnFileExportExtProject)
@@ -300,6 +300,9 @@ void ProjectFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 
       // Update elastic tabstops, if in use
       ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->UpdateElasticTabStops();
+
+      if (m_projectType == Project_I7XP)
+        UpdateExampleDrop();
     }
 
     // Restore the focus window
@@ -1111,9 +1114,28 @@ void ProjectFrame::OnFileExportExtProject()
     ::CopyFile(sourcePath,dialog.GetPathName(),FALSE);
 }
 
-void ProjectFrame::OnUpdateCompile(CCmdUI *pCmdUI)
+void ProjectFrame::OnUpdateIfNotBusy(CCmdUI *pCmdUI)
 {
   pCmdUI->Enable(!m_busy);
+}
+
+void ProjectFrame::OnUpdateCompile(CCmdUI *pCmdUI)
+{
+  switch (m_projectType)
+  {
+  case Project_I7:
+    pCmdUI->Enable(!m_busy);
+    break;
+  case Project_I7XP:
+    {
+      int index = m_exampleDrop.GetCurSel();
+      pCmdUI->Enable(!m_busy && (index > 0));
+    }
+    break;
+  default:
+    ASSERT(0);
+    break;
+  }
 }
 
 void ProjectFrame::OnPlayGo()
@@ -1733,6 +1755,7 @@ bool ProjectFrame::StartNewExtProject(const char* dir, CWnd* parent, const Infor
 
   frame->SaveProject(projectDir);
   frame->GetPanel(0)->SetActiveTab(Panel::Tab_Source);
+  frame->UpdateExampleDrop();
   return true;
 }
 
@@ -1857,6 +1880,10 @@ bool ProjectFrame::CompileProject(bool release)
   // Notify panels that compilation is starting
   GetPanel(0)->CompileProject(TabInterface::CompileStart,0);
   GetPanel(1)->CompileProject(TabInterface::CompileStart,0);
+
+  // Update the list of examples
+  if (m_projectType == Project_I7XP)
+    UpdateExampleDrop();
 
   // Run Natural Inform
   int code = theApp.RunCommand(NULL,NaturalCommandLine(release),*this);
@@ -2428,7 +2455,7 @@ bool ProjectFrame::LoadToolBar(void)
       }
 
       // Position and size the examples list control
-      m_exampleDrop.MoveWindow(r1.left,(r1.bottom+r1.top-h)/2,r2.right-r1.left,
+      m_exampleDrop.MoveWindow(r1.left+4,(r1.bottom+r1.top-h)/2,r2.right-r1.left-8,
         ::GetSystemMetrics(SM_CYSCREEN)/2);
 
       // Set the initial contents and selection for the examples
@@ -2461,6 +2488,9 @@ void ProjectFrame::UpdateExampleDrop(void)
   CStringArray examples;
   if (RunIntest(&examples))
   {
+    // Get the index of the current choice
+    int index = m_exampleDrop.GetCurSel();
+
     // Remove all but the first entry
     while (m_exampleDrop.GetCount() > 1)
       m_exampleDrop.DeleteString(1);
@@ -2476,5 +2506,9 @@ void ProjectFrame::UpdateExampleDrop(void)
           m_exampleDrop.AddString(example.Mid(equals+2));
       }
     }
+
+    // Set the index of the current choice
+    if (m_exampleDrop.SetCurSel(index) == CB_ERR)
+      m_exampleDrop.SetCurSel(0);
   }
 }
