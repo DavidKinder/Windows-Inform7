@@ -1842,6 +1842,33 @@ bool ProjectFrame::SaveProject(const char* project)
   return saved;
 }
 
+class StringOutputSink : public InformApp::OutputSink
+{
+public:
+  void Output(const char* msg)
+  {
+    for (const char* ptr = msg; *ptr != 0; ptr++)
+    {
+      if ((*ptr == '\n') || (*ptr == '\r'))
+        Done();
+      else
+        m_current.AppendChar(*ptr);
+    }
+  }
+
+  void Done(void)
+  {
+    if (!m_current.IsEmpty())
+      results.Add(m_current);
+    m_current.Empty();
+  }
+
+  CStringArray results;
+
+private:
+  CString m_current;
+};
+
 bool ProjectFrame::CompileProject(bool release)
 {
   // Stop the game if running
@@ -1850,6 +1877,10 @@ bool ProjectFrame::CompileProject(bool release)
   // Save the project first
   if (SaveProject(m_projectDir) == false)
     return false;
+
+  // Update the list of examples
+  if (m_projectType == Project_I7XP)
+    UpdateExampleDrop();
 
   // Create the UUID file if needed
   CString uuidFile;
@@ -1873,6 +1904,7 @@ bool ProjectFrame::CompileProject(bool release)
 
   // Start compiling ...
   m_busy = true;
+  int code = 0;
 
   // Get the current focus window
   HWND focus = GetFocus()->GetSafeHwnd();
@@ -1881,16 +1913,43 @@ bool ProjectFrame::CompileProject(bool release)
   GetPanel(0)->CompileProject(TabInterface::CompileStart,0);
   GetPanel(1)->CompileProject(TabInterface::CompileStart,0);
 
-  // Update the list of examples
   if (m_projectType == Project_I7XP)
-    UpdateExampleDrop();
+  {
+    // Decide on the example to extract
+    int index = m_exampleDrop.GetCurSel();
+    if ((index < 1) || (index > m_examples.GetSize()))
+      return false;
+
+    // Run intest to extract the example
+    StringOutputSink sink;
+    code = theApp.RunCommand(NULL,IntestSourceCommandLine(m_examples.GetAt(index-1)),sink);
+    sink.Done();
+
+    // Read the intest output describing how to map from example story line numbers
+    // to extension source line numbers
+    m_exampleOffsets.RemoveAll();
+    if (code == 0)
+    {
+      for (int i = 0; i < sink.results.GetSize(); i++)
+      {
+        int from, offset;
+        if (sscanf(sink.results.GetAt(i),"%d %d",&from,&offset) == 2)
+          m_exampleOffsets.Add(std::make_pair(from,offset));
+      }
+    }
+
+    GetPanel(0)->CompileProject(TabInterface::RanIntest,code);
+    GetPanel(1)->CompileProject(TabInterface::RanIntest,code);
+  }
 
   // Run Natural Inform
-  int code = theApp.RunCommand(NULL,NaturalCommandLine(release),*this);
+  if (code == 0)
+  {
+    code = theApp.RunCommand(NULL,NaturalCommandLine(release),*this);
 
-  // Notify panels that Natural Inform has been run
-  GetPanel(0)->CompileProject(TabInterface::RanNaturalInform,code);
-  GetPanel(1)->CompileProject(TabInterface::RanNaturalInform,code);
+    GetPanel(0)->CompileProject(TabInterface::RanNaturalInform,code);
+    GetPanel(1)->CompileProject(TabInterface::RanNaturalInform,code);
+  }
 
   // Run Inform 6
   if (code == 0)
@@ -2125,6 +2184,26 @@ CString ProjectFrame::InformCommandLine(bool release)
   return cmdLine;
 }
 
+CString ProjectFrame::IntestSourceCommandLine(const Example& example)
+{
+  CString dir = theApp.GetAppDir();
+
+  CString executable, arguments;
+  executable.Format("%s\\Compilers\\intest",(LPCSTR)dir);
+  arguments.Format(
+    "-no-history -threads=1 -using -extension \"%s\\Source\\extension.i7x\""
+    " -do -source %s -to \"%s\\Source\\story.ni\" -concordance %s",
+    (LPCSTR)m_projectDir,(LPCSTR)example.id,(LPCSTR)m_projectDir,(LPCSTR)example.id);
+
+  CString output;
+  output.Format("\n%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
+  Output(output);
+
+  CString cmdLine;
+  cmdLine.Format("\"%s\" %s",(LPCSTR)executable,(LPCSTR)arguments);
+  return cmdLine;
+}
+
 void ProjectFrame::MonitorProcess(HANDLE process, ProcessAction action)
 {
   // Add to the list of processes being monitored
@@ -2172,53 +2251,6 @@ void ProjectFrame::OnTimer(UINT nIDEvent)
       KillTimer(1);
   }
   CWnd::OnTimer(nIDEvent);
-}
-
-class StringOutputSink : public InformApp::OutputSink
-{
-public:
-  StringOutputSink(CStringArray* results) : m_results(results)
-  {
-  }
-
-  void Output(const char* msg)
-  {
-    if (m_results)
-    {
-      for (const char* ptr = msg; *ptr != 0; ptr++)
-      {
-        if ((*ptr == '\n') || (*ptr == '\r'))
-          Done();
-        else
-          m_current.AppendChar(*ptr);
-      }
-    }
-  }
-
-  void Done(void)
-  {
-    if (m_results)
-    {
-      if (!m_current.IsEmpty())
-        m_results->Add(m_current);
-      m_current.Empty();
-    }
-  }
-
-private:
-  CStringArray* m_results;
-  CString m_current;
-};
-
-bool ProjectFrame::RunIntest(CStringArray* results)
-{
-  CString cmdLine;
-  cmdLine.Format("\"%s\\Compilers\\intest\" -no-history -threads=1 -using -extension \"%s\\Source\\extension.i7x\" -do -catalogue",
-    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir);
-  StringOutputSink sink(results);
-  int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
-  sink.Done();
-  return (code == 0);
 }
 
 Panel* ProjectFrame::GetPanel(int column) const
@@ -2296,6 +2328,24 @@ void ProjectFrame::Output(const char* msg)
 
 void ProjectFrame::OnSourceLink(const char* url, TabInterface* from, COLORREF highlight)
 {
+  CString replace_url;
+  if (m_projectType == Project_I7XP)
+  {
+    int line = 0;
+    if (sscanf(url,"source:story.ni#line%d",&line) == 1)
+    {
+      // Replace link to source code, if needed
+      for (int i = m_exampleOffsets.GetSize()-1; (i >= 0) && replace_url.IsEmpty(); i--)
+      {
+        if (line >= m_exampleOffsets.GetAt(i).first)
+        {
+          replace_url.Format("source:extension.i7x#line%d",line+m_exampleOffsets.GetAt(i).second);
+          url = replace_url;
+        }
+      }
+    }
+  }
+
   // Select the panel to show the source in
   int otherPanel = 0;
   if (GetPanel(0)->ContainsTab(from))
@@ -2484,10 +2534,34 @@ CRect ProjectFrame::GetInitialSearchRect(void)
 
 void ProjectFrame::UpdateExampleDrop(void)
 {
-  // Get the names of the examples
-  CStringArray examples;
-  if (RunIntest(&examples))
+  // Run intest to list the examples
+  CString cmdLine;
+  cmdLine.Format("\"%s\\Compilers\\intest\" -no-history -threads=1 -using -extension \"%s\\Source\\extension.i7x\" -do -catalogue",
+    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir);
+  StringOutputSink sink;
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
+  sink.Done();
+
+  if (code == 0)
   {
+    // Update the list of all examples
+    m_examples.RemoveAll();
+    for (int i = 0; i < sink.results.GetSize(); i++)
+    {
+      CString result = sink.results.GetAt(i);
+      if (result.Left(18) == "extension Example ")
+      {
+        int equals = result.Find(" = ");
+        if ((equals >= 0) && (equals+2 < result.GetLength()))
+        {
+          Example example;
+          example.id = result.Mid(18,equals-18);
+          example.name = result.Mid(equals+2);
+          m_examples.Add(example);
+        }
+      }
+    }
+
     // Get the index of the current choice
     int index = m_exampleDrop.GetCurSel();
 
@@ -2495,17 +2569,9 @@ void ProjectFrame::UpdateExampleDrop(void)
     while (m_exampleDrop.GetCount() > 1)
       m_exampleDrop.DeleteString(1);
 
-    // Add the examples
-    for (int i = 0; i < examples.GetSize(); i++)
-    {
-      CString example = examples.GetAt(i);
-      if (example.Left(10) == "extension ")
-      {
-        int equals = example.Find('=');
-        if ((equals >= 0) && (equals+2 < example.GetLength()))
-          m_exampleDrop.AddString(example.Mid(equals+2));
-      }
-    }
+    // Add the example names
+    for (int i = 0; i < m_examples.GetSize(); i++)
+      m_exampleDrop.AddString(m_examples.GetAt(i).name);
 
     // Set the index of the current choice
     if (m_exampleDrop.SetCurSel(index) == CB_ERR)

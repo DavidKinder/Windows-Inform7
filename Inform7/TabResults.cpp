@@ -195,6 +195,11 @@ void TabResults::CompileProject(CompileStage stage, int code)
       break;
     }
     break;
+
+  case RanIntest:
+    if (code != 0)
+      SetActiveTab(ResTab_Console,false);
+    break;
   }
 }
 

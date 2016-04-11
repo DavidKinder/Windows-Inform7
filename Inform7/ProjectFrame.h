@@ -171,6 +171,12 @@ protected:
   void UpdateMenuParams(void);
   void UpdateExtensionsMenu(void);
 
+  struct Example
+  {
+    CString id;
+    CString name;
+  };
+
   enum ProcessAction
   {
     ProcessHelpExtensions
@@ -178,8 +184,8 @@ protected:
 
   CString NaturalCommandLine(bool release);
   CString InformCommandLine(bool release);
+  CString IntestSourceCommandLine(const Example& example);
   void MonitorProcess(HANDLE process, ProcessAction action);
-  bool RunIntest(CStringArray* results);
 
   Panel* GetPanel(int column) const;
   int ChoosePanel(Panel::Tabs newTab);
@@ -227,6 +233,8 @@ protected:
     HANDLE process;
     ProcessAction action;
   };
-
   CArray<SubProcess> m_processes;
+
+  CArray<Example> m_examples;
+  CArray<std::pair<int,int> > m_exampleOffsets;
 };
