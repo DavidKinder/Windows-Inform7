@@ -328,42 +328,45 @@ void SkeinWindow::OnDraw(CDC* pDC)
     return;
   CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&bitmap);
   CFont* oldFont = dc.SelectObject(theApp.GetFont(InformApp::FontDisplay));
+  CPoint origin = pDC->GetViewportOrg();
 
   // Clear the background
   dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourBack));
 
-  // Redo the layout if needed
-  m_skein->Layout(dc,&m_labelFont,m_fontSize.cx*10,false);
-
-  // Work out the position of the centre of the root node
-  CPoint origin = pDC->GetViewportOrg();
-  CPoint rootCentre(origin);
-  rootCentre.y += (int)(m_fontSize.cy*2.2);
-
-  // If there is no horizontal scrollbar, centre the root node
-  BOOL horiz, vert;
-  CheckScrollBars(horiz,vert);
-  if (horiz)
-    rootCentre.x += GetTotalSize().cx/2;
-  else
-    rootCentre.x += client.Width()/2;
-
-  // Get the end node of the transcript
-  Skein::Node* transcriptEnd = (Skein::Node*)
-    GetParentFrame()->SendMessage(WM_TRANSCRIPTEND);
-
-  // Draw all nodes
-  DrawNodeTree(m_skein->GetRoot(),transcriptEnd,dc,bitmap,client,
-    CPoint(0,0),rootCentre,m_fontSize.cy*5);
-
-  // If the edit window is visible, exclude the area under it to reduce flicker
-  if (m_edit.IsWindowVisible())
+  if (m_skein->IsActive())
   {
-    CRect editRect;
-    m_edit.GetWindowRect(&editRect);
-    ScreenToClient(&editRect);
-    editRect -= pDC->GetViewportOrg();
-    pDC->ExcludeClipRect(editRect);
+    // Redo the layout if needed
+    m_skein->Layout(dc,&m_labelFont,m_fontSize.cx*10,false);
+
+    // Work out the position of the centre of the root node
+    CPoint rootCentre(origin);
+    rootCentre.y += (int)(m_fontSize.cy*2.2);
+
+    // If there is no horizontal scrollbar, centre the root node
+    BOOL horiz, vert;
+    CheckScrollBars(horiz,vert);
+    if (horiz)
+      rootCentre.x += GetTotalSize().cx/2;
+    else
+      rootCentre.x += client.Width()/2;
+
+    // Get the end node of the transcript
+    Skein::Node* transcriptEnd = (Skein::Node*)
+      GetParentFrame()->SendMessage(WM_TRANSCRIPTEND);
+
+    // Draw all nodes
+    DrawNodeTree(m_skein->GetRoot(),transcriptEnd,dc,bitmap,client,
+      CPoint(0,0),rootCentre,m_fontSize.cy*5);
+
+    // If the edit window is visible, exclude the area under it to reduce flicker
+    if (m_edit.IsWindowVisible())
+    {
+      CRect editRect;
+      m_edit.GetWindowRect(&editRect);
+      ScreenToClient(&editRect);
+      editRect -= pDC->GetViewportOrg();
+      pDC->ExcludeClipRect(editRect);
+    }
   }
 
   // Draw the memory bitmap on the window's device context
@@ -475,24 +478,25 @@ void SkeinWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
 
 CSize SkeinWindow::GetLayoutSize(bool force)
 {
-  CDC* dc = AfxGetMainWnd()->GetDC();
-  CFont* font = dc->SelectObject(theApp.GetFont(InformApp::FontDisplay));
+  CSize size(0,0);
+  if (m_skein->IsActive())
+  {
+    CDC* dc = AfxGetMainWnd()->GetDC();
+    CFont* font = dc->SelectObject(theApp.GetFont(InformApp::FontDisplay));
 
-  CSize size;
+    // Redo the layout if needed
+    m_skein->Layout(*dc,&m_labelFont,m_fontSize.cx*10,force);
 
-  // Redo the layout if needed
-  m_skein->Layout(*dc,&m_labelFont,m_fontSize.cx*10,force);
+    // The width is the width of all nodes below the root
+    size.cx = m_skein->GetRoot()->GetTreeWidth(*dc,&m_labelFont,m_fontSize.cx*10)+
+      (m_fontSize.cx*10);
 
-  // The width is the width of all nodes below the root
-  size.cx = m_skein->GetRoot()->GetTreeWidth(*dc,&m_labelFont,m_fontSize.cx*10)+
-    (m_fontSize.cx*10);
+    // The height comes from the maximum tree depth
+    size.cy = m_skein->GetRoot()->GetMaxDepth()*m_fontSize.cy*5;
 
-  // The height comes from the maximum tree depth
-  size.cy = m_skein->GetRoot()->GetMaxDepth()*m_fontSize.cy*5;
-
-  dc->SelectObject(font);
-  AfxGetMainWnd()->ReleaseDC(dc);
-
+    dc->SelectObject(font);
+    AfxGetMainWnd()->ReleaseDC(dc);
+  }
   return size;
 }
 

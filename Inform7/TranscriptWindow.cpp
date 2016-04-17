@@ -86,172 +86,176 @@ void TranscriptWindow::OnDraw(CDC* pDC)
 
   dc.SetBkMode(TRANSPARENT);
   dc.FillSolidRect(clientRect,theApp.GetColour(InformApp::ColourBack));
-  CFont* oldFont = dc.SelectObject(theApp.GetFont(InformApp::FontDisplay));
-  CPen linePen(PS_SOLID,1,theApp.GetColour(InformApp::ColourBorder));
-  CPen* oldPen = dc.SelectObject(&linePen);
 
-  int y = 0;
-  int yinput = m_layout.fontSize.cy+(2*m_layout.margin.cy);
-
-  // If the transcript is taller than the window, work out the drawing origin
-  if (GetHeight() > clientRect.Height())
+  if (m_skein->IsActive())
   {
-    SCROLLINFO scroll;
-    ::ZeroMemory(&scroll,sizeof scroll);
-    scroll.cbSize = sizeof scroll;
-    GetScrollInfo(SB_VERT,&scroll);
-    y -= scroll.nPos;
-  }
+    CFont* oldFont = dc.SelectObject(theApp.GetFont(InformApp::FontDisplay));
+    CPen linePen(PS_SOLID,1,theApp.GetColour(InformApp::ColourBorder));
+    CPen* oldPen = dc.SelectObject(&linePen);
 
-  // Clear the map of visible buttons and expected texts
-  m_buttons.clear();
-  m_expecteds.clear();
+    int y = 0;
+    int yinput = m_layout.fontSize.cy+(2*m_layout.margin.cy);
 
-  // Loop over the transcript nodes
-  std::deque<NodeLayout>::const_iterator nodeIt;
-  for (nodeIt = m_layout.nodes.begin(); nodeIt != m_layout.nodes.end(); ++nodeIt)
-  {
-    const NodeLayout& nl = *nodeIt;
-
-    // Is this node visible?
-    CRect nodeRect(0,y,1,y+m_layout.fontSize.cy+nl.height+(4*m_layout.margin.cy)+1);
-    CRect intersection;
-    if (intersection.IntersectRect(nodeRect,clientRect) == FALSE)
+    // If the transcript is taller than the window, work out the drawing origin
+    if (GetHeight() > clientRect.Height())
     {
-      // Not visible, so increase the y position and try the next node
-      y += yinput+nl.height+(2*m_layout.margin.cy);
-      continue;
+      SCROLLINFO scroll;
+      ::ZeroMemory(&scroll,sizeof scroll);
+      scroll.cbSize = sizeof scroll;
+      GetScrollInfo(SB_VERT,&scroll);
+      y -= scroll.nPos;
     }
 
-    // Get the text associated with the node
-    const CStringW& transcript = nl.node->GetTranscriptText();
-    const CStringW& expected = nl.node->GetExpectedText();
-    const CStringW& line = nl.node->GetLine();
+    // Clear the map of visible buttons and expected texts
+    m_buttons.clear();
+    m_expecteds.clear();
 
-    // Fill in the background of the input line
-    dc.FillSolidRect(0,y+1,clientRect.Width(),yinput,
-      theApp.GetColour(InformApp::ColourTransInput));
-
-    // Fill in the background of the transcript text
-    COLORREF back;
-    if (transcript.IsEmpty())
-      back = theApp.GetColour(InformApp::ColourTransUnset);
-    else
+    // Loop over the transcript nodes
+    std::deque<NodeLayout>::const_iterator nodeIt;
+    for (nodeIt = m_layout.nodes.begin(); nodeIt != m_layout.nodes.end(); ++nodeIt)
     {
-      back = theApp.GetColour(nl.node->GetChanged() ?
-        InformApp::ColourTransDiffers : InformApp::ColourTransSame);
-    }
-    CRect backRect(0,y+yinput,m_layout.columnWidth,
-      y+m_layout.fontSize.cy+nl.height+(4*m_layout.margin.cy));
-    dc.FillSolidRect(backRect,back);
+      const NodeLayout& nl = *nodeIt;
 
-    // Fill in the background of the expected text
-    if (expected.IsEmpty())
-      back = theApp.GetColour(InformApp::ColourTransUnset);
-    else
-    {
-      switch (nl.node->GetDiffers())
+      // Is this node visible?
+      CRect nodeRect(0,y,1,y+m_layout.fontSize.cy+nl.height+(4*m_layout.margin.cy)+1);
+      CRect intersection;
+      if (intersection.IntersectRect(nodeRect,clientRect) == FALSE)
       {
-      case Skein::Node::ExpectedSame:
-        back = theApp.GetColour(InformApp::ColourTransSame);
-        break;
-      case Skein::Node::ExpectedNearlySame:
-        back = RGB(255,255,127);
-        break;
-      case Skein::Node::ExpectedDifferent:
-        back = theApp.GetColour(InformApp::ColourTransDiffers);
-        break;
-      default:
-        ASSERT(FALSE);
-        back = theApp.GetColour(InformApp::ColourTransDiffers);
-        break;
+        // Not visible, so increase the y position and try the next node
+        y += yinput+nl.height+(2*m_layout.margin.cy);
+        continue;
       }
-    }
-    backRect.OffsetRect(m_layout.columnWidth+1,0);
-    dc.FillSolidRect(backRect,Brighter(back));
 
-    // If this is the first node in the transcript, draw a horizontal line at the top
-    if (nl.node == m_skein->GetRoot())
-    {
-      dc.MoveTo(0,y);
-      dc.LineTo(clientRect.Width(),y);
-    }
+      // Get the text associated with the node
+      const CStringW& transcript = nl.node->GetTranscriptText();
+      const CStringW& expected = nl.node->GetExpectedText();
+      const CStringW& line = nl.node->GetLine();
 
-    // Draw a horizontal line below the node's input
-    dc.MoveTo(0,y+yinput);
-    dc.LineTo(clientRect.Width(),y+yinput);
+      // Fill in the background of the input line
+      dc.FillSolidRect(0,y+1,clientRect.Width(),yinput,
+        theApp.GetColour(InformApp::ColourTransInput));
 
-    // Draw a final horizontal line below the text boxes
-    dc.MoveTo(0,y+yinput+nl.height+(2*m_layout.margin.cy));
-    dc.LineTo(clientRect.Width(),y+yinput+nl.height+(2*m_layout.margin.cy));
-
-    // Draw a dividing line between the two text boxes
-    dc.MoveTo(m_layout.columnWidth,y+yinput);
-    dc.LineTo(m_layout.columnWidth,y+yinput+nl.height+(2*m_layout.margin.cy));
-
-    // If this is the last played knot in the skein, draw a yellow border around it
-    if (nl.node == m_skeinPlayed)
-    {
-      CRect backRect(0,y,clientRect.Width(),
+      // Fill in the background of the transcript text
+      COLORREF back;
+      if (transcript.IsEmpty())
+        back = theApp.GetColour(InformApp::ColourTransUnset);
+      else
+      {
+        back = theApp.GetColour(nl.node->GetChanged() ?
+          InformApp::ColourTransDiffers : InformApp::ColourTransSame);
+      }
+      CRect backRect(0,y+yinput,m_layout.columnWidth,
         y+m_layout.fontSize.cy+nl.height+(4*m_layout.margin.cy));
-      DrawInsideRect(dc,backRect,CSize(m_layout.margin.cx*3/4,m_layout.margin.cy*7/8),
-        theApp.GetColour(InformApp::ColourTransPlayed));
+      dc.FillSolidRect(backRect,back);
+
+      // Fill in the background of the expected text
+      if (expected.IsEmpty())
+        back = theApp.GetColour(InformApp::ColourTransUnset);
+      else
+      {
+        switch (nl.node->GetDiffers())
+        {
+        case Skein::Node::ExpectedSame:
+          back = theApp.GetColour(InformApp::ColourTransSame);
+          break;
+        case Skein::Node::ExpectedNearlySame:
+          back = RGB(255,255,127);
+          break;
+        case Skein::Node::ExpectedDifferent:
+          back = theApp.GetColour(InformApp::ColourTransDiffers);
+          break;
+        default:
+          ASSERT(FALSE);
+          back = theApp.GetColour(InformApp::ColourTransDiffers);
+          break;
+        }
+      }
+      backRect.OffsetRect(m_layout.columnWidth+1,0);
+      dc.FillSolidRect(backRect,Brighter(back));
+
+      // If this is the first node in the transcript, draw a horizontal line at the top
+      if (nl.node == m_skein->GetRoot())
+      {
+        dc.MoveTo(0,y);
+        dc.LineTo(clientRect.Width(),y);
+      }
+
+      // Draw a horizontal line below the node's input
+      dc.MoveTo(0,y+yinput);
+      dc.LineTo(clientRect.Width(),y+yinput);
+
+      // Draw a final horizontal line below the text boxes
+      dc.MoveTo(0,y+yinput+nl.height+(2*m_layout.margin.cy));
+      dc.LineTo(clientRect.Width(),y+yinput+nl.height+(2*m_layout.margin.cy));
+
+      // Draw a dividing line between the two text boxes
+      dc.MoveTo(m_layout.columnWidth,y+yinput);
+      dc.LineTo(m_layout.columnWidth,y+yinput+nl.height+(2*m_layout.margin.cy));
+
+      // If this is the last played knot in the skein, draw a yellow border around it
+      if (nl.node == m_skeinPlayed)
+      {
+        CRect backRect(0,y,clientRect.Width(),
+          y+m_layout.fontSize.cy+nl.height+(4*m_layout.margin.cy));
+        DrawInsideRect(dc,backRect,CSize(m_layout.margin.cx*3/4,m_layout.margin.cy*7/8),
+          theApp.GetColour(InformApp::ColourTransPlayed));
+      }
+
+      // If this is the knot selected in the skein, draw a blue border around it
+      if (nl.node == m_skeinSelected)
+      {
+        CRect backRect(0,y,clientRect.Width(),
+          y+m_layout.fontSize.cy+nl.height+(4*m_layout.margin.cy));
+        DrawInsideRect(dc,backRect,CSize(m_layout.margin.cx*3/8,m_layout.margin.cy*7/16),
+          theApp.GetColour(InformApp::ColourTransSelect));
+      }
+
+      // Draw the buttons at the end of the input line, and store their positions
+      int btnHeight = m_layout.fontSize.cy+m_layout.margin.cy;
+      CRect btnRect(
+        CPoint(clientRect.Width()-(m_layout.margin.cy/2),y+(m_layout.margin.cy/2)),
+        CSize(0,btnHeight));
+      btnRect = DrawButton(dc,btnRect,false,"Show knot",Button(nl.node,ButtonShow),true);
+      btnRect.right = btnRect.left-(m_layout.margin.cy/2);
+      DrawButton(dc,btnRect,false,"Play to here",Button(nl.node,ButtonPlay),true);
+
+      // Write the node's input
+      dc.SetTextColor(theApp.GetColour(InformApp::ColourText));
+      CRect textRect(m_layout.margin.cx,y+m_layout.margin.cy,
+        btnRect.left-m_layout.margin.cx,y+yinput);
+      theOS.DrawText(&dc,line,line.GetLength(),textRect,DT_SINGLELINE|DT_NOPREFIX|DT_END_ELLIPSIS);
+
+      // Draw the 'bless' button, and store its position
+      y += yinput;
+      btnRect.right = m_layout.columnWidth;
+      btnRect.top = y+(((nl.height+(2*m_layout.margin.cy))-btnHeight)/2);
+      btnRect.bottom = btnRect.top+btnHeight;
+      DrawButton(dc,btnRect,true,"Bless",Button(nl.node,ButtonBless),nl.node->CanBless());
+
+      // Write the text in the text boxes
+      textRect = CRect(m_layout.margin.cx,y+m_layout.margin.cy,
+        m_layout.columnWidth-m_layout.centreMargin,y+m_layout.margin.cy+nl.height);
+      DrawText(dc,textRect,transcript,nl.node->GetTranscriptDiffs());
+      textRect.OffsetRect(m_layout.columnWidth+m_layout.centreMargin-m_layout.margin.cx,0);
+      DrawText(dc,textRect,expected,nl.node->GetExpectedDiffs());
+      textRect.InflateRect(theApp.MeasureFont(m_edit.GetFont()).cx/4,0);
+      m_expecteds.push_back(std::make_pair(backRect,Expected(nl.node,textRect)));
+
+      // Advance the y position
+      y += nl.height+(2*m_layout.margin.cy);
     }
 
-    // If this is the knot selected in the skein, draw a blue border around it
-    if (nl.node == m_skeinSelected)
+    dc.SelectObject(oldPen);
+    dc.SelectObject(oldFont);
+
+    // If the edit window is visible, exclude the area under it to reduce flicker
+    if (m_edit.IsWindowVisible())
     {
-      CRect backRect(0,y,clientRect.Width(),
-        y+m_layout.fontSize.cy+nl.height+(4*m_layout.margin.cy));
-      DrawInsideRect(dc,backRect,CSize(m_layout.margin.cx*3/8,m_layout.margin.cy*7/16),
-        theApp.GetColour(InformApp::ColourTransSelect));
+      CRect editRect;
+      m_edit.GetWindowRect(&editRect);
+      ScreenToClient(&editRect);
+      pDC->ExcludeClipRect(editRect);
     }
-
-    // Draw the buttons at the end of the input line, and store their positions
-    int btnHeight = m_layout.fontSize.cy+m_layout.margin.cy;
-    CRect btnRect(
-      CPoint(clientRect.Width()-(m_layout.margin.cy/2),y+(m_layout.margin.cy/2)),
-      CSize(0,btnHeight));
-    btnRect = DrawButton(dc,btnRect,false,"Show knot",Button(nl.node,ButtonShow),true);
-    btnRect.right = btnRect.left-(m_layout.margin.cy/2);
-    DrawButton(dc,btnRect,false,"Play to here",Button(nl.node,ButtonPlay),true);
-
-    // Write the node's input
-    dc.SetTextColor(theApp.GetColour(InformApp::ColourText));
-    CRect textRect(m_layout.margin.cx,y+m_layout.margin.cy,
-      btnRect.left-m_layout.margin.cx,y+yinput);
-    theOS.DrawText(&dc,line,line.GetLength(),textRect,DT_SINGLELINE|DT_NOPREFIX|DT_END_ELLIPSIS);
-
-    // Draw the 'bless' button, and store its position
-    y += yinput;
-    btnRect.right = m_layout.columnWidth;
-    btnRect.top = y+(((nl.height+(2*m_layout.margin.cy))-btnHeight)/2);
-    btnRect.bottom = btnRect.top+btnHeight;
-    DrawButton(dc,btnRect,true,"Bless",Button(nl.node,ButtonBless),nl.node->CanBless());
-
-    // Write the text in the text boxes
-    textRect = CRect(m_layout.margin.cx,y+m_layout.margin.cy,
-      m_layout.columnWidth-m_layout.centreMargin,y+m_layout.margin.cy+nl.height);
-    DrawText(dc,textRect,transcript,nl.node->GetTranscriptDiffs());
-    textRect.OffsetRect(m_layout.columnWidth+m_layout.centreMargin-m_layout.margin.cx,0);
-    DrawText(dc,textRect,expected,nl.node->GetExpectedDiffs());
-    textRect.InflateRect(theApp.MeasureFont(m_edit.GetFont()).cx/4,0);
-    m_expecteds.push_back(std::make_pair(backRect,Expected(nl.node,textRect)));
-
-    // Advance the y position
-    y += nl.height+(2*m_layout.margin.cy);
-  }
-
-  dc.SelectObject(oldPen);
-  dc.SelectObject(oldFont);
-
-  // If the edit window is visible, exclude the area under it to reduce flicker
-  if (m_edit.IsWindowVisible())
-  {
-    CRect editRect;
-    m_edit.GetWindowRect(&editRect);
-    ScreenToClient(&editRect);
-    pDC->ExcludeClipRect(editRect);
   }
 
   // Copy to the on-screen device context

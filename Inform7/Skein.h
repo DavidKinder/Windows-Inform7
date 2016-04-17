@@ -12,9 +12,14 @@ public:
   Skein();
   ~Skein();
 
+  void SetFile(const char* fileName);
+  CString GetFile(void);
+
   void Load(const char* path);
   bool Save(const char* path);
+  void Reset(void);
   void Import(const char* path);
+  bool IsActive(void);
   bool IsEdited(void);
   bool NeedSaveWarn(int& maxTemp);
 
@@ -208,6 +213,7 @@ private:
   static bool BoolFromXML(IXMLDOMNode* node, LPWSTR query, bool ifNon);
   static int IntFromXML(IXMLDOMNode* node, LPWSTR query);
 
+  CString m_skeinFile;
   bool m_layout;
   bool m_edited;
   std::vector<Listener*> m_listeners;

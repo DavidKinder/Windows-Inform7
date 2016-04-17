@@ -181,7 +181,10 @@ LRESULT TabTranscript::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
       state.DoUpdate(GetParentFrame(),FALSE);
     }
 
-    m_blessAll.EnableWindow(m_skein->CanBless(m_skein->GetCurrent(),true) ? TRUE : FALSE);
+    if (m_skein->IsActive())
+      m_blessAll.EnableWindow(m_skein->CanBless(m_skein->GetCurrent(),true) ? TRUE : FALSE);
+    else
+      m_blessAll.EnableWindow(FALSE);
   }
   return TabBase::OnIdleUpdateCmdUI(wParam,lParam);
 }

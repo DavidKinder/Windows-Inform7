@@ -7,10 +7,9 @@
 #define new DEBUG_NEW
 #endif
 
-#define SKEIN_FILE "\\Skein.skein"
-
 Skein::Skein() : m_layout(false), m_edited(false)
 {
+  m_skeinFile = "Skein.skein";
   m_root = new Node(L"- start -",L"",L"",L"",false,false,false,0);
   m_current = m_root;
   m_played = m_root;
@@ -59,15 +58,34 @@ Skein::Node* Skein::GetPlayed(void)
   return m_played;
 }
 
+void Skein::SetFile(const char* fileName)
+{
+  m_skeinFile = fileName;
+}
+
+CString Skein::GetFile(void)
+{
+  return m_skeinFile;
+}
+
 void Skein::Load(const char* path)
 {
-  CString fileName = path;
-  fileName += SKEIN_FILE;
+  if (m_skeinFile.IsEmpty())
+  {
+    Reset();
+    return;
+  }
+
+  CString fileName;
+  fileName.Format("%s\\%s",path,m_skeinFile);
 
   // Create an XML document instance
   CComPtr<IXMLDOMDocument> doc;
   if (FAILED(doc.CoCreateInstance(CLSID_DOMDocument)))
+  {
+    Reset();
     return;
+  }
 
   // Load the skein XML into the document
   VARIANT_BOOL success = 0;
@@ -85,6 +103,7 @@ void Skein::Load(const char* path)
 
     TRACE("Failed to load skein XML\n line: %d\n text: %S\n reason: %S\n",
       line,text.m_str,reason.m_str);
+    Reset();
     return;
   }
 
@@ -151,8 +170,10 @@ bool Skein::Save(const char* path)
   m_root->GetTempNodes(tempNodes,m_maxSaveTemp);
   Node* current = m_current->WillSaveNode(tempNodes) ? m_current : m_root;
 
-  CString fileName = path;
-  fileName += SKEIN_FILE;
+  if (m_skeinFile.IsEmpty())
+    return true;
+  CString fileName;
+  fileName.Format("%s\\%s",path,m_skeinFile);
 
   FILE* skeinFile = fopen(fileName,"wt");
   if (skeinFile == NULL)
@@ -169,6 +190,18 @@ bool Skein::Save(const char* path)
   fclose(skeinFile);
   NotifyEdit(false);
   return true;
+}
+
+void Skein::Reset()
+{
+  delete m_root;
+  m_root = new Node(L"- start -",L"",L"",L"",false,false,false,0);
+  m_current = m_root;
+  m_played = m_root;
+
+  m_layout = false;
+  NotifyChange(TreeChanged);
+  NotifyEdit(false);
 }
 
 void Skein::Import(const char* path)
@@ -204,6 +237,11 @@ void Skein::Import(const char* path)
       NotifyEdit(true);
     }
   }
+}
+
+bool Skein::IsActive(void)
+{
+  return (m_skeinFile.IsEmpty() == FALSE);
 }
 
 bool Skein::IsEdited(void)

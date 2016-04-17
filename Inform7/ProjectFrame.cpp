@@ -35,6 +35,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_WM_DRAWITEM()
   ON_WM_SETTINGCHANGE()
   ON_WM_TIMER()
+  ON_CBN_SELCHANGE(IDC_EXAMPLE_DROP, OnChangedExample)
   ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
 
   ON_MESSAGE(WM_PLAYSKEIN, OnPlaySkein)
@@ -91,7 +92,9 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
 
   ON_UPDATE_COMMAND_UI(ID_REPLAY_BLESSED, OnUpdateReplayBlessed)
   ON_COMMAND(ID_REPLAY_BLESSED, OnReplayBlessed)
+  ON_UPDATE_COMMAND_UI(ID_REPLAY_SHOW_LAST, OnUpdateReplayShowLast)
   ON_COMMAND(ID_REPLAY_SHOW_LAST, OnReplayShowLast)
+  ON_UPDATE_COMMAND_UI(ID_REPLAY_SHOW_LAST_SKEIN, OnUpdateReplayShowLast)
   ON_COMMAND(ID_REPLAY_SHOW_LAST_SKEIN, OnReplayShowLastSkein)
   ON_UPDATE_COMMAND_UI_RANGE(ID_REPLAY_CHANGED_PREV, ID_REPLAY_CHANGED_NEXT, OnUpdateReplayChanged)
   ON_COMMAND_RANGE(ID_REPLAY_CHANGED_PREV, ID_REPLAY_CHANGED_NEXT, OnReplayChanged)
@@ -136,6 +139,8 @@ ProjectFrame::ProjectFrame(ProjectType projectType)
   : m_projectType(projectType), m_busy(false), m_I6debug(false), m_game(m_skein),
     m_focus(0), m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0)
 {
+  if (m_projectType == Project_I7XP)
+    m_skein.SetFile("");
 }
 
 int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -512,6 +517,30 @@ void ProjectFrame::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
 void ProjectFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
   UpdateMenuParams();
+}
+
+void ProjectFrame::OnChangedExample()
+{
+  int index = m_exampleDrop.GetCurSel();
+
+  CString id;
+  if ((index > 0) && (index <= m_examples.GetSize()))
+    id.Format("Skein%s.skein",m_examples.GetAt(index-1).id);
+
+  if (id != m_skein.GetFile())
+  {
+    if (m_skein.IsEdited())
+    {
+      GetPanel(0)->GetTab(Panel::Tab_Skein)->SaveProject(m_projectDir,true);
+      GetPanel(1)->GetTab(Panel::Tab_Skein)->SaveProject(m_projectDir,false);
+    }
+
+    m_skein.SetFile(id);
+    GetPanel(0)->GetTab(Panel::Tab_Skein)->OpenProject(m_projectDir,true);
+    GetPanel(0)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,true);
+    GetPanel(1)->GetTab(Panel::Tab_Skein)->OpenProject(m_projectDir,false);
+    GetPanel(1)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,false);
+  }
 }
 
 LRESULT ProjectFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
@@ -1245,6 +1274,11 @@ void ProjectFrame::OnReplayBlessed()
   OnPlayReplay();
 }
 
+void ProjectFrame::OnUpdateReplayShowLast(CCmdUI *pCmdUI)
+{
+  pCmdUI->Enable(m_skein.IsActive());
+}
+
 void ProjectFrame::OnReplayShowLast()
 {
   // Move the transcript to the given node for both panels, as this involves
@@ -1269,9 +1303,13 @@ void ProjectFrame::OnReplayShowLastSkein()
 
 void ProjectFrame::OnUpdateReplayChanged(CCmdUI *pCmdUI)
 {
-  TabTranscript* tab = (TabTranscript*)(GetPanel(0)->GetTab(Panel::Tab_Transcript));
-  Skein::Node* node = tab->FindRelevantNode(
-    TranscriptWindow::TranscriptChanged,pCmdUI->m_nID == ID_REPLAY_CHANGED_NEXT);
+  Skein::Node* node = NULL;
+  if (m_skein.IsActive())
+  {
+    TabTranscript* tab = (TabTranscript*)(GetPanel(0)->GetTab(Panel::Tab_Transcript));
+    node = tab->FindRelevantNode(
+      TranscriptWindow::TranscriptChanged,pCmdUI->m_nID == ID_REPLAY_CHANGED_NEXT);
+  }
   pCmdUI->Enable(node != NULL);
 }
 
@@ -1296,9 +1334,13 @@ void ProjectFrame::OnReplayChanged(UINT nID)
 
 void ProjectFrame::OnUpdateReplayDiffer(CCmdUI *pCmdUI)
 {
-  TabTranscript* tab = (TabTranscript*)(GetPanel(0)->GetTab(Panel::Tab_Transcript));
-  Skein::Node* node = tab->FindRelevantNode(
-    TranscriptWindow::TranscriptDifferent,pCmdUI->m_nID == ID_REPLAY_DIFF_NEXT);
+  Skein::Node* node = NULL;
+  if (m_skein.IsActive())
+  {
+    TabTranscript* tab = (TabTranscript*)(GetPanel(0)->GetTab(Panel::Tab_Transcript));
+    node = tab->FindRelevantNode(
+      TranscriptWindow::TranscriptDifferent,pCmdUI->m_nID == ID_REPLAY_DIFF_NEXT);
+  }
   pCmdUI->Enable(node != NULL);
 }
 
@@ -1323,8 +1365,12 @@ void ProjectFrame::OnReplayDiffer(UINT nID)
 
 void ProjectFrame::OnUpdateReplayDifferSkein(CCmdUI *pCmdUI)
 {
-  TabTranscript* tab = (TabTranscript*)(GetPanel(0)->GetTab(Panel::Tab_Transcript));
-  Skein::Node* node = tab->FindRelevantNode(TranscriptWindow::SkeinDifferent,true);
+  Skein::Node* node = NULL;
+  if (m_skein.IsActive())
+  {
+    TabTranscript* tab = (TabTranscript*)(GetPanel(0)->GetTab(Panel::Tab_Transcript));
+    node = tab->FindRelevantNode(TranscriptWindow::SkeinDifferent,true);
+  }
   pCmdUI->Enable(node != NULL);
 }
 
@@ -2576,5 +2622,7 @@ void ProjectFrame::UpdateExampleDrop(void)
     // Set the index of the current choice
     if (m_exampleDrop.SetCurSel(index) == CB_ERR)
       m_exampleDrop.SetCurSel(0);
+
+    OnChangedExample();
   }
 }

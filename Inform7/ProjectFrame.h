@@ -52,6 +52,7 @@ protected:
   afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di);
   afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
   afx_msg void OnTimer(UINT nIDEvent);
+  afx_msg void OnChangedExample();
   afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
 
   afx_msg LRESULT OnPlaySkein(WPARAM, LPARAM);
@@ -103,6 +104,7 @@ protected:
   afx_msg void OnPlayReplay();
   afx_msg void OnUpdateReplayBlessed(CCmdUI *pCmdUI);
   afx_msg void OnReplayBlessed();
+  afx_msg void OnUpdateReplayShowLast(CCmdUI *pCmdUI);
   afx_msg void OnReplayShowLast();
   afx_msg void OnReplayShowLastSkein();
   afx_msg void OnUpdateReplayChanged(CCmdUI *pCmdUI);
@@ -170,6 +172,7 @@ protected:
 
   void UpdateMenuParams(void);
   void UpdateExtensionsMenu(void);
+  void UpdateExampleDrop(void);
 
   struct Example
   {
@@ -192,7 +195,6 @@ protected:
 
   bool LoadToolBar(void);
   CRect GetInitialSearchRect(void);
-  void UpdateExampleDrop(void);
 
   enum SkeinAction
   {

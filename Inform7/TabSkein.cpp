@@ -173,8 +173,18 @@ LRESULT TabSkein::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
 {
   if (GetSafeHwnd() != 0)
   {
-    m_label.EnableWindow(m_skein->HasLabels() ? TRUE : FALSE);
-    m_play.EnableWindow(GetParentFrame()->SendMessage(WM_CANPLAYALL) != 0);
+    if (m_skein->IsActive())
+    {
+      m_label.EnableWindow(m_skein->HasLabels() ? TRUE : FALSE);
+      m_trim.EnableWindow(TRUE);
+      m_play.EnableWindow(GetParentFrame()->SendMessage(WM_CANPLAYALL) != 0);
+    }
+    else
+    {
+      m_label.EnableWindow(FALSE);
+      m_trim.EnableWindow(FALSE);
+      m_play.EnableWindow(FALSE);
+    }
   }
   return TabBase::OnIdleUpdateCmdUI(wParam,lParam);
 }
