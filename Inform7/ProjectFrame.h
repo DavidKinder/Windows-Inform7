@@ -164,7 +164,7 @@ protected:
 
   void OpenProject(const char* project);
   bool SaveProject(const char* project);
-  bool CompileProject(bool release);
+  bool CompileProject(bool release, bool test);
   void RunProject(void);
   void CleanProject(void);
   bool IsProjectEdited(void);
@@ -178,7 +178,13 @@ protected:
   {
     CString id;
     CString name;
+    int index;
+
+    Example() : index(0)
+    {
+    }
   };
+  Example GetCurrentExample(void);
 
   enum ProcessAction
   {
@@ -187,7 +193,8 @@ protected:
 
   CString NaturalCommandLine(bool release);
   CString InformCommandLine(bool release);
-  CString IntestSourceCommandLine(const Example& example);
+  CString IntestSourceCommandLine(void);
+  void GenerateIntestReport(const char* failure);
   void MonitorProcess(HANDLE process, ProcessAction action);
 
   Panel* GetPanel(int column) const;
@@ -238,5 +245,6 @@ protected:
   CArray<SubProcess> m_processes;
 
   CArray<Example> m_examples;
+  Example m_exampleCompiled;
   CArray<std::pair<int,int> > m_exampleOffsets;
 };

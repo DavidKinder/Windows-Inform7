@@ -56,7 +56,8 @@ public:
     RanNaturalInform,
     RanInform6,
     RanCBlorb,
-    RanIntest
+    RanIntestSource,
+    RanIntestReport
   };
 
   // Notification that a project is being opened

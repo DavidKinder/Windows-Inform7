@@ -196,9 +196,16 @@ void TabResults::CompileProject(CompileStage stage, int code)
     }
     break;
 
-  case RanIntest:
+  case RanIntestSource:
     if (code != 0)
       SetActiveTab(ResTab_Console,false);
+    break;
+
+  case RanIntestReport:
+    // Show the intest report
+    CString reportPath;
+    reportPath.Format("%s\\Build\\Inform-Report-%d.html",(LPCSTR)m_projectDir,code);
+    m_report->Navigate(reportPath,false);
     break;
   }
 }

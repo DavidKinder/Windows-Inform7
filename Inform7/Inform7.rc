@@ -706,9 +706,9 @@ BEGIN
     ID_FORMAT_RENUMBER      "Renumber all section headings in the source"
     ID_PLAY_GO              "Translate and run the story\nGo!"
     ID_PLAY_STOP            "Stop the story that is currently running\nStop"
-    ID_PLAY_TEST            "Translate the story and run the ""test me"" command"
-    ID_PLAY_REFRESH         "Translate the story and refresh the index\nRefresh"
+    ID_PLAY_TEST            "Translate the story and run the ""test me"" command\nTest"
     ID_PLAY_TEST_EXAMPLES   "Translate and test the examples\nTest"
+    ID_PLAY_REFRESH         "Translate the story and refresh the index\nRefresh"
 END
 
 STRINGTABLE 
