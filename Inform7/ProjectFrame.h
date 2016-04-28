@@ -156,6 +156,7 @@ protected:
   // Implementation of TabInterface::LinkTabNotify
   void OnSourceLink(const char* url, TabInterface* from, COLORREF highlight);
   void OnDocLink(const wchar_t* url, TabInterface* from);
+  void OnSkeinLink(const char* url, TabInterface* from);
 
   static ProjectFrame* NewFrame(ProjectType projectType);
   static ProjectType TypeFromDir(const CString& projectDir);
@@ -176,11 +177,11 @@ protected:
 
   struct Example
   {
-    CString id;
-    CString name;
+    char id;
     int index;
+    CString name;
 
-    Example() : index(0)
+    Example() : id(0), index(0)
     {
     }
   };
@@ -194,7 +195,7 @@ protected:
   CString NaturalCommandLine(bool release);
   CString InformCommandLine(bool release);
   CString IntestSourceCommandLine(void);
-  void GenerateIntestReport(const char* failure);
+  void GenerateIntestReport(const char* failure, const char* nodeId, int nodes);
   void MonitorProcess(HANDLE process, ProcessAction action);
 
   Panel* GetPanel(int column) const;
@@ -206,7 +207,8 @@ protected:
   enum SkeinAction
   {
     PlaySkeinThread,
-    ShowFirstSkeinError
+    ShowFirstSkeinError,
+    ShowTestReport
   };
 
   struct PlaySkein

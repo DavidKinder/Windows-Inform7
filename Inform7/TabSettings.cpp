@@ -127,6 +127,11 @@ COLORREF TabSettings::GetTabColour(void)
   return ::GetSysColor(COLOR_BTNFACE);
 }
 
+CWnd* TabSettings::GetWindow(void)
+{
+  return this;
+}
+
 BOOL TabSettings::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
   return CFormView::OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);

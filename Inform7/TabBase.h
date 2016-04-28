@@ -11,6 +11,7 @@ public:
   void MakeInactive(void);
   bool IsEnabled(void);
   COLORREF GetTabColour(void);
+  CWnd* GetWindow(void);
 
   void OpenProject(const char* path, bool primary);
   bool SaveProject(const char* path, bool primary);

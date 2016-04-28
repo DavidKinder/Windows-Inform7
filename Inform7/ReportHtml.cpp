@@ -71,6 +71,12 @@ void ReportHtml::OnBeforeNavigate2(LPCTSTR lpszURL, DWORD, LPCTSTR, CByteArray&,
       m_consumer->LibraryLink(lpszURL);
       *pbCancel = TRUE;
     }
+    else if (strncmp(lpszURL,"skein:",6) == 0)
+    {
+      // Got a skin: URL
+      m_consumer->SkeinLink(lpszURL);
+      *pbCancel = TRUE;
+    }
     else if (strncmp(lpszURL,"inform:",7) == 0)
     {
       // Got an inform: documentation URL

@@ -135,6 +135,10 @@ void TabExtensions::LibraryLink(const char* url)
   GetParentFrame()->PostMessage(WM_EXTDOWNLOAD,(WPARAM)libraryUrls);
 }
 
+void TabExtensions::SkeinLink(const char* url)
+{
+}
+
 bool TabExtensions::DocLink(const wchar_t* url)
 {
   // Switch to the documentation tab if the URL points to a file in the application

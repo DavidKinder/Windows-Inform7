@@ -27,6 +27,7 @@ public:
   // Implementation of ReportHtml::LinkConsumer
   void SourceLink(const char* url);
   void LibraryLink(const char* url);
+  void SkeinLink(const char* url);
   bool DocLink(const wchar_t* url);
   bool LinkError(const char* url);
 

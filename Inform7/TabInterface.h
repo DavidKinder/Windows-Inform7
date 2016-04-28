@@ -46,6 +46,8 @@ public:
   virtual bool IsEnabled(void) = 0;
   // Get the colour for the tab highlight
   virtual COLORREF GetTabColour(void) = 0;
+  // Get the window for this tab
+  virtual CWnd* GetWindow(void) = 0;
 
   // Command routing
   virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) = 0;
@@ -82,5 +84,6 @@ public:
   public:
     virtual void OnSourceLink(const char* url, TabInterface* from, COLORREF highlight) = 0;
     virtual void OnDocLink(const wchar_t* url, TabInterface* from) = 0;
+    virtual void OnSkeinLink(const char* url, TabInterface* from) = 0;
   };
 };

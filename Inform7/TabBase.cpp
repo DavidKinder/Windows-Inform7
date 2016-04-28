@@ -83,6 +83,11 @@ COLORREF TabBase::GetTabColour(void)
   return ::GetSysColor(COLOR_BTNFACE);
 }
 
+CWnd* TabBase::GetWindow(void)
+{
+  return this;
+}
+
 void TabBase::OpenProject(const char* path, bool primary)
 {
 }

@@ -115,6 +115,7 @@ public:
 
   private:
     void CompareWithExpected(void);
+    void OverwriteBanner(CStringW& inStr);
     CStringW StripWhite(const CStringW& inStr);
 
     CStringW m_line;
@@ -173,6 +174,7 @@ public:
   int GetBlessedThreadEnds(std::vector<Node*>& nodes, Node* node = NULL);
   Node* GetFirstDifferent(Node* node = NULL);
   void GetAllNodes(CArray<Skein::Node*,Skein::Node*>& nodes, Node* node = NULL);
+  Node* FindNode(const char* id, Node* node = NULL);
 
   void SaveTranscript(Node* node, const char* path);
 

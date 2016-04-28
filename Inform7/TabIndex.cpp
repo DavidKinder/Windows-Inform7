@@ -147,6 +147,10 @@ void TabIndex::LibraryLink(const char* url)
 {
 }
 
+void TabIndex::SkeinLink(const char* url)
+{
+}
+
 bool TabIndex::DocLink(const wchar_t* url)
 {
   if (m_notify)

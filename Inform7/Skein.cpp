@@ -663,6 +663,21 @@ void Skein::GetAllNodes(CArray<Skein::Node*,Skein::Node*>& nodes, Node* node)
     GetAllNodes(nodes,node->GetChild(i));
 }
 
+Skein::Node* Skein::FindNode(const char* id, Node* node)
+{
+  if (node == NULL)
+    node = m_root;
+  if (strcmp(node->GetUniqueId(),id) == 0)
+    return node;
+  for (int i = 0; i < node->GetNumChildren(); i++)
+  {
+    Node* foundNode = FindNode(id,node->GetChild(i));
+    if (foundNode != NULL)
+      return foundNode;
+  }
+  return NULL;
+}
+
 void Skein::SaveTranscript(Node* node, const char* path)
 {
   std::vector<Node*> list;
@@ -1214,20 +1229,47 @@ const Diff::DiffResults& Skein::Node::GetExpectedDiffs(void)
 
 void Skein::Node::CompareWithExpected(void)
 {
-  m_differs = !(m_textTranscript == m_textExpected) ? ExpectedDifferent : ExpectedSame;
+  CStringW textExpected(m_textExpected);
+  CStringW textTranscript(m_textTranscript);
+  OverwriteBanner(textExpected);
+  OverwriteBanner(textTranscript);
+
+  m_differs = !(textTranscript == textExpected) ? ExpectedDifferent : ExpectedSame;
   if (m_differs == ExpectedDifferent)
   {
-    if ((m_textTranscript.IsEmpty() == FALSE) && (m_textExpected.IsEmpty() == FALSE))
+    if ((textTranscript.IsEmpty() == FALSE) && (textExpected.IsEmpty() == FALSE))
     {
-      if (StripWhite(m_textTranscript).CompareNoCase(StripWhite(m_textExpected)) == 0)
+      if (StripWhite(textTranscript).CompareNoCase(StripWhite(textExpected)) == 0)
         m_differs = ExpectedNearlySame;
     }
   }
 
   m_diffExpected.clear();
   m_diffTranscript.clear();
-  if ((m_differs == ExpectedDifferent) && (m_textExpected.IsEmpty() == FALSE))
-    Diff::DiffStrings(m_textExpected,m_textTranscript,m_diffExpected,m_diffTranscript);
+  if ((m_differs == ExpectedDifferent) && (textExpected.IsEmpty() == FALSE))
+  {
+    Diff::DiffStrings(textExpected,textTranscript,m_diffExpected,m_diffTranscript);
+  }
+}
+
+void Skein::Node::OverwriteBanner(CStringW& inStr)
+{
+  // Does this text contain an Inform 7 banner?
+  int i = inStr.Find(L"\nRelease ");
+  if (i >= 0)
+  {
+    int release, serial, build;
+    if (swscanf((LPCWSTR)inStr+i,L"\nRelease %d / Serial number %d / Inform 7 build %d",&release,&serial,&build) == 3)
+    {
+      // Replace the banner line with asterisks
+      for (int j = i+1; j < inStr.GetLength(); j++)
+      {
+        if (inStr.GetAt(j) == '\n')
+          break;
+        inStr.SetAt(j,'*');
+      }
+    }
+  }
 }
 
 CStringW Skein::Node::StripWhite(const CStringW& inStr)

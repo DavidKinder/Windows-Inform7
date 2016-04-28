@@ -206,6 +206,7 @@ void TabResults::CompileProject(CompileStage stage, int code)
     CString reportPath;
     reportPath.Format("%s\\Build\\Inform-Report-%d.html",(LPCSTR)m_projectDir,code);
     m_report->Navigate(reportPath,false);
+    SetActiveTab(ResTab_Report,false);
     break;
   }
 }
@@ -298,6 +299,12 @@ void TabResults::SourceLink(const char* url)
 
 void TabResults::LibraryLink(const char* url)
 {
+}
+
+void TabResults::SkeinLink(const char* url)
+{
+  if (m_notify)
+    m_notify->OnSkeinLink(url,this);
 }
 
 bool TabResults::DocLink(const wchar_t* url)
