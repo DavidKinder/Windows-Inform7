@@ -35,7 +35,7 @@ public:
 protected:
   CToolBar m_toolBar;
   SearchBar m_searchBar;
-  CComboBox m_exampleDrop;
+  CComboBox m_exampleList;
   CStatusBar m_statusBar;
   ProgressWnd m_progress;
   FlatSplitter m_splitter;
@@ -173,7 +173,7 @@ protected:
 
   void UpdateMenuParams(void);
   void UpdateExtensionsMenu(void);
-  void UpdateExampleDrop(void);
+  void UpdateExampleList(void);
 
   struct Example
   {
@@ -186,6 +186,7 @@ protected:
     }
   };
   Example GetCurrentExample(void);
+  void TestCurrentExample(bool testAll);
 
   enum ProcessAction
   {
@@ -195,7 +196,8 @@ protected:
   CString NaturalCommandLine(bool release);
   CString InformCommandLine(bool release);
   CString IntestSourceCommandLine(void);
-  void GenerateIntestReport(const char* failure, const char* nodeId, int nodes);
+  void GenerateIntestReport(CString result);
+  void GenerateIntestCombinedReport(void);
   void MonitorProcess(HANDLE process, ProcessAction action);
 
   Panel* GetPanel(int column) const;
@@ -208,13 +210,19 @@ protected:
   {
     PlaySkeinThread,
     ShowFirstSkeinError,
-    ShowTestReport
+    ShowTestReport,
+    RunNextTest,
+    ReportThenRunNextTest
   };
 
   struct PlaySkein
   {
     SkeinAction action;
     Skein::Node* node;
+
+    PlaySkein(SkeinAction sa) : action(sa), node(NULL)
+    {
+    }
   };
 
   GameWindow m_game;
@@ -248,5 +256,19 @@ protected:
 
   CArray<Example> m_examples;
   Example m_exampleCompiled;
-  CArray<std::pair<int,int> > m_exampleOffsets;
+
+  struct ExLineOffset
+  {
+    char id;
+    int from;
+    int offset;
+
+    ExLineOffset() : id(0), from(0), offset(0)
+    {
+    }
+    ExLineOffset(char i, int f, int o) : id(i), from(f), offset(o)
+    {
+    }
+  };
+  CArray<ExLineOffset> m_exLineOffsets;
 };

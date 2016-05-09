@@ -12,9 +12,6 @@ public:
   Skein();
   ~Skein();
 
-  void SetFile(const char* fileName);
-  CString GetFile(void);
-
   void Load(const char* path);
   bool Save(const char* path);
   void Reset(void);
@@ -22,6 +19,9 @@ public:
   bool IsActive(void);
   bool IsEdited(void);
   bool NeedSaveWarn(int& maxTemp);
+
+  void SetFile(const char* fileName);
+  bool ChangeFile(const char* fileName, const char* path);
 
   void Reset(bool current);
   void Layout(CDC& dc, CFont* labelFont, int spacing, bool force);
@@ -215,14 +215,24 @@ private:
   static bool BoolFromXML(IXMLDOMNode* node, LPWSTR query, bool ifNon);
   static int IntFromXML(IXMLDOMNode* node, LPWSTR query);
 
-  CString m_skeinFile;
+  struct Instance
+  {
+    CString skeinFile;
+    bool edited;
+    Node* root;
+    Node* current;
+
+    Instance() : edited(false), root(NULL)
+    {
+    }
+
+    bool Save(const char* path, int maxSaveTemp);
+  };
+  Instance m_inst;
+  std::vector<Instance> m_other;
+
   bool m_layout;
-  bool m_edited;
   std::vector<Listener*> m_listeners;
-
-  Node* m_root;
-  Node* m_current;
   Node* m_played;
-
   int m_maxSaveTemp;
 };

@@ -203,9 +203,14 @@ void TabResults::CompileProject(CompileStage stage, int code)
 
   case RanIntestReport:
     // Show the intest report
-    CString reportPath;
-    reportPath.Format("%s\\Build\\Inform-Report-%d.html",(LPCSTR)m_projectDir,code);
-    m_report->Navigate(reportPath,false);
+    if (code > 0)
+    {
+      CString reportPath;
+      reportPath.Format("%s\\Build\\Inform-Report-%d.html",(LPCSTR)m_projectDir,code);
+      m_report->Navigate(reportPath,false);
+    }
+    else
+      m_report->Navigate(m_projectDir+PROBLEMS_FILE,false);
     SetActiveTab(ResTab_Report,false);
     break;
   }

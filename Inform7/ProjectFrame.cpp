@@ -334,7 +334,7 @@ void ProjectFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
       ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->UpdateElasticTabStops();
 
       if (m_projectType == Project_I7XP)
-        UpdateExampleDrop();
+        UpdateExampleList();
     }
 
     // Restore the focus window
@@ -554,17 +554,10 @@ void ProjectFrame::OnChangedExample()
   if (ex.id != 0)
     id.Format("Skein%c.skein",ex.id);
 
-  if (id != m_skein.GetFile())
+  if (m_skein.ChangeFile(id,m_projectDir))
   {
-    if (m_skein.IsEdited())
-    {
-      GetPanel(0)->GetTab(Panel::Tab_Skein)->SaveProject(m_projectDir,true);
-      GetPanel(1)->GetTab(Panel::Tab_Skein)->SaveProject(m_projectDir,false);
-    }
-
-    m_skein.SetFile(id);
-    GetPanel(0)->GetTab(Panel::Tab_Skein)->OpenProject(m_projectDir,true);
-    GetPanel(0)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,true);
+    GetPanel(0)->GetTab(Panel::Tab_Skein)->OpenProject(m_projectDir,false);
+    GetPanel(0)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,false);
     GetPanel(1)->GetTab(Panel::Tab_Skein)->OpenProject(m_projectDir,false);
     GetPanel(1)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,false);
   }
@@ -918,33 +911,34 @@ LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
     }
     break;
   case ShowTestReport:
+    GenerateIntestReport("");
+    GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
+    break;
+  case RunNextTest:
+  case ReportThenRunNextTest:
     {
-      int count = 0;
-      CString state;
-      Skein::Node* current = m_skein.GetCurrent();
-      Skein::Node* report = current;
-      while (current != NULL)
+      if (play.action == ReportThenRunNextTest)
+        GenerateIntestReport("");
+
+      int current = m_exampleList.GetCurSel();
+      if (current > 0)
       {
-        if (current->GetExpectedText().IsEmpty())
+        if (current < m_exampleList.GetCount()-1)
         {
-          state = "cursed";
-          report = current;
-        }
-        else if (current->GetDiffers() != Skein::Node::ExpectedSame)
-        {
-          if (state.IsEmpty())
-            state = "wrong";
-          report = current;
-        }
+          m_exampleList.SetCurSel(current+1);
+          OnChangedExample();
 
-        current = current->GetParent();
-        count++;
+          TestCurrentExample(true);
+        }
+        else
+        {
+          m_exampleList.SetCurSel(0);
+          OnChangedExample();
+
+          GenerateIntestCombinedReport();
+          GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
+        }
       }
-      if (state.IsEmpty())
-        state = "right";
-
-      GenerateIntestReport(state,report->GetUniqueId(),count);
-      GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
     }
     break;
   default:
@@ -1204,7 +1198,7 @@ void ProjectFrame::OnFileExportExtProject()
 
 void ProjectFrame::OnUpdateIfNotBusy(CCmdUI *pCmdUI)
 {
-  pCmdUI->Enable(!m_busy);
+  pCmdUI->Enable(!m_busy && m_playThreads.empty());
 }
 
 void ProjectFrame::OnUpdateCompile(CCmdUI *pCmdUI)
@@ -1212,10 +1206,10 @@ void ProjectFrame::OnUpdateCompile(CCmdUI *pCmdUI)
   switch (m_projectType)
   {
   case Project_I7:
-    pCmdUI->Enable(!m_busy);
+    pCmdUI->Enable(!m_busy && m_playThreads.empty());
     break;
   case Project_I7XP:
-    pCmdUI->Enable(!m_busy && (m_exampleDrop.GetCurSel() > 0));
+    pCmdUI->Enable(!m_busy && m_playThreads.empty() && (m_exampleList.GetCurSel() > 0));
     break;
   default:
     ASSERT(0);
@@ -1261,36 +1255,30 @@ void ProjectFrame::OnPlayTest()
 
   case Project_I7XP:
     {
-      if (CompileProject(false,true))
+      // Is this the start of a test of all examples?
+      bool testAll = false;
+      if (m_exampleList.GetCurSel() == 0)
       {
-        // Run intest to get the list of test commands
-        CString cmdLine;
-        cmdLine.Format(
-          "\"%s\\Compilers\\intest\" -no-history -threads=1"
-          " -using -extension \"%s\\Source\\extension.i7x\" -do -script %c",
-          (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id);
-        StringOutputSink sink;
-        int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
-        sink.Done();
-
-        if (code == 0)
+        if (SaveProject(m_projectDir))
         {
-          m_skein.Reset(true);
-          for (int i = 0; i < sink.results.GetSize(); i++)
+          UpdateExampleList();
+          if (m_exampleList.GetCount() > 0)
           {
-            CStringW line(sink.results.GetAt(i));
-            m_skein.NewLine(line);
+            // If so, select the first example
+            m_exampleList.SetCurSel(1);
+            OnChangedExample();
+            testAll = true;
           }
-          m_skein.Reset(false);
-          RunProject();
-
-          // Add a task to show a report on the test
-          PlaySkein showReport;
-          showReport.action = ShowTestReport;
-          showReport.node = NULL;
-          m_playThreads.push(showReport);
+        }
+        if (!testAll)
+        {
+          MessageBox("There are no examples to test.",INFORM_TITLE,MB_OK|MB_ICONERROR);
+          return;
         }
       }
+
+      // Compile and test the selected example
+      TestCurrentExample(testAll);
     }
     break;
 
@@ -1339,7 +1327,7 @@ void ProjectFrame::OnPlayLoad()
 
 void ProjectFrame::OnUpdateReplayBlessed(CCmdUI *pCmdUI)
 {
-  bool enable = !m_busy;
+  bool enable = !m_busy && m_playThreads.empty();
   if (enable)
     enable = SendMessage(WM_CANPLAYALL) != 0;
   pCmdUI->Enable(enable);
@@ -1361,16 +1349,13 @@ void ProjectFrame::OnReplayBlessed()
   Skein::Node* firstNode = blessed[0];
   for (size_t i = 1; i < blessed.size(); i++)
   {
-    PlaySkein play;
-    play.action = PlaySkeinThread;
+    PlaySkein play(PlaySkeinThread);
     play.node = blessed[i];
     m_playThreads.push(play);
   }
 
   // Add a final task to show the first skein error
-  PlaySkein showError;
-  showError.action = ShowFirstSkeinError;
-  showError.node = NULL;
+  PlaySkein showError(ShowFirstSkeinError);
   m_playThreads.push(showError);
 
   // Play the thread leading to the first node
@@ -1498,7 +1483,7 @@ void ProjectFrame::OnReplayDifferSkein()
 
 void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)
 {
-  pCmdUI->Enable(!m_busy);
+  pCmdUI->Enable(!m_busy && m_playThreads.empty());
 }
 
 void ProjectFrame::OnReleaseGame(UINT nID)
@@ -1905,7 +1890,7 @@ bool ProjectFrame::StartNewExtProject(const char* dir, CWnd* parent, const Infor
 
   frame->SaveProject(projectDir);
   frame->GetPanel(0)->SetActiveTab(Panel::Tab_Source);
-  frame->UpdateExampleDrop();
+  frame->UpdateExampleList();
   return true;
 }
 
@@ -1972,7 +1957,7 @@ void ProjectFrame::OpenProject(const char* project)
   GetPanel(0)->SetActiveTab(Panel::Tab_Source);
 
   if (m_projectType == Project_I7XP)
-    UpdateExampleDrop();
+    UpdateExampleList();
 }
 
 bool ProjectFrame::SaveProject(const char* project)
@@ -2003,7 +1988,7 @@ bool ProjectFrame::CompileProject(bool release, bool test)
 
   // Update the list of examples
   if (m_projectType == Project_I7XP)
-    UpdateExampleDrop();
+    UpdateExampleList();
 
   // Create the UUID file if needed
   CString uuidFile;
@@ -2028,7 +2013,7 @@ bool ProjectFrame::CompileProject(bool release, bool test)
   // Start compiling ...
   m_busy = true;
   int code = 0;
-  CString failure;
+  CString failed;
 
   // Get the current focus window
   HWND focus = GetFocus()->GetSafeHwnd();
@@ -2055,14 +2040,20 @@ bool ProjectFrame::CompileProject(bool release, bool test)
 
     // Read the intest output describing how to map from example story line numbers
     // to extension source line numbers
-    m_exampleOffsets.RemoveAll();
+    for (int i = 0; i < m_exLineOffsets.GetSize();)
+    {
+      if (m_exLineOffsets.GetAt(i).id == m_exampleCompiled.id)
+        m_exLineOffsets.RemoveAt(i);
+      else
+        i++;
+    }
     if (code == 0)
     {
       for (int i = 0; i < sink.results.GetSize(); i++)
       {
         int from, offset;
         if (sscanf(sink.results.GetAt(i),"%d %d",&from,&offset) == 2)
-          m_exampleOffsets.Add(std::make_pair(from,offset));
+          m_exLineOffsets.Add(ExLineOffset(m_exampleCompiled.id,from,offset));
       }
     }
 
@@ -2075,7 +2066,7 @@ bool ProjectFrame::CompileProject(bool release, bool test)
   {
     code = theApp.RunCommand(NULL,NaturalCommandLine(release),*this);
     if (code != 0)
-      failure = "i7";
+      failed = "i7";
 
     GetPanel(0)->CompileProject(TabInterface::RanNaturalInform,code);
     GetPanel(1)->CompileProject(TabInterface::RanNaturalInform,code);
@@ -2088,7 +2079,7 @@ bool ProjectFrame::CompileProject(bool release, bool test)
     code = theApp.RunCommand(m_projectDir+"\\Build",InformCommandLine(release),*this);
     if (code != 0)
     {
-      failure = "i6";
+      failed = "i6";
       SetMessageText("Creating the story file with Inform 6 has failed");
     }
 
@@ -2105,7 +2096,7 @@ bool ProjectFrame::CompileProject(bool release, bool test)
   if (m_projectType == Project_I7XP)
   {
     if (test && (code != 0))
-      GenerateIntestReport(failure,"0",0);
+      GenerateIntestReport(failed);
   }
 
   // Make the results panel visible
@@ -2344,16 +2335,47 @@ CString ProjectFrame::IntestSourceCommandLine(void)
   return cmdLine;
 }
 
-void ProjectFrame::GenerateIntestReport(const char* failure, const char* nodeId, int nodes)
+void ProjectFrame::GenerateIntestReport(CString result)
 {
+  int nodeCount = 0;
+  CString nodeId("0");
+
+  if (result.IsEmpty())
+  {
+    // Find the node to report, and what the result was
+    Skein::Node* current = m_skein.GetCurrent();
+    Skein::Node* report = current;
+    while (current != NULL)
+    {
+      if (current->GetExpectedText().IsEmpty())
+      {
+        result = "cursed";
+        report = current;
+      }
+      else if (current->GetDiffers() != Skein::Node::ExpectedSame)
+      {
+        if (result.IsEmpty())
+          result = "wrong";
+        if (result == "wrong")
+          report = current;
+      }
+
+      current = current->GetParent();
+      nodeCount++;
+    }
+    if (result.IsEmpty())
+      result = "right";
+    nodeId = report->GetUniqueId();
+  }
+
   // Run intest to generate a problem report
   CString cmdLine;
   cmdLine.Format(
     "\"%s\\Compilers\\intest\" -no-history -threads=1 -using"
     " -extension \"%s\\Source\\extension.i7x\" -do -report %c %s"
     " \"%s\\Build\\Problems.html\" n%s t%d -to \"%s\\Build\\Inform-Report-%d.html\"",
-    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id,failure,
-    (LPCSTR)m_projectDir,nodeId,nodes,(LPCSTR)m_projectDir,m_exampleCompiled.index);
+    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id,(LPCSTR)result,
+    (LPCSTR)m_projectDir,(LPCSTR)nodeId,nodeCount,(LPCSTR)m_projectDir,m_exampleCompiled.index);
   StringOutputSink sink;
   int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
   sink.Done();
@@ -2362,6 +2384,26 @@ void ProjectFrame::GenerateIntestReport(const char* failure, const char* nodeId,
   {
     GetPanel(0)->CompileProject(TabInterface::RanIntestReport,m_exampleCompiled.index);
     GetPanel(1)->CompileProject(TabInterface::RanIntestReport,m_exampleCompiled.index);
+  }
+}
+
+void ProjectFrame::GenerateIntestCombinedReport(void)
+{
+  // Run intest to generate a combined report for all the tests
+  CString cmdLine;
+  cmdLine.Format(
+    "\"%s\\Compilers\\intest\" -no-history -threads=1 -using -extension \"%s\\Source\\extension.i7x\""
+    " -do -combine \"%s\\Build\\Inform-Report.html\" -%d -to \"%s\\Build\\Problems.html\"",
+    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_projectDir,m_examples.GetSize(),
+    (LPCSTR)m_projectDir);
+  StringOutputSink sink;
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
+  sink.Done();
+
+  if (code == 0)
+  {
+    GetPanel(0)->CompileProject(TabInterface::RanIntestReport,0);
+    GetPanel(1)->CompileProject(TabInterface::RanIntestReport,0);
   }
 }
 
@@ -2493,25 +2535,23 @@ void ProjectFrame::OnSourceLink(const char* url, TabInterface* from, COLORREF hi
   if (m_projectType == Project_I7XP)
   {
     bool replace = false;
+    char exId = m_exampleCompiled.id;
     int line = 0;
-    char exId = 0;
 
     if (sscanf(url,"source:story.ni#line%d",&line) == 1)
       replace = true;
     else if (sscanf(url,"source:story.ni?case=%c#line%d",&exId,&line) == 2)
-    {
-      if (m_exampleCompiled.id == exId) //XXXXDK
-        replace = true;
-    }
+      replace = true;
 
     if (replace)
     {
       // Replace link to source code, if needed
-      for (int i = m_exampleOffsets.GetSize()-1; (i >= 0) && replace_url.IsEmpty(); i--)
+      for (int i = m_exLineOffsets.GetSize()-1; (i >= 0) && replace_url.IsEmpty(); i--)
       {
-        if (line >= m_exampleOffsets.GetAt(i).first)
+        const ExLineOffset& elo = m_exLineOffsets.GetAt(i);
+        if ((exId == elo.id) && (line >= elo.from))
         {
-          replace_url.Format("source:extension.i7x#line%d",line+m_exampleOffsets.GetAt(i).second);
+          replace_url.Format("source:extension.i7x#line%d",line+elo.offset);
           url = replace_url;
         }
       }
@@ -2566,9 +2606,26 @@ void ProjectFrame::OnDocLink(const wchar_t* url, TabInterface* from)
 void ProjectFrame::OnSkeinLink(const char* url, TabInterface* from)
 {
   char nodeId[256];
-  char exId = 0; //XXXXDK
+  char exId = 0;
   if (sscanf(url,"skein:%[^?]?case=%c",&nodeId,&exId) == 2)
   {
+    // Switch to the appropriate example
+    int index = 0;
+    for (int i = 0; i < m_examples.GetSize(); i++)
+    {
+      if (m_examples.GetAt(i).id == exId)
+        index = i+1;
+    }
+    if ((index > 0) && (index < m_exampleList.GetCount()))
+    {
+      if (index != m_exampleList.GetCurSel())
+      {
+        m_exampleList.SetCurSel(index);
+        OnChangedExample();
+      }
+    }
+
+    // Show the appropriate node
     Skein::Node* node = m_skein.FindNode(nodeId);
     if (node != NULL)
       OnShowTranscript((WPARAM)node,(LPARAM)from->GetWindow());
@@ -2672,29 +2729,29 @@ bool ProjectFrame::LoadToolBar(void)
       m_toolBar.GetItemRect(spacerPos+numSpacers-1,r2);
 
       // Create the examples list control
-      m_exampleDrop.Create(CBS_DROPDOWNLIST|WS_CHILD|WS_VISIBLE,
+      m_exampleList.Create(CBS_DROPDOWNLIST|WS_CHILD|WS_VISIBLE,
         CRect(0,0,100,100),&m_toolBar,IDC_EXAMPLE_DROP);
-      m_exampleDrop.SetFont(m_toolBar.GetFont());
+      m_exampleList.SetFont(m_toolBar.GetFont());
 
       // Find the height of the examples list control
       int h = 0;
       COMBOBOXINFO boxInfo = { sizeof COMBOBOXINFO,0 };
-      if (theOS.GetComboBoxInfo(&m_exampleDrop,&boxInfo))
+      if (theOS.GetComboBoxInfo(&m_exampleList,&boxInfo))
         h = boxInfo.rcItem.bottom+boxInfo.rcItem.top;
       else
       {
         LOGFONT lf;
-        m_exampleDrop.GetFont()->GetLogFont(&lf);
+        m_exampleList.GetFont()->GetLogFont(&lf);
         h = 13+abs(lf.lfHeight);
       }
 
       // Position and size the examples list control
-      m_exampleDrop.MoveWindow(r1.left+4,(r1.bottom+r1.top-h)/2,r2.right-r1.left-8,
+      m_exampleList.MoveWindow(r1.left+4,(r1.bottom+r1.top-h)/2,r2.right-r1.left-8,
         ::GetSystemMetrics(SM_CYSCREEN)/2);
 
       // Set the initial contents and selection for the examples
-      m_exampleDrop.AddString("Test All");
-      m_exampleDrop.SetCurSel(0);
+      m_exampleList.AddString("Test All");
+      m_exampleList.SetCurSel(0);
     }
     break;
   default:
@@ -2716,7 +2773,7 @@ CRect ProjectFrame::GetInitialSearchRect(void)
   return searchRect;
 }
 
-void ProjectFrame::UpdateExampleDrop(void)
+void ProjectFrame::UpdateExampleList(void)
 {
   // Run intest to list the examples
   CString cmdLine;
@@ -2748,19 +2805,19 @@ void ProjectFrame::UpdateExampleDrop(void)
     }
 
     // Get the index of the current choice
-    int index = m_exampleDrop.GetCurSel();
+    int index = m_exampleList.GetCurSel();
 
     // Remove all but the first entry
-    while (m_exampleDrop.GetCount() > 1)
-      m_exampleDrop.DeleteString(1);
+    while (m_exampleList.GetCount() > 1)
+      m_exampleList.DeleteString(1);
 
     // Add the example names
     for (int i = 0; i < m_examples.GetSize(); i++)
-      m_exampleDrop.AddString(m_examples.GetAt(i).name);
+      m_exampleList.AddString(m_examples.GetAt(i).name);
 
     // Set the index of the current choice
-    if (m_exampleDrop.SetCurSel(index) == CB_ERR)
-      m_exampleDrop.SetCurSel(0);
+    if (m_exampleList.SetCurSel(index) == CB_ERR)
+      m_exampleList.SetCurSel(0);
 
     OnChangedExample();
   }
@@ -2768,8 +2825,46 @@ void ProjectFrame::UpdateExampleDrop(void)
 
 ProjectFrame::Example ProjectFrame::GetCurrentExample(void)
 {
-  int index = m_exampleDrop.GetCurSel()-1;
+  int index = m_exampleList.GetCurSel()-1;
   if ((index >= 0) && (index < m_examples.GetSize()))
     return m_examples.GetAt(index);
   return Example();
+}
+
+void ProjectFrame::TestCurrentExample(bool testAll)
+{
+  if (CompileProject(false,true))
+  {
+    // Run intest to get the list of test commands
+    CString cmdLine;
+    cmdLine.Format(
+      "\"%s\\Compilers\\intest\" -no-history -threads=1"
+      " -using -extension \"%s\\Source\\extension.i7x\" -do -script %c",
+      (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id);
+    StringOutputSink sink;
+    int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
+    sink.Done();
+
+    if (code == 0)
+    {
+      m_skein.Reset(true);
+      for (int i = 0; i < sink.results.GetSize(); i++)
+      {
+        CStringW line(sink.results.GetAt(i));
+        m_skein.NewLine(line);
+      }
+      m_skein.Reset(false);
+      RunProject();
+
+      // Add a task to show a report on the test, or run the next test
+      PlaySkein next(testAll ? ReportThenRunNextTest : ShowTestReport);
+      m_playThreads.push(next);
+    }
+  }
+  else if (testAll)
+  {
+    PlaySkein next(RunNextTest);
+    m_playThreads.push(next);
+    PostMessage(WM_PLAYNEXTTHREAD);
+  }
 }

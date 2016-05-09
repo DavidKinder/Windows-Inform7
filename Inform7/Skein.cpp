@@ -7,39 +7,42 @@
 #define new DEBUG_NEW
 #endif
 
-Skein::Skein() : m_layout(false), m_edited(false)
+Skein::Skein() : m_layout(false)
 {
-  m_skeinFile = "Skein.skein";
-  m_root = new Node(L"- start -",L"",L"",L"",false,false,false,0);
-  m_current = m_root;
-  m_played = m_root;
+  m_inst.skeinFile = "Skein.skein";
+  m_inst.root = new Node(L"- start -",L"",L"",L"",false,false,false,0);
+  m_inst.current = m_inst.root;
+
+  m_played = m_inst.root;
   m_maxSaveTemp = theApp.GetProfileInt("Skein","Save Temp",100);
 }
 
 Skein::~Skein()
 {
-  delete m_root;
+  delete m_inst.root;
+  for (std::vector<Instance>::iterator it = m_other.begin(); it != m_other.end(); ++it)
+    delete it->root;
 }
 
 Skein::Node* Skein::GetRoot(void)
 {
-  return m_root;
+  return m_inst.root;
 }
 
 Skein::Node* Skein::GetCurrent(void)
 {
-  return m_current;
+  return m_inst.current;
 }
 
 void Skein::SetCurrent(Node* node)
 {
-  m_current = node;
+  m_inst.current = node;
   NotifyChange(ThreadChanged);
 }
 
 bool Skein::InCurrentThread(Node* node)
 {
-  return InThread(node,m_current);
+  return InThread(node,m_inst.current);
 }
 
 bool Skein::InThread(Node* node, Node* endNode)
@@ -58,26 +61,16 @@ Skein::Node* Skein::GetPlayed(void)
   return m_played;
 }
 
-void Skein::SetFile(const char* fileName)
-{
-  m_skeinFile = fileName;
-}
-
-CString Skein::GetFile(void)
-{
-  return m_skeinFile;
-}
-
 void Skein::Load(const char* path)
 {
-  if (m_skeinFile.IsEmpty())
+  if (m_inst.skeinFile.IsEmpty())
   {
     Reset();
     return;
   }
 
   CString fileName;
-  fileName.Format("%s\\%s",path,m_skeinFile);
+  fileName.Format("%s\\%s",path,m_inst.skeinFile);
 
   // Create an XML document instance
   CComPtr<IXMLDOMDocument> doc;
@@ -154,10 +147,10 @@ void Skein::Load(const char* path)
   CStringW current = StringFromXML(doc,L"/Skein/activeNode/@nodeId");
 
   // Discard the current skein and replace with the new
-  delete m_root;
-  m_root = nodes[root];
-  m_current = nodes[current];
-  m_played = m_root;
+  delete m_inst.root;
+  m_inst.root = nodes[root];
+  m_inst.current = nodes[current];
+  m_played = m_inst.root;
 
   m_layout = false;
   NotifyChange(TreeChanged);
@@ -166,14 +159,30 @@ void Skein::Load(const char* path)
 
 bool Skein::Save(const char* path)
 {
-  std::set<Node*> tempNodes;
-  m_root->GetTempNodes(tempNodes,m_maxSaveTemp);
-  Node* current = m_current->WillSaveNode(tempNodes) ? m_current : m_root;
+  for (std::vector<Instance>::iterator it = m_other.begin(); it != m_other.end(); ++it)
+    it->Save(path,m_maxSaveTemp);
 
-  if (m_skeinFile.IsEmpty())
+  if (m_inst.Save(path,m_maxSaveTemp))
+  {
+    NotifyEdit(false);
+    return true;
+  }
+  return false;
+}
+
+bool Skein::Instance::Save(const char* path, int maxSaveTemp)
+{
+  if (!edited)
+    return true;
+
+  std::set<Node*> tempNodes;
+  root->GetTempNodes(tempNodes,maxSaveTemp);
+  Node* saveAsCurrent = current->WillSaveNode(tempNodes) ? current : root;
+
+  if (skeinFile.IsEmpty())
     return true;
   CString fileName;
-  fileName.Format("%s\\%s",path,m_skeinFile);
+  fileName.Format("%s\\%s",path,skeinFile);
 
   FILE* skeinFile = fopen(fileName,"wt");
   if (skeinFile == NULL)
@@ -184,20 +193,20 @@ bool Skein::Save(const char* path)
     "<Skein rootNode=\"%s\" xmlns=\"http://www.logicalshift.org.uk/IF/Skein\">\n"
     "  <generator>Inform 7 for Windows</generator>\n"
     "  <activeNode nodeId=\"%s\"/>\n",
-    m_root->GetUniqueId(),current->GetUniqueId());
-  m_root->SaveNodes(skeinFile,tempNodes);
+    root->GetUniqueId(),saveAsCurrent->GetUniqueId());
+  root->SaveNodes(skeinFile,tempNodes);
   fprintf(skeinFile,"</Skein>\n");
   fclose(skeinFile);
-  NotifyEdit(false);
+  edited = false;
   return true;
 }
 
 void Skein::Reset()
 {
-  delete m_root;
-  m_root = new Node(L"- start -",L"",L"",L"",false,false,false,0);
-  m_current = m_root;
-  m_played = m_root;
+  delete m_inst.root;
+  m_inst.root = new Node(L"- start -",L"",L"",L"",false,false,false,0);
+  m_inst.current = m_inst.root;
+  m_played = m_inst.root;
 
   m_layout = false;
   NotifyChange(TreeChanged);
@@ -206,7 +215,7 @@ void Skein::Reset()
 
 void Skein::Import(const char* path)
 {
-  Node* node = m_root;
+  Node* node = m_inst.root;
   bool added = false;
 
   CStdioFile recFile;
@@ -241,37 +250,74 @@ void Skein::Import(const char* path)
 
 bool Skein::IsActive(void)
 {
-  return (m_skeinFile.IsEmpty() == FALSE);
+  return (m_inst.skeinFile.IsEmpty() == FALSE);
 }
 
 bool Skein::IsEdited(void)
 {
-  return m_edited;
+  if (m_inst.edited)
+    return true;
+  for (std::vector<Instance>::const_iterator it = m_other.begin(); it != m_other.end(); ++it)
+  {
+    if (it->edited)
+      return true;
+  }
+  return false;
 }
 
 bool Skein::NeedSaveWarn(int& maxTemp)
 {
   maxTemp = m_maxSaveTemp;
   std::set<Node*> tempNodes;
-  m_root->GetTempNodes(tempNodes,maxTemp+1);
+  m_inst.root->GetTempNodes(tempNodes,maxTemp+1);
   return ((int)tempNodes.size() > maxTemp);
+}
+
+void Skein::SetFile(const char* fileName)
+{
+  m_inst.skeinFile = fileName;
+}
+
+bool Skein::ChangeFile(const char* fileName, const char* path)
+{
+  if (m_inst.skeinFile == fileName)
+    return false;
+
+  m_other.push_back(m_inst);
+  m_inst = Instance();
+
+  for (std::vector<Instance>::const_iterator it = m_other.begin(); it != m_other.end(); ++it)
+  {
+    if (it->skeinFile == fileName)
+    {
+      m_inst = *it;
+      m_other.erase(it);
+      m_layout = false;
+      NotifyChange(TreeChanged);
+      return true;
+    }
+  }
+
+  m_inst.skeinFile = fileName;
+  Load(path);
+  return true;
 }
 
 void Skein::Reset(bool current)
 {
   if (current)
-    m_current = m_root;
+    m_inst.current = m_inst.root;
 
-  m_played = m_root;
+  m_played = m_inst.root;
   NotifyChange(ThreadChanged);
 }
 
 void Skein::Layout(CDC& dc, CFont* labelFont, int spacing, bool force)
 {
   if (force)
-    m_root->ClearWidths();
+    m_inst.root->ClearWidths();
   if (force || (m_layout == false))
-    m_root->Layout(dc,labelFont,0,spacing);
+    m_inst.root->Layout(dc,labelFont,0,spacing);
   m_layout = true;
 }
 
@@ -281,16 +327,16 @@ void Skein::NewLine(const CStringW& line)
   CStringW nodeLine = EscapeLine(line,UsePrintable);
 
   // Is there a child node with the same line?
-  Node* node = m_current->Find(nodeLine);
+  Node* node = m_inst.current->Find(nodeLine);
   if (node == NULL)
   {
     node = new Node(nodeLine,L"",L"",L"",true,false,true,0);
-    m_current->Add(node);
+    m_inst.current->Add(node);
     nodeAdded = true;
   }
 
   // Make this the new current node
-  m_current = node;
+  m_inst.current = node;
   m_played = node;
 
   // Notify any listeners
@@ -309,7 +355,7 @@ void Skein::NewLine(const CStringW& line)
 bool Skein::NextLine(CStringW& line)
 {
   // Find the next node to use
-  Node* next = m_played->FindAncestor(m_current);
+  Node* next = m_played->FindAncestor(m_inst.current);
   if (next != NULL)
   {
     line = EscapeLine(next->GetLine(),UseCharacters);
@@ -371,7 +417,7 @@ CStringW Skein::EscapeLine(const CStringW& line, EscapeAction action)
 bool Skein::GetLineFromHistory(CStringW& line, int history)
 {
   // Find the node to return the line from
-  Node* node = m_current;
+  Node* node = m_inst.current;
   while (--history > 0)
   {
     node = node->GetParent();
@@ -380,7 +426,7 @@ bool Skein::GetLineFromHistory(CStringW& line, int history)
   }
 
   // Don't return the root node
-  if (node == m_root)
+  if (node == m_inst.root)
     return false;
 
   line = EscapeLine(node->GetLine(),RemoveEscapes);
@@ -423,8 +469,8 @@ bool Skein::RemoveAll(Node* node, bool notify)
 
     if (inCurrent)
     {
-      m_current = m_root;
-      m_played = m_root;
+      m_inst.current = m_inst.root;
+      m_played = m_inst.root;
     }
 
     m_layout = false;
@@ -447,8 +493,8 @@ bool Skein::RemoveSingle(Node* node)
 
     if (inCurrent)
     {
-      m_current = m_root;
-      m_played = m_root;
+      m_inst.current = m_inst.root;
+      m_played = m_inst.root;
     }
 
     m_layout = false;
@@ -511,8 +557,8 @@ void Skein::Trim(Node* node, bool running, bool notify)
     {
       if (inCurrent)
       {
-        m_current = m_root;
-        m_played = m_root;
+        m_inst.current = m_inst.root;
+        m_played = m_inst.root;
       }
 
       if (RemoveAll(child,false) == false)
@@ -531,12 +577,12 @@ void Skein::Trim(Node* node, bool running, bool notify)
 
 void Skein::GetLabels(std::map<CStringW,Node*>& labels)
 {
-  m_root->GetLabels(labels);
+  m_inst.root->GetLabels(labels);
 }
 
 bool Skein::HasLabels(void)
 {
-  return m_root->HasLabels();
+  return m_inst.root->HasLabels();
 }
 
 void Skein::Bless(Node* node, bool all)
@@ -599,7 +645,7 @@ Skein::Node* Skein::GetThreadBottom(Node* node)
 bool Skein::IsValidNode(Node* testNode, Node* node)
 {
   if (node == NULL)
-    node = m_root;
+    node = m_inst.root;
 
   if (testNode == node)
     return true;
@@ -615,7 +661,7 @@ bool Skein::IsValidNode(Node* testNode, Node* node)
 int Skein::GetBlessedThreadEnds(std::vector<Node*>& nodes, Node* node)
 {
   if (node == NULL)
-    node = m_root;
+    node = m_inst.root;
 
   // Count the number of blessed descendants
   int count = 0;
@@ -636,7 +682,7 @@ int Skein::GetBlessedThreadEnds(std::vector<Node*>& nodes, Node* node)
 Skein::Node* Skein::GetFirstDifferent(Node* node)
 {
   if (node == NULL)
-    node = m_root;
+    node = m_inst.root;
 
   // If this node differs, return it
   if (node->GetDiffers() != Skein::Node::ExpectedSame)
@@ -656,7 +702,7 @@ Skein::Node* Skein::GetFirstDifferent(Node* node)
 void Skein::GetAllNodes(CArray<Skein::Node*,Skein::Node*>& nodes, Node* node)
 {
   if (node == NULL)
-    node = m_root;
+    node = m_inst.root;
   nodes.Add(node);
 
   for (int i = 0; i < node->GetNumChildren(); i++)
@@ -666,7 +712,7 @@ void Skein::GetAllNodes(CArray<Skein::Node*,Skein::Node*>& nodes, Node* node)
 Skein::Node* Skein::FindNode(const char* id, Node* node)
 {
   if (node == NULL)
-    node = m_root;
+    node = m_inst.root;
   if (strcmp(node->GetUniqueId(),id) == 0)
     return node;
   for (int i = 0; i < node->GetNumChildren(); i++)
@@ -722,9 +768,9 @@ void Skein::NotifyChange(Change change)
 
 void Skein::NotifyEdit(bool edited)
 {
-  if (m_edited != edited)
+  if (m_inst.edited != edited)
   {
-    m_edited = edited;
+    m_inst.edited = edited;
     for (std::vector<Listener*>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
       (*it)->SkeinEdited(edited);
   }
