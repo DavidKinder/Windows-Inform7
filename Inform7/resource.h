@@ -156,7 +156,7 @@
 #define IDC_ELASTIC_TABS                1047
 #define IDC_STORY_BOX                   1048
 #define IDC_RANDOM_BOX                  1049
-#define IDC_EXAMPLE_DROP                1050
+#define IDC_EXAMPLE_LIST                1050
 #define ID_OPEN_EXTENSIONS_LIST         2000
 #define ID_NEW_EXTENSIONS_LIST          3000
 

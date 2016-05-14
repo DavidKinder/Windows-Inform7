@@ -35,8 +35,10 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_WM_DRAWITEM()
   ON_WM_SETTINGCHANGE()
   ON_WM_TIMER()
-  ON_CBN_SELCHANGE(IDC_EXAMPLE_DROP, OnChangedExample)
   ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
+
+  ON_CBN_SELCHANGE(IDC_EXAMPLE_LIST, OnChangedExample)
+  ON_UPDATE_COMMAND_UI(IDC_EXAMPLE_LIST, OnUpdateIfNotBusy)
 
   ON_MESSAGE(WM_PLAYSKEIN, OnPlaySkein)
   ON_MESSAGE(WM_GAMERUNNING, OnGameRunning)
@@ -66,6 +68,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
   ON_COMMAND(ID_FILE_INSTALL_EXT, OnFileInstallExt)
   ON_COMMAND(ID_FILE_INSTALL_FOLDER, OnFileInstallFolder)
+  ON_UPDATE_COMMAND_UI(ID_FILE_INSTALL_XP, OnUpdateIfNotBusy)
   ON_COMMAND(ID_FILE_INSTALL_XP, OnFileInstallExtProject)
   ON_COMMAND(ID_FILE_NEW_EXT, OnFileNewExt)
   ON_COMMAND(ID_FILE_NEW_XP, OnFileNewExtProject)
@@ -911,14 +914,20 @@ LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
     }
     break;
   case ShowTestReport:
-    GenerateIntestReport("");
+    {
+      BusyProject busy(this);
+      GenerateIntestReport("");
+    }
     GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
     break;
   case RunNextTest:
   case ReportThenRunNextTest:
     {
       if (play.action == ReportThenRunNextTest)
+      {
+        BusyProject busy(this);
         GenerateIntestReport("");
+      }
 
       int current = m_exampleList.GetCurSel();
       if (current > 0)
@@ -935,7 +944,10 @@ LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
           m_exampleList.SetCurSel(0);
           OnChangedExample();
 
-          GenerateIntestCombinedReport();
+          {
+            BusyProject busy(this);
+            GenerateIntestCombinedReport();
+          }
           GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
         }
       }
@@ -963,11 +975,10 @@ LRESULT ProjectFrame::OnProjectEdited(WPARAM wparam, LPARAM lparam)
 
 LRESULT ProjectFrame::OnExtDownload(WPARAM urls, LPARAM)
 {
-  m_busy = true;
+  BusyProject busy(this);
   CStringArray* libraryUrls = (CStringArray*)urls;
   ExtensionFrame::DownloadExtensions(this,libraryUrls);
   delete libraryUrls;
-  m_busy = false;
   return 0;
 }
 
@@ -1259,15 +1270,18 @@ void ProjectFrame::OnPlayTest()
       bool testAll = false;
       if (m_exampleList.GetCurSel() == 0)
       {
-        if (SaveProject(m_projectDir))
         {
-          UpdateExampleList();
-          if (m_exampleList.GetCount() > 0)
+          BusyProject busy(this);
+          if (SaveProject(m_projectDir))
           {
-            // If so, select the first example
-            m_exampleList.SetCurSel(1);
-            OnChangedExample();
-            testAll = true;
+            UpdateExampleList();
+            if (m_exampleList.GetCount() > 1)
+            {
+              // If so, select the first example
+              m_exampleList.SetCurSel(1);
+              OnChangedExample();
+              testAll = true;
+            }
           }
         }
         if (!testAll)
@@ -1979,6 +1993,8 @@ bool ProjectFrame::SaveProject(const char* project)
 
 bool ProjectFrame::CompileProject(bool release, bool test)
 {
+  BusyProject busy(this);
+
   // Stop the game if running
   m_game.StopInterpreter(false);
 
@@ -2011,7 +2027,6 @@ bool ProjectFrame::CompileProject(bool release, bool test)
   }
 
   // Start compiling ...
-  m_busy = true;
   int code = 0;
   CString failed;
 
@@ -2028,10 +2043,7 @@ bool ProjectFrame::CompileProject(bool release, bool test)
     // Decide on the example to compile
     m_exampleCompiled = GetCurrentExample();
     if (m_exampleCompiled.id == 0)
-    {
-      m_busy = false;
       return false;
-    }
 
     // Run intest to extract the example
     StringOutputSink sink;
@@ -2107,7 +2119,6 @@ bool ProjectFrame::CompileProject(bool release, bool test)
     ::SetFocus(focus);
 
   // Finished compiling
-  m_busy = false;
   return (code == 0);
 }
 
@@ -2730,7 +2741,7 @@ bool ProjectFrame::LoadToolBar(void)
 
       // Create the examples list control
       m_exampleList.Create(CBS_DROPDOWNLIST|WS_CHILD|WS_VISIBLE,
-        CRect(0,0,100,100),&m_toolBar,IDC_EXAMPLE_DROP);
+        CRect(0,0,100,100),&m_toolBar,IDC_EXAMPLE_LIST);
       m_exampleList.SetFont(m_toolBar.GetFont());
 
       // Find the height of the examples list control
@@ -2835,6 +2846,8 @@ void ProjectFrame::TestCurrentExample(bool testAll)
 {
   if (CompileProject(false,true))
   {
+    BusyProject busy(this);
+
     // Run intest to get the list of test commands
     CString cmdLine;
     cmdLine.Format(

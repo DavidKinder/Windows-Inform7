@@ -286,7 +286,7 @@ bool Skein::ChangeFile(const char* fileName, const char* path)
   m_other.push_back(m_inst);
   m_inst = Instance();
 
-  for (std::vector<Instance>::const_iterator it = m_other.begin(); it != m_other.end(); ++it)
+  for (std::vector<Instance>::iterator it = m_other.begin(); it != m_other.end(); ++it)
   {
     if (it->skeinFile == fileName)
     {

@@ -271,4 +271,22 @@ protected:
     }
   };
   CArray<ExLineOffset> m_exLineOffsets;
+
+  class BusyProject
+  {
+  public:
+    BusyProject(ProjectFrame* frame) : m_frame(frame)
+    {
+      frame->m_busy = true;
+    }
+
+    ~BusyProject()
+    {
+      m_frame->m_busy = false;
+    }
+
+  private:
+    ProjectFrame* m_frame;
+  };
+  friend class BusyProject;
 };
