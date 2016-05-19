@@ -173,7 +173,10 @@ protected:
 
   void UpdateMenuParams(void);
   void UpdateExtensionsMenu(void);
-  void UpdateExampleList(void);
+  bool UpdateExampleList(void);
+  bool GetExtensionInfo(CString& path, CStringW& name, CStringW& author);
+  CString GetMaterialsFolder(void);
+  bool CopyExtensionToMaterials(void);
 
   struct Example
   {
@@ -256,6 +259,7 @@ protected:
 
   CArray<Example> m_examples;
   Example m_exampleCompiled;
+  CString m_materialsExtPath;
 
   struct ExLineOffset
   {

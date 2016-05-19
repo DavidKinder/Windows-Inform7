@@ -1107,7 +1107,10 @@ void ProjectFrame::OnFileInstallExtProject()
   if (m_busy || (m_projectType != Project_I7XP))
     return;
   if (SaveProject(m_projectDir) == false)
+  {
+    MessageBox("Failed to save project",INFORM_TITLE,MB_OK|MB_ICONERROR);
     return;
+  }
 
   CStringArray paths;
   paths.Add(m_projectDir+"\\Source\\extension.i7x");
@@ -1159,7 +1162,10 @@ void ProjectFrame::OnFileClose()
 void ProjectFrame::OnFileSave()
 {
   if (!m_busy)
-    SaveProject(m_projectDir);
+  {
+    if (!SaveProject(m_projectDir))
+      MessageBox("Failed to save project",INFORM_TITLE,MB_OK|MB_ICONERROR);
+  }
 }
 
 void ProjectFrame::OnFileSaveAs()
@@ -1169,7 +1175,10 @@ void ProjectFrame::OnFileSaveAs()
     // Ask for a project to save as
     ProjectDirDialog dialog(false,m_projectDir,"Save the project",GetProjectFileExt(),this);
     if (dialog.ShowDialog() == IDOK)
-      SaveProject(dialog.GetProjectDir());
+    {
+      if (!SaveProject(dialog.GetProjectDir()))
+        MessageBox("Failed to save project",INFORM_TITLE,MB_OK|MB_ICONERROR);
+    }
   }
 }
 
@@ -1188,14 +1197,14 @@ void ProjectFrame::OnFileExportExtProject()
   if (m_busy || (m_projectType != Project_I7XP))
     return;
   if (SaveProject(m_projectDir) == false)
+  {
+    MessageBox("Failed to save project",INFORM_TITLE,MB_OK|MB_ICONERROR);
     return;
+  }
 
-  CString sourcePath = m_projectDir+"\\Source\\extension.i7x";
-  CStringW extLine = ExtensionFrame::ReadExtensionFirstLine(sourcePath);
-  if (extLine.IsEmpty())
-    return;
-  CStringW extName, extAuthor, extVersion;
-  if (!ExtensionFrame::IsValidExtension(extLine,extName,extAuthor,extVersion))
+  CString sourcePath;
+  CStringW extName, extAuthor;
+  if (!GetExtensionInfo(sourcePath,extName,extAuthor))
     return;
 
   CString saveName(extName);
@@ -1274,14 +1283,21 @@ void ProjectFrame::OnPlayTest()
           BusyProject busy(this);
           if (SaveProject(m_projectDir))
           {
-            UpdateExampleList();
-            if (m_exampleList.GetCount() > 1)
+            if (UpdateExampleList())
             {
-              // If so, select the first example
-              m_exampleList.SetCurSel(1);
-              OnChangedExample();
-              testAll = true;
+              if (m_exampleList.GetCount() > 1)
+              {
+                // If so, select the first example
+                m_exampleList.SetCurSel(1);
+                OnChangedExample();
+                testAll = true;
+              }
             }
+          }
+          else
+          {
+            MessageBox("Failed to save project",INFORM_TITLE,MB_OK|MB_ICONERROR);
+            return;
           }
         }
         if (!testAll)
@@ -1574,14 +1590,8 @@ void ProjectFrame::OnReleaseGame(UINT nID)
 
 void ProjectFrame::OnReleaseMaterials()
 {
-  // Get the path to the ".materials" directory
-  int projectExt = m_projectDir.Find(GetProjectFileExt());
-  if (projectExt == -1)
-    return;
-  CString path;
-  path.Format("%s.materials",m_projectDir.Left(projectExt));
-
-  // If it doesn't exist, create it
+  // If the path to the ".materials" directory doesn't exist, create it
+  CString path = GetMaterialsFolder();
   if (::GetFileAttributes(path) == INVALID_FILE_ATTRIBUTES)
     theOS.SHCreateDirectoryEx(this,path);
 
@@ -2000,11 +2010,24 @@ bool ProjectFrame::CompileProject(bool release, bool test)
 
   // Save the project first
   if (SaveProject(m_projectDir) == false)
+  {
+    MessageBox("Failed to save project",INFORM_TITLE,MB_OK|MB_ICONERROR);
     return false;
+  }
 
-  // Update the list of examples
   if (m_projectType == Project_I7XP)
-    UpdateExampleList();
+  {
+    // Update the list of examples
+    if (!UpdateExampleList())
+      return false;
+
+    // Copy the extension to the materials folder
+    if (!CopyExtensionToMaterials())
+    {
+      MessageBox("Failed to copy the extension to the materials folder",INFORM_TITLE,MB_OK|MB_ICONERROR);
+      return false;
+    }
+  }
 
   // Create the UUID file if needed
   CString uuidFile;
@@ -2396,6 +2419,12 @@ void ProjectFrame::GenerateIntestReport(CString result)
     GetPanel(0)->CompileProject(TabInterface::RanIntestReport,m_exampleCompiled.index);
     GetPanel(1)->CompileProject(TabInterface::RanIntestReport,m_exampleCompiled.index);
   }
+  else
+  {
+    CString msg;
+    msg.Format("Failed to generate test report\nIntest returned code %d",code);
+    MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
+  }
 }
 
 void ProjectFrame::GenerateIntestCombinedReport(void)
@@ -2415,6 +2444,12 @@ void ProjectFrame::GenerateIntestCombinedReport(void)
   {
     GetPanel(0)->CompileProject(TabInterface::RanIntestReport,0);
     GetPanel(1)->CompileProject(TabInterface::RanIntestReport,0);
+  }
+  else
+  {
+    CString msg;
+    msg.Format("Failed to generate combined test report\nIntest returned code %d",code);
+    MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
   }
 }
 
@@ -2563,6 +2598,21 @@ void ProjectFrame::OnSourceLink(const char* url, TabInterface* from, COLORREF hi
         if ((exId == elo.id) && (line >= elo.from))
         {
           replace_url.Format("source:extension.i7x#line%d",line+elo.offset);
+          url = replace_url;
+        }
+      }
+    }
+    else
+    {
+      char urlPath[_MAX_PATH];
+      if (sscanf(url,"source:%[^#]#line%d",urlPath,&line) == 2)
+      {
+        // Replace link to copied extension
+        CString path(urlPath);
+        path.Replace("%20"," ");
+        if (m_materialsExtPath.CompareNoCase(path) == 0)
+        {
+          replace_url.Format("source:extension.i7x#line%d",line);
           url = replace_url;
         }
       }
@@ -2784,7 +2834,7 @@ CRect ProjectFrame::GetInitialSearchRect(void)
   return searchRect;
 }
 
-void ProjectFrame::UpdateExampleList(void)
+bool ProjectFrame::UpdateExampleList(void)
 {
   // Run intest to list the examples
   CString cmdLine;
@@ -2831,7 +2881,64 @@ void ProjectFrame::UpdateExampleList(void)
       m_exampleList.SetCurSel(0);
 
     OnChangedExample();
+    return true;
   }
+  else
+  {
+    CString msg;
+    msg.Format("Failed to generate list of examples\nIntest returned code %d",code);
+    MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
+    return false;
+  }
+}
+
+bool ProjectFrame::GetExtensionInfo(CString& path, CStringW& name, CStringW& author)
+{
+  path = m_projectDir+"\\Source\\extension.i7x";
+  CStringW firstLine = ExtensionFrame::ReadExtensionFirstLine(path);
+  if (!firstLine.IsEmpty())
+  {
+    CStringW version;
+    return ExtensionFrame::IsValidExtension(firstLine,name,author,version);
+  }
+  return false;
+}
+
+CString ProjectFrame::GetMaterialsFolder(void)
+{
+  // Get the path to the ".materials" directory
+  int projectExt = m_projectDir.Find(GetProjectFileExt());
+  if (projectExt == -1)
+    return "";
+  CString path;
+  path.Format("%s.materials",m_projectDir.Left(projectExt));
+  return path;
+}
+
+bool ProjectFrame::CopyExtensionToMaterials(void)
+{
+  m_materialsExtPath.Empty();
+
+  CString sourcePath;
+  CStringW extName, extAuthor;
+  if (!GetExtensionInfo(sourcePath,extName,extAuthor))
+    return false;
+  CString destPath;
+  destPath.Format("%s\\Extensions\\%S",(LPCSTR)GetMaterialsFolder(),(LPCWSTR)extAuthor);
+  if (::GetFileAttributes(destPath) == INVALID_FILE_ATTRIBUTES)
+  {
+    if (theOS.SHCreateDirectoryEx(this,destPath) != ERROR_SUCCESS)
+      return false;
+  }
+  destPath += '\\';
+  destPath += extName;
+  destPath += ".i7x";
+  if (::CopyFile(sourcePath,destPath,FALSE))
+  {
+    m_materialsExtPath = destPath;
+    return true;
+  }
+  return false;
 }
 
 ProjectFrame::Example ProjectFrame::GetCurrentExample(void)
@@ -2872,6 +2979,12 @@ void ProjectFrame::TestCurrentExample(bool testAll)
       // Add a task to show a report on the test, or run the next test
       PlaySkein next(testAll ? ReportThenRunNextTest : ShowTestReport);
       m_playThreads.push(next);
+    }
+    else
+    {
+      CString msg;
+      msg.Format("Failed to generate test commands\nIntest returned code %d",code);
+      MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
     }
   }
   else if (testAll)
