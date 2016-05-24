@@ -109,7 +109,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_UPDATE_COMMAND_UI_RANGE(ID_RELEASE_GAME, ID_RELEASE_TEST, OnUpdateReleaseGame)
   ON_COMMAND_RANGE(ID_RELEASE_GAME, ID_RELEASE_TEST, OnReleaseGame)
   ON_COMMAND(ID_RELEASE_MATERIALS, OnReleaseMaterials)
-  ON_UPDATE_COMMAND_UI(ID_RELEASE_IFICTION, OnUpdateCompile)
+  ON_UPDATE_COMMAND_UI(ID_RELEASE_IFICTION, OnUpdateReleaseGame)
   ON_COMMAND(ID_RELEASE_IFICTION, OnReleaseIFiction)
 
   ON_COMMAND(ID_WINDOW_LEFTPANE, OnWindowLeftPane)
@@ -138,7 +138,7 @@ static UINT indicators[] =
   ID_INDICATOR_NUM,
 };
 
-class StringOutputSink : public InformApp::OutputSink
+class IntestOutputSink : public InformApp::OutputSink
 {
 public:
   void Output(const char* msg)
@@ -155,14 +155,32 @@ public:
   void Done(void)
   {
     if (!m_current.IsEmpty())
+    {
+      // Convert any "[unicode N]" to the appropriate Unicode character
+      int i = 0;
+      while (true)
+      {
+        i = m_current.Find(L"[unicode ",i);
+        if (i < 0)
+          break;
+        int j = m_current.Find(L']',i+9);
+        if (j < 0)
+          break;
+        int c = _wtoi(m_current.Mid(i+9,j-i-9));
+        m_current.Delete(i+1,j-i);
+        m_current.SetAt(i,c);
+        i++;
+      }
+
       results.Add(m_current);
+    }
     m_current.Empty();
   }
 
-  CStringArray results;
+  CArray<CStringW> results;
 
 private:
-  CString m_current;
+  CStringW m_current;
 };
 
 ProjectFrame::ProjectFrame(ProjectType projectType)
@@ -1513,7 +1531,18 @@ void ProjectFrame::OnReplayDifferSkein()
 
 void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)
 {
-  pCmdUI->Enable(!m_busy && m_playThreads.empty());
+  switch (m_projectType)
+  {
+  case Project_I7:
+    pCmdUI->Enable(!m_busy && m_playThreads.empty());
+    break;
+  case Project_I7XP:
+    pCmdUI->Enable(FALSE);
+    break;
+  default:
+    ASSERT(0);
+    break;
+  }
 }
 
 void ProjectFrame::OnReleaseGame(UINT nID)
@@ -2069,7 +2098,7 @@ bool ProjectFrame::CompileProject(bool release, bool test)
       return false;
 
     // Run intest to extract the example
-    StringOutputSink sink;
+    IntestOutputSink sink;
     code = theApp.RunCommand(NULL,IntestSourceCommandLine(),sink);
     sink.Done();
 
@@ -2087,7 +2116,7 @@ bool ProjectFrame::CompileProject(bool release, bool test)
       for (int i = 0; i < sink.results.GetSize(); i++)
       {
         int from, offset;
-        if (sscanf(sink.results.GetAt(i),"%d %d",&from,&offset) == 2)
+        if (swscanf(sink.results.GetAt(i),L"%d %d",&from,&offset) == 2)
           m_exLineOffsets.Add(ExLineOffset(m_exampleCompiled.id,from,offset));
       }
     }
@@ -2410,7 +2439,7 @@ void ProjectFrame::GenerateIntestReport(CString result)
     " \"%s\\Build\\Problems.html\" n%s t%d -to \"%s\\Build\\Inform-Report-%d.html\"",
     (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id,(LPCSTR)result,
     (LPCSTR)m_projectDir,(LPCSTR)nodeId,nodeCount,(LPCSTR)m_projectDir,m_exampleCompiled.index);
-  StringOutputSink sink;
+  IntestOutputSink sink;
   int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
   sink.Done();
 
@@ -2436,7 +2465,7 @@ void ProjectFrame::GenerateIntestCombinedReport(void)
     " -do -combine \"%s\\Build\\Inform-Report.html\" -%d -to \"%s\\Build\\Problems.html\"",
     (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_projectDir,m_examples.GetSize(),
     (LPCSTR)m_projectDir);
-  StringOutputSink sink;
+  IntestOutputSink sink;
   int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
   sink.Done();
 
@@ -2811,7 +2840,7 @@ bool ProjectFrame::LoadToolBar(void)
         ::GetSystemMetrics(SM_CYSCREEN)/2);
 
       // Set the initial contents and selection for the examples
-      m_exampleList.AddString("Test All");
+      VERIFY(m_exampleList.AddString("Test All") == 0);
       m_exampleList.SetCurSel(0);
     }
     break;
@@ -2842,7 +2871,7 @@ bool ProjectFrame::UpdateExampleList(void)
     "\"%s\\Compilers\\intest\" -no-history -threads=1"
     " -using -extension \"%s\\Source\\extension.i7x\" -do -catalogue",
     (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir);
-  StringOutputSink sink;
+  IntestOutputSink sink;
   int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
   sink.Done();
 
@@ -2853,8 +2882,8 @@ bool ProjectFrame::UpdateExampleList(void)
     for (int i = 0; i < sink.results.GetSize(); i++)
     {
       char exId = 0;
-      CString result = sink.results.GetAt(i);
-      if (sscanf(result,"extension Example %c = ",&exId) == 1)
+      CStringW result = sink.results.GetAt(i);
+      if (swscanf(result,L"extension Example %C = ",&exId) == 1)
       {
         Example example;
         example.id = exId;
@@ -2869,12 +2898,13 @@ bool ProjectFrame::UpdateExampleList(void)
     int index = m_exampleList.GetCurSel();
 
     // Remove all but the first entry
+    m_exampleList.ShowDropDown(FALSE);
     while (m_exampleList.GetCount() > 1)
-      m_exampleList.DeleteString(1);
+      VERIFY(m_exampleList.DeleteString(1) > 0);
 
     // Add the example names
     for (int i = 0; i < m_examples.GetSize(); i++)
-      m_exampleList.AddString(m_examples.GetAt(i).name);
+      VERIFY(m_exampleList.AddString(m_examples.GetAt(i).name) > 0);
 
     // Set the index of the current choice
     if (m_exampleList.SetCurSel(index) == CB_ERR)
@@ -2961,7 +2991,7 @@ void ProjectFrame::TestCurrentExample(bool testAll)
       "\"%s\\Compilers\\intest\" -no-history -threads=1"
       " -using -extension \"%s\\Source\\extension.i7x\" -do -script %c",
       (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id);
-    StringOutputSink sink;
+    IntestOutputSink sink;
     int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
     sink.Done();
 
@@ -2969,10 +2999,7 @@ void ProjectFrame::TestCurrentExample(bool testAll)
     {
       m_skein.Reset(true);
       for (int i = 0; i < sink.results.GetSize(); i++)
-      {
-        CStringW line(sink.results.GetAt(i));
-        m_skein.NewLine(line);
-      }
+        m_skein.NewLine(sink.results.GetAt(i));
       m_skein.Reset(false);
       RunProject();
 
