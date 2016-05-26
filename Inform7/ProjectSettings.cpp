@@ -63,7 +63,7 @@ bool ProjectSettings::Save(const char* path)
 
   fprintf(settingsFile,
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" "
+    "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" "
       "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
     "<plist version=\"1.0\">\n"
     "<dict>\n"
@@ -72,7 +72,7 @@ bool ProjectSettings::Save(const char* path)
     "\t\t<key>IFSettingNaturalInform</key>\n"
     "\t\t<true/>\n"
     "\t</dict>\n"
-    "\t<key>IFInform6Extensions</key>\n"
+    "\t<key>IFI7OutputSettings</key>\n"
     "\t<dict/>\n"
     "\t<key>IFLibrarySettings</key>\n"
     "\t<dict>\n"

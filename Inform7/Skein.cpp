@@ -2,6 +2,7 @@
 #include "Skein.h"
 #include "Inform.h"
 #include "TextFormat.h"
+#include "Build.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -150,6 +151,8 @@ void Skein::Load(const char* path)
   delete m_inst.root;
   m_inst.root = nodes[root];
   m_inst.current = nodes[current];
+  if (m_inst.current == NULL)
+    m_inst.current = m_inst.root;
   m_played = m_inst.root;
 
   m_layout = false;
@@ -190,8 +193,8 @@ bool Skein::Instance::Save(const char* path, int maxSaveTemp)
 
   fprintf(skeinFile,
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    "<Skein rootNode=\"%s\" xmlns=\"http://www.logicalshift.org.uk/IF/Skein\">\n"
-    "  <generator>Inform 7 for Windows</generator>\n"
+    "<Skein rootNode=\"%s\">\n"
+    "  <generator>Windows Inform 7 " NI_BUILD "</generator>\n"
     "  <activeNode nodeId=\"%s\"/>\n",
     root->GetUniqueId(),saveAsCurrent->GetUniqueId());
   root->SaveNodes(skeinFile,tempNodes);
@@ -838,7 +841,9 @@ Skein::Node::Node(const CStringW& line, const CStringW& label, const CStringW& t
     m_differs(ExpectedDifferent), m_score(score), m_width(-1), m_lineWidth(-1),
     m_labelWidth(0), m_x(0)
 {
-  m_id.Format("node-0x%p",this);
+  static unsigned long counter = 0;
+
+  m_id.Format("node-%lu",counter++);
   CompareWithExpected();
 }
 
