@@ -827,6 +827,9 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
   DWORD result = 512;
   if (created)
   {
+    // Close the unused thread handle
+    ::CloseHandle(process.hThread);
+
     // Wait for the process to complete
     result = STILL_ACTIVE;
     while (result == STILL_ACTIVE)
@@ -875,8 +878,23 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
       // Get the exit code
       ::GetExitCodeProcess(process.hProcess,&result);
     }
+
+    // Wait for the process to exit
+    ::WaitForSingleObject(process.hProcess,1000);
     ::CloseHandle(process.hProcess);
-    ::CloseHandle(process.hThread);
+
+    // Read any final output from the pipe
+    DWORD available = 0;
+    ::PeekNamedPipe(pipeRead,NULL,0,NULL,&available,NULL);
+    if (available > 0)
+    {
+      CString msg;
+      char* buffer = msg.GetBuffer(available);
+      DWORD read = 0;
+      ::ReadFile(pipeRead,buffer,available,&read,NULL);
+      msg.ReleaseBuffer(read);
+      output.Output(msg);
+    }
   }
 
   ::CloseHandle(pipeRead);
