@@ -78,6 +78,7 @@ protected:
   afx_msg LRESULT OnCreateNewProject(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectExt(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectType(WPARAM, LPARAM);
+  afx_msg LRESULT OnStoryActive(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();

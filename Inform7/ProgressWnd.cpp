@@ -14,6 +14,10 @@ BEGIN_MESSAGE_MAP(ProgressWnd, CWnd)
   ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
+ProgressWnd::ProgressWnd() : m_longStep(0), m_longStepTotal(0)
+{
+}
+
 BOOL ProgressWnd::Create(CWnd* parentWnd, DWORD style)
 {
   if (!CWnd::Create(NULL,"",WS_CHILD|WS_CLIPCHILDREN|style,CRect(0,0,0,0),parentWnd,0))
@@ -35,16 +39,37 @@ BOOL ProgressWnd::OnEraseBkgnd(CDC* dc)
   return TRUE;
 }
 
-void ProgressWnd::ShowProgress(const char* text, int progress)
+void ProgressWnd::ToFront()
 {
+  if (IsWindowVisible())
+    SetWindowPos(&CWnd::wndTop,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
+}
+
+void ProgressWnd::TaskProgress(const char* text, int progress)
+{
+  CString newText;
+  if (m_long.IsEmpty())
+    newText = text;
+  else
+    newText.Format("%s: %s",(LPCSTR)m_long,text);
+
   CString currentText;
   m_text.GetWindowText(currentText);
-  if (currentText != text)
-    m_text.SetWindowText(text);
+  if (currentText != newText)
+    m_text.SetWindowText(newText);
 
-  m_progress.SetPos(progress);
+  if (m_longStepTotal > 0)
+  {
+    double step = m_longStep;
+    double total = m_longStepTotal;
+    m_progress.SetPos((int)((progress/total)+(100.0*step/total)));
+  }
+  else
+    m_progress.SetPos(progress);
 
-  if (!IsWindowVisible())
+  if (IsWindowVisible())
+    SetWindowPos(&CWnd::wndTop,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
+  else
   {
     // Get the width of the monitor
     int monWidth = 0;
@@ -77,5 +102,39 @@ void ProgressWnd::ShowProgress(const char* text, int progress)
       width,height,SWP_SHOWWINDOW);
     m_text.MoveWindow(fs.cx*2,fs.cy,width-(fs.cx*4),fs.cy*3/2,TRUE);
     m_progress.MoveWindow(fs.cx*2,fs.cy*3,width-(fs.cx*4),fs.cy*3/2,TRUE);
+    AfxGetApp()->BeginWaitCursor();
   }
+}
+
+void ProgressWnd::TaskDone()
+{
+  if (m_long.IsEmpty())
+  {
+    if (IsWindowVisible())
+    {
+      ShowWindow(SW_HIDE);
+      AfxGetApp()->EndWaitCursor();
+    }
+  }
+}
+
+void ProgressWnd::LongTaskProgress(const char* text, int step, int stepTotal)
+{
+  m_long = text;
+  m_longStep = step;
+  m_longStepTotal = stepTotal;
+}
+
+void ProgressWnd::LongTaskAdvance()
+{
+  if (m_longStepTotal > 0)
+    m_longStep++;
+}
+
+void ProgressWnd::LongTaskDone()
+{
+  m_long.Empty();
+  m_longStep = 0;
+  m_longStepTotal = 0;
+  TaskDone();
 }

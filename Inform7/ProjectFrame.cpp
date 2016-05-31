@@ -63,6 +63,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_NEWPROJECT, OnCreateNewProject)
   ON_MESSAGE(WM_PROJECTEXT, OnProjectExt)
   ON_MESSAGE(WM_PROJECTTYPE, OnProjectType)
+  ON_MESSAGE(WM_STORYACTIVE, OnStoryActive)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -936,6 +937,7 @@ LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
       BusyProject busy(this);
       GenerateIntestReport("");
     }
+    m_progress.LongTaskDone();
     GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
     break;
   case RunNextTest:
@@ -955,6 +957,10 @@ LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
           m_exampleList.SetCurSel(current+1);
           OnChangedExample();
 
+          int count = m_exampleList.GetCount()-1;
+          CString msg;
+          msg.Format("Testing %d of %d",current+1,count);
+          m_progress.LongTaskProgress(msg,2*current,2*count);
           TestCurrentExample(true);
         }
         else
@@ -970,6 +976,8 @@ LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
         }
       }
     }
+    if (m_playThreads.empty())
+      m_progress.LongTaskDone();
     break;
   default:
     ASSERT(FALSE);
@@ -1006,12 +1014,11 @@ LRESULT ProjectFrame::OnProgress(WPARAM wp, LPARAM lp)
   const char* text = (const char*)lp;
 
   if (pos >= 0)
-    m_progress.ShowProgress(text,pos);
+    m_progress.TaskProgress(text,pos);
   else
   {
     // Make the progress bar invisible
-    if (m_progress.IsWindowVisible())
-      m_progress.ShowWindow(SW_HIDE);
+    m_progress.TaskDone();
   }
   return 0;
 }
@@ -1037,6 +1044,17 @@ LRESULT ProjectFrame::OnProjectExt(WPARAM wparam, LPARAM lparam)
 LRESULT ProjectFrame::OnProjectType(WPARAM wparam, LPARAM lparam)
 {
   return (LRESULT)m_projectType;
+}
+
+LRESULT ProjectFrame::OnStoryActive(WPARAM wparam, LPARAM lparam)
+{
+  // If the progress window is active, make sure it is still in front
+  m_progress.ToFront();
+
+  // Activating the story tab will change the status of the
+  // story tab on the other pane, so redraw the entire window
+  Invalidate();
+  return 0;
 }
 
 CString ProjectFrame::GetDisplayName(bool fullName)
@@ -1326,7 +1344,18 @@ void ProjectFrame::OnPlayTest()
       }
 
       // Compile and test the selected example
+      if (testAll)
+      {
+        int count = m_exampleList.GetCount()-1;
+        CString msg;
+        msg.Format("Testing 1 of %d",count);
+        m_progress.LongTaskProgress(msg,0,2*count);
+      }
+      else
+        m_progress.LongTaskProgress("Testing",0,2);
       TestCurrentExample(testAll);
+      if (m_playThreads.empty())
+        m_progress.LongTaskDone();
     }
     break;
 
@@ -2840,7 +2869,7 @@ bool ProjectFrame::LoadToolBar(void)
         ::GetSystemMetrics(SM_CYSCREEN)/2);
 
       // Set the initial contents and selection for the examples
-      VERIFY(m_exampleList.AddString("Test All") == 0);
+      m_exampleList.AddString("Test All");
       m_exampleList.SetCurSel(0);
     }
     break;
@@ -2900,11 +2929,11 @@ bool ProjectFrame::UpdateExampleList(void)
     // Remove all but the first entry
     m_exampleList.ShowDropDown(FALSE);
     while (m_exampleList.GetCount() > 1)
-      VERIFY(m_exampleList.DeleteString(1) > 0);
+      m_exampleList.DeleteString(1);
 
     // Add the example names
     for (int i = 0; i < m_examples.GetSize(); i++)
-      VERIFY(m_exampleList.AddString(m_examples.GetAt(i).name) > 0);
+      m_exampleList.AddString(m_examples.GetAt(i).name);
 
     // Set the index of the current choice
     if (m_exampleList.SetCurSel(index) == CB_ERR)
@@ -3002,6 +3031,8 @@ void ProjectFrame::TestCurrentExample(bool testAll)
         m_skein.NewLine(sink.results.GetAt(i));
       m_skein.Reset(false);
       RunProject();
+      m_progress.LongTaskAdvance();
+      SendMessage(WM_PROGRESS,50,(LPARAM)"Running example");
 
       // Add a task to show a report on the test, or run the next test
       PlaySkein next(testAll ? ReportThenRunNextTest : ShowTestReport);

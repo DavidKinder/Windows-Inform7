@@ -138,3 +138,7 @@ struct SourceRange
 // Sent to the window frame to get the current project type (i.e.
 // the appropriate value of the ProjectType enumeration).
 #define WM_PROJECTTYPE    WM_APP+32
+
+// Sent to the window frame to notify that the story window has
+// been activated.
+#define WM_STORYACTIVE    WM_APP+33

@@ -4,6 +4,7 @@
 #include "TabStory.h"
 #include "GameWindow.h"
 #include "Inform.h"
+#include "Messages.h"
 #include "Panel.h"
 
 #ifdef _DEBUG
@@ -70,12 +71,9 @@ void TabStory::MakeActive(TabState& state)
   {
     m_game->ShowWindow(m_rect,this);
     ShowWindow(SW_SHOW);
+    GetParentFrame()->SendMessage(WM_STORYACTIVE);
     m_active = true;
     state.tab = Panel::Tab_Story;
-
-    // Activating the story tab will change the status of the
-    // story tab on the other pane, so redraw the entire window
-    GetParentFrame()->Invalidate();
   }
 }
 
