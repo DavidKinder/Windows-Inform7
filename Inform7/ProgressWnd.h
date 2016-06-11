@@ -1,5 +1,7 @@
 #pragma once
 
+#include "StopButton.h"
+
 class ProgressWnd : public CWnd
 {
   DECLARE_DYNAMIC(ProgressWnd)
@@ -21,10 +23,17 @@ public:
   void LongTaskAdvance();
   void LongTaskDone();
 
+  void ShowStop();
+  bool WantStop();
+
 private:
+  afx_msg void OnStopClicked();
+
   CStatic m_text;
+  StopButton m_stop;
   CProgressCtrl m_progress;
   CString m_long;
   int m_longStep;
   int m_longStepTotal;
+  bool m_wantStop;
 };

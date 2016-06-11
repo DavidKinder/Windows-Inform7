@@ -64,6 +64,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_PROJECTEXT, OnProjectExt)
   ON_MESSAGE(WM_PROJECTTYPE, OnProjectType)
   ON_MESSAGE(WM_STORYACTIVE, OnStoryActive)
+  ON_MESSAGE(WM_WANTSTOP, OnWantStop)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -151,6 +152,11 @@ public:
       else
         m_current.AppendChar(*ptr);
     }
+  }
+
+  bool WantStop(void)
+  {
+    return false;
   }
 
   void Done(void)
@@ -942,6 +948,7 @@ LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
     break;
   case RunNextTest:
   case ReportThenRunNextTest:
+    if (!WantStop())
     {
       if (play.action == ReportThenRunNextTest)
       {
@@ -1002,6 +1009,7 @@ LRESULT ProjectFrame::OnProjectEdited(WPARAM wparam, LPARAM lparam)
 LRESULT ProjectFrame::OnExtDownload(WPARAM urls, LPARAM)
 {
   BusyProject busy(this);
+  m_progress.ShowStop();
   CStringArray* libraryUrls = (CStringArray*)urls;
   ExtensionFrame::DownloadExtensions(this,libraryUrls);
   delete libraryUrls;
@@ -1055,6 +1063,11 @@ LRESULT ProjectFrame::OnStoryActive(WPARAM wparam, LPARAM lparam)
   // story tab on the other pane, so redraw the entire window
   Invalidate();
   return 0;
+}
+
+LRESULT ProjectFrame::OnWantStop(WPARAM, LPARAM)
+{
+  return WantStop() ? 1 : 0;
 }
 
 CString ProjectFrame::GetDisplayName(bool fullName)
@@ -1353,6 +1366,7 @@ void ProjectFrame::OnPlayTest()
       }
       else
         m_progress.LongTaskProgress("Testing",0,2);
+      m_progress.ShowStop();
       TestCurrentExample(testAll);
       if (m_playThreads.empty())
         m_progress.LongTaskDone();
@@ -1873,6 +1887,7 @@ void ProjectFrame::SetFromRegistryPath(const char* path)
       ::SystemParametersInfo(SPI_GETWORKAREA,0,(LPRECT)screen,0);
       MoveWindow(0,0,screen.Width()*7/8,screen.Height()*9/10,FALSE);
       CenterWindow();
+      ShowWindow(SW_MAXIMIZE);
     }
 
     // Restore the splitter position
@@ -2188,12 +2203,13 @@ bool ProjectFrame::CompileProject(bool release, bool test)
 
   if (m_projectType == Project_I7XP)
   {
-    if (test && (code != 0))
+    if (test && !WantStop() && (code > 0) && (code < 10))
       GenerateIntestReport(failed);
   }
 
   // Make the results panel visible
-  GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
+  if (!WantStop())
+    GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
 
   // Return the focus to its original point if still visible
   if (::IsWindow(focus) && ::IsWindowVisible(focus))
@@ -2633,6 +2649,12 @@ void ProjectFrame::Output(const char* msg)
   }
 }
 
+// Implementation of InformApp::OutputSink
+bool ProjectFrame::WantStop(void)
+{
+  return m_progress.WantStop();
+}
+
 void ProjectFrame::OnSourceLink(const char* url, TabInterface* from, COLORREF highlight)
 {
   CString replace_url;
@@ -3010,45 +3032,49 @@ ProjectFrame::Example ProjectFrame::GetCurrentExample(void)
 
 void ProjectFrame::TestCurrentExample(bool testAll)
 {
-  if (CompileProject(false,true))
+  bool compiled = CompileProject(false,true);
+  if (!WantStop())
   {
-    BusyProject busy(this);
-
-    // Run intest to get the list of test commands
-    CString cmdLine;
-    cmdLine.Format(
-      "\"%s\\Compilers\\intest\" -no-history -threads=1"
-      " -using -extension \"%s\\Source\\extension.i7x\" -do -script %c",
-      (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id);
-    IntestOutputSink sink;
-    int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
-    sink.Done();
-
-    if (code == 0)
+    if (compiled)
     {
-      m_skein.Reset(true);
-      for (int i = 0; i < sink.results.GetSize(); i++)
-        m_skein.NewLine(sink.results.GetAt(i));
-      m_skein.Reset(false);
-      RunProject();
-      m_progress.LongTaskAdvance();
-      SendMessage(WM_PROGRESS,50,(LPARAM)"Running example");
+      BusyProject busy(this);
 
-      // Add a task to show a report on the test, or run the next test
-      PlaySkein next(testAll ? ReportThenRunNextTest : ShowTestReport);
+      // Run intest to get the list of test commands
+      CString cmdLine;
+      cmdLine.Format(
+        "\"%s\\Compilers\\intest\" -no-history -threads=1"
+        " -using -extension \"%s\\Source\\extension.i7x\" -do -script %c",
+        (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id);
+      IntestOutputSink sink;
+      int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
+      sink.Done();
+
+      if (code == 0)
+      {
+        m_skein.Reset(true);
+        for (int i = 0; i < sink.results.GetSize(); i++)
+          m_skein.NewLine(sink.results.GetAt(i));
+        m_skein.Reset(false);
+        RunProject();
+        m_progress.LongTaskAdvance();
+        SendMessage(WM_PROGRESS,50,(LPARAM)"Running example");
+
+        // Add a task to show a report on the test, or run the next test
+        PlaySkein next(testAll ? ReportThenRunNextTest : ShowTestReport);
+        m_playThreads.push(next);
+      }
+      else
+      {
+        CString msg;
+        msg.Format("Failed to generate test commands\nIntest returned code %d",code);
+        MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
+      }
+    }
+    else if (testAll)
+    {
+      PlaySkein next(RunNextTest);
       m_playThreads.push(next);
+      PostMessage(WM_PLAYNEXTTHREAD);
     }
-    else
-    {
-      CString msg;
-      msg.Format("Failed to generate test commands\nIntest returned code %d",code);
-      MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
-    }
-  }
-  else if (testAll)
-  {
-    PlaySkein next(RunNextTest);
-    m_playThreads.push(next);
-    PostMessage(WM_PLAYNEXTTHREAD);
   }
 }

@@ -608,6 +608,8 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
     for (int i = 0; i < total; i++)
     {
       SetDownloadProgress(parent,total,i,installed);
+      if (parent->SendMessage(WM_WANTSTOP) != 0)
+        break;
 
       CString url = urls->GetAt(i);
       if (url.Left(8) != "library:")

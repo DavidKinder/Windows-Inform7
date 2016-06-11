@@ -707,6 +707,9 @@ void InformApp::ClearScaledImages(void)
     "Skein-unplayed-scaled-dark",
     "Skein-annotation-scaled",
     "SkeinDiffersBadge-scaled",
+    // From StopButton
+    "Stop-scaled",
+    "Stop-scaled-dark",
   };
 
   for (int i = 0; i < sizeof names / sizeof names[0]; i++)
@@ -791,8 +794,14 @@ void InformApp::RunMessagePump(void)
       exit(ExitInstance());
   }
 
-  if (IsWaitCursor())
-    RestoreWaitCursor();
+  POINT current;
+  ::GetCursorPos(&current);
+  CWnd* underWnd = CWnd::WindowFromPoint(current);
+  if ((underWnd == NULL) || !underWnd->IsKindOf(RUNTIME_CLASS(StopButton)))
+  {
+    if (IsWaitCursor())
+      RestoreWaitCursor();
+  }
 }
 
 int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
@@ -856,6 +865,10 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
         }
         ::ContinueDebugEvent(debug.dwProcessId,debug.dwThreadId,status);
       }
+
+      // Check if the process should be stopped
+      if (output.WantStop())
+        ::TerminateProcess(process.hProcess,20);
 
       // Wait for a window message or 100ms to elapse
       ::MsgWaitForMultipleObjects(0,NULL,FALSE,100,QS_ALLINPUT);

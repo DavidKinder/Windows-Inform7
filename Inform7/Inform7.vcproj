@@ -667,6 +667,12 @@
 				RelativePath="RichEdit.h">
 			</File>
 			<File
+				RelativePath="StopButton.cpp">
+			</File>
+			<File
+				RelativePath="StopButton.h">
+			</File>
+			<File
 				RelativePath="UnicodeEdit.cpp">
 			</File>
 			<File

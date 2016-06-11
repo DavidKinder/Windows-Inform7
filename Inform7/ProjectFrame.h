@@ -79,6 +79,7 @@ protected:
   afx_msg LRESULT OnProjectExt(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectType(WPARAM, LPARAM);
   afx_msg LRESULT OnStoryActive(WPARAM, LPARAM);
+  afx_msg LRESULT OnWantStop(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();
@@ -150,6 +151,7 @@ public:
 protected:
   // Implementation of InformApp::OutputSink
   void Output(const char* msg);
+  bool WantStop(void);
 
   // Implementation of TabSettings::SettingsTabNotify
   void OnSettingsChange(TabSettings* changed);

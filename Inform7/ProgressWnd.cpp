@@ -12,9 +12,10 @@ IMPLEMENT_DYNAMIC(ProgressWnd, CWnd)
 
 BEGIN_MESSAGE_MAP(ProgressWnd, CWnd)
   ON_WM_ERASEBKGND()
+  ON_BN_CLICKED(IDC_STOP, OnStopClicked)
 END_MESSAGE_MAP()
 
-ProgressWnd::ProgressWnd() : m_longStep(0), m_longStepTotal(0)
+ProgressWnd::ProgressWnd() : m_longStep(0), m_longStepTotal(0), m_wantStop(false)
 {
 }
 
@@ -25,6 +26,8 @@ BOOL ProgressWnd::Create(CWnd* parentWnd, DWORD style)
   if (!m_text.Create("",WS_CHILD|WS_VISIBLE|SS_CENTER,CRect(0,0,0,0),this))
     return FALSE;
   m_text.SetFont(theApp.GetFont(InformApp::FontSystem));
+  if (!m_stop.Create(WS_CHILD,CRect(0,0,0,0),this,IDC_STOP))
+    return FALSE;
   if (!m_progress.Create(WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,IDC_PROGRESS))
     return FALSE;
   return TRUE;
@@ -100,7 +103,9 @@ void ProgressWnd::TaskProgress(const char* text, int progress)
       parentRect.left+((parentRect.Width()-width)/2),
       parentRect.top+((parentRect.Height()-height)/2),
       width,height,SWP_SHOWWINDOW);
-    m_text.MoveWindow(fs.cx*2,fs.cy,width-(fs.cx*4),fs.cy*3/2,TRUE);
+    CSize ssz = m_stop.GetButtonSize();
+    m_text.MoveWindow((fs.cx*2)+ssz.cx,fs.cy,width-(fs.cx*4)-(ssz.cx*2),fs.cy*3/2,TRUE);
+    m_stop.MoveWindow(width-(fs.cx*2)-ssz.cx,fs.cy,ssz.cx,ssz.cy,TRUE);
     m_progress.MoveWindow(fs.cx*2,fs.cy*3,width-(fs.cx*4),fs.cy*3/2,TRUE);
     AfxGetApp()->BeginWaitCursor();
   }
@@ -113,7 +118,9 @@ void ProgressWnd::TaskDone()
     if (IsWindowVisible())
     {
       ShowWindow(SW_HIDE);
+      m_stop.ShowWindow(SW_HIDE);
       AfxGetApp()->EndWaitCursor();
+      m_wantStop = false;
     }
   }
 }
@@ -137,4 +144,25 @@ void ProgressWnd::LongTaskDone()
   m_longStep = 0;
   m_longStepTotal = 0;
   TaskDone();
+}
+
+void ProgressWnd::ShowStop()
+{
+  m_stop.ShowWindow(SW_SHOW);
+}
+
+bool ProgressWnd::WantStop()
+{
+  if (IsWindowVisible())
+  {
+    theApp.RunMessagePump();
+    return m_wantStop;
+  }
+  else
+    return false;
+}
+
+void ProgressWnd::OnStopClicked()
+{
+  m_wantStop = true;
 }

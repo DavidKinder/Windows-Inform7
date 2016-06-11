@@ -142,3 +142,7 @@ struct SourceRange
 // Sent to the window frame to notify that the story window has
 // been activated.
 #define WM_STORYACTIVE    WM_APP+33
+
+// Sent to the window frame to check if the current operation should
+// stop: 1 is returned if yes, otherwise 0.
+#define WM_WANTSTOP       WM_APP+34

@@ -127,6 +127,7 @@ public:
   {
   public:
     virtual void Output(const char* msg) = 0;
+    virtual bool WantStop() = 0;
   };
 
   void RunMessagePump(void);
