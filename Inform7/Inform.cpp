@@ -121,6 +121,17 @@ BOOL InformApp::PreTranslateMessage(MSG* pMsg)
   return FALSE;
 }
 
+void InformApp::DoWaitCursor(int nCode)
+{
+  CWinApp::DoWaitCursor(nCode);
+
+  POINT current;
+  ::GetCursorPos(&current);
+  CWnd* underWnd = CWnd::WindowFromPoint(current);
+  if ((underWnd != NULL) && underWnd->IsKindOf(RUNTIME_CLASS(StopButton)))
+    underWnd->SendMessage(WM_SETCURSOR,0,0);
+}
+
 void InformApp::OnAppExit()
 {
   // Close all secondary window frames first. The close message
@@ -794,14 +805,8 @@ void InformApp::RunMessagePump(void)
       exit(ExitInstance());
   }
 
-  POINT current;
-  ::GetCursorPos(&current);
-  CWnd* underWnd = CWnd::WindowFromPoint(current);
-  if ((underWnd == NULL) || !underWnd->IsKindOf(RUNTIME_CLASS(StopButton)))
-  {
-    if (IsWaitCursor())
-      RestoreWaitCursor();
-  }
+  if (IsWaitCursor())
+    RestoreWaitCursor();
 }
 
 int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
