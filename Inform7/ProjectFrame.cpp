@@ -3004,16 +3004,17 @@ bool ProjectFrame::CopyExtensionToMaterials(void)
   CStringW extName, extAuthor;
   if (!GetExtensionInfo(sourcePath,extName,extAuthor))
     return false;
-  CString destPath;
-  destPath.Format("%s\\Extensions\\%S",(LPCSTR)GetMaterialsFolder(),(LPCWSTR)extAuthor);
+
+  CString destPath = GetMaterialsFolder();
+  ::CreateDirectory(destPath,NULL);
+  destPath.Append("\\Extensions");
+  ::CreateDirectory(destPath,NULL);
+  destPath.AppendFormat("\\%S",(LPCWSTR)extAuthor);
+  ::CreateDirectory(destPath,NULL);
   if (::GetFileAttributes(destPath) == INVALID_FILE_ATTRIBUTES)
-  {
-    if (theOS.SHCreateDirectoryEx(this,destPath) != ERROR_SUCCESS)
-      return false;
-  }
-  destPath += '\\';
-  destPath += extName;
-  destPath += ".i7x";
+    return false;
+
+  destPath.AppendFormat("\\%S.i7x",(LPCWSTR)extName);
   if (::CopyFile(sourcePath,destPath,FALSE))
   {
     m_materialsExtPath = destPath;
