@@ -29,7 +29,7 @@ END_MESSAGE_MAP()
 // The one and only InformApp object
 InformApp theApp;
 
-InformApp::InformApp()
+InformApp::InformApp() : m_job(0)
 {
   for (int i = 0; i < sizeof m_fontSizes / sizeof m_fontSizes[0]; i++)
     m_fontSizes[i] = 0;
@@ -57,6 +57,18 @@ BOOL InformApp::InitInstance()
   // used by the Natural Inform compiler, and make sure directories
   // under My Documents exist.
   SetMyDocuments();
+
+  // If possible, create a job to assign child processes to. Since the
+  // job will be closed when this process exits, this ensures that any
+  // child processes still running will also exit.
+  m_job = theOS.CreateJobObject(NULL,NULL);
+  if (m_job)
+  {
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION jeli = { 0 };
+    jeli.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+    VERIFY(theOS.SetInformationJobObject(m_job,
+      JobObjectExtendedLimitInformation,&jeli,sizeof(jeli)));
+  }
 
   // Discard any log file from a previous run
   /*::DeleteFile(m_home+LOG_FILE);*/
@@ -809,6 +821,34 @@ void InformApp::RunMessagePump(void)
     RestoreWaitCursor();
 }
 
+HANDLE InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug)
+{
+  BOOL flags = CREATE_NO_WINDOW;
+  if (debug)
+    flags |= DEBUG_PROCESS;
+  if (m_job)
+    flags |= CREATE_BREAKAWAY_FROM_JOB;
+
+  // Actually create the process
+  PROCESS_INFORMATION process;
+  char* cmdLine = command.GetBuffer();
+  BOOL created = ::CreateProcess(NULL,cmdLine,NULL,NULL,TRUE,flags,NULL,dir,&start,&process);
+  command.ReleaseBuffer();
+
+  if (created)
+  {
+    // Close the thread handle that is never used
+    ::CloseHandle(process.hThread);
+
+    // If there is a job, assign the process to it
+    if (m_job)
+      VERIFY(theOS.AssignProcessToJobObject(m_job,process.hProcess));
+
+    return process.hProcess;
+  }
+  return INVALID_HANDLE_VALUE;
+}
+
 int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
 {
   CWaitCursor wc;
@@ -831,19 +871,12 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
   start.wShowWindow = SW_HIDE;
   start.dwFlags = STARTF_USESTDHANDLES|STARTF_USESHOWWINDOW;
 
-  // Create the process with debugging enabled
-  PROCESS_INFORMATION process;
-  char* cmdLine = command.GetBuffer();
-  BOOL created = ::CreateProcess(NULL,cmdLine,NULL,NULL,TRUE,DEBUG_PROCESS|CREATE_NO_WINDOW,
-    NULL,dir,&start,&process);
-  command.ReleaseBuffer();
+  // Create the process for the command
+  HANDLE process = CreateProcess(dir,command,start,true);
 
   DWORD result = 512;
-  if (created)
+  if (process != INVALID_HANDLE_VALUE)
   {
-    // Close the unused thread handle
-    ::CloseHandle(process.hThread);
-
     // Wait for the process to complete
     result = STILL_ACTIVE;
     while (result == STILL_ACTIVE)
@@ -861,10 +894,10 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
             if (debug.u.Exception.dwFirstChance)
               status = DBG_EXCEPTION_NOT_HANDLED;
             else
-              ::TerminateProcess(process.hProcess,10);
+              ::TerminateProcess(process,10);
             break;
           case EXCEPTION_STACK_OVERFLOW:
-            ::TerminateProcess(process.hProcess,11);
+            ::TerminateProcess(process,11);
             break;
           }
         }
@@ -873,7 +906,7 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
 
       // Check if the process should be stopped
       if (output.WantStop())
-        ::TerminateProcess(process.hProcess,20);
+        ::TerminateProcess(process,20);
 
       // Wait for a window message or 100ms to elapse
       ::MsgWaitForMultipleObjects(0,NULL,FALSE,100,QS_ALLINPUT);
@@ -894,12 +927,12 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
       }
 
       // Get the exit code
-      ::GetExitCodeProcess(process.hProcess,&result);
+      ::GetExitCodeProcess(process,&result);
     }
 
     // Wait for the process to exit
-    ::WaitForSingleObject(process.hProcess,1000);
-    ::CloseHandle(process.hProcess);
+    ::WaitForSingleObject(process,1000);
+    ::CloseHandle(process);
 
     // Read any final output from the pipe
     DWORD available = 0;
@@ -932,19 +965,13 @@ HANDLE InformApp::RunCensus(bool wait)
   start.wShowWindow = SW_HIDE;
   start.dwFlags = STARTF_USESHOWWINDOW;
 
-  PROCESS_INFORMATION process;
-  char* cmdLine = command.GetBuffer();
-  BOOL created = ::CreateProcess(
-    NULL,cmdLine,NULL,NULL,TRUE,CREATE_NO_WINDOW,NULL,NULL,&start,&process);
-  command.ReleaseBuffer();
-
-  if (created)
+  HANDLE process = CreateProcess(NULL,command,start,false);
+  if (process != INVALID_HANDLE_VALUE)
   {
-    ::CloseHandle(process.hThread);
     if (wait)
-      return process.hProcess;
+      return process;
     else
-      ::CloseHandle(process.hProcess);
+      ::CloseHandle(process);
   }
   return 0;
 }

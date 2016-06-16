@@ -81,6 +81,48 @@ bool OSLayer::IsDebuggerPresent(void)
   return false;
 }
 
+HANDLE OSLayer::CreateJobObject(LPSECURITY_ATTRIBUTES jobAttrs, LPCSTR name)
+{
+  if (m_kernelDll)
+  {
+    typedef HANDLE(__stdcall *CREATEJOBOBJECT)(LPSECURITY_ATTRIBUTES, LPCSTR);
+
+    CREATEJOBOBJECT createJobObject =
+      (CREATEJOBOBJECT)::GetProcAddress(m_kernelDll,"CreateJobObjectA");
+    if (createJobObject)
+      return (*createJobObject)(jobAttrs,name);
+  }
+  return 0;
+}
+
+bool OSLayer::SetInformationJobObject(HANDLE job, JOBOBJECTINFOCLASS jobClass, LPVOID jobInfo, DWORD jobInfoLen)
+{
+  if (m_kernelDll)
+  {
+    typedef BOOL(__stdcall *SETINFORMATIONJOBOBJECT)(HANDLE, JOBOBJECTINFOCLASS, LPVOID, DWORD);
+
+    SETINFORMATIONJOBOBJECT setInformationJobObject =
+      (SETINFORMATIONJOBOBJECT)::GetProcAddress(m_kernelDll,"SetInformationJobObject");
+    if (setInformationJobObject)
+      return ((*setInformationJobObject)(job,jobClass,jobInfo,jobInfoLen) != 0);
+  }
+  return 0;
+}
+
+bool OSLayer::AssignProcessToJobObject(HANDLE job, HANDLE process)
+{
+  if (m_kernelDll)
+  {
+    typedef BOOL(__stdcall *ASSIGNPROCESSTOJOBOBJECT)(HANDLE, HANDLE);
+
+    ASSIGNPROCESSTOJOBOBJECT assignProcessToJobObject =
+      (ASSIGNPROCESSTOJOBOBJECT)::GetProcAddress(m_kernelDll,"AssignProcessToJobObject");
+    if (assignProcessToJobObject)
+      return ((*assignProcessToJobObject)(job,process) != 0);
+  }
+  return 0;
+}
+
 int OSLayer::DrawText(CDC* dc, LPCWSTR text, int count, CRect& rect, UINT format)
 {
   if (m_osVer.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)

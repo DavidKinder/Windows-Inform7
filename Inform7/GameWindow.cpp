@@ -164,20 +164,10 @@ void GameWindow::RunInterpreter(const char* dir, const char* file, bool glulx)
   // Create the process. If the application is being debugged we don't make ourselves
   // a debugger of the interpreter, as that stops the real debugger being attached to
   // the interpreter.
-  DWORD flags = CREATE_NO_WINDOW;
-  if (theOS.IsDebuggerPresent() == false)
-    flags |= DEBUG_PROCESS;
-  PROCESS_INFORMATION process;
-  char* cmdLine = command.GetBuffer();
-  BOOL created = ::CreateProcess(NULL,cmdLine,NULL,NULL,TRUE,flags,NULL,dir,&start,&process);
-  command.ReleaseBuffer();
-
-  // If the process started, save the process handles
-  if (created)
+  HANDLE process = theApp.CreateProcess(dir,command,start,!(theOS.IsDebuggerPresent()));
+  if (process != INVALID_HANDLE_VALUE)
   {
-    m_interpreter = process.hProcess;
-    ::CloseHandle(process.hThread);
-
+    m_interpreter = process;
     m_inputPipe = inputWrite;
     m_outputPipe = outputRead;
     m_inputPipe2 = inputRead;

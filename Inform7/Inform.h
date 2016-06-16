@@ -132,6 +132,7 @@ public:
   };
 
   void RunMessagePump(void);
+  HANDLE CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug);
   int RunCommand(const char* dir, CString& command, OutputSink& output);
   HANDLE RunCensus(bool wait);
   void WriteLog(const char* msg);
@@ -172,6 +173,8 @@ protected:
 
   CString m_home;
   FileProtocol m_protocol;
+
+  HANDLE m_job;
 };
 
 extern InformApp theApp;

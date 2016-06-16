@@ -13,6 +13,10 @@ public:
   DWORD GetDllVersion(const char* dllName);
 
   bool IsDebuggerPresent(void);
+  HANDLE CreateJobObject(LPSECURITY_ATTRIBUTES jobAttrs, LPCSTR name);
+  bool SetInformationJobObject(HANDLE job,
+    JOBOBJECTINFOCLASS jobClass, LPVOID jobInfo, DWORD jobInfoLen);
+  bool AssignProcessToJobObject(HANDLE job, HANDLE process);
 
   int DrawText(CDC* dc, LPCWSTR text, int count, CRect& rect, UINT format);
   WCHAR ToUnicode(UINT virtKey, UINT scanCode, UINT flags);
