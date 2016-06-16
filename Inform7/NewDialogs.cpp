@@ -239,6 +239,8 @@ BOOL NewProjectDialog::OnInitDialog()
     return FALSE;
 
   GetDlgItem(IDC_AUTHOR)->EnableWindow(m_fromExt ? FALSE : TRUE);
+  if (m_fromExt)
+    SetWindowText("Start an extension project from an extension");
   return TRUE;
 }
 
@@ -341,7 +343,7 @@ CString NewExtensionDialog::GetPath(void)
   path.Append(CString(m_author));
   path.AppendChar('\\');
   path.Append(m_name);
-  path.Append(".i7xp");
+  path.Append(".i7x");
   return path;
 }
 
