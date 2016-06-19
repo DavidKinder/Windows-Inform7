@@ -65,6 +65,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_PROJECTTYPE, OnProjectType)
   ON_MESSAGE(WM_STORYACTIVE, OnStoryActive)
   ON_MESSAGE(WM_WANTSTOP, OnWantStop)
+  ON_MESSAGE(WM_RUNCENSUS, OnRunCensus)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -1065,9 +1066,20 @@ LRESULT ProjectFrame::OnStoryActive(WPARAM wparam, LPARAM lparam)
   return 0;
 }
 
-LRESULT ProjectFrame::OnWantStop(WPARAM, LPARAM)
+LRESULT ProjectFrame::OnWantStop(WPARAM wparam, LPARAM lparam)
 {
   return WantStop() ? 1 : 0;
+}
+
+LRESULT ProjectFrame::OnRunCensus(WPARAM wparam, LPARAM lparam)
+{
+  HANDLE ni = theApp.RunCensus();
+  if (ni != INVALID_HANDLE_VALUE)
+  {
+    MonitorProcess(ni,
+      (wparam != 0) ? ProcessHelpExtensions : ProcessNoAction,"ni (census)");
+  }
+  return 0;
 }
 
 CString ProjectFrame::GetDisplayName(bool fullName)
@@ -1136,9 +1148,7 @@ void ProjectFrame::OnFileOpen()
 void ProjectFrame::OnFileInstallExt()
 {
   CWaitCursor wc;
-  HANDLE process = ExtensionFrame::InstallExtensions(this);
-  if (process != INVALID_HANDLE_VALUE)
-    MonitorProcess(process,ProcessHelpExtensions);
+  ExtensionFrame::InstallExtensions(this);
 }
 
 void ProjectFrame::OnFileInstallFolder()
@@ -1950,7 +1960,7 @@ bool ProjectFrame::StartNewProject(const char* dir, CWnd* parent)
     return false;
 
   CStringW initialCode;
-  initialCode.Format(L"\"%S\" by %s\r\r",dialog.GetName(),dialog.GetAuthor());
+  initialCode.Format(L"\"%S\" by %s\n\n",dialog.GetName(),dialog.GetAuthor());
 
   ProjectFrame* frame = NewFrame(Project_I7);
   ((TabSource*)frame->GetPanel(0)->GetTab(Panel::Tab_Source))->PasteCode(initialCode);
@@ -1980,7 +1990,7 @@ bool ProjectFrame::StartNewExtProject(const char* dir, CWnd* parent, const Infor
   else
   {
     CStringW initialCode;
-    initialCode.Format(L"%S by %s begins here.\r\r%S ends here.\n",
+    initialCode.Format(L"%S by %s begins here.\n\n%S ends here.\n",
       dialog.GetName(),dialog.GetAuthor(),dialog.GetName());
     ((TabSource*)frame->GetPanel(0)->GetTab(Panel::Tab_Source))->PasteCode(initialCode);
   }
@@ -2527,12 +2537,13 @@ void ProjectFrame::GenerateIntestCombinedReport(void)
   }
 }
 
-void ProjectFrame::MonitorProcess(HANDLE process, ProcessAction action)
+void ProjectFrame::MonitorProcess(HANDLE process, ProcessAction action, LPCSTR name)
 {
   // Add to the list of processes being monitored
   SubProcess sub;
   sub.process = process;
   sub.action = action;
+  sub.name = name;
   m_processes.Add(sub);
 
   // If this is the first process, start a timer
@@ -2544,7 +2555,8 @@ void ProjectFrame::OnTimer(UINT nIDEvent)
 {
   if (nIDEvent == 1)
   {
-    // Look for any processes that have completed
+    // Look for any processes that have finished
+    CArray<SubProcess> finished;
     for (int i = 0; i < m_processes.GetSize();)
     {
       const SubProcess& sub = m_processes.GetAt(i);
@@ -2553,16 +2565,7 @@ void ProjectFrame::OnTimer(UINT nIDEvent)
       ::GetExitCodeProcess(sub.process,&result);
       if (result != STILL_ACTIVE)
       {
-        switch (sub.action)
-        {
-        case ProcessHelpExtensions:
-          // Show the help on installed extensions
-          OnHelpExtensions();
-          break;
-        }
-
-        // Stop monitoring this process
-        ::CloseHandle(sub.process);
+        finished.Add(sub);
         m_processes.RemoveAt(i);
       }
       else
@@ -2572,6 +2575,36 @@ void ProjectFrame::OnTimer(UINT nIDEvent)
     // If there are no processes left, stop the timer
     if (m_processes.IsEmpty())
       KillTimer(1);
+
+    // Now handle the finished processes
+    for (int i = 0; i < finished.GetSize(); i++)
+    {
+      const SubProcess& sub = finished.GetAt(i);
+
+      // Stop monitoring this process
+      DWORD result = 0;
+      ::GetExitCodeProcess(sub.process,&result);
+      ::CloseHandle(sub.process);
+
+      // Tell the user if the process was not successful
+      if (result != 0)
+      {
+        CString msg;
+        msg.Format("%s returned code %d",(LPCSTR)sub.name,(int)result);
+        MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
+      }
+      else
+      {
+        // Perform the final action, if any
+        switch (sub.action)
+        {
+        case ProcessHelpExtensions:
+          // Show the help on installed extensions
+          OnHelpExtensions();
+          break;
+        }
+      }
+    }
   }
   CWnd::OnTimer(nIDEvent);
 }

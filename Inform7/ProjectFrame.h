@@ -80,6 +80,7 @@ protected:
   afx_msg LRESULT OnProjectType(WPARAM, LPARAM);
   afx_msg LRESULT OnStoryActive(WPARAM, LPARAM);
   afx_msg LRESULT OnWantStop(WPARAM, LPARAM);
+  afx_msg LRESULT OnRunCensus(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();
@@ -148,6 +149,13 @@ public:
   CString GetDisplayName(bool fullName);
   void SendChanged(InformApp::Changed changed, int value);
 
+  enum ProcessAction
+  {
+    ProcessNoAction,
+    ProcessHelpExtensions
+  };
+  void MonitorProcess(HANDLE process, ProcessAction action, LPCSTR name);
+
 protected:
   // Implementation of InformApp::OutputSink
   void Output(const char* msg);
@@ -194,17 +202,11 @@ protected:
   Example GetCurrentExample(void);
   void TestCurrentExample(bool testAll);
 
-  enum ProcessAction
-  {
-    ProcessHelpExtensions
-  };
-
   CString NaturalCommandLine(bool release);
   CString InformCommandLine(bool release);
   CString IntestSourceCommandLine(void);
   void GenerateIntestReport(CString result);
   void GenerateIntestCombinedReport(void);
-  void MonitorProcess(HANDLE process, ProcessAction action);
 
   Panel* GetPanel(int column) const;
   int ChoosePanel(Panel::Tabs newTab);
@@ -257,6 +259,7 @@ protected:
   {
     HANDLE process;
     ProcessAction action;
+    CString name;
   };
   CArray<SubProcess> m_processes;
 

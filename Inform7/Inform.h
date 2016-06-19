@@ -41,6 +41,7 @@ public:
   virtual int ExitInstance();
   virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void DoWaitCursor(int nCode);
+	virtual BOOL OnIdle(LONG lCount);
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -133,8 +134,8 @@ public:
 
   void RunMessagePump(void);
   HANDLE CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug);
+  HANDLE RunCensus(void);
   int RunCommand(const char* dir, CString& command, OutputSink& output);
-  HANDLE RunCensus(bool wait);
   void WriteLog(const char* msg);
   bool IsWaitCursor(void);
 

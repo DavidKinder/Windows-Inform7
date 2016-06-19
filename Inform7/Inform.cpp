@@ -84,15 +84,20 @@ BOOL InformApp::InitInstance()
 
   // Find and create documentation for extensions
   FindExtensions();
-  RunCensus(false);
+  HANDLE ni = RunCensus();
 
   // Show the splash screen
   SplashScreen splash;
   splash.ShowSplash();
 
   // Only continue if a project has been opened
-  if (AfxGetMainWnd() == NULL)
+  CWnd* mainWnd = AfxGetMainWnd();
+  if (mainWnd == NULL)
     return FALSE;
+
+  // Make sure that any census failure is reported
+  if (mainWnd->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
+    ((ProjectFrame*)mainWnd)->MonitorProcess(ni,ProjectFrame::ProcessNoAction,"ni (census)");
   return TRUE;
 }
 
@@ -142,6 +147,50 @@ void InformApp::DoWaitCursor(int nCode)
   CWnd* underWnd = CWnd::WindowFromPoint(current);
   if ((underWnd != NULL) && underWnd->IsKindOf(RUNTIME_CLASS(StopButton)))
     underWnd->SendMessage(WM_SETCURSOR,0,0);
+}
+
+BOOL InformApp::OnIdle(LONG lCount)
+{
+  if (lCount == 0)
+  {
+    // Check for debugging events from any sub-processes, and terminate any that have failed
+    DEBUG_EVENT debug;
+    while (::WaitForDebugEvent(&debug,0))
+    {
+      int kill = 0;
+      DWORD status = DBG_CONTINUE;
+
+      if (debug.dwDebugEventCode == EXCEPTION_DEBUG_EVENT)
+      {
+        switch (debug.u.Exception.ExceptionRecord.ExceptionCode)
+        {
+        case EXCEPTION_ACCESS_VIOLATION:
+          if (debug.u.Exception.dwFirstChance)
+            status = DBG_EXCEPTION_NOT_HANDLED;
+          else
+            kill = 10;
+          break;
+        case EXCEPTION_DATATYPE_MISALIGNMENT:
+        case EXCEPTION_ILLEGAL_INSTRUCTION:
+          kill = 10;
+          break;
+        case EXCEPTION_STACK_OVERFLOW:
+          kill = 11;
+          break;
+        }
+      }
+
+      if (kill != 0)
+      {
+        HANDLE process = ::OpenProcess(PROCESS_TERMINATE,FALSE,debug.dwProcessId);
+        if (process != 0)
+          ::TerminateProcess(process,kill);
+      }
+
+      ::ContinueDebugEvent(debug.dwProcessId,debug.dwThreadId,status);
+    }
+  }
+  return CWinApp::OnIdle(lCount);
 }
 
 void InformApp::OnAppExit()
@@ -849,6 +898,20 @@ HANDLE InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& 
   return INVALID_HANDLE_VALUE;
 }
 
+HANDLE InformApp::RunCensus(void)
+{
+  CString command, dir = GetAppDir();
+  command.Format("\"%s\\Compilers\\ni\" -internal \"%s\\Internal\" -census",
+    (LPCSTR)dir,(LPCSTR)dir);
+
+  STARTUPINFO start;
+  ::ZeroMemory(&start,sizeof start);
+  start.cb = sizeof start;
+  start.wShowWindow = SW_HIDE;
+  start.dwFlags = STARTF_USESHOWWINDOW;
+  return CreateProcess(NULL,command,start,true);
+}
+
 int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
 {
   CWaitCursor wc;
@@ -881,29 +944,6 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
     result = STILL_ACTIVE;
     while (result == STILL_ACTIVE)
     {
-      // Catch errors from the process
-      DEBUG_EVENT debug;
-      while (::WaitForDebugEvent(&debug,2))
-      {
-        DWORD status = DBG_CONTINUE;
-        if (debug.dwDebugEventCode == EXCEPTION_DEBUG_EVENT)
-        {
-          switch (debug.u.Exception.ExceptionRecord.ExceptionCode)
-          {
-          case EXCEPTION_ACCESS_VIOLATION:
-            if (debug.u.Exception.dwFirstChance)
-              status = DBG_EXCEPTION_NOT_HANDLED;
-            else
-              ::TerminateProcess(process,10);
-            break;
-          case EXCEPTION_STACK_OVERFLOW:
-            ::TerminateProcess(process,11);
-            break;
-          }
-        }
-        ::ContinueDebugEvent(debug.dwProcessId,debug.dwThreadId,status);
-      }
-
       // Check if the process should be stopped
       if (output.WantStop())
         ::TerminateProcess(process,20);
@@ -951,29 +991,6 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
   ::CloseHandle(pipeRead);
   ::CloseHandle(pipeWrite);
   return result;
-}
-
-HANDLE InformApp::RunCensus(bool wait)
-{
-  CString command, dir = GetAppDir();
-  command.Format("\"%s\\Compilers\\ni\" -internal \"%s\\Internal\" -census",
-    (LPCSTR)dir,(LPCSTR)dir);
-
-  STARTUPINFO start;
-  ::ZeroMemory(&start,sizeof start);
-  start.cb = sizeof start;
-  start.wShowWindow = SW_HIDE;
-  start.dwFlags = STARTF_USESHOWWINDOW;
-
-  HANDLE process = CreateProcess(NULL,command,start,false);
-  if (process != INVALID_HANDLE_VALUE)
-  {
-    if (wait)
-      return process;
-    else
-      ::CloseHandle(process);
-  }
-  return 0;
 }
 
 void InformApp::WriteLog(const char* msg)

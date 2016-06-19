@@ -323,7 +323,7 @@ void ExtensionFrame::StartNew(CWnd* parent, const ProjectSettings& settings)
     return;
 
   CStringW initialCode;
-  initialCode.Format(L"%S by %s begins here.\r\r%S ends here.\n",
+  initialCode.Format(L"%S by %s begins here.\n\n%S ends here.\n",
     dialog.GetName(),dialog.GetAuthor(),dialog.GetName());
 
   ExtensionFrame* frame = NewFrame(settings);
@@ -410,7 +410,7 @@ bool ExtensionFrame::StartHighlight(const char* url, COLORREF colour, const Proj
   return false;
 }
 
-HANDLE ExtensionFrame::InstallExtensions(CWnd* parent)
+void ExtensionFrame::InstallExtensions(CFrameWnd* parent)
 {
   // Ask the user for one or more extensions
   SimpleFileDialog dialog(TRUE,"i7x",NULL,OFN_HIDEREADONLY|OFN_ENABLESIZING|OFN_ALLOWMULTISELECT,
@@ -420,17 +420,17 @@ HANDLE ExtensionFrame::InstallExtensions(CWnd* parent)
   dialog.m_ofn.lpstrFile = (LPSTR)_alloca(dialog.m_ofn.nMaxFile);
   memset(dialog.m_ofn.lpstrFile,0,dialog.m_ofn.nMaxFile);
   if (dialog.DoModal() != IDOK)
-    return INVALID_HANDLE_VALUE;
+    return;
 
   // Iterate over the selected extensions
   CStringArray paths;
   POSITION pos = dialog.GetStartPosition();
   while (pos != NULL)
     paths.Add(dialog.GetNextPathName(pos));
-  return InstallExtensions(parent,paths);
+  InstallExtensions(parent,paths);
 }
 
-HANDLE ExtensionFrame::InstallExtensions(CWnd* parent, CStringArray& paths)
+void ExtensionFrame::InstallExtensions(CFrameWnd* parent, CStringArray& paths)
 {
   // Iterate over the extensions
   CStringW lastExt;
@@ -498,11 +498,10 @@ HANDLE ExtensionFrame::InstallExtensions(CWnd* parent, CStringArray& paths)
   }
 
   // Update the extensions menu and documentation
-  HANDLE process = theApp.RunCensus(true);
+  parent->SendMessage(WM_RUNCENSUS,1);
   ShowInstalledMessage(parent,installed,total,lastExt);
   theApp.FindExtensions();
   theApp.SendAllFrames(InformApp::Extensions,0);
-  return process;
 }
 
 // Implementation of IBindStatusCallback used to wait for the downloading of
@@ -671,7 +670,7 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
     SetDownloadProgress(parent,total,total,installed);
 
     // Notify the user of what happened
-    theApp.RunCensus(false);
+    parent->SendMessage(WM_RUNCENSUS,0);
     parent->SendMessage(WM_PROGRESS,-1);
     ShowInstalledMessage(parent,installed,total,lastExt);
   }

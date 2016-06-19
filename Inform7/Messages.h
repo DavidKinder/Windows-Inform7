@@ -146,3 +146,8 @@ struct SourceRange
 // Sent to the window frame to check if the current operation should
 // stop: 1 is returned if yes, otherwise 0.
 #define WM_WANTSTOP       WM_APP+34
+
+// Sent to the window frame to run an extension census. If wParam is
+// non-zero then the help on installed extensions is shown when the
+// census is complete.
+#define WM_RUNCENSUS      WM_APP+35
