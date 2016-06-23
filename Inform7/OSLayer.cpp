@@ -505,7 +505,10 @@ int OSLayer::TaskDialog(CWnd* wnd, LPCWSTR main, LPCWSTR content, LPCWSTR captio
   }
 
   CStringW msg;
-  msg.Format(L"%s\n\n%s",main,content);
+  if (wcslen(main) > 0)
+    msg.Format(L"%s\n\n%s",main,content);
+  else
+    msg = content;
   return MessageBox(wnd,msg,caption,msgBoxType);
 }
 
