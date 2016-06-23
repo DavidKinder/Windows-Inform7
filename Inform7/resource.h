@@ -10,8 +10,7 @@
 #define IDR_SKEIN                       104
 #define IDR_EXTFRAME                    105
 #define IDR_FLAT_SELECT                 106
-#define IDR_BIG_LOGO                    107
-#define IDR_SMALL_LOGO                  108
+#define IDR_ICON                        107
 #define IDD_ABOUTBOX                    150
 #define IDD_SETTINGS                    151
 #define IDD_SPLASH                      152

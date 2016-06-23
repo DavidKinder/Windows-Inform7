@@ -620,8 +620,7 @@ IDR_MANIFEST            RT_MANIFEST             "res\\Inform7.manifest"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_BIG_LOGO            ICON                    "res\\BigLogo.ico"
-IDR_SMALL_LOGO          ICON                    "res\\SmallLogo.ico"
+IDR_ICON                ICON                    "res\\Inform7.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

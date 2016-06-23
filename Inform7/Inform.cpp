@@ -347,8 +347,8 @@ COLORREF InformApp::BlendedColour(COLORREF col1, int rel1, COLORREF col2, int re
 
 void InformApp::SetIcon(CWnd* wnd)
 {
-  wnd->SetIcon(LoadIcon(IDR_BIG_LOGO),TRUE);
-  wnd->SetIcon(LoadIcon(IDR_SMALL_LOGO),FALSE);
+  wnd->SetIcon(LoadIcon(IDR_ICON),TRUE);
+  wnd->SetIcon(LoadIcon(IDR_ICON),FALSE);
 }
 
 CString InformApp::GetAppDir(void)

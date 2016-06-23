@@ -13,8 +13,8 @@ OutFile "I7_${BUILD}_Windows.exe"
 InstallDir "$PROGRAMFILES\Inform 7"
 InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install" "Directory"
 
-!define MUI_ICON "..\Inform7\res\BigLogo.ico"
-!define MUI_UNICON "..\Inform7\res\BigLogo.ico"
+!define MUI_ICON "..\Inform7\res\Inform7.ico"
+!define MUI_UNICON "..\Inform7\res\Inform7.ico"
 
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_RIGHT
