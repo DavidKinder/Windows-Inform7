@@ -132,10 +132,17 @@ public:
     virtual bool WantStop() = 0;
   };
 
+  struct CreatedProcess
+  {
+    HANDLE process;
+    DWORD processId;
+  };
+
   void RunMessagePump(void);
-  HANDLE CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug);
-  HANDLE RunCensus(void);
+  CreatedProcess CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug);
+  CreatedProcess RunCensus(void);
   int RunCommand(const char* dir, CString& command, OutputSink& output);
+  std::string GetTraceForProcess(DWORD processId);
   void WriteLog(const char* msg);
   bool IsWaitCursor(void);
 
@@ -168,9 +175,16 @@ protected:
   int m_fontSizes[4];
   CFont m_fonts[4];
 
+  struct ProcessTrace
+  {
+    DWORD processId;
+    std::string trace;
+  };
+
   CArray<CFrameWnd*> m_frames;
   std::map<std::string,CDibSection*> m_bitmaps;
   std::vector<ExtLocation> m_extensions;
+  std::vector<ProcessTrace> m_traces;
 
   CString m_home;
   FileProtocol m_protocol;

@@ -381,7 +381,7 @@ void ProjectFrame::OnDestroy()
 
   m_game.StopInterpreter(false);
   for (int i = 0; i < m_processes.GetSize(); i++)
-    ::CloseHandle(m_processes.GetAt(i).process);
+    ::CloseHandle(m_processes.GetAt(i).cp.process);
   m_processes.RemoveAll();
 
   MenuBarFrameWnd::OnDestroy();
@@ -1073,8 +1073,8 @@ LRESULT ProjectFrame::OnWantStop(WPARAM wparam, LPARAM lparam)
 
 LRESULT ProjectFrame::OnRunCensus(WPARAM wparam, LPARAM lparam)
 {
-  HANDLE ni = theApp.RunCensus();
-  if (ni != INVALID_HANDLE_VALUE)
+  InformApp::CreatedProcess ni = theApp.RunCensus();
+  if (ni.process != INVALID_HANDLE_VALUE)
   {
     MonitorProcess(ni,
       (wparam != 0) ? ProcessHelpExtensions : ProcessNoAction,"ni (census)");
@@ -2537,11 +2537,11 @@ void ProjectFrame::GenerateIntestCombinedReport(void)
   }
 }
 
-void ProjectFrame::MonitorProcess(HANDLE process, ProcessAction action, LPCSTR name)
+void ProjectFrame::MonitorProcess(InformApp::CreatedProcess cp, ProcessAction action, LPCSTR name)
 {
   // Add to the list of processes being monitored
   SubProcess sub;
-  sub.process = process;
+  sub.cp = cp;
   sub.action = action;
   sub.name = name;
   m_processes.Add(sub);
@@ -2562,7 +2562,7 @@ void ProjectFrame::OnTimer(UINT nIDEvent)
       const SubProcess& sub = m_processes.GetAt(i);
 
       DWORD result = STILL_ACTIVE;
-      ::GetExitCodeProcess(sub.process,&result);
+      ::GetExitCodeProcess(sub.cp.process,&result);
       if (result != STILL_ACTIVE)
       {
         finished.Add(sub);
@@ -2583,12 +2583,22 @@ void ProjectFrame::OnTimer(UINT nIDEvent)
 
       // Stop monitoring this process
       DWORD result = 0;
-      ::GetExitCodeProcess(sub.process,&result);
-      ::CloseHandle(sub.process);
+      ::GetExitCodeProcess(sub.cp.process,&result);
+      ::WaitForSingleObject(sub.cp.process,1000);
+      std::string trace = theApp.GetTraceForProcess(sub.cp.processId);
+      ::CloseHandle(sub.cp.process);
 
       // Tell the user if the process was not successful
       if (result != 0)
       {
+        if (!trace.empty())
+        {
+          CString msg;
+          msg.Format("\n%s process failed, stack backtrace:\n",(LPCSTR)sub.name);
+          Output(msg);
+          Output(trace.c_str());
+        }
+
         CString msg;
         msg.Format("%s returned code %d",(LPCSTR)sub.name,(int)result);
         MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);

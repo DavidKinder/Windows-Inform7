@@ -13,6 +13,7 @@
 #include "png.h"
 #include "jpeglib.h"
 
+std::string GetStackTrace(HANDLE process, HANDLE thread);
 extern "C" __declspec(dllimport) void ScaleGfx(COLORREF*, UINT, UINT, COLORREF*, UINT, UINT);
 
 #ifdef _DEBUG
@@ -84,7 +85,7 @@ BOOL InformApp::InitInstance()
 
   // Find and create documentation for extensions
   FindExtensions();
-  HANDLE ni = RunCensus();
+  CreatedProcess ni = RunCensus();
 
   // Show the splash screen
   SplashScreen splash;
@@ -96,8 +97,11 @@ BOOL InformApp::InitInstance()
     return FALSE;
 
   // Make sure that any census failure is reported
-  if (mainWnd->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
-    ((ProjectFrame*)mainWnd)->MonitorProcess(ni,ProjectFrame::ProcessNoAction,"ni (census)");
+  if (ni.process != INVALID_HANDLE_VALUE)
+  {
+    if (mainWnd->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
+      ((ProjectFrame*)mainWnd)->MonitorProcess(ni,ProjectFrame::ProcessNoAction,"ni (census)");
+  }
   return TRUE;
 }
 
@@ -182,15 +186,49 @@ BOOL InformApp::OnIdle(LONG lCount)
 
       if (kill != 0)
       {
-        HANDLE process = ::OpenProcess(PROCESS_TERMINATE,FALSE,debug.dwProcessId);
+        HANDLE process = ::OpenProcess(PROCESS_TERMINATE|PROCESS_QUERY_INFORMATION|PROCESS_VM_READ,FALSE,debug.dwProcessId);
         if (process != 0)
+        {
+          HANDLE thread = ::OpenThread(THREAD_GET_CONTEXT,FALSE,debug.dwThreadId);
+          if (thread != 0)
+          {
+            // Store the stack trace for later use
+            ProcessTrace pt;
+            pt.processId = debug.dwProcessId;
+            pt.trace = GetStackTrace(process,thread);
+            m_traces.push_back(pt);
+
+            // Don't keep more than 8 stack traces
+            if (m_traces.size() > 8)
+              m_traces.erase(m_traces.begin());
+
+            ::CloseHandle(thread);
+          }
+
           ::TerminateProcess(process,kill);
+          ::CloseHandle(process);
+        }
       }
 
       ::ContinueDebugEvent(debug.dwProcessId,debug.dwThreadId,status);
     }
   }
   return CWinApp::OnIdle(lCount);
+}
+
+std::string InformApp::GetTraceForProcess(DWORD processId)
+{
+  for (std::vector<ProcessTrace>::iterator it = m_traces.begin(); it != m_traces.end(); ++it)
+  {
+    if (it->processId == processId)
+    {
+      // Return the trace and remove it from the stored list
+      std::string trace = it->trace;
+      m_traces.erase(it);
+      return trace;
+    }
+  }
+  return "";
 }
 
 void InformApp::OnAppExit()
@@ -870,7 +908,7 @@ void InformApp::RunMessagePump(void)
     RestoreWaitCursor();
 }
 
-HANDLE InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug)
+InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug)
 {
   BOOL flags = CREATE_NO_WINDOW;
   if (debug)
@@ -884,6 +922,10 @@ HANDLE InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& 
   BOOL created = ::CreateProcess(NULL,cmdLine,NULL,NULL,TRUE,flags,NULL,dir,&start,&process);
   command.ReleaseBuffer();
 
+  CreatedProcess cp;
+  cp.process = INVALID_HANDLE_VALUE;
+  cp.processId = -1;
+
   if (created)
   {
     // Close the thread handle that is never used
@@ -893,12 +935,13 @@ HANDLE InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& 
     if (m_job)
       VERIFY(theOS.AssignProcessToJobObject(m_job,process.hProcess));
 
-    return process.hProcess;
+    cp.process = process.hProcess;
+    cp.processId = process.dwProcessId;
   }
-  return INVALID_HANDLE_VALUE;
+  return cp;
 }
 
-HANDLE InformApp::RunCensus(void)
+InformApp::CreatedProcess InformApp::RunCensus(void)
 {
   CString command, dir = GetAppDir();
   command.Format("\"%s\\Compilers\\ni\" -internal \"%s\\Internal\" -census",
@@ -935,10 +978,10 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
   start.dwFlags = STARTF_USESTDHANDLES|STARTF_USESHOWWINDOW;
 
   // Create the process for the command
-  HANDLE process = CreateProcess(dir,command,start,true);
+  CreatedProcess cp = CreateProcess(dir,command,start,true);
 
   DWORD result = 512;
-  if (process != INVALID_HANDLE_VALUE)
+  if (cp.process != INVALID_HANDLE_VALUE)
   {
     // Wait for the process to complete
     result = STILL_ACTIVE;
@@ -946,7 +989,7 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
     {
       // Check if the process should be stopped
       if (output.WantStop())
-        ::TerminateProcess(process,20);
+        ::TerminateProcess(cp.process,20);
 
       // Wait for a window message or 100ms to elapse
       ::MsgWaitForMultipleObjects(0,NULL,FALSE,100,QS_ALLINPUT);
@@ -967,12 +1010,11 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
       }
 
       // Get the exit code
-      ::GetExitCodeProcess(process,&result);
+      ::GetExitCodeProcess(cp.process,&result);
     }
 
     // Wait for the process to exit
-    ::WaitForSingleObject(process,1000);
-    ::CloseHandle(process);
+    ::WaitForSingleObject(cp.process,1000);
 
     // Read any final output from the pipe
     DWORD available = 0;
@@ -986,6 +1028,20 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
       msg.ReleaseBuffer(read);
       output.Output(msg);
     }
+
+    // If the process failed, print any stack trace
+    if (result != 0)
+    {
+      std::string trace = GetTraceForProcess(cp.processId);
+      if (!trace.empty())
+      {
+        output.Output("\nProcess failed, stack backtrace:\n");
+        output.Output(trace.c_str());
+      }
+    }
+
+    // Finally close the process handle
+    ::CloseHandle(cp.process);
   }
 
   ::CloseHandle(pipeRead);

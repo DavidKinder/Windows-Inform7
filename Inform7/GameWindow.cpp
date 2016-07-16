@@ -164,10 +164,11 @@ void GameWindow::RunInterpreter(const char* dir, const char* file, bool glulx)
   // Create the process. If the application is being debugged we don't make ourselves
   // a debugger of the interpreter, as that stops the real debugger being attached to
   // the interpreter.
-  HANDLE process = theApp.CreateProcess(dir,command,start,!(theOS.IsDebuggerPresent()));
-  if (process != INVALID_HANDLE_VALUE)
+  InformApp::CreatedProcess cp = theApp.CreateProcess(
+    dir,command,start,!(theOS.IsDebuggerPresent()));
+  if (cp.process != INVALID_HANDLE_VALUE)
   {
-    m_interpreter = process;
+    m_interpreter = cp.process;
     m_inputPipe = inputWrite;
     m_outputPipe = outputRead;
     m_inputPipe2 = inputRead;
@@ -1182,39 +1183,16 @@ void GameWindow::OnTimer(UINT nIDEvent)
       }
       DeferredMoveWindows();
 
-      // Has the interpreter failed?
-      DEBUG_EVENT debug;
-      while (::WaitForDebugEvent(&debug,2))
-      {
-        DWORD status = DBG_CONTINUE;
-        if (debug.dwDebugEventCode == EXCEPTION_DEBUG_EVENT)
-        {
-          switch (debug.u.Exception.ExceptionRecord.ExceptionCode)
-          {
-          case EXCEPTION_ACCESS_VIOLATION:
-            if (debug.u.Exception.dwFirstChance)
-              status = DBG_EXCEPTION_NOT_HANDLED;
-            else
-            {
-              ::TerminateProcess(m_interpreter,10);
-              GetParentFrame()->PostMessage(WM_TERPFAILED);
-            }
-            break;
-          case EXCEPTION_STACK_OVERFLOW:
-            ::TerminateProcess(m_interpreter,11);
-            GetParentFrame()->PostMessage(WM_TERPFAILED);
-            break;
-          }
-        }
-        ::ContinueDebugEvent(debug.dwProcessId,debug.dwThreadId,status);
-      }
-
       // Is the interpreter still running?
       DWORD code = 0;
       ::GetExitCodeProcess(m_interpreter,&code);
       if (code != STILL_ACTIVE)
       {
+        if (code >= 10)
+          GetParentFrame()->PostMessage(WM_TERPFAILED);
+
         // Is there any final output remaining?
+        ::WaitForSingleObject(m_interpreter,1000);
         while (true)
         {
           DWORD available = 0;

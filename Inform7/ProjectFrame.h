@@ -154,7 +154,7 @@ public:
     ProcessNoAction,
     ProcessHelpExtensions
   };
-  void MonitorProcess(HANDLE process, ProcessAction action, LPCSTR name);
+  void MonitorProcess(InformApp::CreatedProcess cp, ProcessAction action, LPCSTR name);
 
 protected:
   // Implementation of InformApp::OutputSink
@@ -257,7 +257,7 @@ protected:
 
   struct SubProcess
   {
-    HANDLE process;
+    InformApp::CreatedProcess cp;
     ProcessAction action;
     CString name;
   };
