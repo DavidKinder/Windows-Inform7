@@ -14,10 +14,10 @@ INRTPSOPTS = -nofont
 INTESTOPTS = -threads=2 -no-colours
 
 GCC = gcc
-GCCOPTS = -mno-cygwin -DPLATFORM_WINDOWS -O2 -I.
+GCCOPTS = -mno-cygwin -DPLATFORM_WINDOWS -O2 -I. -gdwarf-2
 GCCWARNINGS = -Wno-pointer-arith -Wno-unused-macros -Wno-shadow -Wno-cast-align -Wno-missing-noreturn -Wno-missing-prototypes -Wno-unused-parameter -Wno-padded
 CBLORBWARNINGS = -Wno-format-nonliteral
-LINK = gcc $(GCCOPTS) -ansi -s
+LINK = gcc $(GCCOPTS) -ansi
 LINKEROPTS = -Wl,--large-address-aware
 ARTOOL = ar -r
 
