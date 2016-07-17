@@ -84,6 +84,7 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\Internal"
   RMDir /r "$INSTDIR\Interpreters"
   RMDir /r "$INSTDIR\Library"
+  RMDir /r "$INSTDIR\Symbols"
   RMDir /r "$INSTDIR\Web"
 
   Delete "$INSTDIR\Inform7.exe"
