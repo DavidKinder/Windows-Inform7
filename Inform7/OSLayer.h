@@ -17,6 +17,7 @@ public:
   bool SetInformationJobObject(HANDLE job,
     JOBOBJECTINFOCLASS jobClass, LPVOID jobInfo, DWORD jobInfoLen);
   bool AssignProcessToJobObject(HANDLE job, HANDLE process);
+  HANDLE OpenThread(DWORD access, BOOL inherit, DWORD threadId, DWORD processId);
 
   int DrawText(CDC* dc, LPCWSTR text, int count, CRect& rect, UINT format);
   WCHAR ToUnicode(UINT virtKey, UINT scanCode, UINT flags);
@@ -66,6 +67,7 @@ private:
   HMODULE m_themeDll;
   HMODULE m_comCtlDll;
   HMODULE m_dwmDll;
+  HMODULE m_ntDll;
 };
 
 extern OSLayer theOS;

@@ -189,7 +189,7 @@ BOOL InformApp::OnIdle(LONG lCount)
         HANDLE process = ::OpenProcess(PROCESS_TERMINATE|PROCESS_QUERY_INFORMATION|PROCESS_VM_READ,FALSE,debug.dwProcessId);
         if (process != 0)
         {
-          HANDLE thread = ::OpenThread(THREAD_GET_CONTEXT,FALSE,debug.dwThreadId);
+          HANDLE thread = theOS.OpenThread(THREAD_GET_CONTEXT,FALSE,debug.dwThreadId,debug.dwProcessId);
           if (thread != 0)
           {
             // Store the stack trace for later use
@@ -923,20 +923,16 @@ InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& com
   command.ReleaseBuffer();
 
   CreatedProcess cp;
-  cp.process = INVALID_HANDLE_VALUE;
-  cp.processId = -1;
-
   if (created)
   {
+    cp.set(process);
+
     // Close the thread handle that is never used
     ::CloseHandle(process.hThread);
 
     // If there is a job, assign the process to it
     if (m_job)
       VERIFY(theOS.AssignProcessToJobObject(m_job,process.hProcess));
-
-    cp.process = process.hProcess;
-    cp.processId = process.dwProcessId;
   }
   return cp;
 }
@@ -1041,7 +1037,7 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
     }
 
     // Finally close the process handle
-    ::CloseHandle(cp.process);
+    cp.close();
   }
 
   ::CloseHandle(pipeRead);
@@ -1374,4 +1370,26 @@ bool InformApp::ExtLocation::operator<(const ExtLocation& el) const
   if (system != el.system)
     return system > el.system;
   return title < el.title;
+}
+
+InformApp::CreatedProcess::CreatedProcess()
+{
+  process = INVALID_HANDLE_VALUE;
+  processId = -1;
+}
+
+void InformApp::CreatedProcess::set(PROCESS_INFORMATION pi)
+{
+  process = pi.hProcess;
+  processId = pi.dwProcessId;
+}
+
+void InformApp::CreatedProcess::close()
+{
+  if (process != INVALID_HANDLE_VALUE)
+  {
+    ::CloseHandle(process);
+    process = INVALID_HANDLE_VALUE;
+    processId = -1;
+  }
 }

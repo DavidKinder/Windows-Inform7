@@ -136,6 +136,10 @@ public:
   {
     HANDLE process;
     DWORD processId;
+
+    CreatedProcess();
+    void set(PROCESS_INFORMATION pi);
+    void close();
   };
 
   void RunMessagePump(void);

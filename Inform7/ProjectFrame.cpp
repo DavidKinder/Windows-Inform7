@@ -381,7 +381,7 @@ void ProjectFrame::OnDestroy()
 
   m_game.StopInterpreter(false);
   for (int i = 0; i < m_processes.GetSize(); i++)
-    ::CloseHandle(m_processes.GetAt(i).cp.process);
+    m_processes.GetAt(i).cp.close();
   m_processes.RemoveAll();
 
   MenuBarFrameWnd::OnDestroy();
@@ -2579,14 +2579,14 @@ void ProjectFrame::OnTimer(UINT nIDEvent)
     // Now handle the finished processes
     for (int i = 0; i < finished.GetSize(); i++)
     {
-      const SubProcess& sub = finished.GetAt(i);
+      SubProcess& sub = finished.GetAt(i);
 
       // Stop monitoring this process
       DWORD result = 0;
       ::GetExitCodeProcess(sub.cp.process,&result);
       ::WaitForSingleObject(sub.cp.process,1000);
       std::string trace = theApp.GetTraceForProcess(sub.cp.processId);
-      ::CloseHandle(sub.cp.process);
+      sub.cp.close();
 
       // Tell the user if the process was not successful
       if (result != 0)

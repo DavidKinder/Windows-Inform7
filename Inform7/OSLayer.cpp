@@ -21,6 +21,7 @@ OSLayer::OSLayer()
   m_themeDll = 0;
   m_comCtlDll = 0;
   m_dwmDll = 0;
+  m_ntDll = 0;
 }
 
 void OSLayer::Init(void)
@@ -33,6 +34,7 @@ void OSLayer::Init(void)
   m_themeDll = ::LoadLibrary("uxtheme.dll");
   m_comCtlDll = ::LoadLibrary("comctl32.dll");
   m_dwmDll = ::LoadLibrary("dwmapi.dll");
+  m_ntDll = ::LoadLibrary("ntdll.dll");
 }
 
 bool OSLayer::IsWindows9X(void)
@@ -119,6 +121,48 @@ bool OSLayer::AssignProcessToJobObject(HANDLE job, HANDLE process)
       (ASSIGNPROCESSTOJOBOBJECT)::GetProcAddress(m_kernelDll,"AssignProcessToJobObject");
     if (assignProcessToJobObject)
       return ((*assignProcessToJobObject)(job,process) != 0);
+  }
+  return 0;
+}
+
+typedef struct _OBJECT_ATTRIBUTES
+{
+  ULONG len;
+  HANDLE v1;
+  PVOID v2;
+  ULONG v3;
+  PVOID v4, v5;
+} OBJECT_ATTRIBUTES;
+
+typedef struct _CLIENT_ID
+{
+  DWORD processId, threadId;
+} CLIENT_ID;
+
+HANDLE OSLayer::OpenThread(DWORD access, BOOL inherit, DWORD threadId, DWORD processId)
+{
+  if (m_kernelDll)
+  {
+    typedef HANDLE(__stdcall *OPENTHREAD)(DWORD, BOOL, DWORD);
+
+    OPENTHREAD openThread = (OPENTHREAD)::GetProcAddress(m_kernelDll,"OpenThread");
+    if (openThread)
+      return (*openThread)(access,inherit,threadId);
+  }
+
+  if (m_ntDll)
+  {
+    typedef DWORD(__stdcall *NTOPENTHREAD)(PHANDLE, DWORD, OBJECT_ATTRIBUTES*, CLIENT_ID*);
+
+    NTOPENTHREAD ntOpenThread = (NTOPENTHREAD)::GetProcAddress(m_ntDll,"NtOpenThread");
+    if (ntOpenThread)
+    {
+      HANDLE thread = 0;
+      OBJECT_ATTRIBUTES attrs = { sizeof(OBJECT_ATTRIBUTES), 0 };
+      CLIENT_ID id = { processId, threadId };
+      if ((*ntOpenThread)(&thread,access,&attrs,&id) >= 0)
+        return thread;
+    }
   }
   return 0;
 }
