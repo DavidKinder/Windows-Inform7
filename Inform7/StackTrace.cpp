@@ -110,8 +110,13 @@ void PrintStackTrace(HANDLE process, HANDLE thread, PCONTEXT context, std::ostre
 
     // Get information on the module containing the address
     IMAGEHLP_MODULE64 info;
-    info.SizeOfStruct = sizeof info;
+    info.SizeOfStruct = sizeof (IMAGEHLP_MODULE64);
     BOOL gotModuleInfo = (symGetModuleInfo64)(process,frame.AddrPC.Offset,&info);
+    if (!gotModuleInfo)
+    {
+      info.SizeOfStruct = sizeof (IMAGEHLP_MODULE);
+      gotModuleInfo = (symGetModuleInfo64)(process,frame.AddrPC.Offset,&info);
+    }
 
     // Set up a symbol buffer
     BYTE symbolBuffer[sizeof(IMAGEHLP_SYMBOL64)+512];
