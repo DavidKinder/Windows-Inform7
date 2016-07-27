@@ -19,6 +19,7 @@ typedef BOOL(__stdcall *SYMGETSYMFROMADDR64)(HANDLE, DWORD64, PDWORD64, PIMAGEHL
 typedef BOOL(__stdcall *SYMINITIALIZE)(HANDLE, LPCSTR, BOOL);
 typedef BOOL(__stdcall *SYMCLEANUP)(HANDLE);
 typedef DWORD(__stdcall *SYMSETOPTIONS)(DWORD);
+typedef DWORD(__stdcall *SYMLOADMODULE64)(HANDLE, HANDLE, LPCSTR, LPCSTR, DWORD64, DWORD);
 
 HMODULE debugDll = 0;
 STACKWALK64 stackWalk64 = NULL;
@@ -30,6 +31,7 @@ SYMGETSYMFROMADDR64 symGetSymFromAddr64 = NULL;
 SYMINITIALIZE symInitialize = NULL;
 SYMCLEANUP symCleanup = NULL;
 SYMSETOPTIONS symSetOptions = NULL;
+SYMLOADMODULE64 symLoadModule64 = NULL;
 
 bool GotFunctions(void)
 {
@@ -51,10 +53,13 @@ bool GotFunctions(void)
     return false;
   if (symSetOptions == NULL)
     return false;
+  if (symLoadModule64 == NULL)
+    return false;
   return true;
 }
 
-void PrintStackTrace(HANDLE process, HANDLE thread, PCONTEXT context, std::ostream& log)
+void PrintStackTrace(HANDLE process, HANDLE thread,
+  const CString& imageFile, LPVOID imageBase, DWORD imageSize, PCONTEXT context, std::ostream& log)
 {
   // Load the debug help DLL, if available, and find entry points
   if (debugDll == 0)
@@ -69,6 +74,7 @@ void PrintStackTrace(HANDLE process, HANDLE thread, PCONTEXT context, std::ostre
     symInitialize = (SYMINITIALIZE)::GetProcAddress(debugDll,"SymInitialize");
     symCleanup = (SYMCLEANUP)::GetProcAddress(debugDll,"SymCleanup");
     symSetOptions = (SYMSETOPTIONS)::GetProcAddress(debugDll,"SymSetOptions");
+    symLoadModule64 = (SYMLOADMODULE64)::GetProcAddress(debugDll,"SymLoadModule64");
   }
   if (!GotFunctions())
     return;
@@ -84,8 +90,19 @@ void PrintStackTrace(HANDLE process, HANDLE thread, PCONTEXT context, std::ostre
 
   // Load any symbols
   CString symPath = theApp.GetAppDir()+"\\Symbols";
-  if ((*symInitialize)(process,symPath,TRUE) == 0)
-    return;
+  if (theOS.GetWindowsVersion() >= 5) // Windows 2000 onwards
+  {
+    if ((*symInitialize)(process,symPath,TRUE) == 0)
+      return;
+  }
+  else
+  {
+    // See Microsoft Knowledge Base article Q256092
+    if ((*symInitialize)(process,symPath,FALSE) == 0)
+      return;
+    if (!imageFile.IsEmpty())
+      (*symLoadModule64)(process,0,imageFile,0,(DWORD64)imageBase,imageSize);
+  }
 
   // Set up the initial stack frame
   STACKFRAME64 frame;
@@ -135,14 +152,13 @@ void PrintStackTrace(HANDLE process, HANDLE thread, PCONTEXT context, std::ostre
     BOOL gotLine = (*symGetLineFromAddr64)(process,frame.AddrPC.Offset,&displacement2,&line);
 
     // Print out the stack trace
-    if (!gotModuleInfo && !gotSymbol)
-      continue;
-    if (gotModuleInfo)
-      log << info.ModuleName << '!';
-    log << (gotSymbol ? symbol->Name : "<unknown>") << "()";
-    if (gotLine)
-      log << " at " << line.FileName << " line " << std::dec << line.LineNumber;
-    log << std::endl;
+    if (gotModuleInfo && gotSymbol)
+    {
+      log << info.ModuleName << '!' << symbol->Name << "()";
+      if (gotLine)
+        log << " at " << line.FileName << " line " << std::dec << line.LineNumber;
+      log << std::endl;
+    }
   }
 
   (*symCleanup)(process);
@@ -170,13 +186,13 @@ void LogStackTrace(void)
   logPath = logPath + LOG_FILE;
   std::ofstream log(logPath);
 
-  PrintStackTrace(process,thread,&context,log);
+  PrintStackTrace(process,thread,0,0,0,&context,log);
   log.close();
 }
 
 } // unnamed namespace
 
-std::string GetStackTrace(HANDLE process, HANDLE thread)
+CString GetStackTrace(HANDLE process, HANDLE thread, const CString& imageFile, LPVOID imageBase, DWORD imageSize)
 {
   CONTEXT context;
   ::ZeroMemory(&context,sizeof context);
@@ -184,10 +200,10 @@ std::string GetStackTrace(HANDLE process, HANDLE thread)
   if (::GetThreadContext(thread,&context))
   {
     std::ostringstream log;
-    PrintStackTrace(process,thread,&context,log);
-    return log.str();
+    PrintStackTrace(process,thread,imageFile,imageBase,imageSize,&context,log);
+    return CString(log.str().c_str());
   }
-  return "";
+  return CString("");
 }
 
 extern "C" void FatalError(void)

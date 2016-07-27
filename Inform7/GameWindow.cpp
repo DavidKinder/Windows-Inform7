@@ -165,7 +165,7 @@ void GameWindow::RunInterpreter(const char* dir, const char* file, bool glulx)
   // a debugger of the interpreter, as that stops the real debugger being attached to
   // the interpreter.
   InformApp::CreatedProcess cp = theApp.CreateProcess(
-    dir,command,start,!(theOS.IsDebuggerPresent()));
+    dir,command,start,!(theOS.IsDebuggerPresent()),"");
   if (cp.process != INVALID_HANDLE_VALUE)
   {
     m_interpreter = cp.process;

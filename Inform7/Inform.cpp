@@ -13,7 +13,7 @@
 #include "png.h"
 #include "jpeglib.h"
 
-std::string GetStackTrace(HANDLE process, HANDLE thread);
+CString GetStackTrace(HANDLE process, HANDLE thread, const CString& imageFile, LPVOID imageBase, DWORD imageSize);
 extern "C" __declspec(dllimport) void ScaleGfx(COLORREF*, UINT, UINT, COLORREF*, UINT, UINT);
 
 #ifdef _DEBUG
@@ -161,53 +161,78 @@ BOOL InformApp::OnIdle(LONG lCount)
     DEBUG_EVENT debug;
     while (::WaitForDebugEvent(&debug,0))
     {
-      int kill = 0;
       DWORD status = DBG_CONTINUE;
-
-      if (debug.dwDebugEventCode == EXCEPTION_DEBUG_EVENT)
+      switch (debug.dwDebugEventCode)
       {
-        switch (debug.u.Exception.ExceptionRecord.ExceptionCode)
+      case CREATE_PROCESS_DEBUG_EVENT:
         {
-        case EXCEPTION_ACCESS_VIOLATION:
-          if (debug.u.Exception.dwFirstChance)
-            status = DBG_EXCEPTION_NOT_HANDLED;
-          else
-            kill = 10;
-          break;
-        case EXCEPTION_DATATYPE_MISALIGNMENT:
-        case EXCEPTION_ILLEGAL_INSTRUCTION:
-          kill = 10;
-          break;
-        case EXCEPTION_STACK_OVERFLOW:
-          kill = 11;
-          break;
-        }
-      }
-
-      if (kill != 0)
-      {
-        HANDLE process = ::OpenProcess(PROCESS_TERMINATE|PROCESS_QUERY_INFORMATION|PROCESS_VM_READ,FALSE,debug.dwProcessId);
-        if (process != 0)
-        {
-          HANDLE thread = theOS.OpenThread(THREAD_GET_CONTEXT,FALSE,debug.dwThreadId,debug.dwProcessId);
-          if (thread != 0)
+          std::map<DWORD,DebugProcess>::iterator it = m_debugging.find(debug.dwProcessId);
+          if (it != m_debugging.end())
           {
-            // Store the stack trace for later use
-            ProcessTrace pt;
-            pt.processId = debug.dwProcessId;
-            pt.trace = GetStackTrace(process,thread);
-            m_traces.push_back(pt);
+            DebugProcess& dp = it->second;
+            dp.process = debug.u.CreateProcessInfo.hProcess;
+            dp.thread = debug.u.CreateProcessInfo.hThread;
+            dp.threadId = debug.dwThreadId;
+            dp.imageBase = debug.u.CreateProcessInfo.lpBaseOfImage;
+            if (debug.u.CreateProcessInfo.hFile != 0)
+              dp.imageSize = ::GetFileSize(debug.u.CreateProcessInfo.hFile,NULL);
+          }
+        }
+        if (debug.u.CreateProcessInfo.hFile != 0)
+          ::CloseHandle(debug.u.CreateProcessInfo.hFile);
+        break;
 
-            // Don't keep more than 8 stack traces
-            if (m_traces.size() > 8)
-              m_traces.erase(m_traces.begin());
+      case EXIT_PROCESS_DEBUG_EVENT:
+        {
+          std::map<DWORD,DebugProcess>::iterator it = m_debugging.find(debug.dwProcessId);
+          if (it != m_debugging.end())
+            m_debugging.erase(it);
+        }
+        break;
 
-            ::CloseHandle(thread);
+      case LOAD_DLL_DEBUG_EVENT:
+        if (debug.u.LoadDll.hFile != 0)
+          ::CloseHandle(debug.u.LoadDll.hFile);
+        break;
+
+      case EXCEPTION_DEBUG_EVENT:
+        {
+          int kill = 0;
+          switch (debug.u.Exception.ExceptionRecord.ExceptionCode)
+          {
+          case EXCEPTION_ACCESS_VIOLATION:
+            if (debug.u.Exception.dwFirstChance)
+              status = DBG_EXCEPTION_NOT_HANDLED;
+            else
+              kill = 10;
+            break;
+          case EXCEPTION_ILLEGAL_INSTRUCTION:
+            kill = 10;
+            break;
+          case EXCEPTION_STACK_OVERFLOW:
+            kill = 11;
+            break;
           }
 
-          ::TerminateProcess(process,kill);
-          ::CloseHandle(process);
+          if (kill != 0)
+          {
+            std::map<DWORD,DebugProcess>::const_iterator it = m_debugging.find(debug.dwProcessId);
+            if (it != m_debugging.end())
+            {
+              // Store the stack trace for later use
+              const DebugProcess& dp = it->second;
+              if (dp.threadId == debug.dwThreadId)
+              {
+                if (m_traces.size() > 16)
+                  m_traces.clear();
+                m_traces[debug.dwProcessId] =
+                  GetStackTrace(dp.process,dp.thread,dp.imageFile,dp.imageBase,dp.imageSize);
+              }
+              ::TerminateProcess(it->second.process,kill);
+            }
+          }
         }
+        break;
       }
 
       ::ContinueDebugEvent(debug.dwProcessId,debug.dwThreadId,status);
@@ -216,17 +241,15 @@ BOOL InformApp::OnIdle(LONG lCount)
   return CWinApp::OnIdle(lCount);
 }
 
-std::string InformApp::GetTraceForProcess(DWORD processId)
+CString InformApp::GetTraceForProcess(DWORD processId)
 {
-  for (std::vector<ProcessTrace>::iterator it = m_traces.begin(); it != m_traces.end(); ++it)
+  std::map<DWORD,CString>::iterator it = m_traces.find(processId);
+  if (it != m_traces.end())
   {
-    if (it->processId == processId)
-    {
-      // Return the trace and remove it from the stored list
-      std::string trace = it->trace;
-      m_traces.erase(it);
-      return trace;
-    }
+    // Return the trace and remove it from the stored list
+    CString trace = it->second;
+    m_traces.erase(it);
+    return trace;
   }
   return "";
 }
@@ -908,7 +931,7 @@ void InformApp::RunMessagePump(void)
     RestoreWaitCursor();
 }
 
-InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug)
+InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug, const char* exeFile)
 {
   BOOL flags = CREATE_NO_WINDOW;
   if (debug)
@@ -926,6 +949,12 @@ InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& com
   if (created)
   {
     cp.set(process);
+    if (debug)
+    {
+      DebugProcess dp;
+      dp.imageFile = exeFile;
+      m_debugging[process.dwProcessId] = dp;
+    }
 
     // Close the thread handle that is never used
     ::CloseHandle(process.hThread);
@@ -948,10 +977,10 @@ InformApp::CreatedProcess InformApp::RunCensus(void)
   start.cb = sizeof start;
   start.wShowWindow = SW_HIDE;
   start.dwFlags = STARTF_USESHOWWINDOW;
-  return CreateProcess(NULL,command,start,true);
+  return CreateProcess(NULL,command,start,true,"ni.exe");
 }
 
-int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
+int InformApp::RunCommand(const char* dir, CString& command, const char* exeFile, OutputSink& output)
 {
   CWaitCursor wc;
 
@@ -974,7 +1003,7 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
   start.dwFlags = STARTF_USESTDHANDLES|STARTF_USESHOWWINDOW;
 
   // Create the process for the command
-  CreatedProcess cp = CreateProcess(dir,command,start,true);
+  CreatedProcess cp = CreateProcess(dir,command,start,true,exeFile);
 
   DWORD result = 512;
   if (cp.process != INVALID_HANDLE_VALUE)

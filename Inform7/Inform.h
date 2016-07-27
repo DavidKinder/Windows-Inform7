@@ -143,10 +143,10 @@ public:
   };
 
   void RunMessagePump(void);
-  CreatedProcess CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug);
+  CreatedProcess CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug, const char* exeFile);
   CreatedProcess RunCensus(void);
-  int RunCommand(const char* dir, CString& command, OutputSink& output);
-  std::string GetTraceForProcess(DWORD processId);
+  int RunCommand(const char* dir, CString& command, const char* exeFile, OutputSink& output);
+  CString GetTraceForProcess(DWORD processId);
   void WriteLog(const char* msg);
   bool IsWaitCursor(void);
 
@@ -179,16 +179,25 @@ protected:
   int m_fontSizes[4];
   CFont m_fonts[4];
 
-  struct ProcessTrace
-  {
-    DWORD processId;
-    std::string trace;
-  };
-
   CArray<CFrameWnd*> m_frames;
   std::map<std::string,CDibSection*> m_bitmaps;
   std::vector<ExtLocation> m_extensions;
-  std::vector<ProcessTrace> m_traces;
+
+  struct DebugProcess
+  {
+    HANDLE process;
+    HANDLE thread;
+    DWORD threadId;
+    CString imageFile;
+    LPVOID imageBase;
+    DWORD imageSize;
+
+    DebugProcess() : process(0), thread(0), threadId(0), imageBase(0), imageSize(0)
+    {
+    }
+  };
+  std::map<DWORD,DebugProcess> m_debugging;
+  std::map<DWORD,CString> m_traces;
 
   CString m_home;
   FileProtocol m_protocol;
