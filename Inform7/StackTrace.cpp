@@ -192,7 +192,7 @@ void LogStackTrace(void)
 
 } // unnamed namespace
 
-CString GetStackTrace(HANDLE process, HANDLE thread, const CString& imageFile, LPVOID imageBase, DWORD imageSize)
+CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString& imageFile, LPVOID imageBase, DWORD imageSize)
 {
   CONTEXT context;
   ::ZeroMemory(&context,sizeof context);
@@ -200,6 +200,8 @@ CString GetStackTrace(HANDLE process, HANDLE thread, const CString& imageFile, L
   if (::GetThreadContext(thread,&context))
   {
     std::ostringstream log;
+    log << "Exception code 0x" << std::hex << exCode << " at PC=0x" << context.Eip << std::endl;
+
     PrintStackTrace(process,thread,imageFile,imageBase,imageSize,&context,log);
     return CString(log.str().c_str());
   }

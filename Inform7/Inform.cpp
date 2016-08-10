@@ -13,7 +13,7 @@
 #include "png.h"
 #include "jpeglib.h"
 
-CString GetStackTrace(HANDLE process, HANDLE thread, const CString& imageFile, LPVOID imageBase, DWORD imageSize);
+CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString& imageFile, LPVOID imageBase, DWORD imageSize);
 extern "C" __declspec(dllimport) void ScaleGfx(COLORREF*, UINT, UINT, COLORREF*, UINT, UINT);
 
 #ifdef _DEBUG
@@ -225,8 +225,9 @@ BOOL InformApp::OnIdle(LONG lCount)
               {
                 if (m_traces.size() > 16)
                   m_traces.clear();
-                m_traces[debug.dwProcessId] =
-                  GetStackTrace(dp.process,dp.thread,dp.imageFile,dp.imageBase,dp.imageSize);
+                m_traces[debug.dwProcessId] = GetStackTrace(
+                  dp.process,dp.thread,debug.u.Exception.ExceptionRecord.ExceptionCode,
+                  dp.imageFile,dp.imageBase,dp.imageSize);
               }
               ::TerminateProcess(it->second.process,kill);
             }
