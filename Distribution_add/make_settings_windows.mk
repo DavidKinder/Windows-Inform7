@@ -1,6 +1,6 @@
 # Make settings for integrating Inform's user interface and core software.
 # This is the Windows version, by David Kinder. To use, you will need
-# Cygwin with the old GCC 3.3 Cygwin/MingGW compiler installed.
+# Cygwin with the Mingw-w64 GCC compiler installed.
 
 BUILTINCOMPS = ../Build/Compilers
 INTERNAL = ../Build/Internal
@@ -13,9 +13,9 @@ INDOCOPTS = windows_app
 INRTPSOPTS = -nofont
 INTESTOPTS = -threads=2 -no-colours
 
-GCC = gcc-3
-GCCOPTS = -DPLATFORM_WINDOWS -I. -mno-cygwin -gdwarf-2
-GCCWARNINGS = -Wno-pointer-arith -Wno-unused-macros -Wno-shadow -Wno-cast-align -Wno-missing-noreturn -Wno-missing-prototypes -Wno-unused-parameter -Wno-padded -Wno-unreachable-code-break -Wno-format-nonliteral -Wno-cast-qual
+GCC = i686-w64-mingw32-gcc
+GCCOPTS = -DPLATFORM_WINDOWS -I.
+GCCWARNINGS = -Wno-pointer-arith -Wno-unused-macros -Wno-shadow -Wno-cast-align -Wno-variadic-macros -Wno-missing-noreturn -Wno-missing-prototypes -Wno-unused-parameter -Wno-padded -Wno-missing-variable-declarations -Wno-unreachable-code-break -Wno-class-varargs -Wno-format-nonliteral -Wno-cast-qual
 CBLORBWARNINGS = -Wno-format-nonliteral
 LINK = $(GCC) $(GCCOPTS) -g
 LINKEROPTS = -Wl,--large-address-aware
