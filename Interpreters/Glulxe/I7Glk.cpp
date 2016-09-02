@@ -150,7 +150,7 @@ extern "C" glui32 glk_gestalt_ext(glui32 sel, glui32 val, glui32 *arr, glui32 ar
         arr[0] = 0;
       return gestalt_CharOutput_CannotPrint;
     }
-    else if ((val >= 32 && val <= 126) || (val >= 160 && val <= 0xFFFF))
+    else if ((val >= 32 && val <= 126) || (val >= 160 && val <= 0x10FFFF))
     {
       if (arr && (arrlen > 0))
         arr[0] = 1;

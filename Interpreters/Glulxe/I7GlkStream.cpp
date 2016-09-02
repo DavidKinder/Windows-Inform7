@@ -724,6 +724,15 @@ void I7GlkWinStream::addChar(glui32 c)
 {
   if ((c == '\n') || (c >= 32 && c <= 126) || (c >= 160 && c <= 0xFFFF))
     m_buffered.push_back((wchar_t)c);
+  else if (c >= 0x10000 && c <= 0x10FFFF)
+  {
+    // Unicode high-plane character
+    const unsigned long LEAD_OFFSET = 0xD800 - (0x10000 >> 10);
+    unsigned short hi = (unsigned short)(LEAD_OFFSET + (c >> 10));
+    unsigned short lo = 0xDC00 + (c & 0x3FF);
+    m_buffered.push_back((wchar_t)hi);
+    m_buffered.push_back((wchar_t)lo);
+  }
   else
   {
     char error[16];
