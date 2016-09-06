@@ -1200,6 +1200,17 @@ void InformApp::FindExtensions(void)
   std::sort(m_extensions.begin(),m_extensions.end());
 }
 
+void InformApp::AddToExtensions(const char* author, const char* title, const char* path)
+{
+  for (std::vector<ExtLocation>::const_iterator it = m_extensions.begin(); it != m_extensions.end(); ++it)
+  {
+    if ((it->author == author) && (it->title == title) && !it->system)
+      return;
+  }
+  m_extensions.push_back(ExtLocation(author,title,false,path));
+  std::sort(m_extensions.begin(),m_extensions.end());
+}
+
 const std::vector<InformApp::ExtLocation>& InformApp::GetExtensions(void)
 {
   return m_extensions;

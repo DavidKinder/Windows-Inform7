@@ -165,6 +165,7 @@ public:
   };
 
   void FindExtensions(void);
+  void AddToExtensions(const char* author, const char* title, const char* path);
   const std::vector<ExtLocation>& GetExtensions(void);
   const ExtLocation* GetExtension(const char* author, const char* title);
 

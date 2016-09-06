@@ -657,6 +657,7 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
           if (::CopyFile(downPath,target,FALSE))
           {
             DeleteOldExtension(target);
+            theApp.AddToExtensions(CString(extAuthor),CString(extName),target);
             theApp.SendAllFrames(InformApp::DownloadedExt,id);
             lastExt.Format(L"\"%s\" by %s (%s)",(LPCWSTR)extName,(LPCWSTR)extAuthor,(LPCWSTR)extVersion);
             installed++;
