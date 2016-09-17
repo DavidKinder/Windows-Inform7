@@ -315,48 +315,98 @@ void SourceEdit::OnFormatShift(UINT id)
   CallEdit(SCI_ENDUNDOACTION);
 }
 
+namespace {
+bool isStringStyle(int style)
+{
+  return ((style == STYLE_QUOTE) || (style == STYLE_QUOTEBRACKET));
+}
+
+int commentDepth(int style)
+{
+  return ((style >= STYLE_COMMENT) && (style < STYLE_COMMENT+NEST_COMMENTS)) ? style-STYLE_COMMENT+1 : 0;
+}
+} // unnamed namespace
+
 void SourceEdit::OnFormatComment(UINT id)
 {
-  CallEdit(SCI_BEGINUNDOACTION);
+  int pos1 = CallEdit(SCI_GETSELECTIONSTART);
+  int pos2 = CallEdit(SCI_GETSELECTIONEND);
+  if (pos2 <= pos1)
+    return;
 
-  int line1 = (int)CallEdit(SCI_LINEFROMPOSITION,CallEdit(SCI_GETSELECTIONSTART));
-  int line2 = (int)CallEdit(SCI_LINEFROMPOSITION,CallEdit(SCI_GETSELECTIONEND));
+  // Don't change anything if:
+  // 1) The selection starts or ends in a string
+  // 2) The comment depth changes between the start and the end
+  // 3) The comment depth drops below the initial depth in the selection
+  int style1 = (int)CallEdit(SCI_GETSTYLEAT,pos1) & SourceLexer::StyleMask;
+  if (isStringStyle(style1))
+    return;
+  int comment1 = commentDepth(style1);
+  int style2 = 0, comment2 = 0;
+  for (int i = pos1+1; i < pos2; i++)
+  {
+    style2 = (int)CallEdit(SCI_GETSTYLEAT,i) & SourceLexer::StyleMask;
+    comment2 = commentDepth(style2);
+    if (comment2 < comment1)
+      return;
+  }
+  if (isStringStyle(style2))
+    return;
+  if (comment1 != comment2)
+    return;
 
-  // Check that this is not the last line of a multi-line selection with the cursor at the line's start
-  if ((line2 > line1) && (CallEdit(SCI_POSITIONFROMLINE,line2) == CallEdit(SCI_GETSELECTIONEND)))
-    line2--;
+  if (id == ID_FORMAT_COMMENT)
+  {
+    // Is this the last line of a multi-line selection with the cursor at the line's start?
+    int line1 = (int)CallEdit(SCI_LINEFROMPOSITION,pos1);
+    int line2 = (int)CallEdit(SCI_LINEFROMPOSITION,pos2);
+    if ((line2 > line1) && (CallEdit(SCI_POSITIONFROMLINE,line2) == pos2))
+      pos2--;
+    if (pos2 <= pos1)
+      return;
 
-  // Get the start of the first line and the end of the last line
-  int pos1 = (int)CallEdit(SCI_POSITIONFROMLINE,line1);
-  int pos2 = (int)CallEdit(SCI_GETLINEENDPOSITION,line2);
-
-  if ((pos1 >= 0) && (pos2 > pos1))
+    CallEdit(SCI_BEGINUNDOACTION);
+    CallEdit(SCI_SETTARGETSTART,pos2);
+    CallEdit(SCI_SETTARGETEND,pos2);
+    CallEdit(SCI_REPLACETARGET,1,(LONG_PTR)"]");
+    CallEdit(SCI_SETTARGETSTART,pos1);
+    CallEdit(SCI_SETTARGETEND,pos1);
+    CallEdit(SCI_REPLACETARGET,1,(LONG_PTR)"[");
+    CallEdit(SCI_SETSEL,pos1,pos2+2);
+    CallEdit(SCI_ENDUNDOACTION);
+  }
+  else if (id == ID_FORMAT_UNCOMMENT)
   {
     // Get the first and last characters
     int len = (int)CallEdit(SCI_GETLENGTH);
     CStringW text1 = GetTextRange(pos1,pos1+1,len);
     CStringW text2 = GetTextRange(pos2-1,pos2,len);
 
-    if ((id == ID_FORMAT_COMMENT) && (text1 != L"[") && (text2 != L"]"))
+    if ((text1 == L"[") && (text2 == L"]"))
     {
-      CallEdit(SCI_SETTARGETSTART,pos2);
-      CallEdit(SCI_SETTARGETEND,pos2);
-      CallEdit(SCI_REPLACETARGET,1,(LONG_PTR)"]");
-      CallEdit(SCI_SETTARGETSTART,pos1);
-      CallEdit(SCI_SETTARGETEND,pos1);
-      CallEdit(SCI_REPLACETARGET,1,(LONG_PTR)"[");
-    }
-    else if ((id == ID_FORMAT_UNCOMMENT) && (text1 == L"[") && (text2 == L"]"))
-    {
+      CallEdit(SCI_BEGINUNDOACTION);
       CallEdit(SCI_SETTARGETSTART,pos2-1);
       CallEdit(SCI_SETTARGETEND,pos2);
       CallEdit(SCI_REPLACETARGET,0,(LONG_PTR)"");
       CallEdit(SCI_SETTARGETSTART,pos1);
       CallEdit(SCI_SETTARGETEND,pos1+1);
       CallEdit(SCI_REPLACETARGET,0,(LONG_PTR)"");
+      CallEdit(SCI_SETSEL,pos1,pos2-2);
+      CallEdit(SCI_ENDUNDOACTION);
+    }
+    else if (comment2 > 0)
+    {
+      CallEdit(SCI_BEGINUNDOACTION);
+      CallEdit(SCI_SETTARGETSTART,pos2);
+      CallEdit(SCI_SETTARGETEND,pos2);
+      CallEdit(SCI_REPLACETARGET,1,(LONG_PTR)"[");
+      CallEdit(SCI_SETTARGETSTART,pos1);
+      CallEdit(SCI_SETTARGETEND,pos1);
+      CallEdit(SCI_REPLACETARGET,1,(LONG_PTR)"]");
+      CallEdit(SCI_SETSEL,pos1,pos2+2);
+      CallEdit(SCI_ENDUNDOACTION);
     }
   }
-  CallEdit(SCI_ENDUNDOACTION);
 }
 
 void SourceEdit::OnFormatRenumber()
@@ -1284,4 +1334,3 @@ bool SourceEdit::IsLineInExtDoc(const CArray<SourceLexer::Heading>& headings, in
   }
   return false;
 }
-
