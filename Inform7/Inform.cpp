@@ -11,7 +11,9 @@
 #include "TabDoc.h"
 
 #include "png.h"
+extern "C" {
 #include "jpeglib.h"
+}
 
 CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString& imageFile, LPVOID imageBase, DWORD imageSize);
 extern "C" __declspec(dllimport) void ScaleGfx(COLORREF*, UINT, UINT, COLORREF*, UINT, UINT);
@@ -545,7 +547,7 @@ void outputJPEGMessage(j_common_ptr cinfo)
 
 } // unnamed namespace
 
-CDibSection* InformApp::GetImage(const char* path)
+CDibSection* InformApp::GetImage(const char* path, bool adjustGamma)
 {
   // Check if it's a PNG file
   CStdioFile imageFile;
@@ -602,9 +604,12 @@ CDibSection* InformApp::GetImage(const char* path)
       png_set_expand_gray_1_2_4_to_8(png_ptr);
     if (png_get_valid(png_ptr,info_ptr,PNG_INFO_tRNS))
       png_set_tRNS_to_alpha(png_ptr);
-    double gamma;
-    if (png_get_gAMA(png_ptr,info_ptr,&gamma))
-      png_set_gamma(png_ptr,2.2,gamma);
+    if (adjustGamma)
+    {
+      double gamma;
+      if (png_get_gAMA(png_ptr,info_ptr,&gamma))
+        png_set_gamma(png_ptr,2.2,gamma);
+    }
     if (bit_depth == 16)
       png_set_strip_16(png_ptr);
     if (bit_depth < 8)
@@ -788,11 +793,11 @@ CDibSection* InformApp::GetCachedImage(const char* name)
   // Get the path to the PNG image and load it
   CString path;
   path.Format("%s\\Images\\%s.png",(LPCSTR)GetAppDir(),name);
-  CDibSection* dib = GetImage(path);
+  CDibSection* dib = GetImage(path,true);
   if (dib == NULL)
   {
     path.Format("%s\\Documentation\\%s.png",(LPCSTR)GetAppDir(),name);
-    dib = GetImage(path);
+    dib = GetImage(path,true);
   }
 
   // Cache and return it

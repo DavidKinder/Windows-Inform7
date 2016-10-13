@@ -118,7 +118,7 @@ public:
   };
   void SendAllFrames(Changed changed, int value);
 
-  CDibSection* GetImage(const char* path);
+  CDibSection* GetImage(const char* path, bool adjustGamma);
   CSize GetImageSize(const char* path);
   CDibSection* GetCachedImage(const char* name);
   void CacheImage(const char* name, CDibSection* dib);

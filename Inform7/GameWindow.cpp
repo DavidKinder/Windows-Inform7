@@ -1373,7 +1373,7 @@ CDibSection* GameWindow::GetImage(int image, COLORREF alpha)
     return NULL;
 
   // Get the image and cache it
-  CDibSection* dib = theApp.GetImage(path);
+  CDibSection* dib = theApp.GetImage(path,false);
   if (dib == NULL)
     return NULL;
 
