@@ -735,21 +735,6 @@
 				Name="libpng"
 				Filter="">
 				<File
-					RelativePath="..\..\..\Libraries\libpng\dk_png.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath="..\..\..\Libraries\libpng\png.c">
 					<FileConfiguration
 						Name="Debug|Win32">
@@ -1269,7 +1254,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\Libraries\jpeg\jdphuff.c">
+					RelativePath="..\..\..\Libraries\jpeg\jdmerge.c">
 					<FileConfiguration
 						Name="Debug|Win32">
 						<Tool
@@ -1286,7 +1271,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\Libraries\jpeg\jdmerge.c">
+					RelativePath="..\..\..\Libraries\jpeg\jdphuff.c">
 					<FileConfiguration
 						Name="Debug|Win32">
 						<Tool
