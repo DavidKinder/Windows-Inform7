@@ -267,7 +267,7 @@ void I7GlkUniFileStream::setPosition(glsi32 pos, glui32 seekmode)
     origin = SEEK_END;
 
   if (m_text)
-    fseek(m_file,pos*2,origin);
+    fseek(m_file,pos,origin);
   else
     fseek(m_file,pos*4,origin);
   m_lastOper = 0;
@@ -276,7 +276,7 @@ void I7GlkUniFileStream::setPosition(glsi32 pos, glui32 seekmode)
 glui32 I7GlkUniFileStream::getPosition(void)
 {
   if (m_text)
-    return (glui32)ftell(m_file)/2;
+    return (glui32)ftell(m_file);
   else
     return (glui32)ftell(m_file)/4;
 }
@@ -287,17 +287,55 @@ glsi32 I7GlkUniFileStream::getChar(void)
   glsi32 c = -1;
   if (m_text)
   {
-    glui32 uc = 0;
-    int c1 = fgetc(m_file);
-    if (c1 != EOF)
+    int c0 = fgetc(m_file);
+    if (c0 == -1)
+      return -1;
+    if (c0 < 0x80)
+      c = c0;
+    else if ((c0 & 0xE0) == 0xC0)
     {
-      uc |= (c1 & 0xFF);
-      c1 = fgetc(m_file);
-      if (c1 != EOF)
-      {
-        uc |= ((c1 & 0xFF) << 8);
-        c = uc;
-      }
+      int c1 = fgetc(m_file);
+      if ((c1 == -1) || ((c1 & 0xC0) != 0x80))
+        return -1;
+
+      glui32 uc = (c0 & 0x1F) << 6;
+      uc |= c1 & 0x3F;
+      c = uc;
+    }
+    else if ((c0 & 0xF0) == 0xE0)
+    {
+      int c1 = fgetc(m_file);
+      if ((c1 == -1) || ((c1 & 0xC0) != 0x80))
+        return -1;
+      int c2 = fgetc(m_file);
+      if ((c2 == -1) || ((c2 & 0xC0) != 0x80))
+        return -1;
+
+      glui32 uc = ((c0 & 0xF) << 12) & 0xF000;
+      uc |= ((c1 & 0x3F) << 6) & 0xFC0;
+      uc |= c2 & 0x3F;
+      c = uc;
+    }
+    else if ((c0 & 0xF0) == 0xF0)
+    {
+      if ((c0 & 0xF8) != 0xF0)
+        return -1;
+
+      int c1 = fgetc(m_file);
+      if ((c1 == -1) || ((c1 & 0xC0) != 0x80))
+        return -1;
+      int c2 = fgetc(m_file);
+      if ((c2 == -1) || ((c2 & 0xC0) != 0x80))
+        return -1;
+      int c3 = fgetc(m_file);
+      if ((c3 == -1) || ((c3 & 0xC0) != 0x80))
+        return -1;
+
+      glui32 uc = ((c0 & 7) << 18) & 0x1C0000;
+      uc |= ((c1 & 0x3F) << 12) & 0x3F000;
+      uc |= ((c2 & 0x3F) << 6) & 0xFC0;
+      uc |= c3 & 0x3F;
+      c = uc;
     }
   }
   else
@@ -384,10 +422,28 @@ void I7GlkUniFileStream::addChar(glui32 c)
 {
   if (m_text)
   {
-    if (c > 0xFFFF)
-      c = L'?';
-    fputc(c & 0xFF,m_file);
-    fputc((c>>8) & 0xFF,m_file);
+    if (c < 0x80)
+      fputc(c,m_file);
+    else if (c < 0x800)
+    {
+      fputc((0xC0|((c & 0x7C0)>>6)),m_file);
+      fputc((0x80| (c & 0x03F)   ) ,m_file);
+    }
+    else if (c < 0x10000)
+    {
+      fputc((0xE0|((c & 0xF000)>>12)),m_file);
+      fputc((0x80|((c & 0x0FC0)>> 6)),m_file);
+      fputc((0x80| (c & 0x003F)    ) ,m_file);
+    }
+    else if (c < 0x200000)
+    {
+      fputc((0xF0|((c & 0x1C0000)>>18)),m_file);
+      fputc((0x80|((c & 0x03F000)>>12)),m_file);
+      fputc((0x80|((c & 0x000FC0)>> 6)),m_file);
+      fputc((0x80| (c & 0x00003F)    ), m_file);
+    }
+    else
+      fputc('?',m_file);
   }
   else
   {
