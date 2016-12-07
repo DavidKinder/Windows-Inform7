@@ -3,8 +3,6 @@
 #include "Inform.h"
 #include "OSLayer.h"
 
-#include <MultiMon.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -243,35 +241,6 @@ void SearchWindow::Search(Source* source, LPCWSTR text, CRect& windowRect)
       CSize(-1,-1),m_resultsList.GetCountPerPage());
     windowRect.bottom += size.cy-listRect.Height();
     MoveWindow(windowRect);
-  }
-
-  // Move the window so that it isn't over the source
-  CRect currentRect, intersection;
-  GetWindowRect(currentRect);
-  CRect sourceRect = source->WindowRect();
-  if (intersection.IntersectRect(currentRect,sourceRect))
-  {
-    MONITORINFO monInfo;
-    ::ZeroMemory(&monInfo,sizeof monInfo);
-    monInfo.cbSize = sizeof monInfo;
-
-    HMONITOR mon = ::MonitorFromWindow(m_parent->GetSafeHwnd(),MONITOR_DEFAULTTOPRIMARY);
-    if (::GetMonitorInfo(mon,&monInfo))
-    {
-      CRect screenRect(monInfo.rcWork);
-
-      // Can it be moved to the right or left?
-      if (sourceRect.right+currentRect.Width() < screenRect.right)
-      {
-        currentRect.MoveToX(sourceRect.right);
-        MoveWindow(currentRect);
-      }
-      else if (sourceRect.left-currentRect.Width() >= screenRect.left)
-      {
-        currentRect.MoveToX(sourceRect.left-currentRect.Width());
-        MoveWindow(currentRect);
-      }
-    }
   }
 
   // Update the results

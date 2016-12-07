@@ -40,7 +40,6 @@ public:
   void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results);
   void Highlight(const SearchWindow::Result& result);
   CString Description(void);
-  CRect WindowRect(void);
 
 protected:
   DECLARE_MESSAGE_MAP()

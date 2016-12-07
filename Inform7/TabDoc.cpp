@@ -27,6 +27,8 @@ const char* TabDoc::m_files[TabDoc::Number_DocTabs] =
   "\\Documentation\\general_index.html"
 };
 
+CCriticalSection TabDoc::m_docTextsLock;
+bool TabDoc::m_docTextsDone = false;
 CArray<TabDoc::DocText*> TabDoc::m_docTexts;
 
 TabDoc::TabDoc() : m_tab(true), m_html(NULL), m_initialised(false)
@@ -132,77 +134,61 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
   CStringW textLow(text);
   textLow.MakeLower();
 
-  if (m_docTexts.IsEmpty())
+  while (true)
   {
-    CFileFind findDoc;
-
-    for (int i = 0; i < 2; i++)
     {
-      CString findPath;
-      switch (i)
-      {
-      case 0:
-        findPath.Format("%s\\Documentation\\doc*.html",theApp.GetAppDir());
+      CSingleLock lock(&m_docTextsLock,TRUE);
+      if (m_docTextsDone)
         break;
-      case 1:
-        findPath.Format("%s\\Documentation\\rdoc*.html",theApp.GetAppDir());
-        break;
-      }
-
-      BOOL found = findDoc.FindFile(findPath);
-      while (found)
-      {
-        // Get the filename of a documentation file
-        found = findDoc.FindNextFile();
-
-        // Extract the title and text
-        DecodeHTML(findDoc.GetFilePath(),i);
-        theApp.RunMessagePump();
-      }
     }
+    ::Sleep(100);
+    theApp.RunMessagePump();
   }
 
-  for (int i = 0; i < m_docTexts.GetSize(); i++)
   {
-    DocText* docText = m_docTexts[i];
-
-    // Make everything lower case
-    CStringW bodyLow(docText->body);
-    bodyLow.MakeLower();
-
-    // Look for a match
-    int found1 = bodyLow.Find(textLow);
-    if (found1 != -1)
+    CSingleLock lock(&m_docTextsLock,TRUE);
+    for (int i = 0; i < m_docTexts.GetSize(); i++)
     {
-      int found2 = found1+textLow.GetLength();
+      DocText* docText = m_docTexts[i];
 
-      // Create a larger range to extract the context
-      int context1 = found1-8;
-      if (context1 < 0)
-        context1 = 0;
-      int context2 = found2+32;
-      if (context2 > docText->body.GetLength()-1)
-        context2 = docText->body.GetLength()-1;
+      // Make everything lower case
+      CStringW bodyLow(docText->body);
+      bodyLow.MakeLower();
 
-      // Get the surrounding text as context
-      CStringW context = docText->body.Mid(context1,context2-context1);
-      context.Replace(L'\n',L' ');
-      context.Replace(L'\r',L' ');
-      context.Replace(L'\t',L' ');
+      // Look for a match
+      int found1 = bodyLow.Find(textLow);
+      if (found1 != -1)
+      {
+        int found2 = found1+textLow.GetLength();
 
-      SearchWindow::Result result;
-      result.context = context;
-      result.inContext.cpMin = found1-context1;
-      result.inContext.cpMax = found2-context1;
-      CString location;
-      location.Format("%s: %s",docText->section,docText->title);
-      result.sourceLocation = location;
-      result.sourceSort = docText->sort;
-      result.sourceFile = docText->file;
-      result.colourScheme = docText->colourScheme;
-      results.push_back(result);
+        // Create a larger range to extract the context
+        int context1 = found1-8;
+        if (context1 < 0)
+          context1 = 0;
+        int context2 = found2+32;
+        if (context2 > docText->body.GetLength()-1)
+          context2 = docText->body.GetLength()-1;
+
+        // Get the surrounding text as context
+        CStringW context = docText->body.Mid(context1,context2-context1);
+        context.Replace(L'\n',L' ');
+        context.Replace(L'\r',L' ');
+        context.Replace(L'\t',L' ');
+
+        SearchWindow::Result result;
+        result.context = context;
+        result.inContext.cpMin = found1-context1;
+        result.inContext.cpMax = found2-context1;
+        CString location;
+        location.Format("%s: %s",docText->section,docText->title);
+        result.sourceLocation = location;
+        result.sourceSort = docText->sort;
+        result.sourceFile = docText->file;
+        result.colourScheme = docText->colourScheme;
+        results.push_back(result);
+      }
+      theApp.RunMessagePump();
     }
-    theApp.RunMessagePump();
   }
 
   // Sort the search results by the documentation page they are found in
@@ -222,13 +208,6 @@ void TabDoc::Highlight(const SearchWindow::Result& result)
 CString TabDoc::Description(void)
 {
   return "documentation";
-}
-
-CRect TabDoc::WindowRect(void)
-{
-  CRect r;
-  m_html->GetWindowRect(r);
-  return r;
 }
 
 BOOL TabDoc::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
@@ -412,7 +391,10 @@ void TabDoc::DecodeHTML(const char* filename, int scheme)
   DocText* mainDocText = new DocText();
   mainDocText->file = filename;
   mainDocText->colourScheme = scheme;
-  m_docTexts.Add(mainDocText);
+  {
+    CSingleLock lock(&m_docTextsLock,TRUE);
+    m_docTexts.Add(mainDocText);
+  }
 
   // Reserve space for the main text
   len = bodyHtml.GetLength();
@@ -495,7 +477,10 @@ void TabDoc::DecodeHTML(const char* filename, int scheme)
         docText->section = mainDocText->section;
         docText->sort = mainDocText->sort;
         docText->body.Preallocate(len/2);
-        m_docTexts.Add(docText);
+        {
+          CSingleLock lock(&m_docTextsLock,TRUE);
+          m_docTexts.Add(docText);
+        }
       }
       else if (wcsncmp(p1,L"<!-- END EXAMPLE -->",20) == 0)
         docText = mainDocText;
@@ -552,15 +537,48 @@ void TabDoc::DecodeHTML(const char* filename, int scheme)
     }
     p1++;
   }
+}
 
-/*
-  CString bodyA(docText->body);
-  AfxMessageBox(bodyA);
-*/
+UINT TabDoc::BackgroundDecodeThread(LPVOID)
+{
+  CFileFind findDoc;
+  for (int i = 0; i < 2; i++)
+  {
+    CString findPath;
+    switch (i)
+    {
+    case 0:
+      findPath.Format("%s\\Documentation\\doc*.html",theApp.GetAppDir());
+      break;
+    case 1:
+      findPath.Format("%s\\Documentation\\rdoc*.html",theApp.GetAppDir());
+      break;
+    }
+
+    BOOL found = findDoc.FindFile(findPath);
+    while (found)
+    {
+      // Get the filename of a documentation file
+      found = findDoc.FindNextFile();
+
+      // Extract the title and text
+      DecodeHTML(findDoc.GetFilePath(),i);
+    }
+  }
+
+  CSingleLock lock(&m_docTextsLock,TRUE);
+  m_docTextsDone = true;
+  return 0;
+}
+
+void TabDoc::InitInstance(void)
+{
+  AfxBeginThread(BackgroundDecodeThread,NULL);
 }
 
 void TabDoc::ExitInstance(void)
 {
+  CSingleLock lock(&m_docTextsLock,TRUE);
   for (int i = 0; i < m_docTexts.GetSize(); i++)
     delete m_docTexts[i];
   m_docTexts.RemoveAll();

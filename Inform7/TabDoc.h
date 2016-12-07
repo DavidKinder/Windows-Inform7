@@ -29,8 +29,8 @@ public:
   void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results);
   void Highlight(const SearchWindow::Result& result);
   CString Description(void);
-  CRect WindowRect(void);
-
+  
+  static void InitInstance(void);
   static void ExitInstance(void);
 
 protected:
@@ -74,7 +74,10 @@ private:
     int colourScheme;
   };
 
-  void DecodeHTML(const char* filename, int scheme);
+  static void DecodeHTML(const char* filename, int scheme);
+  static UINT BackgroundDecodeThread(LPVOID);
 
+  static CCriticalSection m_docTextsLock;
+  static bool m_docTextsDone;
   static CArray<DocText*> m_docTexts;
 };

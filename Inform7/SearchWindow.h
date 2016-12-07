@@ -49,7 +49,6 @@ public:
     virtual void Search(LPCWSTR text, std::vector<Result>& results) = 0;
     virtual void Highlight(const Result& result) = 0;
     virtual CString Description(void) = 0;
-    virtual CRect WindowRect(void) = 0;
   };
 
   void Search(Source* source, LPCWSTR text, CRect& windowRect);

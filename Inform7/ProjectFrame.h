@@ -212,7 +212,7 @@ protected:
   int ChoosePanel(Panel::Tabs newTab);
 
   bool LoadToolBar(void);
-  CRect GetInitialSearchRect(void);
+  CRect GetInitialSearchRect(Panel::Tabs searchTab);
 
   enum SkeinAction
   {

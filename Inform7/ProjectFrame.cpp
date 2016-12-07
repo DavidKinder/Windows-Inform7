@@ -823,7 +823,7 @@ LRESULT ProjectFrame::OnSearchSource(WPARAM text, LPARAM)
 {
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Source));
   panel->SetActiveTab(Panel::Tab_Source);
-  m_search.Search((TabSource*)panel->GetTab(Panel::Tab_Source),(LPCWSTR)text,GetInitialSearchRect());
+  m_search.Search((TabSource*)panel->GetTab(Panel::Tab_Source),(LPCWSTR)text,GetInitialSearchRect(Panel::Tab_Source));
   return 0;
 }
 
@@ -831,7 +831,7 @@ LRESULT ProjectFrame::OnSearchDoc(WPARAM text, LPARAM)
 {
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
   panel->SetActiveTab(Panel::Tab_Doc);
-  m_search.Search((TabDoc*)panel->GetTab(Panel::Tab_Doc),(LPCWSTR)text,GetInitialSearchRect());
+  m_search.Search((TabDoc*)panel->GetTab(Panel::Tab_Doc),(LPCWSTR)text,GetInitialSearchRect(Panel::Tab_Doc));
   return 0;
 }
 
@@ -2945,15 +2945,17 @@ bool ProjectFrame::LoadToolBar(void)
   return true;
 }
 
-CRect ProjectFrame::GetInitialSearchRect(void)
+CRect ProjectFrame::GetInitialSearchRect(Panel::Tabs searchTab)
 {
-  // Determine the initial search window size and position
-  CRect frameRect, btnRect;
-  GetWindowRect(frameRect);
-  m_searchBar.GetDlgItem(IDC_SEARCH_SOURCE)->GetWindowRect(btnRect);
+  CRect panelRect;
+  int panelIndex = (GetPanel(1)->GetActiveTab() == searchTab) ? 0 : 1;
+  GetPanel(panelIndex)->GetWindowRect(panelRect);
 
-  CRect searchRect(btnRect.left,btnRect.bottom+2,frameRect.right,0);
-  searchRect.bottom = searchRect.top+(frameRect.Height()*3/8);
+  CRect searchRect(0,0,panelRect.Width()*3/4,panelRect.Height()*2/3);
+  if (panelIndex == 0)
+    searchRect.MoveToXY(panelRect.right-searchRect.Width(),panelRect.top);
+  else
+    searchRect.MoveToXY(panelRect.TopLeft());
   return searchRect;
 }
 

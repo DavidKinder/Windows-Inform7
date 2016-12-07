@@ -89,6 +89,9 @@ BOOL InformApp::InitInstance()
   FindExtensions();
   CreatedProcess ni = RunCensus();
 
+  // Start decoding the documentation for searching
+  TabDoc::InitInstance();
+
   // Show the splash screen
   SplashScreen splash;
   splash.ShowSplash();
@@ -415,7 +418,7 @@ void InformApp::SetIcon(CWnd* wnd)
   wnd->SetIcon(LoadIcon(IDR_ICON),FALSE);
 }
 
-CString InformApp::GetAppDir(void)
+CString InformApp::GetAppDir(void) const
 {
 #ifdef DEBUG
   return "Z:\\Programs\\Adv\\Inform7\\Build";

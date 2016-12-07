@@ -99,7 +99,7 @@ public:
   CSize MeasureFont(CFont* font);
   CSize MeasureText(CWnd* button);
 
-  CString GetAppDir(void);
+  CString GetAppDir(void) const;
   CString GetLastProjectDir(void);
   CString GetHomeDir(void);
   FileProtocol& GetUrlProtocol(void);

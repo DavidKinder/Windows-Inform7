@@ -592,10 +592,3 @@ CString TabSource::Description(void)
 {
   return "source";
 }
-
-CRect TabSource::WindowRect(void)
-{
-  CRect r;
-  m_source.GetEdit().GetWindowRect(r);
-  return r;
-}
