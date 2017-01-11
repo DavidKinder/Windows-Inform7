@@ -413,7 +413,6 @@ void TranscriptWindow::OnLButtonUp(UINT nFlags, CPoint point)
         {
         case ButtonBless:
           m_skein->Bless(m_buttonDown.node,false);
-          m_skein->Lock(m_buttonDown.node);
           break;
         case ButtonPlay:
           GetParentFrame()->SendMessage(WM_PLAYSKEIN,(WPARAM)m_buttonDown.node);
@@ -557,7 +556,6 @@ void TranscriptWindow::PrefsChanged(void)
 void TranscriptWindow::BlessAll(void)
 {
   m_skein->Bless(m_skeinEndThread,true);
-  m_skein->Lock(m_skeinEndThread);
 }
 
 void TranscriptWindow::SkeinChanged(Skein::Change change)
@@ -580,7 +578,6 @@ void TranscriptWindow::SkeinChanged(Skein::Change change)
   case Skein::NodeTextChanged:
     Invalidate();
     break;
-  case Skein::LockChanged:
   case Skein::TranscriptThreadChanged:
     break;
   default:
@@ -609,6 +606,21 @@ void TranscriptWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
       Layout();
       ScrollToNode(node);
     }
+    Invalidate();
+    break;
+  case Skein::JustSelect:
+    if (m_skein->InThread(node,m_skeinEndThread))
+    {
+      m_skeinSelected = NULL;
+      m_skeinEndThread = NULL;
+    }
+    else
+    {
+      m_skeinSelected = node;
+      m_skeinEndThread = m_skein->GetThreadBottom(node);
+    }
+    Layout();
+    ScrollToNode(node);
     Invalidate();
     break;
   case Skein::ShowNewLine:

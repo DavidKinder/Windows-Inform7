@@ -11,11 +11,10 @@
 Skein::Skein() : m_layout(false)
 {
   m_inst.skeinFile = "Skein.skein";
-  m_inst.root = new Node(L"- start -",L"",L"",L"",false,false,false,0);
+  m_inst.root = new Node(L"- start -",L"",L"",L"",false);
   m_inst.current = m_inst.root;
 
   m_played = m_inst.root;
-  m_maxSaveTemp = theApp.GetProfileInt("Skein","Save Temp",100);
 }
 
 Skein::~Skein()
@@ -120,7 +119,7 @@ void Skein::Load(const char* path)
     bool temp = BoolFromXML(item,L"temporary/text()",true);
     int score = IntFromXML(item,L"temporary/@score");
 
-    nodes[id] = new Node(command,label,result,commentary,played,changed,temp,score);
+    nodes[id] = new Node(command,label,result,commentary,changed);
     item = NULL;
   }
 
@@ -163,9 +162,9 @@ void Skein::Load(const char* path)
 bool Skein::Save(const char* path)
 {
   for (std::vector<Instance>::iterator it = m_other.begin(); it != m_other.end(); ++it)
-    it->Save(path,m_maxSaveTemp);
+    it->Save(path);
 
-  if (m_inst.Save(path,m_maxSaveTemp))
+  if (m_inst.Save(path))
   {
     NotifyEdit(false);
     return true;
@@ -173,14 +172,10 @@ bool Skein::Save(const char* path)
   return false;
 }
 
-bool Skein::Instance::Save(const char* path, int maxSaveTemp)
+bool Skein::Instance::Save(const char* path)
 {
   if (!edited)
     return true;
-
-  std::set<Node*> tempNodes;
-  root->GetTempNodes(tempNodes,maxSaveTemp);
-  Node* saveAsCurrent = current->WillSaveNode(tempNodes) ? current : root;
 
   if (skeinFile.IsEmpty())
     return true;
@@ -196,8 +191,8 @@ bool Skein::Instance::Save(const char* path, int maxSaveTemp)
     "<Skein rootNode=\"%s\">\n"
     "  <generator>Windows Inform 7 " NI_BUILD "</generator>\n"
     "  <activeNode nodeId=\"%s\"/>\n",
-    root->GetUniqueId(),saveAsCurrent->GetUniqueId());
-  root->SaveNodes(skeinFile,tempNodes);
+    root->GetUniqueId(),current->GetUniqueId());
+  root->SaveNodes(skeinFile);
   fprintf(skeinFile,"</Skein>\n");
   fclose(skeinFile);
   edited = false;
@@ -207,7 +202,7 @@ bool Skein::Instance::Save(const char* path, int maxSaveTemp)
 void Skein::Reset()
 {
   delete m_inst.root;
-  m_inst.root = new Node(L"- start -",L"",L"",L"",false,false,false,0);
+  m_inst.root = new Node(L"- start -",L"",L"",L"",false);
   m_inst.current = m_inst.root;
   m_played = m_inst.root;
 
@@ -234,7 +229,7 @@ void Skein::Import(const char* path)
         Node* newNode = node->Find(recLineW);
         if (newNode == NULL)
         {
-          newNode = new Node(recLineW,L"",L"",L"",false,false,true,0);
+          newNode = new Node(recLineW,L"",L"",L"",false);
           node->Add(newNode);
           added = true;
         }
@@ -266,14 +261,6 @@ bool Skein::IsEdited(void)
       return true;
   }
   return false;
-}
-
-bool Skein::NeedSaveWarn(int& maxTemp)
-{
-  maxTemp = m_maxSaveTemp;
-  std::set<Node*> tempNodes;
-  m_inst.root->GetTempNodes(tempNodes,maxTemp+1);
-  return ((int)tempNodes.size() > maxTemp);
 }
 
 void Skein::SetFile(const char* fileName)
@@ -315,12 +302,12 @@ void Skein::Reset(bool current)
   NotifyChange(ThreadChanged);
 }
 
-void Skein::Layout(CDC& dc, CFont* labelFont, int spacing, bool force)
+void Skein::Layout(CDC& dc, int spacing, bool force)
 {
   if (force)
     m_inst.root->ClearWidths();
   if (force || (m_layout == false))
-    m_inst.root->Layout(dc,labelFont,0,spacing);
+    m_inst.root->Layout(dc,0,spacing);
   m_layout = true;
 }
 
@@ -333,7 +320,7 @@ void Skein::NewLine(const CStringW& line)
   Node* node = m_inst.current->Find(nodeLine);
   if (node == NULL)
   {
-    node = new Node(nodeLine,L"",L"",L"",true,false,true,0);
+    node = new Node(nodeLine,L"",L"",L"",false);
     m_inst.current->Add(node);
     nodeAdded = true;
   }
@@ -373,7 +360,6 @@ bool Skein::NextLine(CStringW& line)
 void Skein::UpdateAfterPlaying(const CStringW& transcript)
 {
   // Update the status of the last played node
-  m_played->SetPlayed();
   if (transcript.IsEmpty() == FALSE)
     m_played->NewTranscriptText(transcript);
 
@@ -438,7 +424,7 @@ bool Skein::GetLineFromHistory(CStringW& line, int history)
 
 Skein::Node* Skein::AddNew(Node* node)
 {
-  Node* newNode = new Node(L"",L"",L"",L"",false,false,true,0);
+  Node* newNode = new Node(L"",L"",L"",L"",false);
   node->Add(newNode);
 
   m_layout = false;
@@ -450,7 +436,7 @@ Skein::Node* Skein::AddNew(Node* node)
 
 Skein::Node* Skein::AddNewParent(Node* node)
 {
-  Node* newNode = new Node(L"",L"",L"",L"",false,false,true,0);
+  Node* newNode = new Node(L"",L"",L"",L"",false);
   node->GetParent()->Replace(node,newNode);
   newNode->Add(node);
 
@@ -508,7 +494,7 @@ bool Skein::RemoveSingle(Node* node)
   return removed;
 }
 
-void Skein::SetLine(Node* node, LPWSTR line)
+void Skein::SetLine(Node* node, LPCWSTR line)
 {
   if (node->SetLine(line))
     NotifyEdit(true);
@@ -516,76 +502,12 @@ void Skein::SetLine(Node* node, LPWSTR line)
   NotifyChange(NodeTextChanged);
 }
 
-void Skein::SetLabel(Node* node, LPWSTR label)
+void Skein::SetLabel(Node* node, LPCWSTR label)
 {
   if (node->SetLabel(label))
     NotifyEdit(true);
   m_layout = false;
   NotifyChange(NodeTextChanged);
-}
-
-void Skein::Lock(Node* node)
-{
-  while (node != NULL)
-  {
-    if (node->SetTemporary(false))
-      NotifyEdit(true);
-    node = node->GetParent();
-  }
-  NotifyChange(LockChanged);
-}
-
-void Skein::Unlock(Node* node, bool notify)
-{
-  if (node->SetTemporary(true))
-    NotifyEdit(true);
-  for (int i = 0; i < node->GetNumChildren(); i++)
-    Unlock(node->GetChild(i),false);
-
-  if (notify)
-    NotifyChange(LockChanged);
-}
-
-void Skein::Trim(Node* node, bool running, bool notify)
-{
-  int i = 0;
-  while (i < node->GetNumChildren())
-  {
-    Node* child = node->GetChild(i);
-    bool inCurrent = InCurrentThread(child);
-
-    // Only delete unlocked nodes. If the game is running, only delete
-    // if the node is not in the current thread as well.
-    if (child->GetTemporary() && !(running && inCurrent))
-    {
-      if (inCurrent)
-      {
-        m_inst.current = m_inst.root;
-        m_played = m_inst.root;
-      }
-
-      if (RemoveAll(child,false) == false)
-        i++;
-    }
-    else
-    {
-      Trim(child,running,false);
-      i++;
-    }
-  }
-
-  if (notify)
-    NotifyChange(TreeChanged);
-}
-
-void Skein::GetLabels(std::map<CStringW,Node*>& labels)
-{
-  m_inst.root->GetLabels(labels);
-}
-
-bool Skein::HasLabels(void)
-{
-  return m_inst.root->HasLabels();
 }
 
 void Skein::Bless(Node* node, bool all)
@@ -835,11 +757,10 @@ int Skein::IntFromXML(IXMLDOMNode* node, LPWSTR query)
 }
 
 Skein::Node::Node(const CStringW& line, const CStringW& label, const CStringW& transcript,
-  const CStringW& expected, bool played, bool changed, bool temp, int score)
+  const CStringW& expected, bool changed)
   : m_parent(NULL), m_line(line), m_label(label), m_textTranscript(transcript),
-    m_textExpected(expected), m_played(played), m_changed(changed), m_temp(temp),
-    m_differs(ExpectedDifferent), m_score(score), m_width(-1), m_lineWidth(-1),
-    m_labelWidth(0), m_x(0)
+    m_textExpected(expected), m_changed(changed), m_differs(ExpectedDifferent),
+    m_width(-1), m_lineWidth(-1), m_labelWidth(-1), m_x(0)
 {
   static unsigned long counter = 0;
 
@@ -878,7 +799,7 @@ const CStringW& Skein::Node::GetLine(void)
   return m_line;
 }
 
-bool Skein::Node::SetLine(LPWSTR line)
+bool Skein::Node::SetLine(LPCWSTR line)
 {
   bool change = (m_line != line);
   m_line = line;
@@ -893,7 +814,7 @@ const CStringW& Skein::Node::GetLabel(void)
   return m_label;
 }
 
-bool Skein::Node::SetLabel(LPWSTR label)
+bool Skein::Node::SetLabel(LPCWSTR label)
 {
   bool change = (m_label != label);
   m_label = label;
@@ -916,23 +837,6 @@ bool Skein::Node::GetChanged(void)
 Skein::Node::ExpectedCompare Skein::Node::GetDiffers(void)
 {
   return m_differs;
-}
-
-bool Skein::Node::GetTemporary(void)
-{
-  return m_temp;
-}
-
-void Skein::Node::SetPlayed(void)
-{
-  m_played = true;
-}
-
-bool Skein::Node::SetTemporary(bool temp)
-{
-  bool change = (m_temp != temp);
-  m_temp = temp;
-  return change;
 }
 
 void Skein::Node::NewTranscriptText(const CStringW& transcript)
@@ -969,7 +873,7 @@ bool Skein::Node::SetExpectedText(LPCWSTR text)
   return (oldExpected != m_textExpected);
 }
 
-int Skein::Node::GetLineWidth(CDC& dc, CFont* labelFont)
+int Skein::Node::GetLineWidth(CDC& dc)
 {
   if (m_width < 0)
   {
@@ -980,9 +884,7 @@ int Skein::Node::GetLineWidth(CDC& dc, CFont* labelFont)
 
     if (wcslen(m_label) > 0)
     {
-      CFont* oldFont = dc.SelectObject(labelFont);
       ::GetTextExtentPoint32W(dc.GetSafeHdc(),m_label,(UINT)wcslen(m_label),&size);
-      dc.SelectObject(oldFont);
       m_labelWidth = size.cx;
     }
     else
@@ -1007,20 +909,20 @@ int Skein::Node::GetLabelTextWidth(void)
   return m_labelWidth;
 }
 
-int Skein::Node::GetTreeWidth(CDC& dc, CFont* labelFont, int spacing)
+int Skein::Node::GetTreeWidth(CDC& dc, int spacing)
 {
   // Get the tree width of all children
   int total = 0;
   for (int i = 0; i < m_children.GetSize(); i++)
   {
-    total += m_children[i]->GetTreeWidth(dc,labelFont,spacing);
+    total += m_children[i]->GetTreeWidth(dc,spacing);
     if (i > 0)
       total += spacing;
   }
 
   // Return the largest of the above, the width of this node's line
   // and the width of this node's label
-  int width = max(total,GetLineWidth(dc,labelFont));
+  int width = max(total,GetLineWidth(dc));
   return max(width,GetLabelTextWidth());
 }
 
@@ -1144,43 +1046,19 @@ const char* Skein::Node::GetUniqueId(void)
   return m_id;
 }
 
-void Skein::Node::GetTempNodes(std::set<Node*>& nodes, int max)
-{
-  if (m_temp)
-  {
-    if ((int)nodes.size() >= max)
-      return;
-    nodes.insert(this);
-  }
-  for (int i = 0; i < m_children.GetSize(); i++)
-    m_children[i]->GetTempNodes(nodes,max);
-}
-
-bool Skein::Node::WillSaveNode(const std::set<Node*>& tempNodes)
-{
-  if (m_temp)
-    return (tempNodes.count(this) > 0);
-  return true;
-}
-
-void Skein::Node::SaveNodes(FILE* skeinFile, const std::set<Node*>& tempNodes)
+void Skein::Node::SaveNodes(FILE* skeinFile)
 {
   fprintf(skeinFile,
     "  <item nodeId=\"%s\">\n"
     "    <command xml:space=\"preserve\">%s</command>\n"
     "    <result xml:space=\"preserve\">%s</result>\n"
     "    <commentary xml:space=\"preserve\">%s</commentary>\n"
-    "    <played>%s</played>\n"
-    "    <changed>%s</changed>\n"
-    "    <temporary score=\"%d\">%s</temporary>\n",
+    "    <changed>%s</changed>\n",
     m_id,
     (LPCTSTR)TextFormat::ToXML_UTF8(m_line),
     (LPCTSTR)TextFormat::ToXML_UTF8(m_textTranscript),
     (LPCTSTR)TextFormat::ToXML_UTF8(m_textExpected),
-    ToXML_UTF8(m_played),
-    ToXML_UTF8(m_changed),
-    m_score,
-    ToXML_UTF8(m_temp));
+    ToXML_UTF8(m_changed));
 
   if (m_label.GetLength() > 0)
   {
@@ -1189,27 +1067,20 @@ void Skein::Node::SaveNodes(FILE* skeinFile, const std::set<Node*>& tempNodes)
       (LPCTSTR)TextFormat::ToXML_UTF8(m_label));
   }
 
-  CArray<Node*> children;
-  for (int i = 0; i < m_children.GetSize(); i++)
-  {
-    if (m_children[i]->WillSaveNode(tempNodes))
-      children.Add(m_children[i]);
-  }
-
-  if (children.GetSize() > 0)
+  if (m_children.GetSize() > 0)
   {
     fprintf(skeinFile,"    <children>\n");
-    for (int i = 0; i < children.GetSize(); i++)
-      fprintf(skeinFile,"      <child nodeId=\"%s\"/>\n",children[i]->m_id);
+    for (int i = 0; i < m_children.GetSize(); i++)
+      fprintf(skeinFile,"      <child nodeId=\"%s\"/>\n",m_children[i]->m_id);
     fprintf(skeinFile,"    </children>\n");
   }
   fprintf(skeinFile,"  </item>\n");
 
-  for (int i = 0; i < children.GetSize(); i++)
-    children[i]->SaveNodes(skeinFile,tempNodes);
+  for (int i = 0; i < m_children.GetSize(); i++)
+    m_children[i]->SaveNodes(skeinFile);
 }
 
-void Skein::Node::Layout(CDC& dc, CFont* labelFont, int x, int spacing)
+void Skein::Node::Layout(CDC& dc, int x, int spacing)
 {
   // Store the centre x co-ordinate for this node
   m_x = x;
@@ -1218,7 +1089,7 @@ void Skein::Node::Layout(CDC& dc, CFont* labelFont, int x, int spacing)
   int total = 0;
   for (int i = 0; i < m_children.GetSize(); i++)
   {
-    total += m_children[i]->GetTreeWidth(dc,labelFont,spacing);
+    total += m_children[i]->GetTreeWidth(dc,spacing);
     if (i > 0)
       total += spacing;
   }
@@ -1227,8 +1098,8 @@ void Skein::Node::Layout(CDC& dc, CFont* labelFont, int x, int spacing)
   int cx = 0;
   for (int i = 0; i < m_children.GetSize(); i++)
   {
-    int tw = m_children[i]->GetTreeWidth(dc,labelFont,spacing);
-    m_children[i]->Layout(dc,labelFont,x-(total/2)+cx+(tw/2),spacing);
+    int tw = m_children[i]->GetTreeWidth(dc,spacing);
+    m_children[i]->Layout(dc,x-(total/2)+cx+(tw/2),spacing);
     cx += tw+spacing;
   }
 }
@@ -1236,26 +1107,6 @@ void Skein::Node::Layout(CDC& dc, CFont* labelFont, int x, int spacing)
 int Skein::Node::GetX(void)
 {
   return m_x;
-}
-
-void Skein::Node::GetLabels(std::map<CStringW,Node*>& labels)
-{
-  if (m_label.GetLength() > 0)
-    labels[m_label] = this;
-  for (int i = 0; i < m_children.GetSize(); i++)
-    m_children[i]->GetLabels(labels);
-}
-
-bool Skein::Node::HasLabels(void)
-{
-  if (m_label.GetLength() > 0)
-    return true;
-  for (int i = 0; i < m_children.GetSize(); i++)
-  {
-    if (m_children[i]->HasLabels())
-      return true;
-  }
-  return false;
 }
 
 const CStringW& Skein::Node::GetTranscriptText(void)

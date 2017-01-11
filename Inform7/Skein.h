@@ -18,13 +18,12 @@ public:
   void Import(const char* path);
   bool IsActive(void);
   bool IsEdited(void);
-  bool NeedSaveWarn(int& maxTemp);
 
   void SetFile(const char* fileName);
   bool ChangeFile(const char* fileName, const char* path);
 
   void Reset(bool current);
-  void Layout(CDC& dc, CFont* labelFont, int spacing, bool force);
+  void Layout(CDC& dc, int spacing, bool force);
 
   void NewLine(const CStringW& line);
   bool NextLine(CStringW& line);
@@ -44,7 +43,7 @@ public:
   {
   public:
     Node(const CStringW& line, const CStringW& label, const CStringW& transcript,
-      const CStringW& expected, bool played, bool changed, bool temp, int score);
+      const CStringW& expected, bool changed);
     ~Node();
 
     Node* GetParent(void);
@@ -54,10 +53,10 @@ public:
     Node* GetChild(int index);
 
     const CStringW& GetLine(void);
-    bool SetLine(LPWSTR line);
+    bool SetLine(LPCWSTR line);
 
     const CStringW& GetLabel(void);
-    bool SetLabel(LPWSTR label);
+    bool SetLabel(LPCWSTR label);
     bool HasLabel(void);
 
     const CStringW& GetTranscriptText(void);
@@ -66,7 +65,6 @@ public:
     const Diff::DiffResults& GetExpectedDiffs(void);
 
     bool GetChanged(void);
-    bool GetTemporary(void);
 
     enum ExpectedCompare
     {
@@ -76,18 +74,16 @@ public:
     };
     ExpectedCompare GetDiffers(void);
 
-    void SetPlayed(void);
-    bool SetTemporary(bool temp);
     void NewTranscriptText(const CStringW& transcript);
 
     bool Bless(void);
     bool CanBless(void);
     bool SetExpectedText(LPCWSTR text);
 
-    int GetLineWidth(CDC& dc, CFont* labelFont);
+    int GetLineWidth(CDC& dc);
     int GetLineTextWidth(void);
     int GetLabelTextWidth(void);
-    int GetTreeWidth(CDC& dc, CFont* labelFont, int spacing);
+    int GetTreeWidth(CDC& dc, int spacing);
     void ClearWidths(void);
 
     int GetDepth(void);
@@ -103,15 +99,10 @@ public:
     Node* FindAncestor(Node* descendant);
 
     const char* GetUniqueId(void);
-    void GetTempNodes(std::set<Node*>& nodes, int max);
-    bool WillSaveNode(const std::set<Node*>& tempNodes);
-    void SaveNodes(FILE* skeinFile, const std::set<Node*>& tempNodes);
+    void SaveNodes(FILE* skeinFile);
 
-    void Layout(CDC& dc, CFont* labelFont, int x, int spacing);
+    void Layout(CDC& dc, int x, int spacing);
     int GetX(void);
-
-    void GetLabels(std::map<CStringW,Node*>& labels);
-    bool HasLabels(void);
 
   private:
     void CompareWithExpected(void);
@@ -127,11 +118,8 @@ public:
     Diff::DiffResults m_diffTranscript;
     Diff::DiffResults m_diffExpected;
 
-    bool m_played;
     bool m_changed;
-    bool m_temp;
     ExpectedCompare m_differs;
-    int m_score;
 
     int m_width;
     int m_lineWidth;
@@ -154,15 +142,8 @@ public:
   Node* AddNewParent(Node* node);
   bool RemoveAll(Node* node, bool notify = true);
   bool RemoveSingle(Node* node);
-  void SetLine(Node* node, LPWSTR line);
-  void SetLabel(Node* node, LPWSTR label);
-
-  void Lock(Node* node);
-  void Unlock(Node* node, bool notify = true);
-  void Trim(Node* node, bool running, bool notify = true);
-
-  void GetLabels(std::map<CStringW,Node*>& labels);
-  bool HasLabels(void);
+  void SetLine(Node* node, LPCWSTR line);
+  void SetLabel(Node* node, LPCWSTR label);
 
   void Bless(Node* node, bool all);
   bool CanBless(Node* node, bool all);
@@ -184,13 +165,13 @@ public:
     ThreadChanged,
     NodeTextChanged,
     NodeColourChanged,
-    LockChanged,
     TranscriptThreadChanged,
   };
 
   enum Show
   {
     JustShow,
+    JustSelect,
     ShowSelect,
     ShowNewLine,
     ShowNewTranscript,
@@ -226,7 +207,7 @@ private:
     {
     }
 
-    bool Save(const char* path, int maxSaveTemp);
+    bool Save(const char* path);
   };
   Instance m_inst;
   std::vector<Instance> m_other;
@@ -234,5 +215,4 @@ private:
   bool m_layout;
   std::vector<Listener*> m_listeners;
   Node* m_played;
-  int m_maxSaveTemp;
 };

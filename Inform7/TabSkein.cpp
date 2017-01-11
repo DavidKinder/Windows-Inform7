@@ -5,6 +5,7 @@
 #include "Inform.h"
 #include "OSLayer.h"
 #include "Panel.h"
+#include "Dialogs.h"
 #include "Messages.h"
 #include "Resource.h"
 
@@ -16,13 +17,12 @@ IMPLEMENT_DYNAMIC(TabSkein, TabBase)
 
 BEGIN_MESSAGE_MAP(TabSkein, TabBase)
   ON_WM_SIZE()
-  ON_COMMAND(ID_SKEIN_LABEL, OnSkeinLabel)
-  ON_COMMAND(ID_SKEIN_TRIM, OnSkeinTrim)
   ON_COMMAND(ID_SKEIN_PLAY_ALL, OnSkeinPlay)
+  ON_COMMAND(ID_SKEIN_SAVE_TRANSCRIPT, OnSaveTranscript)
   ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
 END_MESSAGE_MAP()
 
-TabSkein::TabSkein() : m_skein(NULL), m_label(ArrowButton::DownLow)
+TabSkein::TabSkein() : m_skein(NULL)
 {
 }
 
@@ -38,12 +38,10 @@ void TabSkein::CreateTab(CWnd* parent)
 
   // Create the command buttons
   CFont* font = theApp.GetFont(InformApp::FontPanel);
-  m_label.Create("Labels",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_LABEL);
-  m_label.SetFont(font);
-  m_trim.Create("Trim",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_TRIM);
-  m_trim.SetFont(font);
-  m_play.Create("Play all",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_PLAY_ALL);
+  m_play.Create("Play All",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_PLAY_ALL);
   m_play.SetFont(font);
+  m_save.Create("Save Transcript",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_SAVE_TRANSCRIPT);
+  m_save.SetFont(font);
 
   // Create the window containing the actual skein
   m_window.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,CRect(0,0,0,0),this,1);
@@ -74,23 +72,7 @@ void TabSkein::OpenProject(const char* path, bool primary)
   if (primary)
   {
     m_skein->Load(path);
-
-    if (theApp.GetProfileInt("Skein","Warned Save Temp",0) == 0)
-    {
-      int max = 0;
-      if (m_skein->NeedSaveWarn(max))
-      {
-        CString msg;
-        msg.Format(
-          "Inform 7 now only saves a limited number of unlocked skein nodes\n"
-          "(currently %d), in order to keep the size of the skein under control.\n"
-          "This project's skein contains more unlocked nodes than this.\n\n"
-          "You should lock any skein threads you wish to keep before saving\n"
-          "this project, otherwise these threads may be lost.",max);
-        MessageBox(msg,INFORM_TITLE,MB_ICONWARNING|MB_OK);
-        theApp.WriteProfileInt("Skein","Warned Save Temp",1);
-      }
-    }
+    m_skein->GetRoot()->SetLine(GetStoryName());
   }
   m_window.Layout(false);
 }
@@ -98,7 +80,10 @@ void TabSkein::OpenProject(const char* path, bool primary)
 bool TabSkein::SaveProject(const char* path, bool primary)
 {
   if (primary)
+  {
+    m_skein->SetLine(m_skein->GetRoot(),GetStoryName());
     return m_skein->Save(path);
+  }
   return true;
 }
 
@@ -123,18 +108,39 @@ void TabSkein::ShowNode(Skein::Node* node, Skein::Show why)
   m_window.SkeinShowNode(node,why);
 }
 
+void TabSkein::SkeinChanged(void)
+{
+  m_skein->GetRoot()->SetLine(GetStoryName());
+  m_window.Layout(false);
+}
+
 CString TabSkein::GetToolTip(UINT_PTR id)
 {
   switch (id)
   {
-  case ID_SKEIN_LABEL:
-    return "Show a menu of the labelled knots: selecting a knot will go to it";
-  case ID_SKEIN_TRIM:
-    return "Remove all knots that have not been locked";
   case ID_SKEIN_PLAY_ALL:
-    return "Play all threads that lead to a blessed knot";
+  case ID_SKEIN_SAVE_TRANSCRIPT:
+    {
+      CString tt;
+      tt.LoadString(id);
+      return tt;
+    }
+    break;
   }
   return TabBase::GetToolTip(id);
+}
+
+CStringW TabSkein::GetStoryName(void)
+{
+  CString* name = (CString*)(GetParentFrame()->SendMessage(WM_STORYNAME));
+  if (name != NULL)
+  {
+    CStringW result(*name);
+    delete name;
+    return result;
+  }
+  else
+    return L"story";
 }
 
 void TabSkein::OnSize(UINT nType, int cx, int cy)
@@ -154,16 +160,13 @@ void TabSkein::OnSize(UINT nType, int cx, int cy)
 
   // Resize the command buttons
   int pw = theApp.MeasureText(&m_play).cx+(fontSize.cx*3);
-  int tw = theApp.MeasureText(&m_trim).cx+(fontSize.cx*3);
-  int lw = theApp.MeasureText(&m_label).cx+(fontSize.cx*3)+16;
   int gapx = (fontSize.cx/4);
   int gapy = (fontSize.cx/4);
   int x = client.Width()-pw-gapx;
   m_play.MoveWindow(x,gapy,pw,heading-(2*gapy),TRUE);
-  x -= tw+gapx;
-  m_trim.MoveWindow(x,gapy,tw,heading-(2*gapy),TRUE);
-  x -= lw+gapx;
-  m_label.MoveWindow(x,gapy,lw,heading-(2*gapy),TRUE);
+  int sw = theApp.MeasureText(&m_save).cx+(fontSize.cx*3);
+  x -= sw+gapx;
+  m_save.MoveWindow(x,gapy,sw,heading-(2*gapy),TRUE);
 
   // Resize the skein window
   m_window.MoveWindow(client,TRUE);
@@ -175,71 +178,32 @@ LRESULT TabSkein::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
   {
     if (m_skein->IsActive())
     {
-      m_label.EnableWindow(m_skein->HasLabels() ? TRUE : FALSE);
-      m_trim.EnableWindow(TRUE);
       m_play.EnableWindow(GetParentFrame()->SendMessage(WM_CANPLAYALL) != 0);
+      m_save.EnableWindow(GetParentFrame()->SendMessage(WM_TRANSCRIPTEND) != 0);
     }
     else
     {
-      m_label.EnableWindow(FALSE);
-      m_trim.EnableWindow(FALSE);
       m_play.EnableWindow(FALSE);
+      m_save.EnableWindow(FALSE);
     }
   }
   return TabBase::OnIdleUpdateCmdUI(wParam,lParam);
 }
 
-void TabSkein::OnSkeinLabel()
-{
-  std::map<CStringW,Skein::Node*> labels;
-  m_skein->GetLabels(labels);
-
-  if (labels.empty() == false)
-  {
-    CMenu popup;
-    popup.CreatePopupMenu();
-
-    int i = 1;
-    std::map<CStringW,Skein::Node*>::const_iterator it;
-    for (it = labels.begin(); it != labels.end(); ++it, ++i)
-    {
-      CString labelA(it->first);
-      popup.AppendMenu(MF_STRING,i,labelA);
-    }
-
-    CRect labelRect;
-    m_label.GetWindowRect(labelRect);
-
-    int cmd = popup.TrackPopupMenuEx(
-      TPM_RIGHTALIGN|TPM_TOPALIGN|TPM_NONOTIFY|TPM_RETURNCMD,
-      labelRect.right,labelRect.bottom,this,NULL);
-    if (cmd != 0)
-    {
-      CString labelA;
-      popup.GetMenuString(cmd,labelA,MF_BYCOMMAND);
-
-      CStringW labelW(labelA);
-      it = labels.find(labelW);
-      if (it != labels.end())
-        m_window.SkeinShowNode(it->second,Skein::JustShow);
-    }
-  }
-}
-
-void TabSkein::OnSkeinTrim()
-{
-  LPCWSTR head = L"Trim the skein?";
-  LPCWSTR msg =
-    L"This will remove all knots from the skein and transcript that have not been locked. "
-    L"This operation cannot be undone.";
-  if (theOS.TaskDialog(this,head,msg,L_INFORM_TITLE,MB_ICONWARNING|MB_YESNO) == IDYES)
-  {
-    bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
-    m_skein->Trim(m_skein->GetRoot(),gameRunning);
-  }
-}
-
 void TabSkein::OnSkeinPlay()
 {
   GetParentFrame()->SendMessage(WM_COMMAND,ID_REPLAY_BLESSED);
+}
+
+void TabSkein::OnSaveTranscript()
+{
+  SimpleFileDialog dialog(FALSE,"txt",NULL,OFN_HIDEREADONLY|OFN_ENABLESIZING,
+    "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||",this);
+  dialog.m_ofn.lpstrTitle = "Save Transcript";
+  if (dialog.DoModal() == IDOK)
+  {
+    Skein::Node* threadEnd = (Skein::Node*)
+      GetParentFrame()->SendMessage(WM_TRANSCRIPTEND);
+    m_skein->SaveTranscript(threadEnd,dialog.GetPathName());
+  }
 }

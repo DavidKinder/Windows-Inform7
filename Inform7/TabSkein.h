@@ -3,7 +3,6 @@
 #include "TabBase.h"
 #include "Skein.h"
 #include "SkeinWindow.h"
-#include "ArrowButton.h"
 
 class TabSkein : public TabBase
 {
@@ -26,15 +25,15 @@ public:
 
   void SetSkein(Skein* skein);
   void ShowNode(Skein::Node* node, Skein::Show why);
+  void SkeinChanged(void);
 
   CString GetToolTip(UINT_PTR id);
+  CStringW GetStoryName(void);
 
 private:
   Skein* m_skein;
   SkeinWindow m_window;
-
-  ArrowButton m_label;
-  CButton m_trim, m_play;
+  CButton m_play, m_save;
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -42,7 +41,6 @@ protected:
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM, LPARAM);
 
-  afx_msg void OnSkeinLabel();
-  afx_msg void OnSkeinTrim();
   afx_msg void OnSkeinPlay();
+  afx_msg void OnSaveTranscript();
 };

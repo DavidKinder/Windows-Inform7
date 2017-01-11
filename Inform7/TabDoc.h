@@ -77,7 +77,16 @@ private:
   static void DecodeHTML(const char* filename, int scheme);
   static UINT BackgroundDecodeThread(LPVOID);
 
-  static CCriticalSection m_docTextsLock;
-  static bool m_docTextsDone;
-  static CArray<DocText*> m_docTexts;
+  struct DocData
+  {
+    CCriticalSection lock;
+    bool done;
+    CArray<TabDoc::DocText*> texts;
+
+    DocData() : done(false)
+    {
+    }
+  };
+
+  static DocData* m_data;
 };

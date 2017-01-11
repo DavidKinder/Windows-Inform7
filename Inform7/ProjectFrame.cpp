@@ -52,6 +52,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_SEARCHDOC, OnSearchDoc)
   ON_MESSAGE(WM_SHOWTRANSCRIPT, OnShowTranscript)
   ON_MESSAGE(WM_SHOWSKEIN, OnShowSkein)
+  ON_MESSAGE(WM_SELECTNODE, OnSelectNode)
   ON_MESSAGE(WM_TERPFAILED, OnTerpFailed)
   ON_MESSAGE(WM_PROJECTDIR, OnProjectDir)
   ON_MESSAGE(WM_TRANSCRIPTEND, OnTranscriptEnd)
@@ -66,6 +67,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_STORYACTIVE, OnStoryActive)
   ON_MESSAGE(WM_WANTSTOP, OnWantStop)
   ON_MESSAGE(WM_RUNCENSUS, OnRunCensus)
+  ON_MESSAGE(WM_STORYNAME, OnStoryName)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -578,14 +580,15 @@ void ProjectFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 void ProjectFrame::OnChangedExample()
 {
   CString id;
-
   Example ex = GetCurrentExample();
   if (ex.id != 0)
     id.Format("Skein%c.skein",ex.id);
 
   if (m_skein.ChangeFile(id,m_projectDir))
   {
-    GetPanel(0)->GetTab(Panel::Tab_Skein)->OpenProject(m_projectDir,false);
+    TabSkein* tab = (TabSkein*)(GetPanel(0)->GetTab(Panel::Tab_Skein));
+    tab->SkeinChanged();
+
     GetPanel(0)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,false);
     GetPanel(1)->GetTab(Panel::Tab_Skein)->OpenProject(m_projectDir,false);
     GetPanel(1)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,false);
@@ -886,6 +889,15 @@ LRESULT ProjectFrame::OnShowSkein(WPARAM wparam, LPARAM lparam)
   return 0;
 }
 
+LRESULT ProjectFrame::OnSelectNode(WPARAM wparam, LPARAM lparam)
+{
+  Skein::Node* node = (Skein::Node*)wparam;
+  ((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::JustSelect);
+  ((TabTranscript*)GetPanel(1)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::JustSelect);
+  m_skein.NotifyChange(Skein::TranscriptThreadChanged);
+  return 0;
+}
+
 LRESULT ProjectFrame::OnTerpFailed(WPARAM wparam, LPARAM lparam)
 {
   int panel = 1;
@@ -927,6 +939,7 @@ LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
     m_skein.SetCurrent(play.node);
     m_game.StopInterpreter(false);
     m_skein.Reset(false);
+    GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
     RunProject();
     break;
   case ShowFirstSkeinError:
@@ -949,7 +962,7 @@ LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
     break;
   case RunNextTest:
   case ReportThenRunNextTest:
-    if (!WantStop())
+    if (!BusyWantStop())
     {
       if (play.action == ReportThenRunNextTest)
       {
@@ -1079,6 +1092,30 @@ LRESULT ProjectFrame::OnRunCensus(WPARAM wparam, LPARAM lparam)
     MonitorProcess(ni,
       (wparam != 0) ? ProcessHelpExtensions : ProcessNoAction,"ni (census)");
   }
+  return 0;
+}
+
+LRESULT ProjectFrame::OnStoryName(WPARAM wparam, LPARAM lparam)
+{
+  if (m_projectType == Project_I7XP)
+  {
+    Example ex = GetCurrentExample();
+    if (!ex.name.IsEmpty())
+      return (LRESULT)(new CString(ex.name));
+  }
+
+  CString title = m_projectDir;
+  int i = m_projectDir.ReverseFind('\\');
+  if (i >= 0)
+  {
+    int j = title.Find(GetProjectFileExt(),i+1);
+    if (j > i+1)
+    {
+      title = title.Mid(i+1,j-i-1);
+      return (LRESULT)(new CString(title));
+    }
+  }
+
   return 0;
 }
 
@@ -1301,6 +1338,7 @@ void ProjectFrame::OnPlayGo()
   if (CompileProject(false,false))
   {
     m_skein.Reset(true);
+    GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
     RunProject();
   }
 }
@@ -1310,6 +1348,7 @@ void ProjectFrame::OnPlayReplay()
   if (CompileProject(false,false))
   {
     m_skein.Reset(false);
+    GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
     RunProject();
   }
 }
@@ -1328,6 +1367,7 @@ void ProjectFrame::OnPlayTest()
       m_skein.Reset(true);
       m_skein.NewLine(L"test me");
       m_skein.Reset(false);
+      GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
       RunProject();
     }
     break;
@@ -1377,6 +1417,8 @@ void ProjectFrame::OnPlayTest()
       else
         m_progress.LongTaskProgress("Testing",0,2);
       m_progress.ShowStop();
+      if (testAll)
+        GetPanel(ChoosePanel(Panel::Tab_Skein))->SetActiveTab(Panel::Tab_Skein);
       TestCurrentExample(testAll);
       if (m_playThreads.empty())
         m_progress.LongTaskDone();
@@ -2211,15 +2253,25 @@ bool ProjectFrame::CompileProject(bool release, bool test)
   Output(final);
   SendMessage(WM_PROGRESS,-1);
 
-  if (m_projectType == Project_I7XP)
+  // Generate and show results
+  if (!WantStop() && (code > 0) && (code < 10))
   {
-    if (test && !WantStop() && (code > 0) && (code < 10))
-      GenerateIntestReport(failed);
+    switch (m_projectType)
+    {
+    case Project_I7:
+      GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
+      break;
+    case Project_I7XP:
+      if (test)
+        GenerateIntestReport(failed);
+      else
+        GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
+      break;
+    default:
+      ASSERT(0);
+      break;
+    }
   }
-
-  // Make the results panel visible
-  if (!WantStop())
-    GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
 
   // Return the focus to its original point if still visible
   if (::IsWindow(focus) && ::IsWindowVisible(focus))
@@ -2231,9 +2283,6 @@ bool ProjectFrame::CompileProject(bool release, bool test)
 
 void ProjectFrame::RunProject(void)
 {
-  // Make the story panel visible
-  GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
-
   // Start the interpreter
   m_game.RunInterpreter(m_projectDir+"\\Build",
     "output."+m_settings.GetOutputFormat(),
@@ -2535,6 +2584,12 @@ void ProjectFrame::GenerateIntestCombinedReport(void)
     msg.Format("Failed to generate combined test report\nIntest returned code %d",code);
     MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
   }
+}
+
+bool ProjectFrame::BusyWantStop(void)
+{
+  BusyProject busy(this);
+  return WantStop();
 }
 
 void ProjectFrame::MonitorProcess(InformApp::CreatedProcess cp, ProcessAction action, LPCSTR name)
@@ -3079,7 +3134,7 @@ ProjectFrame::Example ProjectFrame::GetCurrentExample(void)
 void ProjectFrame::TestCurrentExample(bool testAll)
 {
   bool compiled = CompileProject(false,true);
-  if (!WantStop())
+  if (!BusyWantStop())
   {
     if (compiled)
     {
@@ -3122,5 +3177,7 @@ void ProjectFrame::TestCurrentExample(bool testAll)
       m_playThreads.push(next);
       PostMessage(WM_PLAYNEXTTHREAD);
     }
+    else
+      GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
   }
 }

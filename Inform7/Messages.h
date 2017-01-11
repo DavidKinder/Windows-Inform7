@@ -151,3 +151,11 @@ struct SourceRange
 // non-zero then the help on installed extensions is shown when the
 // census is complete.
 #define WM_RUNCENSUS      WM_APP+35
+
+// Sent to the window frame to get the name of the current story.
+// This is returned as a pointer to a CString allocated on the heap.
+#define WM_STORYNAME      WM_APP+36
+
+// Sent to the window frame to select the node given by wParam in
+// the skein and transcript tab.
+#define WM_SELECTNODE     WM_APP+37

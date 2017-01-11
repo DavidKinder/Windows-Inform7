@@ -30,10 +30,10 @@ protected:
   afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
   afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-  afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
   afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
   afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
+  afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 
   afx_msg LRESULT OnRenameNode(WPARAM, LPARAM);
   afx_msg LRESULT OnLabelNode(WPARAM, LPARAM);
@@ -43,31 +43,37 @@ protected:
 
 private:
   CSize GetLayoutSize(bool force);
+  int GetNodeYPos(int nodes, int ends);
   void SetFontsBitmaps(void);
 
-  void DrawNodeTree(Skein::Node* node, Skein::Node* transcriptEnd, CDC& dc,
+  void DrawNodeTree(int phase, Skein::Node* node, Skein::Node* threadEnd, CDC& dc,
     CDibSection& bitmap, const CRect& client, const CPoint& parentCentre,
     const CPoint& siblingCentre, int spacing);
 
   void DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
-    const CPoint& centre);
-  void DrawNodeBack(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CPoint& centre,
+    const CPoint& centre, bool selected);
+  void DrawNodeBack(Skein::Node* node, CDibSection& bitmap, const CPoint& centre,
     int width, CDibSection* back);
 
   void DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client,
-    const CPoint& from, const CPoint& to, COLORREF fore, bool bold, bool label, bool dashed);
+    const CPoint& from, const CPoint& to, COLORREF fore);
   void DrawLinePixel(CDC& dc, CDibSection& bitmap, int x, int y, double i, COLORREF fore);
   COLORREF LinePixelColour(double i, COLORREF fore, COLORREF back);
 
-  CDibSection* GetImage(const char* name, bool dark, bool blend);
+  CDibSection* GetImage(const char* name);
+  CRect GetMenuButtonRect(const CRect& nodeRect, CDibSection* menu = NULL);
+  CRect GetBadgeRect(const CRect& nodeRect);
+  void RemoveExcessSeparators(CMenu* menu);
 
   enum NodeBitmaps
   {
-    BackPlayed = 0,
-    BackPlayedDark,
-    BackUnplayed,
-    BackUnplayedDark,
-    BackAnnotate,
+    BackActive = 0,
+    BackUnselected,
+    BackSelected,
+    MenuActive,
+    MenuUnselected,
+    MenuSelected,
+    MenuOver,
     DiffersBadge,
     Number_Bitmaps,
     No_Bitmap = -1
@@ -77,13 +83,14 @@ private:
   bool ShowLabel(Skein::Node* node);
   void StartEdit(Skein::Node* node, bool label);
 
-  bool CanRemove(Skein::Node* node);
-
   Skein* m_skein;
   std::map<Skein::Node*,CRect> m_nodes;
   CDibSection* m_bitmaps[Number_Bitmaps];
 
   CSize m_fontSize;
-  CFont m_labelFont;
+  CFont m_boldFont;
   SkeinEdit m_edit;
+
+  Skein::Node* m_mouseOverNode;
+  bool m_mouseOverMenu;
 };

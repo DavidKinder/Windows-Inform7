@@ -363,10 +363,10 @@ COLORREF InformApp::GetColour(Colours colour)
     return RGB(0xff,0x00,0x00);
   case ColourHighlight:
     return RGB(0x24,0xd4,0xd4);
-  case ColourLocked:
-    return RGB(0x00,0x00,0x00);
-  case ColourUnlocked:
+  case ColourFaint:
     return RGB(0xa0,0xa0,0xa0);
+  case ColourSkeinLine:
+    return RGB(0x00,0x00,0x00);
   case ColourSkeinInput:
     return RGB(0x68,0x65,0xff);
   case ColourTabBack:
@@ -843,11 +843,9 @@ void InformApp::ClearScaledImages(void)
     "Contents-circle-scaled-1",
     "Contents-circle-scaled-2",
     // From SkeinWindow
-    "Skein-played-scaled",
-    "Skein-played-scaled-dark",
-    "Skein-unplayed-scaled",
-    "Skein-unplayed-scaled-dark",
-    "Skein-annotation-scaled",
+    "Skein-active-scaled",
+    "Skein-unselected-scaled",
+    "Skein-selected-scaled",
     "SkeinDiffersBadge-scaled",
     // From StopButton
     "Stop-scaled",

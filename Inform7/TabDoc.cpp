@@ -27,9 +27,7 @@ const char* TabDoc::m_files[TabDoc::Number_DocTabs] =
   "\\Documentation\\general_index.html"
 };
 
-CCriticalSection TabDoc::m_docTextsLock;
-bool TabDoc::m_docTextsDone = false;
-CArray<TabDoc::DocText*> TabDoc::m_docTexts;
+TabDoc::DocData* TabDoc::m_data = new TabDoc::DocData();
 
 TabDoc::TabDoc() : m_tab(true), m_html(NULL), m_initialised(false)
 {
@@ -137,8 +135,8 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
   while (true)
   {
     {
-      CSingleLock lock(&m_docTextsLock,TRUE);
-      if (m_docTextsDone)
+      CSingleLock lock(&(m_data->lock),TRUE);
+      if (m_data->done)
         break;
     }
     ::Sleep(100);
@@ -146,10 +144,10 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
   }
 
   {
-    CSingleLock lock(&m_docTextsLock,TRUE);
-    for (int i = 0; i < m_docTexts.GetSize(); i++)
+    CSingleLock lock(&(m_data->lock),TRUE);
+    for (int i = 0; i < m_data->texts.GetSize(); i++)
     {
-      DocText* docText = m_docTexts[i];
+      DocText* docText = m_data->texts[i];
 
       // Make everything lower case
       CStringW bodyLow(docText->body);
@@ -392,8 +390,8 @@ void TabDoc::DecodeHTML(const char* filename, int scheme)
   mainDocText->file = filename;
   mainDocText->colourScheme = scheme;
   {
-    CSingleLock lock(&m_docTextsLock,TRUE);
-    m_docTexts.Add(mainDocText);
+    CSingleLock lock(&(m_data->lock),TRUE);
+    m_data->texts.Add(mainDocText);
   }
 
   // Reserve space for the main text
@@ -478,8 +476,8 @@ void TabDoc::DecodeHTML(const char* filename, int scheme)
         docText->sort = mainDocText->sort;
         docText->body.Preallocate(len/2);
         {
-          CSingleLock lock(&m_docTextsLock,TRUE);
-          m_docTexts.Add(docText);
+          CSingleLock lock(&(m_data->lock),TRUE);
+          m_data->texts.Add(docText);
         }
       }
       else if (wcsncmp(p1,L"<!-- END EXAMPLE -->",20) == 0)
@@ -566,8 +564,8 @@ UINT TabDoc::BackgroundDecodeThread(LPVOID)
     }
   }
 
-  CSingleLock lock(&m_docTextsLock,TRUE);
-  m_docTextsDone = true;
+  CSingleLock lock(&(m_data->lock),TRUE);
+  m_data->done = true;
   return 0;
 }
 
@@ -578,10 +576,13 @@ void TabDoc::InitInstance(void)
 
 void TabDoc::ExitInstance(void)
 {
-  CSingleLock lock(&m_docTextsLock,TRUE);
-  for (int i = 0; i < m_docTexts.GetSize(); i++)
-    delete m_docTexts[i];
-  m_docTexts.RemoveAll();
+  CSingleLock lock(&(m_data->lock),TRUE);
+  if (m_data->done)
+  {
+    for (int i = 0; i < m_data->texts.GetSize(); i++)
+      delete m_data->texts[i];
+    m_data->texts.RemoveAll();
+  }
 }
 
 TabDoc::DocText::DocText()

@@ -70,7 +70,7 @@ HBRUSH SearchEdit::CtlColor(CDC* dc, UINT color)
 {
   HBRUSH brush = (HBRUSH)Default();
   dc->SetTextColor(
-    theApp.GetColour(m_editing ? InformApp::ColourText : InformApp::ColourUnlocked));
+    theApp.GetColour(m_editing ? InformApp::ColourText : InformApp::ColourFaint));
   dc->SetBkColor(theApp.GetColour(InformApp::ColourBack));
   return brush;
 }

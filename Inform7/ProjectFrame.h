@@ -67,6 +67,7 @@ protected:
   afx_msg LRESULT OnSearchDoc(WPARAM, LPARAM);
   afx_msg LRESULT OnShowTranscript(WPARAM, LPARAM);
   afx_msg LRESULT OnShowSkein(WPARAM, LPARAM);
+  afx_msg LRESULT OnSelectNode(WPARAM, LPARAM);
   afx_msg LRESULT OnTerpFailed(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectDir(WPARAM, LPARAM);
   afx_msg LRESULT OnTranscriptEnd(WPARAM, LPARAM);
@@ -81,6 +82,7 @@ protected:
   afx_msg LRESULT OnStoryActive(WPARAM, LPARAM);
   afx_msg LRESULT OnWantStop(WPARAM, LPARAM);
   afx_msg LRESULT OnRunCensus(WPARAM, LPARAM);
+  afx_msg LRESULT OnStoryName(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();
@@ -207,6 +209,7 @@ protected:
   CString IntestSourceCommandLine(void);
   void GenerateIntestReport(CString result);
   void GenerateIntestCombinedReport(void);
+  bool BusyWantStop(void);
 
   Panel* GetPanel(int column) const;
   int ChoosePanel(Panel::Tabs newTab);

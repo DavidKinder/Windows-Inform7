@@ -158,6 +158,10 @@ void SourceEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void SourceEdit::OnContextMenu(CWnd* pWnd, CPoint point)
 {
+  // If invoked from the keyboard, show the menu at the top-left of the window
+  if ((point.x == -1) && (point.y == -1))
+    ClientToScreen(&point);
+
   CMenu menu;
   menu.CreatePopupMenu();
   menu.AppendMenu(MF_STRING,ID_EDIT_UNDO,"&Undo");
