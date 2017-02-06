@@ -222,16 +222,16 @@ void Panel::Progress(const char* msg)
     m_tabs[i]->Progress(msg);
 }
 
-void Panel::LoadSettings(CRegKey& key)
+void Panel::LoadSettings(CRegKey& key, bool primary)
 {
   for (int i = 0; i < Number_Tabs; i++)
-    m_tabs[i]->LoadSettings(key);
+    m_tabs[i]->LoadSettings(key,primary);
 }
 
-void Panel::SaveSettings(CRegKey& key)
+void Panel::SaveSettings(CRegKey& key, bool primary)
 {
   for (int i = 0; i < Number_Tabs; i++)
-    m_tabs[i]->SaveSettings(key);
+    m_tabs[i]->SaveSettings(key,primary);
 }
 
 void Panel::PrefsChanged(CRegKey& key)

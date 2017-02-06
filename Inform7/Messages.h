@@ -159,3 +159,6 @@ struct SourceRange
 // Sent to the window frame to select the node given by wParam in
 // the skein and transcript tab.
 #define WM_SELECTNODE     WM_APP+37
+
+// Sent to the a tab window to update the context sensitive help.
+#define WM_UPDATEHELP     WM_APP+38

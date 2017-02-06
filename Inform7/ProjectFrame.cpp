@@ -195,7 +195,7 @@ private:
 
 ProjectFrame::ProjectFrame(ProjectType projectType)
   : m_projectType(projectType), m_busy(false), m_I6debug(false), m_game(m_skein),
-    m_focus(0), m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0)
+    m_focus(0), m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0), m_splitter(true)
 {
   if (m_projectType == Project_I7XP)
     m_skein.SetFile("");
@@ -1967,8 +1967,8 @@ void ProjectFrame::SetFromRegistryPath(const char* path)
       m_I6debug = (I6debug != 0);
     
     // Allow tabs to load settings
-    for (int i = 0; i < 2; i++)
-      GetPanel(i)->LoadSettings(m_registryKey);
+    GetPanel(0)->LoadSettings(m_registryKey,true);
+    GetPanel(1)->LoadSettings(m_registryKey,false);
   }
 }
 
@@ -1991,7 +1991,8 @@ void ProjectFrame::SaveSettings(void)
     m_registryKey.SetStringValue("Last Project",m_projectDir);
 
     // Allow tabs to save settings
-    GetPanel(0)->SaveSettings(m_registryKey);
+    GetPanel(0)->SaveSettings(m_registryKey,true);
+    GetPanel(1)->SaveSettings(m_registryKey,false);
   }
 }
 

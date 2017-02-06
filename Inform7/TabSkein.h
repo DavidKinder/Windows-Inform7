@@ -3,6 +3,8 @@
 #include "TabBase.h"
 #include "Skein.h"
 #include "SkeinWindow.h"
+#include "ReportHtml.h"
+#include "FlatSplitter.h"
 
 class TabSkein : public TabBase
 {
@@ -21,6 +23,8 @@ public:
   void OpenProject(const char* path, bool primary);
   bool SaveProject(const char* path, bool primary);
   bool IsProjectEdited(void);
+  void LoadSettings(CRegKey& key, bool primary);
+  void SaveSettings(CRegKey& key, bool primary);
   void PrefsChanged(CRegKey& key);
 
   void SetSkein(Skein* skein);
@@ -31,16 +35,23 @@ public:
   CStringW GetStoryName(void);
 
 private:
+  CButton m_play, m_save, m_help;
+  FlatSplitter m_splitter;
+  SkeinWindow* m_skeinWindow;
+  ReportHtml* m_helpWindow;
   Skein* m_skein;
-  SkeinWindow m_window;
-  CButton m_play, m_save;
 
 protected:
   DECLARE_MESSAGE_MAP()
 
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM, LPARAM);
+  afx_msg LRESULT OnUpdateHelp(WPARAM, LPARAM);
 
   afx_msg void OnSkeinPlay();
   afx_msg void OnSaveTranscript();
+  afx_msg void OnToggleHelp();
+
+  void SetHelpVisible(LPCWSTR node, bool visible);
+  void ShowHideHelp(bool show);
 };

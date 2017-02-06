@@ -19,10 +19,12 @@ BEGIN_MESSAGE_MAP(TabSkein, TabBase)
   ON_WM_SIZE()
   ON_COMMAND(ID_SKEIN_PLAY_ALL, OnSkeinPlay)
   ON_COMMAND(ID_SKEIN_SAVE_TRANSCRIPT, OnSaveTranscript)
+  ON_COMMAND(ID_SKEIN_TOGGLE_HELP, OnToggleHelp)
   ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
+  ON_MESSAGE(WM_UPDATEHELP, OnUpdateHelp)
 END_MESSAGE_MAP()
 
-TabSkein::TabSkein() : m_skein(NULL)
+TabSkein::TabSkein() : m_splitter(false), m_skeinWindow(NULL), m_helpWindow(NULL), m_skein(NULL)
 {
 }
 
@@ -42,9 +44,16 @@ void TabSkein::CreateTab(CWnd* parent)
   m_play.SetFont(font);
   m_save.Create("Save Transcript",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_SAVE_TRANSCRIPT);
   m_save.SetFont(font);
+  m_help.Create("Hide Help",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_TOGGLE_HELP);
+  m_help.SetFont(font);
 
-  // Create the window containing the actual skein
-  m_window.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,CRect(0,0,0,0),this,1);
+  // Create the splitter and the windows in it
+  m_splitter.CreateStatic(this,2,1,WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS,AFX_IDW_PANE_FIRST+16);
+  m_splitter.CreateView(0,0,RUNTIME_CLASS(SkeinWindow),CSize(0,0),NULL);
+  m_splitter.CreateView(1,0,RUNTIME_CLASS(ReportHtml),CSize(0,0),NULL);
+  m_skeinWindow = (SkeinWindow*)m_splitter.GetPane(0,0);
+  m_helpWindow = (ReportHtml*)m_splitter.GetPane(1,0);
+  m_helpWindow->Navigate(theApp.GetAppDir()+"\\Documentation\\windows\\TestingTemplate.html",false);
 }
 
 void TabSkein::MoveTab(CRect& rect)
@@ -55,14 +64,14 @@ void TabSkein::MoveTab(CRect& rect)
 void TabSkein::MakeActive(TabState& state)
 {
   ShowWindow(SW_SHOW);
-  m_window.SetFocus();
+  m_skeinWindow->SetFocus();
 
   state.tab = Panel::Tab_Skein;
 }
 
 BOOL TabSkein::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
-  if (m_window.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
+  if (m_splitter.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
     return TRUE;
   return CWnd::OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
@@ -74,7 +83,7 @@ void TabSkein::OpenProject(const char* path, bool primary)
     m_skein->Load(path);
     m_skein->GetRoot()->SetLine(GetStoryName());
   }
-  m_window.Layout(false);
+  m_skeinWindow->Layout(false);
 }
 
 bool TabSkein::SaveProject(const char* path, bool primary)
@@ -92,26 +101,68 @@ bool TabSkein::IsProjectEdited(void)
   return m_skein->IsEdited();
 }
 
+void TabSkein::LoadSettings(CRegKey& key, bool primary)
+{
+  DWORD heightPercent = 0;
+  if (key.QueryDWORDValue(primary ?
+    "Left Skein Height" : "Right Skein Height",heightPercent) != ERROR_SUCCESS)
+  {
+    heightPercent = 75;
+  }
+
+  bool showHelp = true;
+  if (heightPercent >= 100)
+  {
+    showHelp = false;
+    heightPercent = 75;
+  }
+
+  CRect allRect;
+  m_splitter.GetClientRect(allRect);
+  m_splitter.SetRowInfo(0,(int)((allRect.Height()*heightPercent)/100),16);
+  ShowHideHelp(showHelp);
+}
+
+void TabSkein::SaveSettings(CRegKey& key, bool primary)
+{
+  DWORD heightPercent = 100;
+
+  if (m_splitter.GetRowCount() == 2)
+  {
+    CRect allRect;
+    m_splitter.GetClientRect(allRect);
+    if (allRect.Height() > 0)
+    {
+      int skeinHeight, minHeight;
+      m_splitter.GetRowInfo(0,skeinHeight,minHeight);
+      heightPercent = (DWORD)(((skeinHeight*100.0)/allRect.Height())+0.5);
+    }
+  }
+
+  key.SetDWORDValue(primary ?
+    "Left Skein Height" : "Right Skein Height",heightPercent);
+}
+
 void TabSkein::PrefsChanged(CRegKey& key)
 {
-  m_window.PrefsChanged();
+  m_skeinWindow->PrefsChanged();
 }
 
 void TabSkein::SetSkein(Skein* skein)
 {
   m_skein = skein;
-  m_window.SetSkein(skein);
+  m_skeinWindow->SetSkein(skein);
 }
 
 void TabSkein::ShowNode(Skein::Node* node, Skein::Show why)
 {
-  m_window.SkeinShowNode(node,why);
+  m_skeinWindow->SkeinShowNode(node,why);
 }
 
 void TabSkein::SkeinChanged(void)
 {
   m_skein->GetRoot()->SetLine(GetStoryName());
-  m_window.Layout(false);
+  m_skeinWindow->Layout(false);
 }
 
 CString TabSkein::GetToolTip(UINT_PTR id)
@@ -125,6 +176,10 @@ CString TabSkein::GetToolTip(UINT_PTR id)
       tt.LoadString(id);
       return tt;
     }
+    break;
+  case ID_SKEIN_TOGGLE_HELP:
+    return (m_splitter.GetRowCount() == 2) ?
+      "Hide the skein help page" : "Show the skein help page";
     break;
   }
   return TabBase::GetToolTip(id);
@@ -147,7 +202,7 @@ void TabSkein::OnSize(UINT nType, int cx, int cy)
 {
   TabBase::OnSize(nType,cx,cy);
 
-  if (m_window.GetSafeHwnd() == 0)
+  if (m_splitter.GetSafeHwnd() == 0)
     return;
 
   CRect client;
@@ -167,9 +222,12 @@ void TabSkein::OnSize(UINT nType, int cx, int cy)
   int sw = theApp.MeasureText(&m_save).cx+(fontSize.cx*3);
   x -= sw+gapx;
   m_save.MoveWindow(x,gapy,sw,heading-(2*gapy),TRUE);
+  int hw = theApp.MeasureText("Show Help",m_help.GetFont()).cx+(fontSize.cx*3);
+  x -= hw+gapx;
+  m_help.MoveWindow(x,gapy,hw,heading-(2*gapy),TRUE);
 
-  // Resize the skein window
-  m_window.MoveWindow(client,TRUE);
+  // Resize the window
+  m_splitter.MoveWindow(client,TRUE);
 }
 
 LRESULT TabSkein::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
@@ -190,6 +248,38 @@ LRESULT TabSkein::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
   return TabBase::OnIdleUpdateCmdUI(wParam,lParam);
 }
 
+LRESULT TabSkein::OnUpdateHelp(WPARAM, LPARAM)
+{
+  bool active = m_skein->IsActive();
+  bool showWelcome = false;
+  bool anyPurple = false, anyGrey = false, anyBlue = false, anyBadge = false;
+  int count = 0;
+  if (active)
+    m_skeinWindow->SkeinNodesShown(anyGrey,anyBlue,anyPurple,anyBadge,count);
+
+  SetHelpVisible(L"welcome",active && showWelcome);
+  SetHelpVisible(L"title",active);
+  SetHelpVisible(L"purple",anyPurple);
+  SetHelpVisible(L"grey",anyGrey || anyBlue);
+  SetHelpVisible(L"blue",anyGrey || anyBlue);
+  SetHelpVisible(L"report",false);
+  SetHelpVisible(L"tick",false);
+  SetHelpVisible(L"cross",false);
+  SetHelpVisible(L"badge",anyBadge);
+  SetHelpVisible(L"threads",count >= 2);
+  SetHelpVisible(L"knots",count == 1);
+  SetHelpVisible(L"moreknots",(count >= 2) && (count <= 10));
+  SetHelpVisible(L"menu",count >= 5);
+  SetHelpVisible(L"welcomead",active && !showWelcome);
+  return 0;
+}
+
+void TabSkein::SetHelpVisible(LPCWSTR node, bool visible)
+{
+  CComVariant vnode(node);
+  m_helpWindow->Invoke(visible ? L"showBlock" : L"hideBlock",&vnode);
+}
+
 void TabSkein::OnSkeinPlay()
 {
   GetParentFrame()->SendMessage(WM_COMMAND,ID_REPLAY_BLESSED);
@@ -206,4 +296,26 @@ void TabSkein::OnSaveTranscript()
       GetParentFrame()->SendMessage(WM_TRANSCRIPTEND);
     m_skein->SaveTranscript(threadEnd,dialog.GetPathName());
   }
+}
+
+void TabSkein::OnToggleHelp()
+{
+  ShowHideHelp(m_splitter.GetRowCount() != 2);
+}
+
+void TabSkein::ShowHideHelp(bool show)
+{
+  if (show)
+  {
+    m_splitter.SetRows(2);
+    m_helpWindow->ShowWindow(SW_SHOW);
+    m_help.SetWindowText("Hide Help");
+  }
+  else
+  {
+    m_splitter.SetRows(1);
+    m_helpWindow->ShowWindow(SW_HIDE);
+    m_help.SetWindowText("Show Help");
+  }
+  m_splitter.RecalcLayout();
 }

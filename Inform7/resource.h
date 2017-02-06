@@ -97,6 +97,7 @@
 #define ID_SKEIN_INSERT_PREVIOUS        409
 #define ID_SKEIN_DELETE                 410
 #define ID_SKEIN_DELETE_ALL             411
+#define ID_SKEIN_TOGGLE_HELP            412
 #define ID_SKEIN_SAVE_TRANSCRIPT        413
 #define ID_SKEIN_PLAY_ALL               414
 #define ID_TRANSCRIPT_BLESS_ALL         415

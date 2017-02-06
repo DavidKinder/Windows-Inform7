@@ -73,9 +73,9 @@ public:
   // Notification of a progress message
   virtual void Progress(const char* msg) = 0;
   // Load settings from the registry
-  virtual void LoadSettings(CRegKey& key) = 0;
+  virtual void LoadSettings(CRegKey& key, bool primary) = 0;
   // Save settings to the registry
-  virtual void SaveSettings(CRegKey& key) = 0;
+  virtual void SaveSettings(CRegKey& key, bool primary) = 0;
   // Notification that the user preferences have changed
   virtual void PrefsChanged(CRegKey& key) = 0;
 

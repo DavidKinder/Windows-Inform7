@@ -52,8 +52,8 @@ public:
   void CompileProject(TabInterface::CompileStage stage, int code);
   bool IsProjectEdited(void);
   void Progress(const char* msg);
-  void LoadSettings(CRegKey& key);
-  void SaveSettings(CRegKey& key);
+  void LoadSettings(CRegKey& key, bool primary);
+  void SaveSettings(CRegKey& key, bool primary);
   void PrefsChanged(CRegKey& key);
 
   virtual bool IsTabEnabled(int tab);

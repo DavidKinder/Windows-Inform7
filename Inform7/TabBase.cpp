@@ -110,11 +110,11 @@ void TabBase::Progress(const char* msg)
 {
 }
 
-void TabBase::LoadSettings(CRegKey& key)
+void TabBase::LoadSettings(CRegKey& key, bool primary)
 {
 }
 
-void TabBase::SaveSettings(CRegKey& key)
+void TabBase::SaveSettings(CRegKey& key, bool primary)
 {
 }
 

@@ -25,8 +25,8 @@ public:
   void OpenProject(const char* path, bool primary);
   bool SaveProject(const char* path, bool primary);
   bool IsProjectEdited(void);
-  void LoadSettings(CRegKey& key);
-  void SaveSettings(CRegKey& key);
+  void LoadSettings(CRegKey& key, bool primary);
+  void SaveSettings(CRegKey& key, bool primary);
   void PrefsChanged(CRegKey& key);
 
   void SetDocument(TabSource* master);

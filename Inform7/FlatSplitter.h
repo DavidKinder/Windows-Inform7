@@ -2,7 +2,7 @@
 
 class FlatSplitter : public CSplitterWnd
 {
-  DECLARE_DYNCREATE(FlatSplitter)
+  DECLARE_DYNAMIC(FlatSplitter)
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -10,7 +10,8 @@ protected:
   afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 
 public:
-  FlatSplitter();
+  FlatSplitter(bool border);
+  void SetRows(int rows);
 
   virtual void OnDrawSplitter(CDC* pDC, ESplitType nType, const CRect& rect);
 };

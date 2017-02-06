@@ -98,6 +98,7 @@ public:
   int GetFontSize(Fonts font);
   CSize MeasureFont(CFont* font);
   CSize MeasureText(CWnd* button);
+  CSize MeasureText(LPCSTR text, CFont* font);
 
   CString GetAppDir(void) const;
   CString GetLastProjectDir(void);

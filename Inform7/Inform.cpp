@@ -82,6 +82,7 @@ BOOL InformApp::InitInstance()
   m_protocol.AddDirectory(dir+"\\Documentation");
   m_protocol.AddDirectory(dir+"\\Documentation\\doc_images");
   m_protocol.AddDirectory(dir+"\\Documentation\\sections");
+  m_protocol.AddDirectory(dir+"\\Images");
   m_protocol.AddDirectory(L"//Extensions",m_home+"\\Inform\\Documentation");
   m_protocol.AddDirectory(L"//Extensions",dir+"\\Documentation");
 
@@ -342,6 +343,16 @@ CSize InformApp::MeasureText(CWnd* button)
   CSize size = dc->GetTextExtent(text);
   dc->SelectObject(oldFont);
   button->ReleaseDC(dc);
+  return size;
+}
+
+CSize InformApp::MeasureText(LPCSTR text, CFont* font)
+{
+  CDC* dc = AfxGetMainWnd()->GetDC();
+  CFont* oldFont = dc->SelectObject(font);
+  CSize size = dc->GetTextExtent(text);
+  dc->SelectObject(oldFont);
+  AfxGetMainWnd()->ReleaseDC(dc);
   return size;
 }
 
@@ -836,30 +847,16 @@ CDibSection* InformApp::CreateScaledImage(CDibSection* fromImage, double scaleX,
 
 void InformApp::ClearScaledImages(void)
 {
-  static const char* names[] = 
+  std::map<std::string,CDibSection*>::iterator it = m_bitmaps.begin();
+  while (it != m_bitmaps.end())
   {
-    // From ContentsPane
-    "Contents-circle-scaled-0",
-    "Contents-circle-scaled-1",
-    "Contents-circle-scaled-2",
-    // From SkeinWindow
-    "Skein-active-scaled",
-    "Skein-unselected-scaled",
-    "Skein-selected-scaled",
-    "SkeinDiffersBadge-scaled",
-    // From StopButton
-    "Stop-scaled",
-    "Stop-scaled-dark",
-  };
-
-  for (int i = 0; i < sizeof names / sizeof names[0]; i++)
-  {
-    std::map<std::string,CDibSection*>::iterator it = m_bitmaps.find(names[i]);
-    if (it != m_bitmaps.end())
+    if (it->first.find("-scaled") != std::string::npos)
     {
       delete it->second;
-      m_bitmaps.erase(it);
+      m_bitmaps.erase(it++);
     }
+    else
+      ++it;
   }
 }
 

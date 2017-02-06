@@ -108,7 +108,9 @@ void ContentsPane::OnLButtonUp(UINT nFlags, CPoint point)
         sr->endLine = 0;
     }
 
-    GetParentTab()->PostMessage(WM_SOURCERANGE,(WPARAM)sr.release());
+    CWnd* tab = GetParentTab();
+    if (tab != NULL)
+      tab->PostMessage(WM_SOURCERANGE,(WPARAM)sr.release());
   }
 
   CScrollView::OnLButtonUp(nFlags,point);
@@ -411,10 +413,9 @@ ContentsPane::Node* ContentsPane::NodeAtPoint(const CPoint& point, Node* node)
   return NULL;
 }
 
-CWnd* ContentsPane::GetParentTab(CWnd* wnd)
+CWnd* ContentsPane::GetParentTab(void)
 {
-  if (wnd == NULL)
-    wnd = this;
+  CWnd* wnd = this;
   while (wnd != NULL)
   {
     if (wnd->IsKindOf(RUNTIME_CLASS(TabSource)))

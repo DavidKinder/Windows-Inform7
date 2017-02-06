@@ -501,15 +501,16 @@ bool TabSource::IsProjectEdited(void)
   return m_source.GetEdit().IsEdited();
 }
 
-void TabSource::LoadSettings(CRegKey& key)
+void TabSource::LoadSettings(CRegKey& key, bool primary)
 {
   m_source.GetEdit().LoadSettings(key);
   m_contents.LoadSettings(key);
 }
 
-void TabSource::SaveSettings(CRegKey& key)
+void TabSource::SaveSettings(CRegKey& key, bool primary)
 {
-  m_contents.SaveSettings(key);
+  if (primary)
+    m_contents.SaveSettings(key);
 }
 
 void TabSource::PrefsChanged(CRegKey& key)

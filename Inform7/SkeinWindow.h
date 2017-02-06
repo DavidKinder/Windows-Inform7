@@ -9,7 +9,7 @@
 
 class SkeinWindow : public CScrollView, public Skein::Listener
 {
-  DECLARE_DYNAMIC(SkeinWindow)
+  DECLARE_DYNCREATE(SkeinWindow)
 
 public:
   SkeinWindow();
@@ -21,6 +21,8 @@ public:
   void SkeinChanged(Skein::Change change);
   void SkeinEdited(bool edited);
   void SkeinShowNode(Skein::Node* node, Skein::Show why);
+  void SkeinNodesShown(
+    bool& unselected, bool& selected, bool& active, bool& differs, int& count);
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -39,6 +41,7 @@ protected:
   afx_msg LRESULT OnLabelNode(WPARAM, LPARAM);
 
   virtual void OnDraw(CDC* pDC);
+  virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
   virtual void PostNcDestroy();
 
 private:
@@ -48,10 +51,10 @@ private:
 
   void DrawNodeTree(int phase, Skein::Node* node, Skein::Node* threadEnd, CDC& dc,
     CDibSection& bitmap, const CRect& client, const CPoint& parentCentre,
-    const CPoint& siblingCentre, int spacing);
+    const CPoint& siblingCentre, int spacing, bool gameRunning);
 
   void DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
-    const CPoint& centre, bool selected);
+    const CPoint& centre, bool selected, bool gameRunning);
   void DrawNodeBack(Skein::Node* node, CDibSection& bitmap, const CPoint& centre,
     int width, CDibSection* back);
 
@@ -65,7 +68,11 @@ private:
   CRect GetBadgeRect(const CRect& nodeRect);
   void RemoveExcessSeparators(CMenu* menu);
 
-  enum NodeBitmaps
+  Skein::Node* NodeAtPoint(const CPoint& point);
+  bool ShowLabel(Skein::Node* node);
+  void StartEdit(Skein::Node* node, bool label);
+
+  enum NodeBitmap
   {
     BackActive = 0,
     BackUnselected,
@@ -79,9 +86,9 @@ private:
     No_Bitmap = -1
   };
 
-  Skein::Node* NodeAtPoint(const CPoint& point);
-  bool ShowLabel(Skein::Node* node);
-  void StartEdit(Skein::Node* node, bool label);
+  NodeBitmap GetNodeBack(Skein::Node* node, bool selected, bool gameRunning);
+  void SkeinNodesShown(Skein::Node* node, Skein::Node* threadEnd, bool gameRunning,
+    bool& unselected, bool& selected, bool& active, bool& differs, int& count);
 
   Skein* m_skein;
   std::map<Skein::Node*,CRect> m_nodes;

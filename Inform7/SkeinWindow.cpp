@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "SkeinWindow.h"
+#include "TabSkein.h"
 #include "Messages.h"
 #include "Inform.h"
 #include "Dialogs.h"
@@ -10,7 +11,7 @@
 #define new DEBUG_NEW
 #endif
 
-IMPLEMENT_DYNAMIC(SkeinWindow, CScrollView)
+IMPLEMENT_DYNCREATE(SkeinWindow, CScrollView)
 
 BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
   ON_WM_CREATE()
@@ -343,15 +344,16 @@ void SkeinWindow::OnDraw(CDC* pDC)
     else
       rootCentre.x += client.Width()/2;
 
-    // Get the end node of the selected thread
+    // Get relevant state from the project frame
     Skein::Node* threadEnd = (Skein::Node*)
       GetParentFrame()->SendMessage(WM_TRANSCRIPTEND);
+    bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
 
     // Draw all nodes
     for (int i = 0; i < 2; i++)
     {
       DrawNodeTree(i,m_skein->GetRoot(),threadEnd,dc,bitmap,client,
-        CPoint(0,0),rootCentre,GetNodeYPos(1,0));
+        CPoint(0,0),rootCentre,GetNodeYPos(1,0),gameRunning);
     }
 
     // If the edit window is visible, exclude the area under it to reduce flicker
@@ -371,6 +373,12 @@ void SkeinWindow::OnDraw(CDC* pDC)
   // Restore the original device context settings
   dc.SelectObject(oldFont);
   dc.SelectObject(oldBitmap);
+}
+
+BOOL SkeinWindow::PreCreateWindow(CREATESTRUCT& cs)
+{
+  cs.style |= WS_CLIPCHILDREN;
+  return CScrollView::PreCreateWindow(cs);
 }
 
 void SkeinWindow::PostNcDestroy()
@@ -422,6 +430,15 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
     ASSERT(FALSE);
     break;
   }
+
+  // Update the help to match what is shown
+  CWnd* wnd = this;
+  while (wnd != NULL)
+  {
+    if (wnd->IsKindOf(RUNTIME_CLASS(TabSkein)))
+      ((TabSkein*)wnd)->PostMessage(WM_UPDATEHELP);
+    wnd = wnd->GetParent();
+  }
 }
 
 void SkeinWindow::SkeinEdited(bool edited)
@@ -469,6 +486,25 @@ void SkeinWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
   default:
     ASSERT(FALSE);
     break;
+  }
+}
+
+void SkeinWindow::SkeinNodesShown(
+  bool& unselected, bool& selected, bool& active, bool& differs, int& count)
+{
+  unselected = false;
+  selected = false;
+  active = false;
+  differs = false;
+  count = 0;
+
+  if (m_skein->IsActive())
+  {
+    Skein::Node* threadEnd = (Skein::Node*)
+      GetParentFrame()->SendMessage(WM_TRANSCRIPTEND);
+    bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
+    SkeinNodesShown(m_skein->GetRoot(),threadEnd,gameRunning,
+      unselected,selected,active,differs,count);
   }
 }
 
@@ -530,7 +566,7 @@ void SkeinWindow::SetFontsBitmaps(void)
 
 void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, Skein::Node* threadEnd, CDC& dc,
   CDibSection& bitmap, const CRect& client, const CPoint& parentCentre,
-  const CPoint& siblingCentre, int spacing)
+  const CPoint& siblingCentre, int spacing, bool gameRunning)
 {
   CPoint nodeCentre(siblingCentre.x+node->GetX(),siblingCentre.y);
 
@@ -546,7 +582,7 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, Skein::Node* thread
     break;
   case 1:
     // Draw the node
-    DrawNode(node,dc,bitmap,client,nodeCentre,m_skein->InThread(node,threadEnd));
+    DrawNode(node,dc,bitmap,client,nodeCentre,m_skein->InThread(node,threadEnd),gameRunning);
     break;
   }
 
@@ -555,12 +591,12 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, Skein::Node* thread
   for (int i = 0; i < node->GetNumChildren(); i++)
   {
     DrawNodeTree(phase,node->GetChild(i),threadEnd,dc,bitmap,client,
-      nodeCentre,childSiblingCentre,spacing);
+      nodeCentre,childSiblingCentre,spacing,gameRunning);
   }
 }
 
 void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
-  const CPoint& centre, bool selected)
+  const CPoint& centre, bool selected, bool gameRunning)
 {
   // Store the current device context properties
   UINT align = dc.GetTextAlign();
@@ -581,20 +617,6 @@ void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, cons
   CRect intersect;
   if (intersect.IntersectRect(client,nodeArea))
   {
-    CDibSection* back = m_bitmaps[selected ? BackSelected : BackUnselected];
-
-    bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
-    Skein::Node* playNode = gameRunning ? m_skein->GetPlayed() : NULL;
-    while (playNode != NULL)
-    {
-      if (playNode == node)
-      {
-        back = m_bitmaps[BackActive];
-        break;
-      }
-      playNode = playNode->GetParent();
-    }
-
     // Write out the node's label, if any
     if (ShowLabel(node))
     {
@@ -609,7 +631,7 @@ void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, cons
     }
 
     // Draw the node's background
-    DrawNodeBack(node,bitmap,centre,width,back);
+    DrawNodeBack(node,bitmap,centre,width,m_bitmaps[GetNodeBack(node,selected,gameRunning)]);
 
     // Change the font, if needed
     CFont* oldFont = NULL;
@@ -945,16 +967,18 @@ COLORREF SkeinWindow::LinePixelColour(double i, COLORREF fore, COLORREF back)
 CDibSection* SkeinWindow::GetImage(const char* name)
 {
   // Is the image in the cache?
-  CString skeinName;
-  skeinName.Format("%s-scaled",name);
-  CDibSection* dib = theApp.GetCachedImage(skeinName);
+  CString scaledName;
+  scaledName.Format("%s-scaled",name);
+  CDibSection* dib = theApp.GetCachedImage(scaledName);
   if (dib != NULL)
     return dib;
 
   // Create the scaled image
-  dib = theApp.CreateScaledImage(theApp.GetCachedImage(name),
-    m_fontSize.cx*0.15,m_fontSize.cy*0.06);
-  theApp.CacheImage(skeinName,dib);
+  CString unscaledName;
+  unscaledName.Format("Skein\\%s",name);
+  double scale = m_fontSize.cx*0.15;
+  dib = theApp.CreateScaledImage(theApp.GetCachedImage(unscaledName),scale,scale);
+  theApp.CacheImage(scaledName,dib);
   return dib;
 }
 
@@ -964,13 +988,13 @@ CRect SkeinWindow::GetMenuButtonRect(const CRect& nodeRect, CDibSection* menu)
     menu = m_bitmaps[MenuUnselected];
 
   CSize sz = menu->GetSize();
-  return CRect(CPoint(nodeRect.right-sz.cx+(sz.cx/3),nodeRect.top-(sz.cy/4)),sz);
+  return CRect(CPoint(nodeRect.right-sz.cx+(sz.cx/4),nodeRect.top-(sz.cy/8)),sz);
 }
 
 CRect SkeinWindow::GetBadgeRect(const CRect& nodeRect)
 {
   CSize sz = m_bitmaps[DiffersBadge]->GetSize();
-  return CRect(CPoint(nodeRect.left,nodeRect.top-(sz.cy/4)),sz);
+  return CRect(CPoint(nodeRect.left,nodeRect.top-(sz.cy/8)),sz);
 }
 
 void SkeinWindow::RemoveExcessSeparators(CMenu* menu)
@@ -1048,5 +1072,53 @@ void SkeinWindow::StartEdit(Skein::Node* node, bool label)
 
     m_edit.SetFont(theApp.GetFont(InformApp::FontDisplay));
     m_edit.StartEdit(node,nodeRect,label);
+  }
+}
+
+SkeinWindow::NodeBitmap SkeinWindow::GetNodeBack(Skein::Node* node, bool selected, bool gameRunning)
+{
+  NodeBitmap back = selected ? BackSelected : BackUnselected;
+
+  Skein::Node* playNode = gameRunning ? m_skein->GetPlayed() : NULL;
+  while (playNode != NULL)
+  {
+    if (playNode == node)
+    {
+      back = BackActive;
+      break;
+    }
+    playNode = playNode->GetParent();
+  }
+
+  return back;
+}
+
+void SkeinWindow::SkeinNodesShown(Skein::Node* node, Skein::Node* threadEnd, bool gameRunning,
+  bool& unselected, bool& selected, bool& active, bool& differs, int& count)
+{
+  switch (GetNodeBack(node,m_skein->InThread(node,threadEnd),gameRunning))
+  {
+  case BackActive:
+    active = true;
+    break;
+  case BackUnselected:
+    unselected = true;
+    break;
+  case BackSelected:
+    selected = true;
+    break;
+  default:
+    ASSERT(FALSE);
+    break;
+  }
+
+  if ((node->GetDiffers() != Skein::Node::ExpectedSame) && (node->GetExpectedText().IsEmpty() == FALSE))
+    differs = true;
+  count++;
+
+  for (int i = 0; i < node->GetNumChildren(); i++)
+  {
+    SkeinNodesShown(node->GetChild(i),threadEnd,gameRunning,
+      unselected,selected,active,differs,count);
   }
 }

@@ -164,11 +164,11 @@ void TabSettings::Progress(const char* msg)
 {
 }
 
-void TabSettings::LoadSettings(CRegKey& key)
+void TabSettings::LoadSettings(CRegKey& key, bool primary)
 {
 }
 
-void TabSettings::SaveSettings(CRegKey& key)
+void TabSettings::SaveSettings(CRegKey& key, bool primary)
 {
 }
 

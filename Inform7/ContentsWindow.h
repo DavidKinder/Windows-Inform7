@@ -65,7 +65,7 @@ private:
   void DrawNode(CDC* dc, Node* node, bool& title, int& h, int origin_y);
   void DrawSelectBack(CDC* dc, Node* node, const CRect& textRect);
   Node* NodeAtPoint(const CPoint& point, Node* node = NULL);
-  CWnd* GetParentTab(CWnd* wnd = NULL);
+  CWnd* GetParentTab(void);
   void SetScrollSize(void);
   CDibSection* GetCircle(COLORREF back, int index);
   Node* SetSelectedNode(const SourceHeading& selected);
