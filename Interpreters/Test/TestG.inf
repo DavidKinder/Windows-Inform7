@@ -377,12 +377,16 @@ Array args buffer 28;
     }
     else if (event-->0 == evtype_MouseInput && event-->1 == win2)
     {
+      glk_cancel_char_event(win1);
       print "^Mouse clicked in text grid window at (",event-->2,",",event-->3,")";
+      glk_request_char_event(win1);
       glk_request_mouse_event(win2);
     }
     else if (event-->0 == evtype_MouseInput && event-->1 == win3)
     {
+      glk_cancel_char_event(win1);
       print "^Mouse clicked in graphics window at (",event-->2,",",event-->3,")";
+      glk_request_char_event(win1);
       glk_request_mouse_event(win3);
     }
   }
@@ -439,12 +443,16 @@ Array args buffer 28;
     }
     else if (event-->0 == evtype_Hyperlink && event-->1 == win1)
     {
+      glk_cancel_char_event(win1);
       print "^Hyperlink ",event-->2," in text buffer window selected";
+      glk_request_char_event(win1);
       glk_request_hyperlink_event(win1);
     }
     else if (event-->0 == evtype_Hyperlink && event-->1 == win2)
     {
+      glk_cancel_char_event(win1);
       print "^Hyperlink ",event-->2," in text grid window selected";
+      glk_request_char_event(win1);
       glk_request_hyperlink_event(win2);
     }
   }
