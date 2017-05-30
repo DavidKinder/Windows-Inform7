@@ -1341,6 +1341,8 @@ void ProjectFrame::OnPlayGo()
     GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
     RunProject();
   }
+  else
+    GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
 }
 
 void ProjectFrame::OnPlayReplay()
@@ -1351,6 +1353,8 @@ void ProjectFrame::OnPlayReplay()
     GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
     RunProject();
   }
+  else
+    GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
 }
 
 void ProjectFrame::OnPlayTest()
@@ -1439,6 +1443,8 @@ void ProjectFrame::OnPlayRefresh()
   // Compile the project and show the index
   if (CompileProject(false,false))
     GetPanel(ChoosePanel(Panel::Tab_Index))->SetActiveTab(Panel::Tab_Index);
+  else
+    GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
 
   // Return the focus to its original point if still visible
   if (::IsWindow(focus) && ::IsWindowVisible(focus))
@@ -1710,6 +1716,8 @@ void ProjectFrame::OnReleaseGame(UINT nID)
     if (releasePath.IsEmpty() == FALSE)
       ::CopyFile(m_projectDir+"\\Build\\output."+extension,releasePath,FALSE);
   }
+  else
+    GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
 }
 
 void ProjectFrame::OnReleaseMaterials()
@@ -1749,7 +1757,7 @@ void ProjectFrame::OnReleaseIFiction()
   {
     MessageBox(
       "The compiler failed to create an iFiction record;\n"
-      "check the errors page to see why.",INFORM_TITLE,MB_OK|MB_ICONERROR);
+      "check the results page to see why.",INFORM_TITLE,MB_OK|MB_ICONERROR);
   }
 }
 
