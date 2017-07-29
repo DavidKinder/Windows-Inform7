@@ -307,8 +307,101 @@ void Skein::Layout(CDC& dc, int spacing, bool force)
   if (force)
     m_inst.root->ClearWidths();
   if (force || (m_layout == false))
-    m_inst.root->Layout(dc,0,spacing);
+  {
+    std::vector<std::vector<Node*> > nodesByDepth;
+    m_inst.root->GetNodesByDepth(0,nodesByDepth);
+
+    // Visit each level, from the bottom to the top, left to right
+    for (size_t row = nodesByDepth.size(); row > 0; --row)
+    {
+      int x = 0;
+      const std::vector<Node*>& rowNodes = nodesByDepth[row-1];
+      for (size_t col = 0; col < rowNodes.size(); ++col)
+      {
+        Node* node = rowNodes[col];
+        int width = node->GetLineWidth(dc);
+        width = max(width,node->GetLabelTextWidth());
+        int x_next = x + (width/2);
+
+        // Centre a parent node between its children
+        int numc = node->GetNumChildren();
+        if (numc > 0)
+        {
+          int x_first_child = node->GetChild(0)->GetX();
+          int x_last_child = node->GetChild(numc-1)->GetX();
+          int x_centre = (x_first_child + x_last_child)/2;
+          node->SetX(x_centre);
+          if (x_next > x_centre)
+          {
+            // Move this node and all its children to the right
+            node->ShiftX(x_next - x_centre);
+
+            // Move all nodes after this node to the right
+            for (size_t col2 = col+1; col2 < rowNodes.size(); ++col2)
+              rowNodes[col2]->ShiftX(x_next - x_centre);
+          }
+        }
+        else
+          node->SetX(x_next);
+
+        x = node->GetX() + (width/2) + spacing;
+      }
+    }
+
+    // Shift the entire tree so that is centered horizontally
+    m_inst.root->ShiftX(-m_inst.root->GetX());
+    int xmin = 0, xmax = 0;
+    bool valid = false;
+    for (size_t row = 0; row < nodesByDepth.size(); ++row)
+    {
+      const std::vector<Node*>& rowNodes = nodesByDepth[row];
+      if (rowNodes.size() > 0)
+      {
+        Node* node1 = rowNodes[0];
+        Node* node2 = rowNodes[rowNodes.size()-1];
+        int x1 = node1->GetX() - (node1->GetLayoutWidth()/2);
+        int x2 = node2->GetX() + (node2->GetLayoutWidth()/2);
+        if (!valid || (x1 < xmin))
+          xmin = x1;
+        if (!valid || (x2 > xmax))
+          xmax = x2;
+        valid = true;
+      }
+    }
+    if (valid)
+      m_inst.root->ShiftX((xmin + xmax) / -2);
+  }
   m_layout = true;
+}
+
+void Skein::GetTreeExtent(int& width, int& depth)
+{
+  std::vector<std::vector<Node*> > nodesByDepth;
+  m_inst.root->GetNodesByDepth(0,nodesByDepth);
+
+  width = 0;
+  depth = (int)nodesByDepth.size();
+
+  int xmin = 0, xmax = 0;
+  bool valid = false;
+  for (size_t row = 0; row < nodesByDepth.size(); ++row)
+  {
+    const std::vector<Node*>& rowNodes = nodesByDepth[row];
+    if (rowNodes.size() > 0)
+    {
+      Node* node1 = rowNodes[0];
+      Node* node2 = rowNodes[rowNodes.size()-1];
+      int x1 = node1->GetX() - (node1->GetLayoutWidth()/2);
+      int x2 = node2->GetX() + (node2->GetLayoutWidth()/2);
+      if (!valid || (x1 < xmin))
+        xmin = x1;
+      if (!valid || (x2 > xmax))
+        xmax = x2;
+      valid = true;
+    }
+  }
+  if (valid)
+    width = (xmax - xmin);
 }
 
 void Skein::NewLine(const CStringW& line)
@@ -899,6 +992,11 @@ int Skein::Node::GetLineWidth(CDC& dc)
   return m_width;
 }
 
+int Skein::Node::GetLayoutWidth(void)
+{
+  return max(m_width,m_labelWidth);
+}
+
 int Skein::Node::GetLineTextWidth(void)
 {
   return m_lineWidth;
@@ -907,23 +1005,6 @@ int Skein::Node::GetLineTextWidth(void)
 int Skein::Node::GetLabelTextWidth(void)
 {
   return m_labelWidth;
-}
-
-int Skein::Node::GetTreeWidth(CDC& dc, int spacing)
-{
-  // Get the tree width of all children
-  int total = 0;
-  for (int i = 0; i < m_children.GetSize(); i++)
-  {
-    total += m_children[i]->GetTreeWidth(dc,spacing);
-    if (i > 0)
-      total += spacing;
-  }
-
-  // Return the largest of the above, the width of this node's line
-  // and the width of this node's label
-  int width = max(total,GetLineWidth(dc));
-  return max(width,GetLabelTextWidth());
 }
 
 void Skein::Node::ClearWidths(void)
@@ -949,18 +1030,6 @@ int Skein::Node::GetDepth(void)
   }
 
   return depth;
-}
-
-int Skein::Node::GetMaxDepth(void)
-{
-  int max = 0;
-  for (int i = 0; i < m_children.GetSize(); i++)
-  {
-    int depth = m_children[i]->GetMaxDepth();
-    if (depth > max)
-      max = depth;
-  }
-  return max+1;
 }
 
 void Skein::Node::Add(Node* child)
@@ -1080,33 +1149,30 @@ void Skein::Node::SaveNodes(FILE* skeinFile)
     m_children[i]->SaveNodes(skeinFile);
 }
 
-void Skein::Node::Layout(CDC& dc, int x, int spacing)
+void Skein::Node::GetNodesByDepth(int depth, std::vector<std::vector<Node*> >& nodesByDepth)
 {
-  // Store the centre x co-ordinate for this node
-  m_x = x;
-
-  // Find the total width of all descendant nodes
-  int total = 0;
+  if (depth >= (int)nodesByDepth.size())
+    nodesByDepth.resize(depth+1);
+  nodesByDepth[depth].push_back(this);
   for (int i = 0; i < m_children.GetSize(); i++)
-  {
-    total += m_children[i]->GetTreeWidth(dc,spacing);
-    if (i > 0)
-      total += spacing;
-  }
-
-  // Lay out each child node
-  int cx = 0;
-  for (int i = 0; i < m_children.GetSize(); i++)
-  {
-    int tw = m_children[i]->GetTreeWidth(dc,spacing);
-    m_children[i]->Layout(dc,x-(total/2)+cx+(tw/2),spacing);
-    cx += tw+spacing;
-  }
+    m_children[i]->GetNodesByDepth(depth+1,nodesByDepth);
 }
 
 int Skein::Node::GetX(void)
 {
   return m_x;
+}
+
+void Skein::Node::SetX(int x)
+{
+  m_x = x;
+}
+
+void Skein::Node::ShiftX(int shift)
+{
+  m_x += shift;
+  for (int i = 0; i < m_children.GetSize(); i++)
+    m_children[i]->ShiftX(shift);
 }
 
 const CStringW& Skein::Node::GetTranscriptText(void)

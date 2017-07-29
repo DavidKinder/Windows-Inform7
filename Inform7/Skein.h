@@ -24,6 +24,7 @@ public:
 
   void Reset(bool current);
   void Layout(CDC& dc, int spacing, bool force);
+  void GetTreeExtent(int& width, int& depth);
 
   void NewLine(const CStringW& line);
   bool NextLine(CStringW& line);
@@ -81,13 +82,12 @@ public:
     bool SetExpectedText(LPCWSTR text);
 
     int GetLineWidth(CDC& dc);
+    int GetLayoutWidth(void);
     int GetLineTextWidth(void);
     int GetLabelTextWidth(void);
-    int GetTreeWidth(CDC& dc, int spacing);
     void ClearWidths(void);
 
     int GetDepth(void);
-    int GetMaxDepth(void);
 
     void Add(Node* child);
     bool Remove(Node* child);
@@ -101,8 +101,10 @@ public:
     const char* GetUniqueId(void);
     void SaveNodes(FILE* skeinFile);
 
-    void Layout(CDC& dc, int x, int spacing);
+    void GetNodesByDepth(int depth, std::vector<std::vector<Node*> >& nodesByDepth);
     int GetX(void);
+    void SetX(int x);
+    void ShiftX(int shift);
 
   private:
     void CompareWithExpected(void);

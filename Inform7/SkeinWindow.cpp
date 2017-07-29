@@ -330,7 +330,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
   if (m_skein->IsActive())
   {
     // Redo the layout if needed
-    m_skein->Layout(dc,m_fontSize.cx*10,false);
+    m_skein->Layout(dc,m_fontSize.cx*8,false);
 
     // Work out the position of the centre of the root node
     CPoint rootCentre(origin);
@@ -513,21 +513,18 @@ CSize SkeinWindow::GetLayoutSize(bool force)
   CSize size(0,0);
   if (m_skein->IsActive())
   {
+    // Redo the layout if needed
     CDC* dc = AfxGetMainWnd()->GetDC();
     CFont* font = dc->SelectObject(theApp.GetFont(InformApp::FontDisplay));
-
-    // Redo the layout if needed
-    m_skein->Layout(*dc,m_fontSize.cx*10,force);
-
-    // The width is the width of all nodes below the root
-    size.cx = m_skein->GetRoot()->GetTreeWidth(*dc,m_fontSize.cx*10)+
-      (m_fontSize.cx*10);
-
-    // The height comes from the maximum tree depth
-    size.cy = GetNodeYPos(m_skein->GetRoot()->GetMaxDepth()-1,2);
-
+    m_skein->Layout(*dc,m_fontSize.cx*8,force);
     dc->SelectObject(font);
     AfxGetMainWnd()->ReleaseDC(dc);
+
+    // Get the size of the tree
+    int width, depth;
+    m_skein->GetTreeExtent(width,depth);
+    size.cx = width + (m_fontSize.cx*6);
+    size.cy = GetNodeYPos(depth-1,2);
   }
   return size;
 }
@@ -612,7 +609,7 @@ void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, cons
   int width = node->GetLineWidth(dc);
 
   // Check if this node is visible before drawing
-  CRect nodeArea(centre,CSize(width+m_fontSize.cx*10,m_fontSize.cy*3));
+  CRect nodeArea(centre,CSize(width+m_fontSize.cx*8,m_fontSize.cy*3));
   nodeArea.OffsetRect(nodeArea.Width()/-2,nodeArea.Height()/-2);
   CRect intersect;
   if (intersect.IntersectRect(client,nodeArea))
@@ -1000,7 +997,7 @@ CRect SkeinWindow::GetBadgeRect(const CRect& nodeRect)
 void SkeinWindow::RemoveExcessSeparators(CMenu* menu)
 {
   bool allow = true;
-  int i = 0;
+  unsigned int i = 0;
   while (i < menu->GetMenuItemCount())
   {
     bool removed = false;
