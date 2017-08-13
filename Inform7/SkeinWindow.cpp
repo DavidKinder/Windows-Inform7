@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "SkeinWindow.h"
 #include "TabSkein.h"
-#include "Messages.h"
 #include "Inform.h"
 #include "Dialogs.h"
 
@@ -28,7 +27,7 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
   ON_MESSAGE(WM_LABELNODE, OnLabelNode)
 END_MESSAGE_MAP()
 
-SkeinWindow::SkeinWindow() : m_skein(NULL), m_mouseOverNode(NULL), m_mouseOverMenu(false)
+SkeinWindow::SkeinWindow() : m_skein(NULL), m_mouseOverNode(NULL), m_mouseOverMenu(false), m_pctAnim(-1)
 {
 }
 
@@ -194,12 +193,10 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
     break;
   case ID_SKEIN_INSERT_PREVIOUS:
     {
+      AnimatePrepare();
       Skein::Node* newNode = m_skein->AddNewParent(node);
-
-      // Force a repaint so that the new node is drawn and recorded
-      Invalidate();
-      UpdateWindow();
-      StartEdit(newNode,false);
+      Command* cmd = new CommandStartEdit(this,newNode,false);
+      GetParentFrame()->PostMessage(WM_ANIMATESKEIN,0,(LPARAM)cmd);
     }
     break;
   case ID_SKEIN_INSERT_NEXT:
@@ -208,33 +205,38 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
       switch (node->GetNumChildren())
       {
       case 0:
+        AnimatePrepare();
         newNode = m_skein->AddNew(node);
         break;
       case 1:
+        AnimatePrepare();
         newNode = m_skein->AddNewParent(node->GetChild(0));
         break;
       }
       if (newNode != NULL)
       {
-        Invalidate();
-        UpdateWindow();
-        StartEdit(newNode,false);
+        Command* cmd = new CommandStartEdit(this,newNode,false);
+        GetParentFrame()->PostMessage(WM_ANIMATESKEIN,0,(LPARAM)cmd);
       }
     }
     break;
   case ID_SKEIN_SPLIT_THREAD:
     {
+      AnimatePrepare();
       Skein::Node* newNode = m_skein->AddNew(node);
-      Invalidate();
-      UpdateWindow();
-      StartEdit(newNode,false);
+      Command* cmd = new CommandStartEdit(this,newNode,false);
+      GetParentFrame()->PostMessage(WM_ANIMATESKEIN,0,(LPARAM)cmd);
     }
     break;
   case ID_SKEIN_DELETE:
+    AnimatePrepare();
     m_skein->RemoveSingle(node);
+    GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
     break;
   case ID_SKEIN_DELETE_ALL:
+    AnimatePrepare();
     m_skein->RemoveAll(node);
+    GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
     break;
   case ID_SKEIN_BLESS:
     m_skein->Bless(node,false);
@@ -289,7 +291,9 @@ LRESULT SkeinWindow::OnRenameNode(WPARAM node, LPARAM line)
   if (m_skein->IsValidNode(theNode) == false)
     return 0;
 
+  AnimatePrepare();
   m_skein->SetLine(theNode,(LPWSTR)line);
+  GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
   return 0;
 }
 
@@ -299,7 +303,9 @@ LRESULT SkeinWindow::OnLabelNode(WPARAM node, LPARAM line)
   if (m_skein->IsValidNode(theNode) == false)
     return 0;
 
+  AnimatePrepare();
   m_skein->SetLabel(theNode,(LPWSTR)line);
+  GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
   return 0;
 }
 
@@ -353,7 +359,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
     for (int i = 0; i < 2; i++)
     {
       DrawNodeTree(i,m_skein->GetRoot(),threadEnd,dc,bitmap,client,
-        CPoint(0,0),rootCentre,GetNodeYPos(1,0),gameRunning);
+        CPoint(0,0),rootCentre,0,GetNodeYPos(1,0),gameRunning);
     }
 
     // If the edit window is visible, exclude the area under it to reduce flicker
@@ -508,6 +514,18 @@ void SkeinWindow::SkeinNodesShown(
   }
 }
 
+void SkeinWindow::AnimatePrepare()
+{
+  m_skein->GetRoot()->AnimatePrepare(0);
+}
+
+void SkeinWindow::Animate(int pct)
+{
+  m_pctAnim = pct;
+  Invalidate();
+  UpdateWindow();
+}
+
 CSize SkeinWindow::GetLayoutSize(bool force)
 {
   CSize size(0,0);
@@ -563,9 +581,11 @@ void SkeinWindow::SetFontsBitmaps(void)
 
 void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, Skein::Node* threadEnd, CDC& dc,
   CDibSection& bitmap, const CRect& client, const CPoint& parentCentre,
-  const CPoint& siblingCentre, int spacing, bool gameRunning)
+  const CPoint& siblingCentre, int depth, int spacing, bool gameRunning)
 {
-  CPoint nodeCentre(siblingCentre.x+node->GetX(),siblingCentre.y);
+  CPoint nodeCentre(
+    siblingCentre.x + node->GetAnimateX(m_pctAnim),
+    siblingCentre.y + node->GetAnimateY(depth,spacing,m_pctAnim));
 
   switch (phase)
   {
@@ -588,7 +608,7 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, Skein::Node* thread
   for (int i = 0; i < node->GetNumChildren(); i++)
   {
     DrawNodeTree(phase,node->GetChild(i),threadEnd,dc,bitmap,client,
-      nodeCentre,childSiblingCentre,spacing,gameRunning);
+      nodeCentre,childSiblingCentre,depth+1,spacing,gameRunning);
   }
 }
 
@@ -997,8 +1017,8 @@ CRect SkeinWindow::GetBadgeRect(const CRect& nodeRect)
 void SkeinWindow::RemoveExcessSeparators(CMenu* menu)
 {
   bool allow = true;
-  unsigned int i = 0;
-  while (i < menu->GetMenuItemCount())
+  int i = 0;
+  while (i < (int)menu->GetMenuItemCount())
   {
     bool removed = false;
 
@@ -1118,4 +1138,14 @@ void SkeinWindow::SkeinNodesShown(Skein::Node* node, Skein::Node* threadEnd, boo
     SkeinNodesShown(node->GetChild(i),threadEnd,gameRunning,
       unselected,selected,active,differs,count);
   }
+}
+
+SkeinWindow::CommandStartEdit::CommandStartEdit(SkeinWindow* wnd, Skein::Node* node, bool label)
+  : m_wnd(wnd), m_node(node), m_label(label)
+{
+}
+
+void SkeinWindow::CommandStartEdit::Run(void)
+{
+  m_wnd->StartEdit(m_node,m_label);
 }

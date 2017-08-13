@@ -30,6 +30,7 @@ public:
   void SetSkein(Skein* skein);
   void ShowNode(Skein::Node* node, Skein::Show why);
   void SkeinChanged(void);
+  void Animate(int pct);
 
   CString GetToolTip(UINT_PTR id);
   CStringW GetStoryName(void);

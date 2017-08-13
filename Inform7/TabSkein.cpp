@@ -165,6 +165,11 @@ void TabSkein::SkeinChanged(void)
   m_skeinWindow->Layout(false);
 }
 
+void TabSkein::Animate(int pct)
+{
+  m_skeinWindow->Animate(pct);
+}
+
 CString TabSkein::GetToolTip(UINT_PTR id)
 {
   switch (id)

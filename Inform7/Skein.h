@@ -106,6 +106,11 @@ public:
     void SetX(int x);
     void ShiftX(int shift);
 
+    void AnimatePrepare(int depth);
+    void AnimateClear(void);
+    int GetAnimateX(int pct);
+    int GetAnimateY(int depth, int spacing, int pct);
+
   private:
     void CompareWithExpected(void);
     void OverwriteBanner(CStringW& inStr);
@@ -127,6 +132,10 @@ public:
     int m_lineWidth;
     int m_labelWidth;
     int m_x;
+
+    bool m_anim;
+    int m_animX;
+    int m_animDepth;
 
     Node* m_parent;
     CArray<Node*> m_children;

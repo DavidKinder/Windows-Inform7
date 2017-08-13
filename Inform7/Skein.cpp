@@ -853,7 +853,8 @@ Skein::Node::Node(const CStringW& line, const CStringW& label, const CStringW& t
   const CStringW& expected, bool changed)
   : m_parent(NULL), m_line(line), m_label(label), m_textTranscript(transcript),
     m_textExpected(expected), m_changed(changed), m_differs(ExpectedDifferent),
-    m_width(-1), m_lineWidth(-1), m_labelWidth(-1), m_x(0)
+    m_width(-1), m_lineWidth(-1), m_labelWidth(-1), m_x(0),
+    m_anim(false), m_animX(0), m_animDepth(0)
 {
   static unsigned long counter = 0;
 
@@ -1173,6 +1174,40 @@ void Skein::Node::ShiftX(int shift)
   m_x += shift;
   for (int i = 0; i < m_children.GetSize(); i++)
     m_children[i]->ShiftX(shift);
+}
+
+void Skein::Node::AnimatePrepare(int depth)
+{
+  m_anim = true;
+  m_animX = m_x;
+  m_animDepth = depth;
+
+  for (int i = 0; i < m_children.GetSize(); i++)
+    m_children[i]->AnimatePrepare(depth+1);
+}
+
+void Skein::Node::AnimateClear(void)
+{
+  m_anim = false;
+  m_animX = 0;
+  m_animDepth = 0;
+
+  for (int i = 0; i < m_children.GetSize(); i++)
+    m_children[i]->AnimateClear();
+}
+
+int Skein::Node::GetAnimateX(int pct)
+{
+  if (m_anim && (pct >= 0) && (pct < 100))
+    return m_animX + (((m_x - m_animX) * pct) / 100);
+  return m_x;
+}
+
+int Skein::Node::GetAnimateY(int depth, int spacing, int pct)
+{
+  if (m_anim && (pct >= 0) && (pct < 100))
+    return ((m_animDepth - depth) * spacing * (100 - pct)) / 100;
+  return 0;
 }
 
 const CStringW& Skein::Node::GetTranscriptText(void)

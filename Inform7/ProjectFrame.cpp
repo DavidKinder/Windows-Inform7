@@ -53,6 +53,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_SHOWTRANSCRIPT, OnShowTranscript)
   ON_MESSAGE(WM_SHOWSKEIN, OnShowSkein)
   ON_MESSAGE(WM_SELECTNODE, OnSelectNode)
+  ON_MESSAGE(WM_ANIMATESKEIN, OnAnimateSkein)
   ON_MESSAGE(WM_TERPFAILED, OnTerpFailed)
   ON_MESSAGE(WM_PROJECTDIR, OnProjectDir)
   ON_MESSAGE(WM_TRANSCRIPTEND, OnTranscriptEnd)
@@ -895,6 +896,44 @@ LRESULT ProjectFrame::OnSelectNode(WPARAM wparam, LPARAM lparam)
   ((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::JustSelect);
   ((TabTranscript*)GetPanel(1)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::JustSelect);
   m_skein.NotifyChange(Skein::TranscriptThreadChanged);
+  return 0;
+}
+
+LRESULT ProjectFrame::OnAnimateSkein(WPARAM wparam, LPARAM lparam)
+{
+  // Don't animate if using Terminal Services
+  bool animate = true;
+  if (::GetSystemMetrics(SM_REMOTESESSION) != 0)
+    animate = false;
+
+  // Don't animate if the skein isn't shown anywhere
+  bool skein0 = (GetPanel(0)->GetActiveTab() == Panel::Tab_Skein);
+  bool skein1 = (GetPanel(1)->GetActiveTab() == Panel::Tab_Skein);
+  if (!skein0 && !skein1)
+    animate = false;
+
+  if (animate)
+  {
+    for (int pct = 0; pct < 100; pct += 10)
+    {
+      if (skein0)
+        ((TabSkein*)GetPanel(0)->GetTab(Panel::Tab_Skein))->Animate(pct);
+      if (skein1)
+        ((TabSkein*)GetPanel(1)->GetTab(Panel::Tab_Skein))->Animate(pct);
+      ::Sleep(5);
+    }
+  }
+
+  m_skein.GetRoot()->AnimateClear();
+  ((TabSkein*)GetPanel(0)->GetTab(Panel::Tab_Skein))->Animate(-1);
+  ((TabSkein*)GetPanel(1)->GetTab(Panel::Tab_Skein))->Animate(-1);
+
+  if (lparam != 0)
+  {
+    Command* cmd = (Command*)lparam;
+    cmd->Run();
+    delete cmd;
+  }
   return 0;
 }
 

@@ -3,6 +3,7 @@
 #include "Dib.h"
 #include "Skein.h"
 #include "SkeinEdit.h"
+#include "Messages.h"
 
 #include <map>
 #include <vector>
@@ -23,6 +24,8 @@ public:
   void SkeinShowNode(Skein::Node* node, Skein::Show why);
   void SkeinNodesShown(
     bool& unselected, bool& selected, bool& active, bool& differs, int& count);
+  void AnimatePrepare();
+  void Animate(int pct);
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -51,7 +54,7 @@ private:
 
   void DrawNodeTree(int phase, Skein::Node* node, Skein::Node* threadEnd, CDC& dc,
     CDibSection& bitmap, const CRect& client, const CPoint& parentCentre,
-    const CPoint& siblingCentre, int spacing, bool gameRunning);
+    const CPoint& siblingCentre, int depth, int spacing, bool gameRunning);
 
   void DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
     const CPoint& centre, bool selected, bool gameRunning);
@@ -97,7 +100,20 @@ private:
   CSize m_fontSize;
   CFont m_boldFont;
   SkeinEdit m_edit;
+  int m_pctAnim;
 
   Skein::Node* m_mouseOverNode;
   bool m_mouseOverMenu;
+
+  class CommandStartEdit : public Command
+  {
+  public:
+    CommandStartEdit(SkeinWindow* wnd, Skein::Node* node, bool label);
+    void Run(void);
+
+  private:
+    SkeinWindow* m_wnd;
+    Skein::Node* m_node;
+    bool m_label;
+  };
 };

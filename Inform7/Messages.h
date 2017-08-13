@@ -162,3 +162,20 @@ struct SourceRange
 
 // Sent to the a tab window to update the context sensitive help.
 #define WM_UPDATEHELP     WM_APP+38
+
+class Command
+{
+public:
+  virtual ~Command()
+  {
+  }
+
+  virtual void Run(void) = 0;
+};
+
+// Sent to the window frame to run the overall process of running an
+// animation in the skein window. If lParam is non-zero if specifies
+// an instance of Command to be run after the animation completes.
+// This command object is allocated on the heap and is freed by the
+// recipient.
+#define WM_ANIMATESKEIN   WM_APP+39
