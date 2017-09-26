@@ -86,6 +86,7 @@
 #define ID_HEAD_PREVIOUS                281
 #define ID_HEAD_NEXT                    282
 #define ID_WINDOW_LIST                  300
+#define ID_SKEIN_LABEL                  400
 #define ID_SKEIN_PLAY                   401
 #define ID_SKEIN_EDIT                   402
 #define ID_SKEIN_ADD_LABEL              403

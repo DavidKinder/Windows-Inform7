@@ -39,6 +39,7 @@ protected:
   afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
   afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
   afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+  afx_msg void OnTimer(UINT nIDEvent);
 
   afx_msg LRESULT OnRenameNode(WPARAM, LPARAM);
   afx_msg LRESULT OnLabelNode(WPARAM, LPARAM);
@@ -104,6 +105,10 @@ private:
 
   Skein::Node* m_mouseOverNode;
   bool m_mouseOverMenu;
+
+  bool m_lastClick;
+  DWORD m_lastClickTime;
+  CPoint m_lastPoint;
 
   class CommandStartEdit : public Command
   {

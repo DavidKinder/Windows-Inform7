@@ -816,6 +816,7 @@ END
 
 STRINGTABLE 
 BEGIN
+    ID_SKEIN_LABEL          "Show a menu of the labelled knots: selecting a knot will go to it"
     ID_SKEIN_PLAY           "Play the story to this command in the skein, restarting if necessary"
     ID_SKEIN_PLAY_ALL       "Play all threads that lead to a blessed command";
     ID_SKEIN_INSERT_PREVIOUS "Insert a new command before this one"

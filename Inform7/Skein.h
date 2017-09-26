@@ -101,6 +101,9 @@ public:
     const char* GetUniqueId(void);
     void SaveNodes(FILE* skeinFile);
 
+    void GetLabels(std::map<CStringW,Node*>& labels);
+    bool HasLabels(void);
+
     void GetNodesByDepth(int depth, std::vector<std::vector<Node*> >& nodesByDepth);
     int GetX(void);
     void SetX(int x);
@@ -155,6 +158,9 @@ public:
   bool RemoveSingle(Node* node);
   void SetLine(Node* node, LPCWSTR line);
   void SetLabel(Node* node, LPCWSTR label);
+
+  void GetLabels(std::map<CStringW,Node*>& labels);
+  bool HasLabels(void);
 
   void Bless(Node* node, bool all);
   bool CanBless(Node* node, bool all);

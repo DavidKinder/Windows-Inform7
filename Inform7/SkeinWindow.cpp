@@ -22,12 +22,14 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
   ON_WM_CONTEXTMENU()
   ON_WM_MOUSEACTIVATE()
   ON_WM_MOUSEMOVE()
+  ON_WM_TIMER()
 
   ON_MESSAGE(WM_RENAMENODE, OnRenameNode)
   ON_MESSAGE(WM_LABELNODE, OnLabelNode)
 END_MESSAGE_MAP()
 
-SkeinWindow::SkeinWindow() : m_skein(NULL), m_mouseOverNode(NULL), m_mouseOverMenu(false), m_pctAnim(-1)
+SkeinWindow::SkeinWindow() : m_skein(NULL),
+  m_mouseOverNode(NULL), m_mouseOverMenu(false), m_lastClick(false), m_lastClickTime(0), m_pctAnim(-1)
 {
 }
 
@@ -95,6 +97,10 @@ BOOL SkeinWindow::OnEraseBkgnd(CDC* pDC)
 
 void SkeinWindow::OnLButtonUp(UINT nFlags, CPoint point)
 {
+  // Is this a double click?
+  bool dclick = m_lastClick ? (::GetTickCount() - m_lastClickTime) < ::GetDoubleClickTime() : false;
+  m_lastClick = false;
+
   Skein::Node* node = NodeAtPoint(point);
   if (node != NULL)
   {
@@ -103,7 +109,8 @@ void SkeinWindow::OnLButtonUp(UINT nFlags, CPoint point)
     {
       if (GetBadgeRect(m_nodes[node]).PtInRect(point))
       {
-        GetParentFrame()->SendMessage(WM_SHOWTRANSCRIPT,(WPARAM)node,(LPARAM)GetSafeHwnd());
+        if (!dclick)
+          GetParentFrame()->SendMessage(WM_SHOWTRANSCRIPT,(WPARAM)node,(LPARAM)GetSafeHwnd());
         CScrollView::OnLButtonUp(nFlags,point);
         return;
       }
@@ -112,17 +119,34 @@ void SkeinWindow::OnLButtonUp(UINT nFlags, CPoint point)
     // Is the user clicking on the context menu button?
     if (GetMenuButtonRect(m_nodes[node]).PtInRect(point))
     {
-      CPoint sp(point);
-      ClientToScreen(&sp);
-      OnContextMenu(this,sp);
+      if (!dclick)
+      {
+        CPoint sp(point);
+        ClientToScreen(&sp);
+        OnContextMenu(this,sp);
+      }
       CScrollView::OnLButtonUp(nFlags,point);
       return;
     }
 
-    // Just select the node
-    GetParentFrame()->SendMessage(WM_SELECTNODE,(WPARAM)node);
+    if (dclick)
+    {
+      // Start the skein playing to this node
+      GetParentFrame()->SendMessage(WM_PLAYSKEIN,(WPARAM)node);
+    }
+    else
+    {
+      // Start a timer to expire after the double click time
+      SetTimer(1,::GetDoubleClickTime(),NULL);
+    }
   }
 
+  m_lastClick = !dclick;
+  if (m_lastClick)
+  {
+    m_lastClickTime = ::GetTickCount();
+    m_lastPoint = point;
+  }
   CScrollView::OnLButtonUp(nFlags,point);
 }
 
@@ -283,6 +307,26 @@ void SkeinWindow::OnMouseMove(UINT nFlags, CPoint point)
   }
 
   CScrollView::OnMouseMove(nFlags,point);
+}
+
+void SkeinWindow::OnTimer(UINT nIDEvent)
+{
+  if (nIDEvent == 1)
+  {
+    KillTimer(1);
+    bool last = m_lastClick;
+    m_lastClick = false;
+
+    if (last)
+    {
+      // If a single click has happened, just select the node
+      Skein::Node* node = NodeAtPoint(m_lastPoint);
+      if (node != NULL)
+        GetParentFrame()->SendMessage(WM_SELECTNODE,(WPARAM)node);
+    }
+  }
+
+  CScrollView::OnTimer(nIDEvent);
 }
 
 LRESULT SkeinWindow::OnRenameNode(WPARAM node, LPARAM line)

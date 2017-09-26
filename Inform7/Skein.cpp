@@ -603,6 +603,16 @@ void Skein::SetLabel(Node* node, LPCWSTR label)
   NotifyChange(NodeTextChanged);
 }
 
+void Skein::GetLabels(std::map<CStringW,Node*>& labels)
+{
+  m_inst.root->GetLabels(labels);
+}
+
+bool Skein::HasLabels(void)
+{
+  return m_inst.root->HasLabels();
+}
+
 void Skein::Bless(Node* node, bool all)
 {
   while (node != NULL)
@@ -1148,6 +1158,26 @@ void Skein::Node::SaveNodes(FILE* skeinFile)
 
   for (int i = 0; i < m_children.GetSize(); i++)
     m_children[i]->SaveNodes(skeinFile);
+}
+
+void Skein::Node::GetLabels(std::map<CStringW,Node*>& labels)
+{
+  if (m_label.GetLength() > 0)
+    labels[m_label] = this;
+  for (int i = 0; i < m_children.GetSize(); i++)
+    m_children[i]->GetLabels(labels);
+}
+
+bool Skein::Node::HasLabels(void)
+{
+  if (m_label.GetLength() > 0)
+    return true;
+  for (int i = 0; i < m_children.GetSize(); i++)
+  {
+    if (m_children[i]->HasLabels())
+      return true;
+  }
+  return false;
 }
 
 void Skein::Node::GetNodesByDepth(int depth, std::vector<std::vector<Node*> >& nodesByDepth)
