@@ -75,6 +75,9 @@ public:
     };
     ExpectedCompare GetDiffers(void);
 
+    bool GetLocked(void);
+    bool SetLocked(bool locked);
+
     void NewTranscriptText(const CStringW& transcript);
 
     bool Bless(void);
@@ -128,6 +131,7 @@ public:
     Diff::DiffResults m_diffTranscript;
     Diff::DiffResults m_diffExpected;
 
+    bool m_locked;
     bool m_changed;
     ExpectedCompare m_differs;
 
@@ -157,10 +161,14 @@ public:
   bool RemoveAll(Node* node, bool notify = true);
   bool RemoveSingle(Node* node);
   void SetLine(Node* node, LPCWSTR line);
-  void SetLabel(Node* node, LPCWSTR label);
 
+  void SetLabel(Node* node, LPCWSTR label);
   void GetLabels(std::map<CStringW,Node*>& labels);
   bool HasLabels(void);
+
+  void Lock(Node* node);
+  void Unlock(Node* node, bool notify = true);
+  void Trim(Node* node, bool running, bool notify = true);
 
   void Bless(Node* node, bool all);
   bool CanBless(Node* node, bool all);
@@ -169,7 +177,7 @@ public:
   Node* GetThreadTop(Node* node);
   Node* GetThreadBottom(Node* node);
   bool IsValidNode(Node* testNode, Node* node = NULL);
-  int GetBlessedThreadEnds(std::vector<Node*>& nodes, Node* node = NULL);
+  void GetThreadEnds(std::vector<Node*>& nodes, Node* node = NULL);
   Node* GetFirstDifferent(Node* node = NULL);
   void GetAllNodes(CArray<Skein::Node*,Skein::Node*>& nodes, Node* node = NULL);
   Node* FindNode(const char* id, Node* node = NULL);
@@ -182,6 +190,7 @@ public:
     ThreadChanged,
     NodeTextChanged,
     NodeColourChanged,
+    LockChanged,
     TranscriptThreadChanged,
   };
 

@@ -3,6 +3,7 @@
 #include "TabSkein.h"
 #include "Inform.h"
 #include "Dialogs.h"
+#include "OSLayer.h"
 
 #include <math.h>
 
@@ -183,6 +184,7 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
     menu->RemoveMenu(ID_SKEIN_ADD_LABEL,MF_BYCOMMAND);
     menu->RemoveMenu(ID_SKEIN_EDIT_LABEL,MF_BYCOMMAND);
     menu->RemoveMenu(ID_SKEIN_DELETE_ALL,MF_BYCOMMAND);
+    menu->RemoveMenu(ID_SKEIN_LOCK,MF_BYCOMMAND);
   }
   if (node->GetLabel().IsEmpty())
     menu->RemoveMenu(ID_SKEIN_EDIT_LABEL,MF_BYCOMMAND);
@@ -190,6 +192,10 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
     menu->RemoveMenu(ID_SKEIN_ADD_LABEL,MF_BYCOMMAND);
   if (node->GetNumChildren() > 1)
     menu->RemoveMenu(ID_SKEIN_INSERT_NEXT,MF_BYCOMMAND);
+  if (node->GetLocked())
+    menu->RemoveMenu(ID_SKEIN_LOCK,MF_BYCOMMAND);
+  else
+    menu->RemoveMenu(ID_SKEIN_UNLOCK,MF_BYCOMMAND);
   RemoveExcessSeparators(menu);
   if (gameRunning && m_skein->InCurrentThread(node))
   {
@@ -267,6 +273,25 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
     break;
   case ID_SKEIN_BLESS_ALL:
     m_skein->Bless(node,true);
+    break;
+  case ID_SKEIN_LOCK:
+    m_skein->Lock(node);
+    break;
+  case ID_SKEIN_UNLOCK:
+    m_skein->Unlock(node);
+    break;
+  case ID_SKEIN_TRIM:
+    {
+      LPCWSTR head = L"Trim the skein?";
+      LPCWSTR msg =
+        L"This will remove commands from the skein that have not been locked. "
+        L"This operation cannot be undone.";
+      if (theOS.TaskDialog(this,head,msg,L_INFORM_TITLE,MB_ICONWARNING|MB_YESNO) == IDYES)
+      {
+        bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
+        m_skein->Trim(node,gameRunning);
+      }
+    }
     break;
   case 0:
     // Make sure this window still has the focus
@@ -473,6 +498,7 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
     break;
   case Skein::ThreadChanged:
   case Skein::NodeColourChanged:
+  case Skein::LockChanged:
   case Skein::TranscriptThreadChanged:
     Invalidate();
     break;
@@ -638,7 +664,7 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, Skein::Node* thread
     if (node->GetParent() != NULL)
     {
       DrawNodeLine(dc,bitmap,client,parentCentre,nodeCentre,
-        theApp.GetColour(InformApp::ColourSkeinLine));
+        theApp.GetColour(InformApp::ColourSkeinLine),node->GetLocked());
     }
     break;
   case 1:
@@ -781,7 +807,7 @@ void SkeinWindow::DrawNodeBack(Skein::Node* node, CDibSection& bitmap, const CPo
 }
 
 void SkeinWindow::DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client,
-  const CPoint& from, const CPoint& to, COLORREF fore)
+  const CPoint& from, const CPoint& to, COLORREF fore, bool bold)
 {
   int p1x = from.x;
   int p1y = from.y+(int)(0.8*m_fontSize.cy);
@@ -810,14 +836,31 @@ void SkeinWindow::DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client
     CPen* oldPen = dc.SelectObject(&pen1);
     dc.MoveTo(p1x,p1y);
     dc.LineTo(p2x,p2y);
+    if (bold)
+    {
+      dc.MoveTo(p1x-1,p1y);
+      dc.LineTo(p2x-1,p2y);
+      dc.MoveTo(p1x+1,p1y);
+      dc.LineTo(p2x+1,p2y);
+    }
 
     CPen pen2;
     pen2.CreatePen(PS_SOLID,0,LinePixelColour(0.66,fore,back));
     dc.SelectObject(&pen2);
-    dc.MoveTo(p1x-1,p1y);
-    dc.LineTo(p2x-1,p2y);
-    dc.MoveTo(p1x+1,p1y);
-    dc.LineTo(p2x+1,p2y);
+    if (bold)
+    {
+      dc.MoveTo(p1x-2,p1y);
+      dc.LineTo(p2x-2,p2y);
+      dc.MoveTo(p1x+2,p1y);
+      dc.LineTo(p2x+2,p2y);
+    }
+    else
+    {
+      dc.MoveTo(p1x-1,p1y);
+      dc.LineTo(p2x-1,p2y);
+      dc.MoveTo(p1x+1,p1y);
+      dc.LineTo(p2x+1,p2y);
+    }
 
     dc.SelectObject(oldPen);
     return;
@@ -1001,6 +1044,13 @@ void SkeinWindow::DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client
       count = (count > 6) ? 0 : count+1;
     }
   }
+
+  if (bold)
+  {
+    DrawNodeLine(dc,bitmap,client,from+CSize(1,0),to+CSize(1,0),fore,false);
+    DrawNodeLine(dc,bitmap,client,from+CSize(0,1),to+CSize(0,1),fore,false);
+    DrawNodeLine(dc,bitmap,client,from+CSize(1,1),to+CSize(1,1),fore,false);
+  }
 }
 
 void SkeinWindow::DrawLinePixel(CDC& dc, CDibSection& bitmap, int x, int y, double i,
@@ -1080,6 +1130,14 @@ void SkeinWindow::RemoveExcessSeparators(CMenu* menu)
 
     if (!removed)
       i++;
+  }
+
+  // Remove any final separator
+  int count = (int)menu->GetMenuItemCount();
+  if (count > 0)
+  {
+    if (menu->GetMenuItemID(count-1) == 0)
+      menu->RemoveMenu(count-1,MF_BYPOSITION);
   }
 }
 

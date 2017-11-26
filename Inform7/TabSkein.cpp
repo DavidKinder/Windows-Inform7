@@ -334,7 +334,7 @@ void TabSkein::OnSkeinLabel()
 
 void TabSkein::OnSkeinPlay()
 {
-  GetParentFrame()->SendMessage(WM_COMMAND,ID_REPLAY_BLESSED);
+  GetParentFrame()->SendMessage(WM_COMMAND,ID_REPLAY_ALL);
 }
 
 void TabSkein::OnSaveTranscript()

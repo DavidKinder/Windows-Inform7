@@ -578,6 +578,7 @@ void TranscriptWindow::SkeinChanged(Skein::Change change)
   case Skein::NodeTextChanged:
     Invalidate();
     break;
+  case Skein::LockChanged:
   case Skein::TranscriptThreadChanged:
     break;
   default:

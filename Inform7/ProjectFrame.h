@@ -108,8 +108,8 @@ protected:
   afx_msg void OnPlayLoad();
 
   afx_msg void OnPlayReplay();
-  afx_msg void OnUpdateReplayBlessed(CCmdUI *pCmdUI);
-  afx_msg void OnReplayBlessed();
+  afx_msg void OnUpdateReplayAll(CCmdUI *pCmdUI);
+  afx_msg void OnReplayAll();
   afx_msg void OnUpdateReplayShowLast(CCmdUI *pCmdUI);
   afx_msg void OnReplayShowLast();
   afx_msg void OnReplayShowLastSkein();

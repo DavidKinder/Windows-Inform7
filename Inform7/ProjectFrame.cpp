@@ -99,8 +99,8 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_PLAY_REFRESH, OnPlayRefresh)
   ON_COMMAND(ID_PLAY_LOAD, OnPlayLoad)
 
-  ON_UPDATE_COMMAND_UI(ID_REPLAY_BLESSED, OnUpdateReplayBlessed)
-  ON_COMMAND(ID_REPLAY_BLESSED, OnReplayBlessed)
+  ON_UPDATE_COMMAND_UI(ID_REPLAY_ALL, OnUpdateReplayAll)
+  ON_COMMAND(ID_REPLAY_ALL, OnReplayAll)
   ON_UPDATE_COMMAND_UI(ID_REPLAY_SHOW_LAST, OnUpdateReplayShowLast)
   ON_COMMAND(ID_REPLAY_SHOW_LAST, OnReplayShowLast)
   ON_UPDATE_COMMAND_UI(ID_REPLAY_SHOW_LAST_SKEIN, OnUpdateReplayShowLast)
@@ -1048,9 +1048,7 @@ LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
 
 LRESULT ProjectFrame::OnCanPlayAll(WPARAM wparam, LPARAM lparam)
 {
-  std::vector<Skein::Node*> blessed;
-  m_skein.GetBlessedThreadEnds(blessed);
-  return blessed.empty() ? 0 : 1;
+  return (m_skein.GetRoot()->GetNumChildren() > 0);
 }
 
 LRESULT ProjectFrame::OnProjectEdited(WPARAM wparam, LPARAM lparam)
@@ -1513,7 +1511,7 @@ void ProjectFrame::OnPlayLoad()
   m_game.RunInterpreter(path.Left(split),path.Mid(split+1),glulx);
 }
 
-void ProjectFrame::OnUpdateReplayBlessed(CCmdUI *pCmdUI)
+void ProjectFrame::OnUpdateReplayAll(CCmdUI *pCmdUI)
 {
   bool enable = !m_busy && m_playThreads.empty();
   if (enable)
@@ -1521,24 +1519,24 @@ void ProjectFrame::OnUpdateReplayBlessed(CCmdUI *pCmdUI)
   pCmdUI->Enable(enable);
 }
 
-void ProjectFrame::OnReplayBlessed()
+void ProjectFrame::OnReplayAll()
 {
   // Discard any previous threads to be played
   while (!m_playThreads.empty())
     m_playThreads.pop();
 
-  // Find all the end skein nodes that have an expected transcript
-  std::vector<Skein::Node*> blessed;
-  m_skein.GetBlessedThreadEnds(blessed);
-  if (blessed.empty())
+  // Find all the end nodes of threads in the skein
+  std::vector<Skein::Node*> ends;
+  m_skein.GetThreadEnds(ends);
+  if (ends.empty())
     return;
 
   // Get the first node and store the rest
-  Skein::Node* firstNode = blessed[0];
-  for (size_t i = 1; i < blessed.size(); i++)
+  Skein::Node* firstEnd = ends[0];
+  for (size_t i = 1; i < ends.size(); i++)
   {
     PlaySkein play(PlaySkeinThread);
-    play.node = blessed[i];
+    play.node = ends[i];
     m_playThreads.push(play);
   }
 
@@ -1547,7 +1545,7 @@ void ProjectFrame::OnReplayBlessed()
   m_playThreads.push(showError);
 
   // Play the thread leading to the first node
-  m_skein.SetCurrent(firstNode);
+  m_skein.SetCurrent(firstEnd);
   OnPlayReplay();
 }
 
@@ -1705,6 +1703,7 @@ void ProjectFrame::OnReleaseGame(UINT nID)
     }
 
     // Create a Blorb file, if needed
+    int code = 0;
     if (m_settings.m_blorb)
     {
       CString executable, arguments;
@@ -1719,18 +1718,21 @@ void ProjectFrame::OnReleaseGame(UINT nID)
       cmdLine.Format("\"%s\" %s",(LPCSTR)executable,(LPCSTR)arguments);
 
       m_outputFileLoc.Empty();
-      int code = theApp.RunCommand(m_projectDir,cmdLine,"cblorb.exe",*this);
+      code = theApp.RunCommand(m_projectDir,cmdLine,"cblorb.exe",*this);
 
       GetPanel(0)->CompileProject(TabInterface::RanCBlorb,code);
       GetPanel(1)->CompileProject(TabInterface::RanCBlorb,code);
 
-      // If creating the Blorb file failed, stop
-      if (code != 0)
-        return;
-
       // If cBlorb picked a location to save the file, use it
       releasePath = m_outputFileLoc;
     }
+
+    // Show the result
+    GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
+
+    // If creating the Blorb file failed, stop
+    if (code != 0)
+      return;
 
     // Get the appropriate file name extension
     CString extension = m_settings.m_blorb ? blorbExt : m_settings.GetOutputFormat();

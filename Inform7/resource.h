@@ -40,7 +40,7 @@
 #define ID_PLAY_REFRESH                 224
 #define ID_PLAY_LOAD                    225
 #define ID_PLAY_REPLAY                  226
-#define ID_REPLAY_BLESSED               231
+#define ID_REPLAY_ALL                   231
 #define ID_REPLAY_SHOW_LAST             232
 #define ID_REPLAY_SHOW_LAST_SKEIN       233
 #define ID_REPLAY_CHANGED_PREV          234
@@ -102,6 +102,9 @@
 #define ID_SKEIN_SAVE_TRANSCRIPT        413
 #define ID_SKEIN_PLAY_ALL               414
 #define ID_TRANSCRIPT_BLESS_ALL         415
+#define ID_SKEIN_LOCK                   416
+#define ID_SKEIN_UNLOCK                 417
+#define ID_SKEIN_TRIM                   418
 #define ID_SEARCH_SOURCE                450
 #define ID_SEARCH_DOCS                  451
 #define ID_NAVIGATE_BACK                500

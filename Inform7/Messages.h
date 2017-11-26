@@ -80,7 +80,7 @@
 // node given by wParam to the Unicode string given by lParam.
 #define WM_SETEXPECTED    WM_APP+21
 
-// Sent to the window frame to check if there are any blessed threads
+// Sent to the window frame to check if there are any skein threads
 // to be played
 #define WM_CANPLAYALL     WM_APP+22
 

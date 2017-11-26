@@ -613,6 +613,52 @@ bool Skein::HasLabels(void)
   return m_inst.root->HasLabels();
 }
 
+void Skein::Lock(Node* node)
+{
+  while (node != NULL)
+  {
+    if (node->SetLocked(true))
+      NotifyEdit(true);
+    node = node->GetParent();
+  }
+  NotifyChange(LockChanged);
+}
+
+void Skein::Unlock(Node* node, bool notify)
+{
+  if (node->SetLocked(false))
+    NotifyEdit(true);
+  for (int i = 0; i < node->GetNumChildren(); i++)
+    Unlock(node->GetChild(i),false);
+  if (notify)
+    NotifyChange(LockChanged);
+}
+
+void Skein::Trim(Node* node, bool running, bool notify)
+{
+  // Only delete unlocked nodes. If the game is running, only delete
+  // if the node is not in the current thread as well.
+  bool inCurrent = InCurrentThread(node);
+  if ((node->GetParent() != NULL) && !node->GetLocked() && !(running && inCurrent))
+  {
+    if (inCurrent)
+    {
+      m_inst.current = m_inst.root;
+      m_played = m_inst.root;
+    }
+    RemoveAll(node,false);
+  }
+  else
+  {
+    // Since this may remove child nodes, run through in reverse
+    for (int i = node->GetNumChildren()-1; i >= 0; i--)
+      Trim(node->GetChild(i),false);
+  }
+
+  if (notify)
+    NotifyChange(TreeChanged);
+}
+
 void Skein::Bless(Node* node, bool all)
 {
   while (node != NULL)
@@ -686,25 +732,19 @@ bool Skein::IsValidNode(Node* testNode, Node* node)
   return false;
 }
 
-int Skein::GetBlessedThreadEnds(std::vector<Node*>& nodes, Node* node)
+void Skein::GetThreadEnds(std::vector<Node*>& nodes, Node* node)
 {
   if (node == NULL)
     node = m_inst.root;
 
-  // Count the number of blessed descendants
-  int count = 0;
-  for (int i = 0; i < node->GetNumChildren(); i++)
-    count += GetBlessedThreadEnds(nodes,node->GetChild(i));
-
-  // Is this node blessed?
-  if (node->GetExpectedText().IsEmpty() == FALSE)
+  int num = node->GetNumChildren();
+  if (num > 0)
   {
-    // If this node has no blessed descendants, add to the set
-    if (count == 0)
-      nodes.push_back(node);
-    count++;
+    for (int i = 0; i < num; i++)
+      GetThreadEnds(nodes,node->GetChild(i));
   }
-  return count;
+  else
+    nodes.push_back(node);
 }
 
 Skein::Node* Skein::GetFirstDifferent(Node* node)
@@ -861,8 +901,9 @@ int Skein::IntFromXML(IXMLDOMNode* node, LPWSTR query)
 
 Skein::Node::Node(const CStringW& line, const CStringW& label, const CStringW& transcript,
   const CStringW& expected, bool changed)
-  : m_parent(NULL), m_line(line), m_label(label), m_textTranscript(transcript),
-    m_textExpected(expected), m_changed(changed), m_differs(ExpectedDifferent),
+  : m_parent(NULL), m_line(line), m_label(label),
+    m_textTranscript(transcript), m_textExpected(expected),
+    m_locked(false), m_changed(changed), m_differs(ExpectedDifferent),
     m_width(-1), m_lineWidth(-1), m_labelWidth(-1), m_x(0),
     m_anim(false), m_animX(0), m_animDepth(0)
 {
@@ -941,6 +982,18 @@ bool Skein::Node::GetChanged(void)
 Skein::Node::ExpectedCompare Skein::Node::GetDiffers(void)
 {
   return m_differs;
+}
+
+bool Skein::Node::GetLocked(void)
+{
+  return m_locked;
+}
+
+bool Skein::Node::SetLocked(bool locked)
+{
+  bool change = (m_locked != locked);
+  m_locked = locked;
+  return change;
 }
 
 void Skein::Node::NewTranscriptText(const CStringW& transcript)

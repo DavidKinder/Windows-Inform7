@@ -148,7 +148,7 @@ BEGIN
     END
     POPUP "Repl&ay"
     BEGIN
-        MENUITEM "Replay Commands Blessed in &Transcript", ID_REPLAY_BLESSED
+        MENUITEM "Replay &All Commands",        ID_REPLAY_ALL
         MENUITEM SEPARATOR
         MENUITEM "Show &Last Command",          ID_REPLAY_SHOW_LAST
         MENUITEM "Show Last &Command in Skein", ID_REPLAY_SHOW_LAST_SKEIN
@@ -247,6 +247,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Bless Command",              ID_SKEIN_BLESS
         MENUITEM "Bless &all Commands to Here", ID_SKEIN_BLESS_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "Loc&k",                       ID_SKEIN_LOCK
+        MENUITEM "&Unlock",                     ID_SKEIN_UNLOCK
+        MENUITEM "Tri&m",                       ID_SKEIN_TRIM
     END
 END
 
@@ -710,7 +714,7 @@ STRINGTABLE
 BEGIN
     ID_PLAY_LOAD            "Load and play a story"
     ID_PLAY_REPLAY          "Translate the story, and re-run through the skein to the previously active play point\nReplay"
-    ID_REPLAY_BLESSED       "Play in sequence all threads in the skein that lead to a blessed command"
+    ID_REPLAY_ALL           "Play all threads in the skein in sequence"
     ID_REPLAY_SHOW_LAST     "Show the last story command in the transcript"
     ID_REPLAY_SHOW_LAST_SKEIN "Show the last story command in the skein"
     ID_REPLAY_CHANGED_PREV  "Find the previous command in the transcript with changed text"
@@ -816,9 +820,9 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_SKEIN_LABEL          "Show a menu of the labelled knots: selecting a knot will go to it"
+    ID_SKEIN_LABEL          "Show a menu of the labelled commands: selecting a command will go to it"
     ID_SKEIN_PLAY           "Play the story to this command in the skein, restarting if necessary"
-    ID_SKEIN_PLAY_ALL       "Play all threads that lead to a blessed command";
+    ID_SKEIN_PLAY_ALL       "Play all threads in the skein";
     ID_SKEIN_INSERT_PREVIOUS "Insert a new command before this one"
     ID_SKEIN_INSERT_NEXT    "Insert a new command after this one"
     ID_SKEIN_DELETE         "Delete this command"
@@ -830,6 +834,9 @@ BEGIN
     ID_SKEIN_SAVE_TRANSCRIPT "Save the transcript of play for the selected thread"
     ID_SKEIN_BLESS          "Bless this command"
     ID_SKEIN_BLESS_ALL      "Bless this command and all commands before it"
+    ID_SKEIN_LOCK           "Lock this command and all those that lead to it"
+    ID_SKEIN_UNLOCK         "Unlock this command and all those that come after it"
+    ID_SKEIN_TRIM           "Remove unlocked commands, starting from this command"
 END
 
 #endif    // English (U.K.) resources

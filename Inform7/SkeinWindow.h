@@ -63,7 +63,7 @@ private:
     int width, CDibSection* back);
 
   void DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client,
-    const CPoint& from, const CPoint& to, COLORREF fore);
+    const CPoint& from, const CPoint& to, COLORREF fore, bool bold);
   void DrawLinePixel(CDC& dc, CDibSection& bitmap, int x, int y, double i, COLORREF fore);
   COLORREF LinePixelColour(double i, COLORREF fore, COLORREF back);
 
