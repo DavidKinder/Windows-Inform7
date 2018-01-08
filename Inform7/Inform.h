@@ -145,8 +145,10 @@ public:
 
   void RunMessagePump(void);
   CreatedProcess CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug, const char* exeFile);
+  void WaitForProcessEnd(HANDLE process);
   CreatedProcess RunCensus(void);
   int RunCommand(const char* dir, CString& command, const char* exeFile, OutputSink& output);
+  void HandleDebugEvents(void);
   CString GetTraceForProcess(DWORD processId);
   void WriteLog(const char* msg);
   bool IsWaitCursor(void);

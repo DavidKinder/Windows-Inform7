@@ -2689,7 +2689,7 @@ void ProjectFrame::OnTimer(UINT nIDEvent)
       // Stop monitoring this process
       DWORD result = 0;
       ::GetExitCodeProcess(sub.cp.process,&result);
-      ::WaitForSingleObject(sub.cp.process,1000);
+      theApp.WaitForProcessEnd(sub.cp.process);
       std::string trace = theApp.GetTraceForProcess(sub.cp.processId);
       sub.cp.close();
 

@@ -162,90 +162,93 @@ void InformApp::DoWaitCursor(int nCode)
 BOOL InformApp::OnIdle(LONG lCount)
 {
   if (lCount == 0)
-  {
-    // Check for debugging events from any sub-processes, and terminate any that have failed
-    DEBUG_EVENT debug;
-    while (::WaitForDebugEvent(&debug,0))
-    {
-      DWORD status = DBG_CONTINUE;
-      switch (debug.dwDebugEventCode)
-      {
-      case CREATE_PROCESS_DEBUG_EVENT:
-        {
-          std::map<DWORD,DebugProcess>::iterator it = m_debugging.find(debug.dwProcessId);
-          if (it != m_debugging.end())
-          {
-            DebugProcess& dp = it->second;
-            dp.process = debug.u.CreateProcessInfo.hProcess;
-            dp.thread = debug.u.CreateProcessInfo.hThread;
-            dp.threadId = debug.dwThreadId;
-            dp.imageBase = debug.u.CreateProcessInfo.lpBaseOfImage;
-            if (debug.u.CreateProcessInfo.hFile != 0)
-              dp.imageSize = ::GetFileSize(debug.u.CreateProcessInfo.hFile,NULL);
-          }
-        }
-        if (debug.u.CreateProcessInfo.hFile != 0)
-          ::CloseHandle(debug.u.CreateProcessInfo.hFile);
-        break;
-
-      case EXIT_PROCESS_DEBUG_EVENT:
-        {
-          std::map<DWORD,DebugProcess>::iterator it = m_debugging.find(debug.dwProcessId);
-          if (it != m_debugging.end())
-            m_debugging.erase(it);
-        }
-        break;
-
-      case LOAD_DLL_DEBUG_EVENT:
-        if (debug.u.LoadDll.hFile != 0)
-          ::CloseHandle(debug.u.LoadDll.hFile);
-        break;
-
-      case EXCEPTION_DEBUG_EVENT:
-        {
-          int kill = 0;
-          switch (debug.u.Exception.ExceptionRecord.ExceptionCode)
-          {
-          case EXCEPTION_ACCESS_VIOLATION:
-            if (debug.u.Exception.dwFirstChance)
-              status = DBG_EXCEPTION_NOT_HANDLED;
-            else
-              kill = 10;
-            break;
-          case EXCEPTION_ILLEGAL_INSTRUCTION:
-            kill = 10;
-            break;
-          case EXCEPTION_STACK_OVERFLOW:
-            kill = 11;
-            break;
-          }
-
-          if (kill != 0)
-          {
-            std::map<DWORD,DebugProcess>::const_iterator it = m_debugging.find(debug.dwProcessId);
-            if (it != m_debugging.end())
-            {
-              // Store the stack trace for later use
-              const DebugProcess& dp = it->second;
-              if (dp.threadId == debug.dwThreadId)
-              {
-                if (m_traces.size() > 16)
-                  m_traces.clear();
-                m_traces[debug.dwProcessId] = GetStackTrace(
-                  dp.process,dp.thread,debug.u.Exception.ExceptionRecord.ExceptionCode,
-                  dp.imageFile,dp.imageBase,dp.imageSize);
-              }
-              ::TerminateProcess(it->second.process,kill);
-            }
-          }
-        }
-        break;
-      }
-
-      ::ContinueDebugEvent(debug.dwProcessId,debug.dwThreadId,status);
-    }
-  }
+    HandleDebugEvents();
   return CWinApp::OnIdle(lCount);
+}
+
+void InformApp::HandleDebugEvents(void)
+{
+  // Check for debugging events from any sub-processes, and terminate any that have failed
+  DEBUG_EVENT debug;
+  while (::WaitForDebugEvent(&debug,0))
+  {
+    DWORD status = DBG_CONTINUE;
+    switch (debug.dwDebugEventCode)
+    {
+    case CREATE_PROCESS_DEBUG_EVENT:
+      {
+        std::map<DWORD,DebugProcess>::iterator it = m_debugging.find(debug.dwProcessId);
+        if (it != m_debugging.end())
+        {
+          DebugProcess& dp = it->second;
+          dp.process = debug.u.CreateProcessInfo.hProcess;
+          dp.thread = debug.u.CreateProcessInfo.hThread;
+          dp.threadId = debug.dwThreadId;
+          dp.imageBase = debug.u.CreateProcessInfo.lpBaseOfImage;
+          if (debug.u.CreateProcessInfo.hFile != 0)
+            dp.imageSize = ::GetFileSize(debug.u.CreateProcessInfo.hFile,NULL);
+        }
+      }
+      if (debug.u.CreateProcessInfo.hFile != 0)
+        ::CloseHandle(debug.u.CreateProcessInfo.hFile);
+      break;
+
+    case EXIT_PROCESS_DEBUG_EVENT:
+      {
+        std::map<DWORD,DebugProcess>::iterator it = m_debugging.find(debug.dwProcessId);
+        if (it != m_debugging.end())
+          m_debugging.erase(it);
+      }
+      break;
+
+    case LOAD_DLL_DEBUG_EVENT:
+      if (debug.u.LoadDll.hFile != 0)
+        ::CloseHandle(debug.u.LoadDll.hFile);
+      break;
+
+    case EXCEPTION_DEBUG_EVENT:
+      {
+        int kill = 0;
+        switch (debug.u.Exception.ExceptionRecord.ExceptionCode)
+        {
+        case EXCEPTION_ACCESS_VIOLATION:
+          if (debug.u.Exception.dwFirstChance)
+            status = DBG_EXCEPTION_NOT_HANDLED;
+          else
+            kill = 10;
+          break;
+        case EXCEPTION_ILLEGAL_INSTRUCTION:
+          kill = 10;
+          break;
+        case EXCEPTION_STACK_OVERFLOW:
+          kill = 11;
+          break;
+        }
+
+        if (kill != 0)
+        {
+          std::map<DWORD,DebugProcess>::const_iterator it = m_debugging.find(debug.dwProcessId);
+          if (it != m_debugging.end())
+          {
+            // Store the stack trace for later use
+            const DebugProcess& dp = it->second;
+            if (dp.threadId == debug.dwThreadId)
+            {
+              if (m_traces.size() > 16)
+                m_traces.clear();
+              m_traces[debug.dwProcessId] = GetStackTrace(
+                dp.process,dp.thread,debug.u.Exception.ExceptionRecord.ExceptionCode,
+                dp.imageFile,dp.imageBase,dp.imageSize);
+            }
+            ::TerminateProcess(it->second.process,kill);
+          }
+        }
+      }
+      break;
+    }
+
+    ::ContinueDebugEvent(debug.dwProcessId,debug.dwThreadId,status);
+  }
 }
 
 CString InformApp::GetTraceForProcess(DWORD processId)
@@ -970,6 +973,20 @@ InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& com
   return cp;
 }
 
+void InformApp::WaitForProcessEnd(HANDLE process)
+{
+  // Wait for at most a second
+  DWORD timeout = ::GetTickCount() + 1000;
+  while (true)
+  {
+    HandleDebugEvents();
+    if (::WaitForSingleObject(process,100) != WAIT_TIMEOUT)
+      break;
+    if (::GetTickCount() > timeout)
+      break;
+  }
+}
+
 InformApp::CreatedProcess InformApp::RunCensus(void)
 {
   CString command, dir = GetAppDir();
@@ -1042,10 +1059,8 @@ int InformApp::RunCommand(const char* dir, CString& command, const char* exeFile
       ::GetExitCodeProcess(cp.process,&result);
     }
 
-    // Wait for the process to exit
-    ::WaitForSingleObject(cp.process,1000);
-
-    // Read any final output from the pipe
+    // Wait for the process to end and read any final output
+    WaitForProcessEnd(cp.process);
     DWORD available = 0;
     ::PeekNamedPipe(pipeRead,NULL,0,NULL,&available,NULL);
     if (available > 0)

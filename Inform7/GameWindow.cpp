@@ -1192,7 +1192,7 @@ void GameWindow::OnTimer(UINT nIDEvent)
           GetParentFrame()->PostMessage(WM_TERPFAILED);
 
         // Is there any final output remaining?
-        ::WaitForSingleObject(m_interpreter,1000);
+        theApp.WaitForProcessEnd(m_interpreter);
         while (true)
         {
           DWORD available = 0;
