@@ -247,6 +247,7 @@ protected:
   const ProjectType m_projectType;
   CString m_projectDir;
   CRegKey m_registryKey;
+  DWORD m_last5StartTime;
 
   ProjectSettings m_settings;
   bool m_busy;

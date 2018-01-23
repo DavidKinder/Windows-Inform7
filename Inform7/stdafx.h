@@ -178,6 +178,47 @@ TASKDIALOG_COMMON_BUTTON_FLAGS;
 #define TD_WARNING_ICON     MAKEINTRESOURCEW(-1)
 #define TD_INFORMATION_ICON MAKEINTRESOURCEW(-3)
 
+#pragma pack(1)
+typedef struct _TASKDIALOGCONFIG
+{
+  UINT        cbSize;
+  HWND        hwndParent;
+  HINSTANCE   hInstance;
+  int         dwFlags;
+  TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons;
+  PCWSTR      pszWindowTitle;
+  union
+  {
+    HICON   hMainIcon;
+    PCWSTR  pszMainIcon;
+  }
+  DUMMYUNIONNAME;
+  PCWSTR      pszMainInstruction;
+  PCWSTR      pszContent;
+  UINT        cButtons;
+  const VOID *pButtons;
+  int         nDefaultButton;
+  UINT        cRadioButtons;
+  const VOID *pRadioButtons;
+  int         nDefaultRadioButton;
+  PCWSTR      pszVerificationText;
+  PCWSTR      pszExpandedInformation;
+  PCWSTR      pszExpandedControlText;
+  PCWSTR      pszCollapsedControlText;
+  union
+  {
+    HICON   hFooterIcon;
+    PCWSTR  pszFooterIcon;
+  }
+  DUMMYUNIONNAME2;
+  PCWSTR      pszFooter;
+  LPVOID      pfCallback;
+  LONG_PTR    lpCallbackData;
+  UINT        cxWidth;
+}
+TASKDIALOGCONFIG;
+#pragma pack()
+
 #endif // _WIN32_WINNT < 0x0600
 
 #define DWMWA_EXTENDED_FRAME_BOUNDS 9

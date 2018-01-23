@@ -512,6 +512,25 @@ int OSLayer::TaskDialog(CWnd* wnd, LPCWSTR main, LPCWSTR content, LPCWSTR captio
   return MessageBox(wnd,msg,caption,msgBoxType);
 }
 
+int OSLayer::TaskDialogIndirect(const TASKDIALOGCONFIG* config, BOOL* verify)
+{
+  if (m_comCtlDll)
+  {
+    typedef HRESULT(__stdcall *TASKDIALOGINDIRECT)
+      (const TASKDIALOGCONFIG*, int*, int*, BOOL*);
+
+    TASKDIALOGINDIRECT taskDialogIndirect = (TASKDIALOGINDIRECT)
+      ::GetProcAddress(m_comCtlDll,"TaskDialogIndirect");
+    if (taskDialogIndirect != NULL)
+    {
+      int btn = 0;
+      if (SUCCEEDED((*taskDialogIndirect)(config,&btn,NULL,verify)))
+        return btn;
+    }
+  }
+  return 0;
+}
+
 bool OSLayer::DwmGetWindowAttribute(CWnd* wnd, DWORD attr, PVOID attrPtr, DWORD attrSize)
 {
   if (m_dwmDll)

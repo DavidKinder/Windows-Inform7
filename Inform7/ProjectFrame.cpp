@@ -195,8 +195,9 @@ private:
 };
 
 ProjectFrame::ProjectFrame(ProjectType projectType)
-  : m_projectType(projectType), m_busy(false), m_I6debug(false), m_game(m_skein),
-    m_focus(0), m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0), m_splitter(true)
+  : m_projectType(projectType), m_last5StartTime(0), m_busy(false), m_I6debug(false),
+    m_game(m_skein), m_focus(0), m_loadFilter(1),
+    m_menuGutter(0), m_menuTextGap(0,0), m_splitter(true)
 {
   if (m_projectType == Project_I7XP)
     m_skein.SetFile("");
@@ -1073,7 +1074,13 @@ LRESULT ProjectFrame::OnProgress(WPARAM wp, LPARAM lp)
   const char* text = (const char*)lp;
 
   if (pos >= 0)
+  {
+    int lastPos = m_progress.GetProgress();
     m_progress.TaskProgress(text,pos);
+
+    if ((lastPos < 95) && (pos >= 95))
+      m_last5StartTime = ::GetTickCount();
+  }
   else
   {
     // Make the progress bar invisible
@@ -2274,12 +2281,38 @@ bool ProjectFrame::CompileProject(bool release, bool test)
   // Run Natural Inform
   if (code == 0)
   {
+    m_last5StartTime = ::GetTickCount();
     code = theApp.RunCommand(NULL,NaturalCommandLine(release),"ni.exe",*this);
     if (code != 0)
       failed = "i7";
 
     GetPanel(0)->CompileProject(TabInterface::RanNaturalInform,code);
     GetPanel(1)->CompileProject(TabInterface::RanNaturalInform,code);
+
+    // Warn if Windows Defender might be slowing down the Natural Inform compiler
+    if (!test && (code == 0))
+    {
+      // Check if the last 5% of compiling took more than 15 seconds
+      DWORD niLast5Time = ::GetTickCount() - m_last5StartTime;
+      if ((niLast5Time > 15*1000) && (theApp.GetProfileInt("Window","Slow Compile Warn",1) != 0))
+      {
+        TASKDIALOGCONFIG config = { 0 };
+        config.cbSize = sizeof config;
+        config.hwndParent = GetSafeHwnd();
+        config.dwCommonButtons = TDCBF_OK_BUTTON;
+        config.pszWindowTitle = L_INFORM_TITLE;
+        config.pszMainIcon = TD_WARNING_ICON;
+        config.pszMainInstruction = L"It took longer than expected to convert the story text to Inform 6 code.";
+        config.pszContent =
+          L"Windows Defender is known to slow Inform 7 down. If you are using Windows Defender then you should "
+          L"consider configuring it to exclude from scanning the Inform7 executable, and the executables in the "
+          L"'Compilers' directory of the Inform 7 installation.";
+        config.pszVerificationText = L"Don't warn about this any more";
+        BOOL dontWarn = FALSE;
+        if (theOS.TaskDialogIndirect(&config,&dontWarn) == IDOK)
+          theApp.WriteProfileInt("Window","Slow Compile Warn",dontWarn ? 0 : 1);
+      }
+    }
   }
 
   // Run Inform 6

@@ -48,6 +48,11 @@ void ProgressWnd::ToFront()
     SetWindowPos(&CWnd::wndTop,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
 }
 
+int ProgressWnd::GetProgress()
+{
+  return m_progress.GetPos();
+}
+
 void ProgressWnd::TaskProgress(const char* text, int progress)
 {
   CString newText;

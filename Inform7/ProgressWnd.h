@@ -16,6 +16,7 @@ public:
   BOOL Create(CWnd* parentWnd, DWORD style);
 
   void ToFront();
+  int GetProgress();
   void TaskProgress(const char* text, int progress);
   void TaskDone();
 

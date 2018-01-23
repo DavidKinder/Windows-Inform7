@@ -52,6 +52,7 @@ public:
 
   int TaskDialog(CWnd* wnd,
     LPCWSTR main, LPCWSTR content, LPCWSTR caption, UINT msgBoxType);
+  int TaskDialogIndirect(const TASKDIALOGCONFIG* config, BOOL* verify);
 
   bool DwmGetWindowAttribute(CWnd* wnd,
     DWORD attr, PVOID attrPtr, DWORD attrSize);
