@@ -16,6 +16,8 @@
 #include "TabStory.h"
 #include "TabTranscript.h"
 
+#include <sys/stat.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -2292,25 +2294,28 @@ bool ProjectFrame::CompileProject(bool release, bool test)
     // Warn if Windows Defender might be slowing down the Natural Inform compiler
     if (!test && (code == 0))
     {
-      // Check if the last 5% of compiling took more than 15 seconds
-      DWORD niLast5Time = ::GetTickCount() - m_last5StartTime;
-      if ((niLast5Time > 15*1000) && (theApp.GetProfileInt("Window","Slow Compile Warn",1) != 0))
+      if (theApp.GetProfileInt("Window","Slow Compile Warn",1) != 0)
       {
-        TASKDIALOGCONFIG config = { 0 };
-        config.cbSize = sizeof config;
-        config.hwndParent = GetSafeHwnd();
-        config.dwCommonButtons = TDCBF_OK_BUTTON;
-        config.pszWindowTitle = L_INFORM_TITLE;
-        config.pszMainIcon = TD_WARNING_ICON;
-        config.pszMainInstruction = L"It took longer than expected to convert the story text to Inform 6 code.";
-        config.pszContent =
-          L"Windows Defender is known to slow Inform 7 down. If you are using Windows Defender then you should "
-          L"consider configuring it to exclude from scanning the Inform7 executable, and the executables in the "
-          L"'Compilers' directory of the Inform 7 installation.";
-        config.pszVerificationText = L"Don't warn about this any more";
-        BOOL dontWarn = FALSE;
-        if (theOS.TaskDialogIndirect(&config,&dontWarn) == IDOK)
-          theApp.WriteProfileInt("Window","Slow Compile Warn",dontWarn ? 0 : 1);
+        // Check if the last 5% of compiling took more than 15 seconds
+        DWORD niLast5Time = ::GetTickCount() - m_last5StartTime;
+        if (niLast5Time > GetMaxLast5Time())
+        {
+          TASKDIALOGCONFIG config = { 0 };
+          config.cbSize = sizeof config;
+          config.hwndParent = GetSafeHwnd();
+          config.dwCommonButtons = TDCBF_OK_BUTTON;
+          config.pszWindowTitle = L_INFORM_TITLE;
+          config.pszMainIcon = TD_WARNING_ICON;
+          config.pszMainInstruction = L"It took longer than expected to convert the story text to Inform 6 code.";
+          config.pszContent =
+            L"Windows Defender is known to slow Inform 7 down. If you are using Windows Defender then you should "
+            L"consider configuring it to exclude from scanning the Inform7 executable, and the executables in the "
+            L"'Compilers' directory of the Inform 7 installation.";
+          config.pszVerificationText = L"Don't warn about this any more";
+          BOOL dontWarn = FALSE;
+          if (theOS.TaskDialogIndirect(&config,&dontWarn) == IDOK)
+            theApp.WriteProfileInt("Window","Slow Compile Warn",dontWarn ? 0 : 1);
+        }
       }
     }
   }
@@ -2673,6 +2678,19 @@ bool ProjectFrame::BusyWantStop(void)
 {
   BusyProject busy(this);
   return WantStop();
+}
+
+DWORD ProjectFrame::GetMaxLast5Time(void)
+{
+  DWORD maxTime = 15*1000;
+  
+  // Scale the maximum time with the size of the Inform 6 source
+  CString autoFile;
+  autoFile.Format("%s\\Build\\auto.inf",(LPCSTR)m_projectDir);
+  struct _stat autoInfo;
+  if (_stat(autoFile,&autoInfo) == 0)
+    maxTime += autoInfo.st_size / 512;
+  return maxTime;
 }
 
 void ProjectFrame::MonitorProcess(InformApp::CreatedProcess cp, ProcessAction action, LPCSTR name)

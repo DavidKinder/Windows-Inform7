@@ -211,6 +211,7 @@ protected:
   void GenerateIntestReport(CString result);
   void GenerateIntestCombinedReport(void);
   bool BusyWantStop(void);
+  DWORD GetMaxLast5Time(void);
 
   Panel* GetPanel(int column) const;
   int ChoosePanel(Panel::Tabs newTab);
