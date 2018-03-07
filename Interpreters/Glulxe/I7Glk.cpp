@@ -18,6 +18,7 @@ extern "C" {
 
 #include <windows.h>
 #include "GlkTime.h"
+#include "WinGlk.h"
 
 #include <deque>
 #include <map>
@@ -210,6 +211,9 @@ extern "C" glui32 glk_gestalt_ext(glui32 sel, glui32 val, glui32 *arr, glui32 ar
 
   case gestalt_GraphicsCharInput:
     return 0;
+
+  case gestalt_GarglkText:
+    return 1;
   }
   return 0;
 }
@@ -1751,4 +1755,37 @@ giblorb_err_t giblorb_set_resource_map(strid_t file)
 extern "C" giblorb_map_t* giblorb_get_resource_map(void)
 {
   return blorbMap;
+}
+
+extern "C" void garglk_set_zcolors(glui32 fg, glui32 bg)
+{
+  garglk_set_zcolors_stream(glk_stream_get_current(),fg,bg);
+}
+
+extern "C" void garglk_set_zcolors_stream(strid_t str, glui32 fg, glui32 bg)
+{
+  if ((fg == zcolor_Current) && (bg == zcolor_Current))
+    return;
+
+  if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
+    fatalError("garglk_set_zcolors_stream() was called for an invalid stream.");
+
+  I7GlkWinStream* wstr = dynamic_cast<I7GlkWinStream*>((I7GlkStream*)str);
+  if (wstr != NULL)
+    wstr->setColours(fg, bg);
+}
+
+extern "C" void garglk_set_reversevideo(glui32 reverse)
+{
+  garglk_set_reversevideo_stream(glk_stream_get_current(),reverse);
+}
+
+extern "C" void garglk_set_reversevideo_stream(strid_t str, glui32 reverse)
+{
+  if (glkStreams.find((I7GlkStream*)str) == glkStreams.end())
+    fatalError("garglk_set_reversevideo_stream() was called for an invalid stream.");
+
+  I7GlkWinStream* wstr = dynamic_cast<I7GlkWinStream*>((I7GlkStream*)str);
+  if (wstr != NULL)
+    wstr->setReverse(reverse);
 }

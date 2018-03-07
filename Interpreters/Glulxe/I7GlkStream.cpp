@@ -1,6 +1,7 @@
 #include "I7GlkFile.h"
 #include "I7GlkStream.h"
 #include "I7GlkWindow.h"
+#include "WinGlk.h"
 #include "../../Inform7/InterpreterCommands.h"
 
 std::set<I7GlkStream*> glkStreams;
@@ -629,6 +630,9 @@ I7GlkWinStream::I7GlkWinStream(I7GlkWindow* win, glui32 rock) : I7GlkStream(rock
 {
   m_win = win;
   m_style = 0;
+  m_textColour = zcolor_Default;
+  m_backColour = zcolor_Default;
+  m_reverse = false;
 
   m_lastJustify = -1;
   m_newParagraph = true;
@@ -711,35 +715,33 @@ void I7GlkWinStream::putStr(glui32* s, glui32 len, bool check)
 void I7GlkWinStream::setStyle(glui32 style)
 {
   flush();
-  I7GlkStyle theStyle = m_win->getStyle(style);
   m_style = style;
 
-  {
-    int data[3];
-    data[0] = m_win->getId();
-    data[1] = StyleNormal;
-    if (theStyle.m_weight == 1)
-      data[1] |= StyleBold;
-    if (theStyle.m_italic)
-      data[1] |= StyleItalic;
-    if (theStyle.m_proportional == false)
-      data[1] |= StyleFixed;
-    if (theStyle.m_reverse)
-      data[1] |= StyleReverse;
-    data[2] = theStyle.m_size;
-    sendCommand(Command_SetStyle,sizeof data,data);
-  }
-  {
-    int data[7];
-    data[0] = m_win->getId();
-    data[1] = (theStyle.m_textColour & 0x00FF0000) >> 16;
-    data[2] = (theStyle.m_textColour & 0x0000FF00) >> 8;
-    data[3] = (theStyle.m_textColour & 0x000000FF);
-    data[4] = (theStyle.m_backColour & 0x00FF0000) >> 16;
-    data[5] = (theStyle.m_backColour & 0x0000FF00) >> 8;
-    data[6] = (theStyle.m_backColour & 0x000000FF);
-    sendCommand(Command_SetColour,sizeof data,data);
-  }
+  sendStyle();
+  sendColours();
+  if (m_newParagraph)
+    setParagraph();
+}
+
+void I7GlkWinStream::setColours(glui32 fg, glui32 bg)
+{
+  flush();
+  if (fg != zcolor_Current)
+    m_textColour = fg;
+  if (bg != zcolor_Current)
+    m_backColour = bg;
+
+  sendColours();
+  if (m_newParagraph)
+    setParagraph();
+}
+
+void I7GlkWinStream::setReverse(bool reverse)
+{
+  flush();
+  m_reverse = reverse;
+
+  sendStyle();
   if (m_newParagraph)
     setParagraph();
 }
@@ -774,6 +776,42 @@ void I7GlkWinStream::flush(void)
     sendCommand(Command_PrintOutput,m_buffered.size() * sizeof(wchar_t),&m_buffered[0]);
     m_buffered.resize(1);
   }
+}
+
+void I7GlkWinStream::sendStyle(void)
+{
+  I7GlkStyle theStyle = m_win->getStyle(m_style);
+
+  int data[3];
+  data[0] = m_win->getId();
+  data[1] = StyleNormal;
+  if (theStyle.m_weight == 1)
+    data[1] |= StyleBold;
+  if (theStyle.m_italic)
+    data[1] |= StyleItalic;
+  if (theStyle.m_proportional == false)
+    data[1] |= StyleFixed;
+  if (theStyle.m_reverse || m_reverse)
+    data[1] |= StyleReverse;
+  data[2] = theStyle.m_size;
+  sendCommand(Command_SetStyle,sizeof data,data);
+}
+
+void I7GlkWinStream::sendColours(void)
+{
+  I7GlkStyle theStyle = m_win->getStyle(m_style);
+  glui32 fg = (m_textColour != zcolor_Default) ? m_textColour : theStyle.m_textColour;
+  glui32 bg = (m_backColour != zcolor_Default) ? m_backColour : theStyle.m_backColour;
+
+  int data[7];
+  data[0] = m_win->getId();
+  data[1] = (fg & 0x00FF0000) >> 16;
+  data[2] = (fg & 0x0000FF00) >> 8;
+  data[3] = (fg & 0x000000FF);
+  data[4] = (bg & 0x00FF0000) >> 16;
+  data[5] = (bg & 0x0000FF00) >> 8;
+  data[6] = (bg & 0x000000FF);
+  sendCommand(Command_SetColour,sizeof data,data);
 }
 
 void I7GlkWinStream::addChar(glui32 c)

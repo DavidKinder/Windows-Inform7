@@ -156,16 +156,23 @@ public:
   void putStr(glui32* s, glui32 len, bool check);
 
   void setStyle(glui32 style);
+  void setColours(glui32 fg, glui32 bg);
+  void setReverse(bool reverse);
   void setParagraph(void);
   void setHyperlink(glui32 link);
 
   void flush(void);
+  void sendStyle(void);
+  void sendColours(void);
 
 protected:
   void addChar(glui32 c);
 
   I7GlkWindow* m_win;
   glui32 m_style;
+  glui32 m_textColour;
+  glui32 m_backColour;
+  bool m_reverse;
   std::vector<wchar_t> m_buffered;
 
   int m_lastJustify;
