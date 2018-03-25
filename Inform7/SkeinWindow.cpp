@@ -520,7 +520,7 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
 void SkeinWindow::SkeinEdited(bool edited)
 {
   if (GetSafeHwnd() != 0)
-    GetParentFrame()->SendMessage(WM_PROJECTEDITED);
+    GetParentFrame()->SendMessage(WM_PROJECTEDITED,0);
 }
 
 void SkeinWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)

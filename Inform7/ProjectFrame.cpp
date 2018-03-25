@@ -197,9 +197,9 @@ private:
 };
 
 ProjectFrame::ProjectFrame(ProjectType projectType)
-  : m_projectType(projectType), m_last5StartTime(0), m_busy(false), m_I6debug(false),
-    m_game(m_skein), m_focus(0), m_loadFilter(1),
-    m_menuGutter(0), m_menuTextGap(0,0), m_splitter(true)
+  : m_projectType(projectType), m_needCompile(true), m_last5StartTime(0),
+    m_busy(false), m_I6debug(false), m_game(m_skein), m_focus(0),
+    m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0), m_splitter(true)
 {
   if (m_projectType == Project_I7XP)
     m_skein.SetFile("");
@@ -596,6 +596,8 @@ void ProjectFrame::OnChangedExample()
     GetPanel(0)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,false);
     GetPanel(1)->GetTab(Panel::Tab_Skein)->OpenProject(m_projectDir,false);
     GetPanel(1)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,false);
+
+    m_needCompile = true;
   }
 }
 
@@ -1056,6 +1058,8 @@ LRESULT ProjectFrame::OnCanPlayAll(WPARAM wparam, LPARAM lparam)
 
 LRESULT ProjectFrame::OnProjectEdited(WPARAM wparam, LPARAM lparam)
 {
+  if (wparam != 0)
+    m_needCompile = true;
   DelayUpdateFrameTitle();
   return 0;
 }
@@ -1381,7 +1385,7 @@ void ProjectFrame::OnUpdateCompile(CCmdUI *pCmdUI)
 
 void ProjectFrame::OnPlayGo()
 {
-  if (CompileProject(false,false))
+  if (CompileProject(false,false,false))
   {
     m_skein.Reset(true);
     GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
@@ -1393,7 +1397,7 @@ void ProjectFrame::OnPlayGo()
 
 void ProjectFrame::OnPlayReplay()
 {
-  if (CompileProject(false,false))
+  if (CompileProject(false,false,false))
   {
     m_skein.Reset(false);
     GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
@@ -1412,7 +1416,7 @@ void ProjectFrame::OnPlayTest()
   switch (m_projectType)
   {
   case Project_I7:
-    if (CompileProject(false,true))
+    if (CompileProject(false,true,false))
     {
       m_skein.Reset(true);
       m_skein.NewLine(L"test me");
@@ -1487,7 +1491,7 @@ void ProjectFrame::OnPlayRefresh()
   HWND focus = GetFocus()->GetSafeHwnd();
 
   // Compile the project and show the index
-  if (CompileProject(false,false))
+  if (CompileProject(false,false,true))
     GetPanel(ChoosePanel(Panel::Tab_Index))->SetActiveTab(Panel::Tab_Index);
   else
     GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
@@ -1694,7 +1698,7 @@ void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)
 
 void ProjectFrame::OnReleaseGame(UINT nID)
 {
-  if (CompileProject((nID == ID_RELEASE_GAME),false))
+  if (CompileProject((nID == ID_RELEASE_GAME),false,true))
   {
     CString releasePath;
     const char* blorbExt = NULL;
@@ -1785,7 +1789,7 @@ void ProjectFrame::OnReleaseIFiction()
 {
   // Compile the project
   bool fileCreated = false;
-  if (CompileProject(false,false))
+  if (CompileProject(false,false,true))
   {
     // Check for an iFiction file
     CString iFictionFile;
@@ -2185,12 +2189,36 @@ bool ProjectFrame::SaveProject(const char* project)
   return saved;
 }
 
-bool ProjectFrame::CompileProject(bool release, bool test)
+bool ProjectFrame::CompileProject(bool release, bool test, bool force)
 {
   BusyProject busy(this);
 
   // Stop the game if running
   m_game.StopInterpreter(false);
+
+  // Do we need to compile?
+  if (!force)
+  {
+    if (!m_needCompile)
+    {
+      // If the source or settings files are more recent than the compiler
+      // output, we need to compile again.
+      CString outPath;
+      outPath.Format("%s\\Build\\output.%s",(LPCSTR)m_projectDir,
+        (LPCSTR)m_settings.GetOutputFormat());
+      CFileStatus outStatus;
+      if (CFile::GetStatus(outPath,outStatus))
+      {
+        TabSource* tab = (TabSource*)(GetPanel(0)->GetTab(Panel::Tab_Source));
+        if (tab->GetFileTimestamp(m_projectDir) > outStatus.m_mtime)
+          m_needCompile = true;
+        if (m_settings.GetFileTimestamp(m_projectDir) > outStatus.m_mtime)
+          m_needCompile = true;
+      }
+    }
+    if (!m_needCompile)
+      return true;
+  }
 
   // Save the project first
   if (SaveProject(m_projectDir) == false)
@@ -2366,6 +2394,8 @@ bool ProjectFrame::CompileProject(bool release, bool test)
     ::SetFocus(focus);
 
   // Finished compiling
+  if (code == 0)
+    m_needCompile = false;
   return (code == 0);
 }
 
@@ -3234,7 +3264,7 @@ ProjectFrame::Example ProjectFrame::GetCurrentExample(void)
 
 void ProjectFrame::TestCurrentExample(bool testAll)
 {
-  bool compiled = CompileProject(false,true);
+  bool compiled = CompileProject(false,true,true);
   if (!BusyWantStop())
   {
     if (compiled)

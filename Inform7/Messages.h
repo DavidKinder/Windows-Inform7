@@ -109,7 +109,8 @@ struct SourceRange
 
 // Sent to the window frame to indicate that the status of whether
 // the current project has been edited since it was last saved
-// should be checked, and updated if necessary.
+// should be checked, and updated if necessary. If wParam is not
+// zero then the project must now be recompiled.
 #define WM_PROJECTEDITED  WM_APP+26
 
 // Sent to the window frame to download and install the extensions

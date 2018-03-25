@@ -571,6 +571,15 @@ bool TabSource::CheckNeedReopen(const char* path)
   return false;
 }
 
+CTime TabSource::GetFileTimestamp(const char* path)
+{
+  CString fileName(GetSourcePath(path));
+  CFileStatus status;
+  if (CFile::GetStatus(fileName,status))
+    return status.m_mtime;
+  return CTime(0);
+}
+
 void TabSource::UpdateElasticTabStops(void)
 {
   SourceEdit& edit = m_source.GetEdit();

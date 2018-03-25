@@ -179,7 +179,7 @@ protected:
 
   void OpenProject(const char* project);
   bool SaveProject(const char* project);
-  bool CompileProject(bool release, bool test);
+  bool CompileProject(bool release, bool test, bool force);
   void RunProject(void);
   void CleanProject(void);
   bool IsProjectEdited(void);
@@ -248,6 +248,7 @@ protected:
   const ProjectType m_projectType;
   CString m_projectDir;
   CRegKey m_registryKey;
+  bool m_needCompile;
   DWORD m_last5StartTime;
 
   ProjectSettings m_settings;

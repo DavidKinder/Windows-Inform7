@@ -34,6 +34,7 @@ public:
   void PasteCode(const wchar_t* code);
   void UpdateSpellCheck(void);
   bool CheckNeedReopen(const char* path);
+  CTime GetFileTimestamp(const char* path);
   void UpdateElasticTabStops(void);
 
   // Implementation of SearchWindow::Source
@@ -73,7 +74,6 @@ private:
   int FindNextHeading(const CArray<SourceLexer::Heading>& headings, bool next, int i);
   int FindCurrentHeading(const CArray<SourceLexer::Heading>& headings);
   void ShowHeading(const CArray<SourceLexer::Heading>& headings, int idx);
-
   CString GetSourcePath(const char* path);
 
   FlatTab m_tab;

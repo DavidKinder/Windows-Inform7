@@ -425,12 +425,12 @@ void SourceEdit::OnFormatRenumber()
 
 void SourceEdit::OnSavePointReached(NMHDR*, LRESULT*)
 {
-  GetParentFrame()->PostMessage(WM_PROJECTEDITED);
+  GetParentFrame()->PostMessage(WM_PROJECTEDITED,0);
 }
 
 void SourceEdit::OnSavePointLeft(NMHDR*, LRESULT*)
 {
-  GetParentFrame()->PostMessage(WM_PROJECTEDITED);
+  GetParentFrame()->PostMessage(WM_PROJECTEDITED,1);
 }
 
 void SourceEdit::OnStyleNeeded(NMHDR* hdr, LRESULT*)

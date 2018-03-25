@@ -111,6 +111,17 @@ bool ProjectSettings::Save(const char* path)
   return true;
 }
 
+CTime ProjectSettings::GetFileTimestamp(const char* path)
+{
+  CString fileName = path;
+  fileName += SETTINGS_FILE;
+
+  CFileStatus status;
+  if (CFile::GetStatus(fileName,status))
+    return status.m_mtime;
+  return CTime(0);
+}
+
 CString ProjectSettings::GetInformSwitches(bool release, bool debugFile)
 {
   CString switches("-w");
