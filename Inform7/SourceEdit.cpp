@@ -24,6 +24,7 @@ BEGIN_MESSAGE_MAP(SourceEdit, CWnd)
   ON_WM_CONTEXTMENU()
   ON_WM_CHAR()
   ON_WM_MOUSEWHEEL()
+  ON_WM_GETDLGCODE()
 
   ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateEditUndo)
   ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
@@ -70,6 +71,29 @@ SourceEdit::SourceEdit() : m_fileTime(CTime::GetCurrentTime()), m_spell(this)
   m_includeExt = false;
 
   // Default preferences values
+  m_fontName = theApp.GetFontName(InformApp::FontDisplay);
+  m_fontSize = theApp.GetFontSize(InformApp::FontDisplay);
+  m_syntaxHighlight = true;
+  m_colourHead = theApp.GetColour(InformApp::ColourText);
+  m_colourMain = theApp.GetColour(InformApp::ColourText);
+  m_colourComment = theApp.GetColour(InformApp::ColourComment);
+  m_colourQuote = theApp.GetColour(InformApp::ColourQuote);
+  m_colourSubst = theApp.GetColour(InformApp::ColourSubstitution);
+  m_styleHead = 2; // Bold
+  m_styleMain = 0; // Regular
+  m_styleComment = 2;
+  m_styleQuote = 2;
+  m_styleSubst = 0;
+  m_underHead = false;
+  m_underMain = false;
+  m_underComment = false;
+  m_underQuote = false;
+  m_underSubst = false;
+  m_sizeHead = 0; // Normal
+  m_sizeMain = 0;
+  m_sizeComment = 1; // Small
+  m_sizeQuote = 0;
+  m_sizeSubst = 0;
   m_autoIndent = true;
   m_autoNumber = false;
   m_elasticTabStops = false;
@@ -181,6 +205,28 @@ BOOL SourceEdit::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
   if (nFlags & MK_CONTROL)
     return TRUE;
   return CWnd::OnMouseWheel(nFlags,zDelta,pt);
+}
+
+UINT SourceEdit::OnGetDlgCode()
+{
+  const MSG* msg = GetCurrentMessage();
+  if (msg->lParam)
+  {
+    msg = (MSG*)(msg->lParam);
+
+    // Let the dialog manager process dialog related keys
+    if (msg->message == WM_KEYDOWN)
+    {
+      switch (msg->wParam)
+      {
+      case VK_ESCAPE:
+      case VK_RETURN:
+      case VK_TAB:
+        return 0;
+      }
+    }
+  }
+  return CWnd::OnGetDlgCode();
 }
 
 void SourceEdit::OnUpdateEditUndo(CCmdUI *pCmdUI)
@@ -322,7 +368,7 @@ void SourceEdit::OnFormatShift(UINT id)
 namespace {
 bool isStringStyle(int style)
 {
-  return ((style == STYLE_QUOTE) || (style == STYLE_QUOTEBRACKET));
+  return ((style == STYLE_QUOTE) || (style == STYLE_SUBSTITUTION));
 }
 
 int commentDepth(int style)
@@ -451,7 +497,7 @@ void SourceEdit::OnCharAdded(NMHDR* hdr, LRESULT* res)
     // Get the current style
     int pos = CallEdit(SCI_GETCURRENTPOS);
     int style = (int)CallEdit(SCI_GETSTYLEAT,pos) & SourceLexer::StyleMask;
-    if ((style != STYLE_QUOTE) && (style != STYLE_QUOTEBRACKET))
+    if ((style != STYLE_QUOTE) && (style != STYLE_SUBSTITUTION))
     {
       // Get the previous line
       int line = CallEdit(SCI_LINEFROMPOSITION,pos);
@@ -718,17 +764,39 @@ BOOL SourceEdit::PreTranslateMessage(MSG* pMsg)
 
 void SourceEdit::SetStyles(COLORREF back)
 {
-  CallEdit(SCI_STYLESETFONT,STYLE_DEFAULT,(sptr_t)(LPCSTR)theApp.GetFontName(InformApp::FontDisplay));
-  CallEdit(SCI_STYLESETSIZE,STYLE_DEFAULT,theApp.GetFontSize(InformApp::FontDisplay));
-  CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,theApp.GetColour(InformApp::ColourText));
-  CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,back);
-  CallEdit(SCI_STYLECLEARALL);
-  CallEdit(SCI_STYLESETFORE,STYLE_QUOTE,theApp.GetColour(InformApp::ColourQuote));
-  CallEdit(SCI_STYLESETFORE,STYLE_QUOTEBRACKET,theApp.GetColour(InformApp::ColourQuoteBracket));
-  CallEdit(SCI_STYLESETFORE,STYLE_INFORM6,theApp.GetColour(InformApp::ColourInform6Code));
-  CallEdit(SCI_STYLESETBOLD,STYLE_HEADING,1);
-  for (int i = 0; i < NEST_COMMENTS; i++)
-    CallEdit(SCI_STYLESETFORE,STYLE_COMMENT+i,theApp.GetColour(InformApp::ColourComment));
+  CallEdit(SCI_STYLESETFONT,STYLE_DEFAULT,(sptr_t)(LPCSTR)m_fontName);
+  CallEdit(SCI_STYLESETSIZE,STYLE_DEFAULT,10 * m_fontSize);
+  if (m_syntaxHighlight)
+  {
+    CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,m_colourMain);
+    CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,back);
+    CallEdit(SCI_STYLECLEARALL);
+
+    CallEdit(SCI_STYLESETFORE,STYLE_QUOTE,m_colourQuote);
+    CallEdit(SCI_STYLESETFORE,STYLE_SUBSTITUTION,m_colourSubst);
+    CallEdit(SCI_STYLESETFORE,STYLE_INFORM6,theApp.GetColour(InformApp::ColourInform6Code));
+    CallEdit(SCI_STYLESETFORE,STYLE_HEADING,m_colourHead);
+    for (int i = 0; i < NEST_COMMENTS; i++)
+      CallEdit(SCI_STYLESETFORE,STYLE_COMMENT+i,m_colourComment);
+
+    SetSourceStyle(STYLE_TEXT,m_styleMain,m_underMain,m_sizeMain);
+    SetSourceStyle(STYLE_QUOTE,m_styleQuote,m_underQuote,m_sizeQuote);
+    SetSourceStyle(STYLE_SUBSTITUTION,m_styleSubst,m_underSubst,m_sizeSubst);
+    SetSourceStyle(STYLE_HEADING,m_styleHead,m_underHead,m_sizeHead);
+    for (int i = 0; i < NEST_COMMENTS; i++)
+      SetSourceStyle(STYLE_COMMENT+i,m_styleComment,m_underComment,m_sizeComment);
+  }
+  else
+  {
+    CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,theApp.GetColour(InformApp::ColourText));
+    CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,back);
+    CallEdit(SCI_STYLECLEARALL);
+  }
+}
+
+void SourceEdit::SetReadOnly(bool readOnly)
+{
+  CallEdit(SCI_SETREADONLY,readOnly);
 }
 
 void SourceEdit::SetDocument(SourceEdit* master)
@@ -1102,29 +1170,80 @@ CHARRANGE SourceEdit::FindText(LPCWSTR text, bool fromSelect, bool down, bool ma
   return result;
 }
 
-void SourceEdit::LoadSettings(CRegKey& key)
+void SourceEdit::LoadSettings(SourceSettings& set, COLORREF back)
 {
   DWORD value;
-  if (key.QueryDWORDValue("Source Tab Size Chars",value) == ERROR_SUCCESS)
+  {
+    char fontName[MAX_PATH] = "";
+    if (set.GetString("Source Font Name",fontName,MAX_PATH))
+      m_fontName = fontName;
+    if (set.GetDWord("Source Font Size",value))
+      m_fontSize = value;
+  }
+  if (set.GetDWord("Syntax Highlighting",value))
+    m_syntaxHighlight = (value != 0);
+  if (set.GetDWord("Headings Colour",value))
+    m_colourHead = (COLORREF)value;
+  if (set.GetDWord("Main Text Colour",value))
+    m_colourMain = (COLORREF)value;
+  if (set.GetDWord("Comments Colour",value))
+    m_colourComment = (COLORREF)value;
+  if (set.GetDWord("Quoted Text Colour",value))
+    m_colourQuote = (COLORREF)value;
+  if (set.GetDWord("Substitutions Colour",value))
+    m_colourSubst = (COLORREF)value;
+  if (set.GetDWord("Headings Style",value))
+    m_styleHead = (int)value;
+  if (set.GetDWord("Main Text Style",value))
+    m_styleMain = (int)value;
+  if (set.GetDWord("Comments Style",value))
+    m_styleComment = (int)value;
+  if (set.GetDWord("Quoted Text Style",value))
+    m_styleQuote = (int)value;
+  if (set.GetDWord("Substitutions Style",value))
+    m_styleSubst = (int)value;
+  if (set.GetDWord("Headings Underline",value))
+    m_underHead = (value != 0);
+  if (set.GetDWord("Main Text Underline",value))
+    m_underMain = (value != 0);
+  if (set.GetDWord("Comments Underline",value))
+    m_underComment = (value != 0);
+  if (set.GetDWord("Quoted Text Underline",value))
+    m_underQuote = (value != 0);
+  if (set.GetDWord("Substitutions Underline",value))
+    m_underSubst = (value != 0);
+  if (set.GetDWord("Headings Size",value))
+    m_sizeHead = (int)value;
+  if (set.GetDWord("Main Text Size",value))
+    m_sizeMain = (int)value;
+  if (set.GetDWord("Comments Size",value))
+    m_sizeComment = (int)value;
+  if (set.GetDWord("Quoted Text Size",value))
+    m_sizeQuote = (int)value;
+  if (set.GetDWord("Substitutions Size",value))
+    m_sizeSubst = (int)value;
+  SetStyles(back);
+
+  if (set.GetDWord("Source Tab Size Chars",value))
   {
     if (value > 0)
       CallEdit(SCI_SETTABWIDTH,value);
   }
 
-  if (key.QueryDWORDValue("Auto Indent",value) == ERROR_SUCCESS)
+  if (set.GetDWord("Auto Indent",value))
     m_autoIndent = (value != 0);
-  if (key.QueryDWORDValue("Auto Number Sections",value) == ERROR_SUCCESS)
+  if (set.GetDWord("Auto Number Sections",value))
     m_autoNumber = (value != 0);
 
   // Adjust elastic tabstops
   bool elastic = true;
-  if (key.QueryDWORDValue("Auto Space Tables",value) == ERROR_SUCCESS)
+  if (set.GetDWord("Auto Space Tables",value))
     elastic = (value != 0);
   SetElasticTabStops(elastic);
 
   // Adjust wrapped line indentation
   bool indent = true;
-  if (key.QueryDWORDValue("Indent Wrapped Lines",value) == ERROR_SUCCESS)
+  if (set.GetDWord("Indent Wrapped Lines",value))
     indent = (value != 0);
   if (indent)
   {
@@ -1139,13 +1258,11 @@ void SourceEdit::LoadSettings(CRegKey& key)
   }
 }
 
-void SourceEdit::PrefsChanged(COLORREF back)
+void SourceEdit::PrefsChanged(void)
 {
-  SetStyles(back);
-  Invalidate();
-
   // Somewhat tortuously, this causes Scintilla to update its internal style state, so
-  // that any calls before the next re-paint get the correct style or sizing information
+  // that any calls before the next re-paint get the correct style or sizing information.
+  Invalidate();
   CallEdit(WM_QUERYNEWPALETTE);
 }
 
@@ -1337,4 +1454,23 @@ bool SourceEdit::IsLineInExtDoc(const CArray<SourceLexer::Heading>& headings, in
     }
   }
   return false;
+}
+
+void SourceEdit::SetSourceStyle(int style, int boldItalic, bool underline, int size)
+{
+  // Values for the "boldItalic" argument are:
+  //  0 - Regular
+  //  1 - Italic
+  //  2 - Bold
+  //  3 - Bold + Italic
+  // Values for the "size" argument are:
+  //  0 - Normal
+  //  1 - Small
+  CallEdit(SCI_STYLESETITALIC,style,((boldItalic == 1) || (boldItalic == 3)) ? 1 : 0);
+  CallEdit(SCI_STYLESETBOLD,style,((boldItalic == 2) || (boldItalic == 3)) ? 1 : 0);
+
+  CallEdit(SCI_STYLESETUNDERLINE,style,underline ? 1 : 0);
+
+  int sizeShift = (size == 1) ? -m_fontSize : 0;
+  CallEdit(SCI_STYLESETSIZE,style,(10 * m_fontSize) + sizeShift);
 }

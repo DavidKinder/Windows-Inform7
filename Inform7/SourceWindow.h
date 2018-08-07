@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SourceEdit.h"
+#include "SourceSettings.h"
 #include "Dib.h"
 #include "Inform.h"
 #include "Messages.h"
@@ -12,8 +13,9 @@ class SourceWindow : public CWnd
 public:
   SourceWindow();
 
-  void Create(CWnd* parent, ProjectType projectType);
+  void Create(CWnd* parent, ProjectType projectType, bool border);
   SourceEdit& GetEdit(void);
+  void LoadSettings(SourceSettings& set);
   void PrefsChanged(void);
 
   const SourceHeading& GetHeading(void);
@@ -44,6 +46,7 @@ private:
   CRect PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bool top);
   CDibSection* CreateTornImage(const char* inputImage, const char* outputName);
 
+  bool m_border;
   COLORREF m_back;
   SourceEdit m_edit;
   SourceHeading m_heading;

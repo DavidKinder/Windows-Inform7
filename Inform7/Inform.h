@@ -57,7 +57,7 @@ public:
     ColourBack,
     ColourText,
     ColourQuote,
-    ColourQuoteBracket,
+    ColourSubstitution,
     ColourComment,
     ColourError,
     ColourHighlight,

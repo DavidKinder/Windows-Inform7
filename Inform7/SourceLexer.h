@@ -2,7 +2,7 @@
 
 #define STYLE_TEXT         0
 #define STYLE_QUOTE        1
-#define STYLE_QUOTEBRACKET 2
+#define STYLE_SUBSTITUTION 2
 #define STYLE_INFORM6      3
 #define STYLE_HEADING      4
 #define STYLE_COMMENT      5

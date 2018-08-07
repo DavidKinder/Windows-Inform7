@@ -406,6 +406,12 @@
 				RelativePath="SourceLexer.h">
 			</File>
 			<File
+				RelativePath="SourceSettings.cpp">
+			</File>
+			<File
+				RelativePath="SourceSettings.h">
+			</File>
+			<File
 				RelativePath="SourceWindow.cpp">
 			</File>
 			<File
@@ -643,6 +649,12 @@
 				RelativePath="ArrowButton.h">
 			</File>
 			<File
+				RelativePath="..\..\..\Libraries\mfc\ColourButton.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\Libraries\mfc\ColourButton.h">
+			</File>
+			<File
 				RelativePath="FlatButton.cpp">
 			</File>
 			<File
@@ -659,6 +671,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Libraries\mfc\MenuBar.h">
+			</File>
+			<File
+				RelativePath="NoFocusCheck.cpp">
+			</File>
+			<File
+				RelativePath="NoFocusCheck.h">
 			</File>
 			<File
 				RelativePath="RichEdit.cpp">
@@ -723,6 +741,9 @@
 			</File>
 			<File
 				RelativePath="res\Toolbar.bmp">
+			</File>
+			<File
+				RelativePath="res\ToolbarDisable.bmp">
 			</File>
 			<File
 				RelativePath="res\ToolbarGrey.bmp">

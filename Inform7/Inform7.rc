@@ -71,7 +71,7 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "New Ex&tension Project"
         BEGIN
-            MENUITEM "&New Extension...",       ID_FILE_NEW_XP
+            MENUITEM "&New Extension...",           ID_FILE_NEW_XP
             POPUP "&Create From Installed Extension"
             BEGIN
                 MENUITEM SEPARATOR
@@ -179,6 +179,7 @@ BEGIN
             MENUITEM "&Transcript\tCtrl+F5",        ID_WINDOW_TAB_TRANSCRIPT
             MENUITEM "St&ory\tCtrl+F6",             ID_WINDOW_TAB_STORY
             MENUITEM "&Documentation\tCtrl+F7",     ID_WINDOW_TAB_DOCUMENTATION
+
             MENUITEM "&Extensions\tCtrl+F8",        ID_WINDOW_TAB_EXTENSIONS
             MENUITEM "Sett&ings\tCtrl+F9",          ID_WINDOW_TAB_SETTINGS
             MENUITEM SEPARATOR
@@ -477,36 +478,133 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,216,100,76,14
 END
 
-IDD_PREFERENCES DIALOGEX 0, 0, 231, 226
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Preferences"
+IDD_PREFS_EDIT DIALOGEX 0, 0, 250, 331
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Editing"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Fonts",IDC_STATIC,7,7,217,47
-    LTEXT           "&Font",IDC_STATIC,13,19,15,8
-    COMBOBOX        IDC_FONT,34,17,138,182,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_FONTSIZE,181,17,32,182,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Fixed &width font",IDC_STATIC,13,36,54,8
-    COMBOBOX        IDC_FIXEDFONT,70,34,143,182,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Source",IDC_STATIC,7,58,217,56
-    LTEXT           "&Tab width (in spaces)",IDC_STATIC,14,70,73,8
-    EDITTEXT        IDC_TABSIZE,93,68,37,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "&Indent wrapped lines",IDC_INDENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,85,82,10
-    CONTROL         "A&uto-indent after newline",IDC_AUTO_INDENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,98,98,10
-    CONTROL         "Auto-space ta&ble columns",IDC_ELASTIC_TABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,85,98,10
-    CONTROL         "Auto-&number sections",IDC_AUTO_NUMBER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,98,89,10
-    GROUPBOX        "Advanced",IDC_STATIC,7,118,217,83
-    CONTROL         "&Clean build files from projects before closing",IDC_CLEANFILES,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,14,130,163,10
-    CONTROL         "&Also clean out index files",IDC_CLEANINDEX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,142,126,10
-    LTEXT           "Glul&x interpreter",IDC_STATIC,14,157,56,8
-    COMBOBOX        IDC_GLULX,73,155,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "&Start by loading the last opened project",IDC_STARTLAST,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,172,149,10
-    CONTROL         "Generate Inform &6 debugging information",IDC_I6DEBUGGING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,185,158,10
-    DEFPUSHBUTTON   "OK",IDOK,117,207,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,174,207,50,14
+    GROUPBOX        "Text",IDC_STATIC,6,14,238,54
+    RTEXT           "&Font family",IDC_STATIC,14,25,40,8
+    COMBOBOX        IDC_FONT,60,23,149,200,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Font &size",IDC_STATIC,16,40,37,8
+    COMBOBOX        IDC_FONTSIZE,60,38,32,182,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "points",IDC_STATIC,95,40,26,8
+    RTEXT           "Paper colour",IDC_STATIC,9,54,44,8
+    LTEXT           "Source",IDC_STATIC,59,54,23,8
+    PUSHBUTTON      "",IDC_COLOUR_SOURCE,85,53,30,11
+    LTEXT           "Extensions",IDC_STATIC,127,54,35,8
+    PUSHBUTTON      "",IDC_COLOUR_EXT,165,53,30,11
+    GROUPBOX        "Syntax highlighting",IDC_STATIC,6,70,238,96
+    CONTROL         "Enable",IDC_ENABLE_HIGHLIGHT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,13,81,35,10
+    LTEXT           "Colour",IDC_STATIC,58,83,22,8
+    LTEXT           "Font style",IDC_STATIC,95,83,32,8
+    LTEXT           "Underline",IDC_STATIC,142,83,32,8
+    LTEXT           "Font size",IDC_STATIC,191,83,30,8
+    RTEXT           "Headings",IDC_STATIC,15,95,38,8
+    PUSHBUTTON      "",IDC_HEAD_COLOUR,58,93,22,11
+    COMBOBOX        IDC_HEAD_STYLE,88,93,46,76,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "",IDC_HEAD_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    151,94,10,10
+    COMBOBOX        IDC_HEAD_SIZE,183,93,46,69,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    RTEXT           "Main text",IDC_STATIC,13,109,40,8
+    PUSHBUTTON      "",IDC_MAIN_COLOUR,58,107,22,11
+    COMBOBOX        IDC_MAIN_STYLE,88,107,46,82,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_MAIN_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    151,108,10,10
+    COMBOBOX        IDC_MAIN_SIZE,183,107,46,73,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Comments",IDC_STATIC,13,123,40,8
+    PUSHBUTTON      "",IDC_COMMENT_COLOUR,58,121,22,11
+    COMBOBOX        IDC_COMMENT_STYLE,88,121,46,79,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_COMMENT_UNDER,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,151,122,10,10
+    COMBOBOX        IDC_COMMENT_SIZE,183,121,46,96,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Quoted text",IDC_STATIC,8,137,45,8
+    PUSHBUTTON      "",IDC_QUOTE_COLOUR,58,135,22,11
+    COMBOBOX        IDC_QUOTE_STYLE,88,135,46,66,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_QUOTE_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    151,136,10,10
+    COMBOBOX        IDC_QUOTE_SIZE,183,135,46,81,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Substitutions",IDC_STATIC,8,151,45,8
+    PUSHBUTTON      "",IDC_SUBST_COLOUR,58,149,22,11
+    COMBOBOX        IDC_SUBST_STYLE,88,149,46,80,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_SUBST_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    151,150,10,10
+    COMBOBOX        IDC_SUBST_SIZE,183,149,46,61,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Tab width",IDC_STATIC,6,168,238,26
+    CONTROL         "",IDC_TABSIZE,"msctls_trackbar32",TBS_AUTOTICKS | 
+                    WS_TABSTOP,18,176,215,17
+    GROUPBOX        "Indenting",IDC_STATIC,6,196,120,45
+    CONTROL         "&Indent wrapped lines",IDC_INDENT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,13,206,82,10
+    CONTROL         "A&uto-indent after newline",IDC_AUTO_INDENT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,13,216,96,10
+    CONTROL         "Auto-space ta&ble columns",IDC_ELASTIC_TABS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,13,226,97,10
+    GROUPBOX        "Numbering",IDC_STATIC,133,196,111,45
+    CONTROL         "Auto-&number sections",IDC_AUTO_NUMBER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,139,206,84,10
+    PUSHBUTTON      "Restore default settings",IDC_RESTORE,154,3,90,12
+    EDITTEXT        IDC_PREVIEW,6,247,238,77,ES_AUTOHSCROLL | NOT WS_VISIBLE
+END
+
+IDD_PREFS_TEXT DIALOGEX 0, 0, 250, 81
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Text"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    RTEXT           "Application &font",IDC_STATIC,17,10,55,8
+    COMBOBOX        IDC_FONT,80,8,143,200,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Fixed &width font",IDC_STATIC,15,27,57,8
+    COMBOBOX        IDC_FIXEDFONT,80,25,143,200,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Font &size",IDC_STATIC,35,47,37,8
+    COMBOBOX        IDC_FONTSIZE,80,45,32,182,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "points",IDC_STATIC,115,47,26,8
+    CTEXT           "Source text is controlled separately from the Editing tab.",
+                    IDC_STATIC,33,68,185,8
+END
+
+IDD_PREFS_ADVANCED DIALOGEX 0, 0, 250, 145
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Advanced"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Cleaning",IDC_STATIC,5,3,187,40
+    CONTROL         "&Clean build files from projects before closing",
+                    IDC_CLEANFILES,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | 
+                    WS_TABSTOP,13,15,163,10
+    CONTROL         "&Also clean out index files",IDC_CLEANINDEX,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,22,27,126,10
+    GROUPBOX        "Interpreters",IDC_STATIC,5,45,187,31
+    LTEXT           "Glul&x interpreter",IDC_STATIC,14,59,56,8
+    COMBOBOX        IDC_GLULX,74,57,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    GROUPBOX        "Starting",IDC_STATIC,5,78,187,30
+    CONTROL         "&Start by loading the last opened project",
+                    IDC_STARTLAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,
+                    90,149,10
+    GROUPBOX        "Compiler",IDC_STATIC,5,110,187,30
+    CONTROL         "Generate Inform &6 debugging information",
+                    IDC_I6DEBUGGING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,
+                    122,158,10
 END
 
 
@@ -595,12 +693,12 @@ BEGIN
         BOTTOMMARGIN, 132
     END
 
-    IDD_PREFERENCES, DIALOG
+    IDD_PREFS_EDIT, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 196
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 219
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 244
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 324
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -636,7 +734,7 @@ IDR_FLAT_SELECT         BITMAP                  "res\\TabSelect.bmp"
 // Dialog Info
 //
 
-IDD_PREFERENCES DLGINIT
+IDD_PREFS_TEXT DLGINIT
 BEGIN
     IDC_FONTSIZE, 0x403, 2, 0
 0x0038, 
@@ -664,10 +762,106 @@ BEGIN
 0x3632, "\000" 
     IDC_FONTSIZE, 0x403, 3, 0
 0x3832, "\000" 
+    0
+END
+
+IDD_PREFS_ADVANCED DLGINIT
+BEGIN
     IDC_GLULX, 0x403, 7, 0
 0x6c47, 0x6c75, 0x6578, "\000" 
     IDC_GLULX, 0x403, 4, 0
 0x6947, 0x0074, 
+    0
+END
+
+IDD_PREFS_EDIT DLGINIT
+BEGIN
+    IDC_FONTSIZE, 0x403, 2, 0
+0x0038, 
+    IDC_FONTSIZE, 0x403, 2, 0
+0x0039, 
+    IDC_FONTSIZE, 0x403, 3, 0
+0x3031, "\000" 
+    IDC_FONTSIZE, 0x403, 3, 0
+0x3131, "\000" 
+    IDC_FONTSIZE, 0x403, 3, 0
+0x3231, "\000" 
+    IDC_FONTSIZE, 0x403, 3, 0
+0x3431, "\000" 
+    IDC_FONTSIZE, 0x403, 3, 0
+0x3631, "\000" 
+    IDC_FONTSIZE, 0x403, 3, 0
+0x3831, "\000" 
+    IDC_FONTSIZE, 0x403, 3, 0
+0x3032, "\000" 
+    IDC_FONTSIZE, 0x403, 3, 0
+0x3232, "\000" 
+    IDC_FONTSIZE, 0x403, 3, 0
+0x3432, "\000" 
+    IDC_FONTSIZE, 0x403, 3, 0
+0x3632, "\000" 
+    IDC_FONTSIZE, 0x403, 3, 0
+0x3832, "\000" 
+    IDC_HEAD_STYLE, 0x403, 8, 0
+0x6552, 0x7567, 0x616c, 0x0072, 
+    IDC_HEAD_STYLE, 0x403, 7, 0
+0x7449, 0x6c61, 0x6369, "\000" 
+    IDC_HEAD_STYLE, 0x403, 5, 0
+0x6f42, 0x646c, "\000" 
+    IDC_HEAD_STYLE, 0x403, 12, 0
+0x6f42, 0x646c, 0x492b, 0x6174, 0x696c, 0x0063, 
+    IDC_HEAD_SIZE, 0x403, 7, 0
+0x6f4e, 0x6d72, 0x6c61, "\000" 
+    IDC_HEAD_SIZE, 0x403, 6, 0
+0x6d53, 0x6c61, 0x006c, 
+    IDC_MAIN_STYLE, 0x403, 8, 0
+0x6552, 0x7567, 0x616c, 0x0072, 
+    IDC_MAIN_STYLE, 0x403, 7, 0
+0x7449, 0x6c61, 0x6369, "\000" 
+    IDC_MAIN_STYLE, 0x403, 5, 0
+0x6f42, 0x646c, "\000" 
+    IDC_MAIN_STYLE, 0x403, 12, 0
+0x6f42, 0x646c, 0x492b, 0x6174, 0x696c, 0x0063, 
+    IDC_MAIN_SIZE, 0x403, 7, 0
+0x6f4e, 0x6d72, 0x6c61, "\000" 
+    IDC_MAIN_SIZE, 0x403, 6, 0
+0x6d53, 0x6c61, 0x006c, 
+    IDC_COMMENT_STYLE, 0x403, 8, 0
+0x6552, 0x7567, 0x616c, 0x0072, 
+    IDC_COMMENT_STYLE, 0x403, 7, 0
+0x7449, 0x6c61, 0x6369, "\000" 
+    IDC_COMMENT_STYLE, 0x403, 5, 0
+0x6f42, 0x646c, "\000" 
+    IDC_COMMENT_STYLE, 0x403, 12, 0
+0x6f42, 0x646c, 0x492b, 0x6174, 0x696c, 0x0063, 
+    IDC_COMMENT_SIZE, 0x403, 7, 0
+0x6f4e, 0x6d72, 0x6c61, "\000" 
+    IDC_COMMENT_SIZE, 0x403, 6, 0
+0x6d53, 0x6c61, 0x006c, 
+    IDC_QUOTE_STYLE, 0x403, 8, 0
+0x6552, 0x7567, 0x616c, 0x0072, 
+    IDC_QUOTE_STYLE, 0x403, 7, 0
+0x7449, 0x6c61, 0x6369, "\000" 
+    IDC_QUOTE_STYLE, 0x403, 5, 0
+0x6f42, 0x646c, "\000" 
+    IDC_QUOTE_STYLE, 0x403, 12, 0
+0x6f42, 0x646c, 0x492b, 0x6174, 0x696c, 0x0063, 
+    IDC_QUOTE_SIZE, 0x403, 7, 0
+0x6f4e, 0x6d72, 0x6c61, "\000" 
+    IDC_QUOTE_SIZE, 0x403, 6, 0
+0x6d53, 0x6c61, 0x006c, 
+    IDC_SUBST_STYLE, 0x403, 8, 0
+0x6552, 0x7567, 0x616c, 0x0072, 
+    IDC_SUBST_STYLE, 0x403, 7, 0
+0x7449, 0x6c61, 0x6369, "\000" 
+    IDC_SUBST_STYLE, 0x403, 5, 0
+0x6f42, 0x646c, "\000" 
+    IDC_SUBST_STYLE, 0x403, 12, 0
+0x6f42, 0x646c, 0x492b, 0x6174, 0x696c, 0x0063, 
+    IDC_SUBST_SIZE, 0x403, 7, 0
+0x6f4e, 0x6d72, 0x6c61, "\000" 
+    IDC_SUBST_SIZE, 0x403, 6, 0
+0x6d53, 0x6c61, 0x006c, 
     0
 END
 
@@ -688,16 +882,17 @@ BEGIN
     ID_FILE_INSTALL_EXT     "Install an extension for use in Inform projects"
     ID_FILE_INSTALL_FOLDER  "Open an Explorer window in the installed extensions folder"
     ID_FILE_INSTALL_XP      "Install this extension\nInstall"
-    ID_FILE_NEW_XP          "Start a new extension project"
     ID_FILE_NEW_EXT         "Start a new extension"
-    ID_FILE_EXPORT_EXT      "Export this extension as a .i7x file"
+    ID_FILE_NEW_XP          "Start a new extension project"
     ID_FILE_IMPORT_SKEIN    "Import story commands into the skein from a text file"
+    ID_FILE_EXPORT_EXT      "Export this extension as a .i7x file"
     ID_EDIT_DELETE          "Delete the selected text"
-    ID_EDIT_SPELLING        "Spell check the source"
 END
 
 STRINGTABLE 
 BEGIN
+    ID_EDIT_SPELLING        "Spell check the source"
+    ID_EDIT_SCROLL          "Scroll to the currently selected text"
     ID_FORMAT_SHIFT_RIGHT   "Shift the selected lines one tab to the right"
     ID_FORMAT_SHIFT_LEFT    "Shift the selected lines one tab to the left"
     ID_FORMAT_COMMENT       "Comment out the selected lines"
@@ -707,11 +902,11 @@ BEGIN
     ID_PLAY_STOP            "Stop the story that is currently running\nStop"
     ID_PLAY_TEST            "Translate the story and run the ""test me"" command\nTest"
     ID_PLAY_TEST_EXAMPLES   "Translate and test the examples\nTest"
-    ID_PLAY_REFRESH         "Translate the story and refresh the index\nRefresh"
 END
 
 STRINGTABLE 
 BEGIN
+    ID_PLAY_REFRESH         "Translate the story and refresh the index\nRefresh"
     ID_PLAY_LOAD            "Load and play a story"
     ID_PLAY_REPLAY          "Translate the story, and re-run through the skein to the previously active play point\nReplay"
     ID_REPLAY_ALL           "Play all threads in the skein in sequence"
@@ -809,7 +1004,6 @@ BEGIN
     ID_EDIT_SELECT_ALL      "Select all text in the current panel"
     ID_EDIT_UNDO            "Undo the last change"
     ID_EDIT_REDO            "Redo the last undone change"
-    ID_EDIT_SCROLL          "Scroll to the currently selected text"
 END
 
 STRINGTABLE 
@@ -822,18 +1016,23 @@ STRINGTABLE
 BEGIN
     ID_SKEIN_LABEL          "Show a menu of the labelled commands: selecting a command will go to it"
     ID_SKEIN_PLAY           "Play the story to this command in the skein, restarting if necessary"
-    ID_SKEIN_PLAY_ALL       "Play all threads in the skein";
-    ID_SKEIN_INSERT_PREVIOUS "Insert a new command before this one"
-    ID_SKEIN_INSERT_NEXT    "Insert a new command after this one"
-    ID_SKEIN_DELETE         "Delete this command"
     ID_SKEIN_EDIT           "Edit the text for this command"
     ID_SKEIN_ADD_LABEL      "Add a label to this command"
     ID_SKEIN_EDIT_LABEL     "Edit the label for this command"
-    ID_SKEIN_DELETE_ALL     "Delete this command and all threads below it"
-    ID_SKEIN_SPLIT_THREAD   "Insert a new command after this one by splitting the thread"
-    ID_SKEIN_SAVE_TRANSCRIPT "Save the transcript of play for the selected thread"
     ID_SKEIN_BLESS          "Bless this command"
     ID_SKEIN_BLESS_ALL      "Bless this command and all commands before it"
+    ID_SKEIN_INSERT_NEXT    "Insert a new command after this one"
+    ID_SKEIN_SPLIT_THREAD   "Insert a new command after this one by splitting the thread"
+    ID_SKEIN_INSERT_PREVIOUS "Insert a new command before this one"
+    ID_SKEIN_DELETE         "Delete this command"
+    ID_SKEIN_DELETE_ALL     "Delete this command and all threads below it"
+    ID_SKEIN_SAVE_TRANSCRIPT 
+                            "Save the transcript of play for the selected thread"
+    ID_SKEIN_PLAY_ALL       "Play all threads in the skein"
+END
+
+STRINGTABLE 
+BEGIN
     ID_SKEIN_LOCK           "Lock this command and all those that lead to it"
     ID_SKEIN_UNLOCK         "Unlock this command and all those that come after it"
     ID_SKEIN_TRIM           "Remove unlocked commands, starting from this command"

@@ -30,5 +30,4 @@ public:
 protected:
   ArrowStyle m_style;
   bool m_mouseOver;
-  bool m_customDraw;
 };

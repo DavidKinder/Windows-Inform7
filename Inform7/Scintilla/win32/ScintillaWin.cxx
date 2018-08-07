@@ -1875,13 +1875,13 @@ void ScintillaWin::ImeStartComposition() {
 			// The logfont for the IME is recreated here.
 			int styleHere = (pdoc->StyleAt(currentPos)) & 31;
 			LOGFONTA lf = {0,0,0,0,0,0,0,0,0,0,0,0,0, ""};
-			int sizeZoomed = vs.styles[styleHere].size + vs.zoomLevel;
+			int sizeZoomed = vs.styles[styleHere].size + (10 * vs.zoomLevel); /* XXXXDK Font size 1/10 point */
 			if (sizeZoomed <= 2)	// Hangs if sizeZoomed <= 1
 				sizeZoomed = 2;
 			AutoSurface surface(this);
 			int deviceHeight = sizeZoomed;
 			if (surface) {
-				deviceHeight = (sizeZoomed * surface->LogPixelsY()) / 72;
+				deviceHeight = (sizeZoomed * surface->LogPixelsY()) / 720; /* XXXXDK Font size 1/10 point */
 			}
 			// The negative is to allow for leading
 			lf.lfHeight = -(abs(deviceHeight));

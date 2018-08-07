@@ -3,6 +3,7 @@
 #include "ProjectFrame.h"
 #include "Inform.h"
 #include "Messages.h"
+#include "SourceSettings.h"
 #include "TextFormat.h"
 #include "NewDialogs.h"
 #include "Dialogs.h"
@@ -897,8 +898,9 @@ void ExtensionFrame::SendChanged(InformApp::Changed changed, int value)
       CRegKey registryKey;
       if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
       {
-        m_edit.LoadSettings(registryKey);
-        m_edit.PrefsChanged(theApp.GetColour(InformApp::ColourBack));
+        SourceSettingsRegistry set(registryKey);
+        m_edit.LoadSettings(set,GetBackColour(registryKey));
+        m_edit.PrefsChanged();
       }
     }
     break;
@@ -934,7 +936,8 @@ void ExtensionFrame::SetFromRegistryPath(const char* path)
       SetWindowPlacement(&place);
 
     // Allow the source editor to load settings
-    m_edit.LoadSettings(registryKey);
+    SourceSettingsRegistry set(registryKey);
+    m_edit.LoadSettings(set,GetBackColour(registryKey));
   }
 }
 
@@ -948,4 +951,13 @@ bool ExtensionFrame::IsUserExtension(void)
   // Check we are not saving under the program directory
   CString appDir = theApp.GetAppDir();
   return (strncmp(m_extension,appDir,appDir.GetLength()) != 0);
+}
+
+COLORREF ExtensionFrame::GetBackColour(CRegKey& key)
+{
+  // Use the source paper colour for the background
+  DWORD colour;
+  if (key.QueryDWORDValue("Source Paper Colour",colour) == ERROR_SUCCESS)
+    return (COLORREF)colour;
+  return theApp.GetColour(InformApp::ColourBack);
 }

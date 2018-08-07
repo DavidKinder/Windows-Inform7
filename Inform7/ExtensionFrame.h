@@ -66,6 +66,7 @@ protected:
   void SetFromRegistryPath(const char* path);
   bool IsProjectEdited(void);
   bool IsUserExtension(void);
+  COLORREF GetBackColour(CRegKey& key);
 
   SourceEdit m_edit;
   CString m_extension;

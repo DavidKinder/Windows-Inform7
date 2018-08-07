@@ -106,7 +106,7 @@ void ReportEdit::SetFormat(bool fixed)
 void ReportEdit::SetFonts(void)
 {
   CallEdit(SCI_STYLESETFONT,STYLE_DEFAULT,(sptr_t)(LPCSTR)theApp.GetFontName(InformApp::FontDisplay));
-  CallEdit(SCI_STYLESETSIZE,STYLE_DEFAULT,theApp.GetFontSize(InformApp::FontDisplay));
+  CallEdit(SCI_STYLESETSIZE,STYLE_DEFAULT,10 * theApp.GetFontSize(InformApp::FontDisplay));
   CallEdit(SCI_STYLECLEARALL);
   CallEdit(SCI_STYLESETFONT,1,(sptr_t)(LPCSTR)theApp.GetFontName(InformApp::FontFixedWidth));
 }

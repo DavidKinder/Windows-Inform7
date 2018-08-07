@@ -525,7 +525,7 @@ int SurfaceImpl::LogPixelsY() {
 }
 
 int SurfaceImpl::DeviceHeightFont(int points) {
-	return ::MulDiv(points, LogPixelsY(), 72);
+	return ::MulDiv(points, LogPixelsY(), 720); /* XXXXDK Font size 1/10 point */
 }
 
 void SurfaceImpl::MoveTo(int x_, int y_) {

@@ -1,65 +1,588 @@
 #include "stdafx.h"
 #include "PrefsDialog.h"
 #include "Inform.h"
+#include "Messages.h"
+
+#include <MultiMon.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-PrefsDialog::PrefsDialog() : I7BaseDialog(PrefsDialog::IDD)
+PrefsEditPage::PrefsEditPage() : CPropertyPage(PrefsEditPage::IDD)
 {
-  // Set the default preferences values
+  SetDefaults();
+}
+
+BEGIN_MESSAGE_MAP(PrefsEditPage, CPropertyPage)
+  ON_BN_CLICKED(IDC_RESTORE, OnClickedRestore)
+  ON_CBN_SELCHANGE(IDC_FONT, OnChangeFont)
+  ON_CBN_SELCHANGE(IDC_FONTSIZE, OnChangeFont)
+  ON_CBN_EDITCHANGE(IDC_FONTSIZE, OnChangeFont)
+  ON_BN_CLICKED(IDC_ENABLE_HIGHLIGHT, OnClickedEnableHighlight)
+  ON_CBN_SELCHANGE(IDC_HEAD_STYLE, OnChangeStyle)
+  ON_BN_CLICKED(IDC_HEAD_UNDER, OnChangeStyle)
+  ON_CBN_SELCHANGE(IDC_HEAD_SIZE, OnChangeStyle)
+  ON_CBN_SELCHANGE(IDC_MAIN_STYLE, OnChangeStyle)
+  ON_BN_CLICKED(IDC_MAIN_UNDER, OnChangeStyle)
+  ON_CBN_SELCHANGE(IDC_MAIN_SIZE, OnChangeStyle)
+  ON_CBN_SELCHANGE(IDC_COMMENT_STYLE, OnChangeStyle)
+  ON_BN_CLICKED(IDC_COMMENT_UNDER, OnChangeStyle)
+  ON_CBN_SELCHANGE(IDC_COMMENT_SIZE, OnChangeStyle)
+  ON_CBN_SELCHANGE(IDC_QUOTE_STYLE, OnChangeStyle)
+  ON_BN_CLICKED(IDC_QUOTE_UNDER, OnChangeStyle)
+  ON_CBN_SELCHANGE(IDC_QUOTE_SIZE, OnChangeStyle)
+  ON_CBN_SELCHANGE(IDC_SUBST_STYLE, OnChangeStyle)
+  ON_BN_CLICKED(IDC_SUBST_UNDER, OnChangeStyle)
+  ON_CBN_SELCHANGE(IDC_SUBST_SIZE, OnChangeStyle)
+  ON_BN_CLICKED(IDC_INDENT, OnChangeStyle)
+  ON_BN_CLICKED(IDC_ELASTIC_TABS, OnChangeStyle)
+  ON_WM_HSCROLL()
+  ON_MESSAGE(WM_UPDATEPREVIEW, OnUpdatePreview)
+END_MESSAGE_MAP()
+
+void PrefsEditPage::ReadSettings(void)
+{
+  CRegKey registryKey;
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
+  {
+    char fontName[MAX_PATH];
+    DWORD value = sizeof fontName;
+    if (registryKey.QueryStringValue("Source Font Name",fontName,&value) == ERROR_SUCCESS)
+      m_fontName = fontName;
+    else
+    {
+      value = sizeof fontName;
+      if (registryKey.QueryStringValue("Font Name",fontName,&value) == ERROR_SUCCESS)
+        m_fontName = fontName;
+    }
+    if (registryKey.QueryDWORDValue("Source Font Size",value) == ERROR_SUCCESS)
+      m_fontSize.Format("%d",value);
+    else if (registryKey.QueryDWORDValue("Font Size",value) == ERROR_SUCCESS)
+      m_fontSize.Format("%d",value);
+    if (registryKey.QueryDWORDValue("Source Paper Colour",value) == ERROR_SUCCESS)
+      m_colourSource.SetCurrentColour((COLORREF)value);
+    if (registryKey.QueryDWORDValue("Ext Paper Colour",value) == ERROR_SUCCESS)
+      m_colourExt.SetCurrentColour((COLORREF)value);
+
+    if (registryKey.QueryDWORDValue("Syntax Highlighting",value) == ERROR_SUCCESS)
+      m_highlight = (value != 0);
+    if (registryKey.QueryDWORDValue("Headings Colour",value) == ERROR_SUCCESS)
+      m_colourHead.SetCurrentColour((COLORREF)value);
+    if (registryKey.QueryDWORDValue("Main Text Colour",value) == ERROR_SUCCESS)
+      m_colourMain.SetCurrentColour((COLORREF)value);
+    if (registryKey.QueryDWORDValue("Comments Colour",value) == ERROR_SUCCESS)
+      m_colourComment.SetCurrentColour((COLORREF)value);
+    if (registryKey.QueryDWORDValue("Quoted Text Colour",value) == ERROR_SUCCESS)
+      m_colourQuote.SetCurrentColour((COLORREF)value);
+    if (registryKey.QueryDWORDValue("Substitutions Colour",value) == ERROR_SUCCESS)
+      m_colourSubst.SetCurrentColour((COLORREF)value);
+    if (registryKey.QueryDWORDValue("Headings Style",value) == ERROR_SUCCESS)
+      m_styleHead = (int)value;
+    if (registryKey.QueryDWORDValue("Main Text Style",value) == ERROR_SUCCESS)
+      m_styleMain = (int)value;
+    if (registryKey.QueryDWORDValue("Comments Style",value) == ERROR_SUCCESS)
+      m_styleComment = (int)value;
+    if (registryKey.QueryDWORDValue("Quoted Text Style",value) == ERROR_SUCCESS)
+      m_styleQuote = (int)value;
+    if (registryKey.QueryDWORDValue("Substitutions Style",value) == ERROR_SUCCESS)
+      m_styleSubst = (int)value;
+    if (registryKey.QueryDWORDValue("Headings Underline",value) == ERROR_SUCCESS)
+      m_underHead.SetIsChecked(value != 0);
+    if (registryKey.QueryDWORDValue("Main Text Underline",value) == ERROR_SUCCESS)
+      m_underMain.SetIsChecked(value != 0);
+    if (registryKey.QueryDWORDValue("Comments Underline",value) == ERROR_SUCCESS)
+      m_underComment.SetIsChecked(value != 0);
+    if (registryKey.QueryDWORDValue("Quoted Text Underline",value) == ERROR_SUCCESS)
+      m_underQuote.SetIsChecked(value != 0);
+    if (registryKey.QueryDWORDValue("Substitutions Underline",value) == ERROR_SUCCESS)
+      m_underSubst.SetIsChecked(value != 0);
+    if (registryKey.QueryDWORDValue("Headings Size",value) == ERROR_SUCCESS)
+      m_sizeHead = (int)value;
+    if (registryKey.QueryDWORDValue("Main Text Size",value) == ERROR_SUCCESS)
+      m_sizeMain = (int)value;
+    if (registryKey.QueryDWORDValue("Comments Size",value) == ERROR_SUCCESS)
+      m_sizeComment = (int)value;
+    if (registryKey.QueryDWORDValue("Quoted Text Size",value) == ERROR_SUCCESS)
+      m_sizeQuote = (int)value;
+    if (registryKey.QueryDWORDValue("Substitutions Size",value) == ERROR_SUCCESS)
+      m_sizeSubst = (int)value;
+
+    if (registryKey.QueryDWORDValue("Source Tab Size Chars",value) == ERROR_SUCCESS)
+      m_tabSize = value;
+    if (registryKey.QueryDWORDValue("Indent Wrapped Lines",value) == ERROR_SUCCESS)
+      m_indentWrapped = value;
+    if (registryKey.QueryDWORDValue("Auto Indent",value) == ERROR_SUCCESS)
+      m_autoIndent = value;
+    if (registryKey.QueryDWORDValue("Auto Space Tables",value) == ERROR_SUCCESS)
+      m_autoSpaceTables = value;
+    if (registryKey.QueryDWORDValue("Auto Number Sections",value) == ERROR_SUCCESS)
+      m_autoNumber = value;
+  }
+}
+
+void PrefsEditPage::WriteSettings(void)
+{
+  CRegKey registryKey;
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
+  {
+    registryKey.SetStringValue("Source Font Name",m_fontName);
+    int fontSize = 0;
+    if (sscanf(m_fontSize,"%d",&fontSize) == 1)
+      registryKey.SetDWORDValue("Source Font Size",fontSize);
+    registryKey.SetDWORDValue("Source Paper Colour",m_colourSource.GetCurrentColour());
+    registryKey.SetDWORDValue("Ext Paper Colour",m_colourExt.GetCurrentColour());
+
+    registryKey.SetDWORDValue("Syntax Highlighting",m_highlight);
+    registryKey.SetDWORDValue("Headings Colour",m_colourHead.GetCurrentColour());
+    registryKey.SetDWORDValue("Main Text Colour",m_colourMain.GetCurrentColour());
+    registryKey.SetDWORDValue("Comments Colour",m_colourComment.GetCurrentColour());
+    registryKey.SetDWORDValue("Quoted Text Colour",m_colourQuote.GetCurrentColour());
+    registryKey.SetDWORDValue("Substitutions Colour",m_colourSubst.GetCurrentColour());
+    registryKey.SetDWORDValue("Headings Style",m_styleHead);
+    registryKey.SetDWORDValue("Main Text Style",m_styleMain);
+    registryKey.SetDWORDValue("Comments Style",m_styleComment);
+    registryKey.SetDWORDValue("Quoted Text Style",m_styleQuote);
+    registryKey.SetDWORDValue("Substitutions Style",m_styleSubst);
+    registryKey.SetDWORDValue("Headings Underline",m_underHead.GetIsChecked() ? 1 : 0);
+    registryKey.SetDWORDValue("Main Text Underline",m_underMain.GetIsChecked() ? 1 : 0);
+    registryKey.SetDWORDValue("Comments Underline",m_underComment.GetIsChecked() ? 1 : 0);
+    registryKey.SetDWORDValue("Quoted Text Underline",m_underQuote.GetIsChecked() ? 1 : 0);
+    registryKey.SetDWORDValue("Substitutions Underline",m_underSubst.GetIsChecked() ? 1 : 0);
+    registryKey.SetDWORDValue("Headings Size",m_sizeHead);
+    registryKey.SetDWORDValue("Main Text Size",m_sizeMain);
+    registryKey.SetDWORDValue("Comments Size",m_sizeComment);
+    registryKey.SetDWORDValue("Quoted Text Size",m_sizeQuote);
+    registryKey.SetDWORDValue("Substitutions Size",m_sizeSubst);
+
+    registryKey.SetDWORDValue("Source Tab Size Chars",m_tabSize);
+    registryKey.SetDWORDValue("Indent Wrapped Lines",m_indentWrapped);
+    registryKey.SetDWORDValue("Auto Indent",m_autoIndent);
+    registryKey.SetDWORDValue("Auto Space Tables",m_autoSpaceTables);
+    registryKey.SetDWORDValue("Auto Number Sections",m_autoNumber);
+  }
+}
+
+void PrefsEditPage::DoDataExchange(CDataExchange* pDX)
+{
+  CPropertyPage::DoDataExchange(pDX);
+  DDX_Control(pDX, IDC_FONT, m_font);
+  DDX_CBString(pDX, IDC_FONTSIZE, m_fontSize);
+  DDX_Check(pDX, IDC_ENABLE_HIGHLIGHT, m_highlight);
+  DDX_Control(pDX, IDC_ENABLE_HIGHLIGHT, m_highlightCheck);
+  DDX_CBIndex(pDX, IDC_HEAD_STYLE, m_styleHead);
+  DDX_CBIndex(pDX, IDC_MAIN_STYLE, m_styleMain);
+  DDX_CBIndex(pDX, IDC_COMMENT_STYLE, m_styleComment);
+  DDX_CBIndex(pDX, IDC_QUOTE_STYLE, m_styleQuote);
+  DDX_CBIndex(pDX, IDC_SUBST_STYLE, m_styleSubst);
+  DDX_CBIndex(pDX, IDC_HEAD_SIZE, m_sizeHead);
+  DDX_CBIndex(pDX, IDC_MAIN_SIZE, m_sizeMain);
+  DDX_CBIndex(pDX, IDC_COMMENT_SIZE, m_sizeComment);
+  DDX_CBIndex(pDX, IDC_QUOTE_SIZE, m_sizeQuote);
+  DDX_CBIndex(pDX, IDC_SUBST_SIZE, m_sizeSubst);
+  DDX_Control(pDX, IDC_TABSIZE, m_tabSizeCtrl);
+  DDX_Slider(pDX, IDC_TABSIZE, m_tabSize);
+  DDV_MinMaxInt(pDX, m_tabSize, 1, 96);
+  DDX_Check(pDX, IDC_INDENT, m_indentWrapped);
+  DDX_Check(pDX, IDC_AUTO_INDENT, m_autoIndent);
+  DDX_Check(pDX, IDC_ELASTIC_TABS, m_autoSpaceTables);
+  DDX_Check(pDX, IDC_AUTO_NUMBER, m_autoNumber);
+}
+
+BOOL PrefsEditPage::OnInitDialog()
+{
+  CPropertyPage::OnInitDialog();
+
+  // Get all the possible fonts
+  CDC* dc = GetDC();
+  LOGFONT font;
+  ::ZeroMemory(&font,sizeof font);
+  font.lfCharSet = ANSI_CHARSET;
+  ::EnumFontFamiliesEx(dc->GetSafeHdc(),&font,(FONTENUMPROC)ListFonts,(LPARAM)this,0);
+  ReleaseDC(dc);
+
+  // Initialize the font control
+  if (m_font.SelectString(-1,m_fontName) == CB_ERR)
+    m_font.SetCurSel(0);
+
+  // Subclass dialog controls
+  m_colourSource.SubclassDlgItem(IDC_COLOUR_SOURCE,this,WM_UPDATEPREVIEW);
+  m_colourExt.SubclassDlgItem(IDC_COLOUR_EXT,this,WM_UPDATEPREVIEW);
+  m_colourHead.SubclassDlgItem(IDC_HEAD_COLOUR,this,WM_UPDATEPREVIEW);
+  m_colourMain.SubclassDlgItem(IDC_MAIN_COLOUR,this,WM_UPDATEPREVIEW);
+  m_colourComment.SubclassDlgItem(IDC_COMMENT_COLOUR,this,WM_UPDATEPREVIEW);
+  m_colourQuote.SubclassDlgItem(IDC_QUOTE_COLOUR,this,WM_UPDATEPREVIEW);
+  m_colourSubst.SubclassDlgItem(IDC_SUBST_COLOUR,this,WM_UPDATEPREVIEW);
+  m_underHead.SubclassDlgItem(IDC_HEAD_UNDER,this);
+  m_underMain.SubclassDlgItem(IDC_MAIN_UNDER,this);
+  m_underComment.SubclassDlgItem(IDC_COMMENT_UNDER,this);
+  m_underQuote.SubclassDlgItem(IDC_QUOTE_UNDER,this);
+  m_underSubst.SubclassDlgItem(IDC_SUBST_UNDER,this);
+
+  // Initialize the tab width slider
+  m_tabSizeCtrl.SetRange(1,96);
+  m_tabSizeCtrl.SetTicFreq(4);
+
+  // Create the preview window
+  m_preview.Create(this,Project_I7,true);
+  CRect previewRect;
+  GetDlgItem(IDC_PREVIEW)->GetWindowRect(previewRect);
+  ScreenToClient(previewRect);
+  m_preview.MoveWindow(previewRect);
+  SourceEdit& previewEdit = m_preview.GetEdit();
+  m_preview.LoadSettings(*this);
+  previewEdit.ReplaceSelect(
+    L"Section 5 - Tight Passage and Inscription\n"
+    L"\n"
+    L"[This sample is a jumble, just to demonstrate syntax highlighting.]\n"
+    L"\n"
+    L"Tight Passage is northeast of Father's Regret. \"The passage through rock ends here, and begins to tunnel through soil instead.\" The inscription is a fixed in place thing in Tight Passage. \"You have the words by heart now: [italic type][printing of the inscription][roman type].\"\n"
+    L"\n"
+    L"Table of Tour de France Jerseys\n"
+    L"jersey\tyear established\tcitation\n"
+    L"a yellow jersey\t1919\t\"race leader\"\n"
+    L"a polkadot jersey\t1933\t\"King of the Mountains\"\n"
+    L"a green jersey\t1953\t\"highest point scorer on sprints\"\n"
+    L"a white jersey\t1975\t\"best cyclist aged 25 or less\"");
+  previewEdit.SetReadOnly(true);
+  CHARRANGE startRange = { 0,0 };
+  previewEdit.SetSelect(startRange);
+  m_preview.ShowWindow(SW_SHOW);
+
+  UpdateControlStates();
+  return TRUE;
+}
+
+void PrefsEditPage::OnOK()
+{
+  m_font.GetWindowText(m_fontName);
+  CPropertyPage::OnOK();
+}
+
+void PrefsEditPage::OnClickedRestore()
+{
+  SetDefaults();
+
+  // Update the controls to match the defaults
+  UpdateData(FALSE);
+  m_font.SelectString(-1,m_fontName);
+  UpdateControlStates();
+  m_colourSource.Invalidate();
+  m_colourExt.Invalidate();
+  m_colourHead.Invalidate();
+  m_colourMain.Invalidate();
+  m_colourComment.Invalidate();
+  m_colourQuote.Invalidate();
+  m_colourSubst.Invalidate();
+  m_preview.LoadSettings(*this);
+  m_preview.PrefsChanged();
+}
+
+void PrefsEditPage::OnChangeFont()
+{
+  PostMessage(WM_UPDATEPREVIEW);
+}
+
+void PrefsEditPage::OnChangeStyle()
+{
+  PostMessage(WM_UPDATEPREVIEW);
+}
+
+void PrefsEditPage::OnClickedEnableHighlight()
+{
+  UpdateControlStates();
+  UpdatePreview();
+}
+
+void PrefsEditPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+  UpdatePreview();
+}
+
+LRESULT PrefsEditPage::OnUpdatePreview(WPARAM, LPARAM)
+{
+  UpdatePreview();
+  return 0;
+}
+
+void PrefsEditPage::UpdateControlStates(void)
+{
+  bool highlight = (m_highlightCheck.GetCheck() == BST_CHECKED);
+  for (int id = IDC_HEAD_COLOUR; id <= IDC_SUBST_SIZE; id++)
+    GetDlgItem(id)->EnableWindow(highlight);
+}
+
+void PrefsEditPage::UpdatePreview(void)
+{
+  UpdateData(TRUE);
+  m_font.GetWindowText(m_fontName);
+  m_preview.LoadSettings(*this);
+  m_preview.PrefsChanged();
+}
+
+// Set the default preferences values
+void PrefsEditPage::SetDefaults(void)
+{
   m_fontName = theApp.GetFontName(InformApp::FontDisplay);
-  m_fixedFontName = theApp.GetFontName(InformApp::FontFixedWidth);
   m_fontSize.Format("%d",theApp.GetFontSize(InformApp::FontDisplay));
+  m_colourSource.SetCurrentColour(theApp.GetColour(InformApp::ColourBack));
+  m_colourExt.SetCurrentColour(theApp.GetColour(InformApp::ColourI7XP));
+
+  m_highlight = TRUE;
+  m_colourHead.SetCurrentColour(theApp.GetColour(InformApp::ColourText));
+  m_colourMain.SetCurrentColour(theApp.GetColour(InformApp::ColourText));
+  m_colourComment.SetCurrentColour(theApp.GetColour(InformApp::ColourComment));
+  m_colourQuote.SetCurrentColour(theApp.GetColour(InformApp::ColourQuote));
+  m_colourSubst.SetCurrentColour(theApp.GetColour(InformApp::ColourSubstitution));
+  m_styleHead = 2; // Bold
+  m_styleMain = 0; // Regular
+  m_styleComment = 2;
+  m_styleQuote = 2;
+  m_styleSubst = 0;
+  m_underHead.SetIsChecked(false);
+  m_underMain.SetIsChecked(false);
+  m_underComment.SetIsChecked(false);
+  m_underQuote.SetIsChecked(false);
+  m_underSubst.SetIsChecked(false);
+  m_sizeHead = 0; // Normal
+  m_sizeMain = 0;
+  m_sizeComment = 1; // Small
+  m_sizeQuote = 0;
+  m_sizeSubst = 0;
+
   m_tabSize = 8;
   m_indentWrapped = TRUE;
   m_autoIndent = TRUE;
   m_autoSpaceTables = TRUE;
   m_autoNumber = FALSE;
-  m_startWithLast = FALSE;
-  m_cleanFiles = TRUE;
-  m_cleanIndexes = TRUE;
-  m_I6debug = FALSE;
-  m_glulxTerp = "Glulxe";
 }
 
-BEGIN_MESSAGE_MAP(PrefsDialog, I7BaseDialog)
-  ON_BN_CLICKED(IDC_CLEANFILES, OnBnClickedCleanFiles)
+bool PrefsEditPage::GetDWord(const char* name, DWORD& value)
+{
+  CString n(name);
+  if (n == "Source Font Size")
+  {
+    int fontSize = 9;
+    sscanf(m_fontSize,"%d",&fontSize);
+    value = fontSize;
+    return true;
+  }
+  else if (n == "Source Paper Colour")
+  {
+    value = m_colourSource.GetCurrentColour();
+    return true;
+  }
+  else if (n == "Ext Paper Colour")
+  {
+    value = m_colourExt.GetCurrentColour();
+    return true;
+  }
+  else if (n == "Syntax Highlighting")
+  {
+    value = m_highlight;
+    return true;
+  }
+  else if (n == "Headings Colour")
+  {
+    value = m_colourHead.GetCurrentColour();
+    return true;
+  }
+  else if (n == "Main Text Colour")
+  {
+    value = m_colourMain.GetCurrentColour();
+    return true;
+  }
+  else if (n == "Comments Colour")
+  {
+    value = m_colourComment.GetCurrentColour();
+    return true;
+  }
+  else if (n == "Quoted Text Colour")
+  {
+    value = m_colourQuote.GetCurrentColour();
+    return true;
+  }
+  else if (n == "Substitutions Colour")
+  {
+    value = m_colourSubst.GetCurrentColour();
+    return true;
+  }
+  else if (n == "Headings Style")
+  {
+    value = m_styleHead;
+    return true;
+  }
+  else if (n == "Main Text Style")
+  {
+    value = m_styleMain;
+    return true;
+  }
+  else if (n == "Comments Style")
+  {
+    value = m_styleComment;
+    return true;
+  }
+  else if (n == "Quoted Text Style")
+  {
+    value = m_styleQuote;
+    return true;
+  }
+  else if (n == "Substitutions Style")
+  {
+    value = m_styleSubst;
+    return true;
+  }
+  else if (n == "Headings Underline")
+  {
+    value = m_underHead.GetIsChecked() ? 1 : 0;
+    return true;
+  }
+  else if (n == "Main Text Underline")
+  {
+    value = m_underMain.GetIsChecked() ? 1 : 0;
+    return true;
+  }
+  else if (n == "Comments Underline")
+  {
+    value = m_underComment.GetIsChecked() ? 1 : 0;
+    return true;
+  }
+  else if (n == "Quoted Text Underline")
+  {
+    value = m_underQuote.GetIsChecked() ? 1 : 0;
+    return true;
+  }
+  else if (n == "Substitutions Underline")
+  {
+    value = m_underSubst.GetIsChecked() ? 1 : 0;
+    return true;
+  }
+  else if (n == "Headings Size")
+  {
+    value = m_sizeHead;
+    return true;
+  }
+  else if (n == "Main Text Size")
+  {
+    value = m_sizeMain;
+    return true;
+  }
+  else if (n == "Comments Size")
+  {
+    value = m_sizeComment;
+    return true;
+  }
+  else if (n == "Quoted Text Size")
+  {
+    value = m_sizeQuote;
+    return true;
+  }
+  else if (n == "Substitutions Size")
+  {
+    value = m_sizeSubst;
+    return true;
+  }
+  else if (n == "Source Tab Size Chars")
+  {
+    value = m_tabSize;
+    return true;
+  }
+  else if (n == "Indent Wrapped Lines")
+  {
+    value = m_indentWrapped;
+    return true;
+  }
+  else if (n == "Auto Indent")
+  {
+    value = m_autoIndent;
+    return true;
+  }
+  else if (n == "Auto Space Tables")
+  {
+    value = m_autoSpaceTables;
+    return true;
+  }
+  else if (n == "Auto Number Sections")
+  {
+    value = m_autoNumber;
+    return true;
+  }
+  return false;
+}
+
+bool PrefsEditPage::GetString(const char* name, char* value, ULONG len)
+{
+  CString n(name);
+  if (n == "Source Font Name")
+  {
+    strncpy(value,m_fontName,len-1);
+    value[len-1] = 0;
+    return true;
+  }
+  return false;
+}
+
+// Called when enumerating fonts, populates the font drop down list in the dialog
+int CALLBACK PrefsEditPage::ListFonts(ENUMLOGFONTEX *font, NEWTEXTMETRICEX *metric, DWORD fontType, LPARAM param)
+{
+  PrefsEditPage* page = (PrefsEditPage*)param;
+  if (font->elfLogFont.lfFaceName[0] != '@')
+    page->m_font.AddString(font->elfLogFont.lfFaceName);
+  return 1;
+}
+
+PrefsTextPage::PrefsTextPage() : CPropertyPage(PrefsTextPage::IDD)
+{
+  // Set the default preferences values
+  m_fontName = theApp.GetFontName(InformApp::FontDisplay);
+  m_fixedFontName = theApp.GetFontName(InformApp::FontFixedWidth);
+  m_fontSize.Format("%d",theApp.GetFontSize(InformApp::FontDisplay));
+}
+
+BEGIN_MESSAGE_MAP(PrefsTextPage, CPropertyPage)
 END_MESSAGE_MAP()
 
-void PrefsDialog::DoDataExchange(CDataExchange* pDX)
+void PrefsTextPage::ReadSettings(void)
 {
-  I7BaseDialog::DoDataExchange(pDX);
+  CRegKey registryKey;
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
+  {
+    char fontName[MAX_PATH];
+    DWORD value = sizeof fontName;
+    if (registryKey.QueryStringValue("Font Name",fontName,&value) == ERROR_SUCCESS)
+      m_fontName = fontName;
+    value = sizeof fontName;
+    if (registryKey.QueryStringValue("Fixed Font Name",fontName,&value) == ERROR_SUCCESS)
+      m_fixedFontName = fontName;
+    if (registryKey.QueryDWORDValue("Font Size",value) == ERROR_SUCCESS)
+      m_fontSize.Format("%d",value);
+  }
+}
+
+void PrefsTextPage::WriteSettings(void)
+{
+  CRegKey registryKey;
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
+  {
+    registryKey.SetStringValue("Font Name",m_fontName);
+    registryKey.SetStringValue("Fixed Font Name",m_fixedFontName);
+    int fontSize = 0;
+    if (sscanf(m_fontSize,"%d",&fontSize) == 1)
+      registryKey.SetDWORDValue("Font Size",fontSize);
+  }
+}
+
+void PrefsTextPage::DoDataExchange(CDataExchange* pDX)
+{
+  CPropertyPage::DoDataExchange(pDX);
   DDX_Control(pDX, IDC_FONT, m_font);
   DDX_Control(pDX, IDC_FIXEDFONT, m_fixedFont);
   DDX_CBString(pDX, IDC_FONTSIZE, m_fontSize);
-  DDX_Text(pDX, IDC_TABSIZE, m_tabSize);
-  DDX_Check(pDX, IDC_INDENT, m_indentWrapped);
-  DDX_Check(pDX, IDC_AUTO_INDENT, m_autoIndent);
-  DDX_Check(pDX, IDC_ELASTIC_TABS, m_autoSpaceTables);
-  DDX_Check(pDX, IDC_AUTO_NUMBER, m_autoNumber);
-  DDX_Check(pDX, IDC_STARTLAST, m_startWithLast);
-  DDV_MinMaxUInt(pDX, m_tabSize, 1, 32);
-  DDX_Check(pDX, IDC_CLEANFILES, m_cleanFiles);
-  DDX_Check(pDX, IDC_CLEANINDEX, m_cleanIndexes);
-  DDX_Check(pDX, IDC_I6DEBUGGING, m_I6debug);
-  DDX_Control(pDX, IDC_CLEANFILES, m_cleanFilesCheck);
-  DDX_Control(pDX, IDC_CLEANINDEX, m_cleanIndexCheck);
-  DDX_CBString(pDX, IDC_GLULX, m_glulxTerp);
 }
 
-BOOL PrefsDialog::OnInitDialog()
+BOOL PrefsTextPage::OnInitDialog()
 {
-  I7BaseDialog::OnInitDialog();
-  theApp.SetIcon(this);
-
-  // Set a smaller font for the "Also clean out ..." checkbox
-  LOGFONT smallFont;
-  GetFont()->GetLogFont(&smallFont);
-  smallFont.lfHeight = (LONG)(smallFont.lfHeight*0.9);
-  m_smallFont.CreateFontIndirect(&smallFont);
-  m_cleanIndexCheck.SetFont(&m_smallFont);
+  CPropertyPage::OnInitDialog();
 
   // Get all the possible fonts
   CDC* dc = GetDC();
@@ -74,110 +597,284 @@ BOOL PrefsDialog::OnInitDialog()
     m_font.SetCurSel(0);
   if (m_fixedFont.SelectString(-1,m_fixedFontName) == CB_ERR)
     m_fixedFont.SetCurSel(0);
+  return TRUE;
+}
 
+void PrefsTextPage::OnOK()
+{
+  m_font.GetWindowText(m_fontName);
+  m_fixedFont.GetWindowText(m_fixedFontName);
+  CPropertyPage::OnOK();
+}
+
+// Called when enumerating fonts, populates the font drop down lists in the dialog
+int CALLBACK PrefsTextPage::ListFonts(ENUMLOGFONTEX *font, NEWTEXTMETRICEX *metric, DWORD fontType, LPARAM param)
+{
+  PrefsTextPage* page = (PrefsTextPage*)param;
+  if (font->elfLogFont.lfFaceName[0] != '@')
+  {
+    page->m_font.AddString(font->elfLogFont.lfFaceName);
+    if (font->elfLogFont.lfPitchAndFamily & FIXED_PITCH)
+      page->m_fixedFont.AddString(font->elfLogFont.lfFaceName);
+  }
+  return 1;
+}
+
+PrefsAdvancedPage::PrefsAdvancedPage() : CPropertyPage(PrefsAdvancedPage::IDD)
+{
+  // Set the default preferences values
+  m_startWithLast = FALSE;
+  m_cleanFiles = TRUE;
+  m_cleanIndexes = TRUE;
+  m_I6debug = FALSE;
+  m_glulxTerp = "Glulxe";
+}
+
+BEGIN_MESSAGE_MAP(PrefsAdvancedPage, CPropertyPage)
+  ON_BN_CLICKED(IDC_CLEANFILES, OnClickedCleanFiles)
+  ON_MESSAGE(WM_UPDATEFONT, OnUpdateFont)
+END_MESSAGE_MAP()
+
+void PrefsAdvancedPage::ReadSettings(void)
+{
+  CRegKey registryKey;
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
+  {
+    DWORD value = 0;
+
+    if (registryKey.QueryDWORDValue("Clean Up Files",value) == ERROR_SUCCESS)
+      m_cleanFiles = (value != 0);
+    if (registryKey.QueryDWORDValue("Clean Up Indexes",value) == ERROR_SUCCESS)
+      m_cleanIndexes = (value != 0);
+    if (registryKey.QueryDWORDValue("Generate I6 Debug",value) == ERROR_SUCCESS)
+      m_I6debug = (value != 0);
+  }
+
+  m_startWithLast = (theApp.GetProfileInt("Start","Open Last Project",0) != 0);
+  m_glulxTerp = theApp.CWinApp::GetProfileString("Game","Glulx Interpreter",m_glulxTerp);
+}
+
+void PrefsAdvancedPage::WriteSettings(void)
+{
+  CRegKey registryKey;
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
+  {
+    registryKey.SetDWORDValue("Clean Up Files",m_cleanFiles);
+    registryKey.SetDWORDValue("Clean Up Indexes",m_cleanIndexes);
+    registryKey.SetDWORDValue("Generate I6 Debug",m_I6debug);
+  }
+  theApp.WriteProfileInt("Start","Open Last Project",m_startWithLast ? 1 : 0);
+  theApp.CWinApp::WriteProfileString("Game","Glulx Interpreter",m_glulxTerp);
+}
+
+void PrefsAdvancedPage::DoDataExchange(CDataExchange* pDX)
+{
+  CPropertyPage::DoDataExchange(pDX);
+  DDX_Check(pDX, IDC_STARTLAST, m_startWithLast);
+  DDX_Check(pDX, IDC_CLEANFILES, m_cleanFiles);
+  DDX_Check(pDX, IDC_CLEANINDEX, m_cleanIndexes);
+  DDX_Check(pDX, IDC_I6DEBUGGING, m_I6debug);
+  DDX_Control(pDX, IDC_CLEANFILES, m_cleanFilesCheck);
+  DDX_Control(pDX, IDC_CLEANINDEX, m_cleanIndexCheck);
+  DDX_CBString(pDX, IDC_GLULX, m_glulxTerp);
+}
+
+BOOL PrefsAdvancedPage::OnInitDialog()
+{
+  CPropertyPage::OnInitDialog();
   UpdateControlStates();
   return TRUE;
 }
 
-void PrefsDialog::OnOK()
-{
-  m_font.GetWindowText(m_fontName);
-  m_fixedFont.GetWindowText(m_fixedFontName);
-  I7BaseDialog::OnOK();
-}
-
-INT_PTR PrefsDialog::DoModal()
-{
-  // Get the current settings
-  {
-    CRegKey registryKey;
-    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
-    {
-      char fontName[MAX_PATH];
-      DWORD value = sizeof fontName;
-      if (registryKey.QueryStringValue("Font Name",fontName,&value) == ERROR_SUCCESS)
-        m_fontName = fontName;
-      value = sizeof fontName;
-      if (registryKey.QueryStringValue("Fixed Font Name",fontName,&value) == ERROR_SUCCESS)
-        m_fixedFontName = fontName;
-      if (registryKey.QueryDWORDValue("Font Size",value) == ERROR_SUCCESS)
-        m_fontSize.Format("%d",value);
-
-      if (registryKey.QueryDWORDValue("Source Tab Size Chars",value) == ERROR_SUCCESS)
-        m_tabSize = value;
-      if (registryKey.QueryDWORDValue("Indent Wrapped Lines",value) == ERROR_SUCCESS)
-        m_indentWrapped = value;
-      if (registryKey.QueryDWORDValue("Auto Indent",value) == ERROR_SUCCESS)
-        m_autoIndent = value;
-      if (registryKey.QueryDWORDValue("Auto Space Tables",value) == ERROR_SUCCESS)
-        m_autoSpaceTables = value;
-      if (registryKey.QueryDWORDValue("Auto Number Sections",value) == ERROR_SUCCESS)
-        m_autoNumber = value;
-
-      if (registryKey.QueryDWORDValue("Clean Up Files",value) == ERROR_SUCCESS)
-        m_cleanFiles = (value != 0);
-      if (registryKey.QueryDWORDValue("Clean Up Indexes",value) == ERROR_SUCCESS)
-        m_cleanIndexes = (value != 0);
-      if (registryKey.QueryDWORDValue("Generate I6 Debug",value) == ERROR_SUCCESS)
-        m_I6debug = (value != 0);
-    }
-
-    m_startWithLast = (theApp.GetProfileInt("Start","Open Last Project",0) != 0);
-    m_glulxTerp = theApp.CWinApp::GetProfileString("Game","Glulx Interpreter",m_glulxTerp);
-  }
-
-  // Show the dialog
-  INT_PTR result = I7BaseDialog::DoModal();
-  if (result == IDOK)
-  {
-    // Store the new settings
-    CRegKey registryKey;
-    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
-    {
-      registryKey.SetStringValue("Font Name",m_fontName);
-      registryKey.SetStringValue("Fixed Font Name",m_fixedFontName);
-      int fontSize = 0;
-      if (sscanf(m_fontSize,"%d",&fontSize) == 1)
-        registryKey.SetDWORDValue("Font Size",fontSize);
-
-      registryKey.SetDWORDValue("Source Tab Size Chars",m_tabSize);
-      registryKey.SetDWORDValue("Indent Wrapped Lines",m_indentWrapped);
-      registryKey.SetDWORDValue("Auto Indent",m_autoIndent);
-      registryKey.SetDWORDValue("Auto Space Tables",m_autoSpaceTables);
-      registryKey.SetDWORDValue("Auto Number Sections",m_autoNumber);
-      registryKey.SetDWORDValue("Clean Up Files",m_cleanFiles);
-      registryKey.SetDWORDValue("Clean Up Indexes",m_cleanIndexes);
-      registryKey.SetDWORDValue("Generate I6 Debug",m_I6debug);
-    }
-    theApp.WriteProfileInt("Start","Open Last Project",m_startWithLast ? 1 : 0);
-    theApp.CWinApp::WriteProfileString("Game","Glulx Interpreter",m_glulxTerp);
-
-    // Notify all project windows
-    theApp.SendAllFrames(InformApp::Preferences,0);
-  }
-  return result;
-}
-
-void PrefsDialog::OnBnClickedCleanFiles()
+void PrefsAdvancedPage::OnClickedCleanFiles()
 {
   UpdateControlStates();
 }
 
-void PrefsDialog::UpdateControlStates(void)
+LRESULT PrefsAdvancedPage::OnUpdateFont(WPARAM wparam, LPARAM)
+{
+  // Set a smaller font for the "Also clean out ..." checkbox
+  LOGFONT smallFont;
+  GetFont()->GetLogFont(&smallFont);
+  smallFont.lfHeight = (LONG)(smallFont.lfHeight*0.95);
+  m_smallFont.CreateFontIndirect(&smallFont);
+  m_cleanIndexCheck.SetFont(&m_smallFont);
+  return 0;
+}
+
+void PrefsAdvancedPage::UpdateControlStates(void)
 {
   bool cleanFiles = (m_cleanFilesCheck.GetCheck() == BST_CHECKED);
   m_cleanIndexCheck.EnableWindow(cleanFiles);
 }
 
-// Called when enumerating fonts, populates the font drop down lists in the dialog
-int CALLBACK PrefsDialog::ListFonts(ENUMLOGFONTEX *font, NEWTEXTMETRICEX *metric, DWORD fontType, LPARAM param)
+PrefsDialog::PrefsDialog(void) : CPropertySheet("Preferences")
 {
-  PrefsDialog* dialog = (PrefsDialog*)param;
-  if (font->elfLogFont.lfFaceName[0] != '@')
+  m_psh.dwFlags |= PSH_NOAPPLYNOW;
+}
+
+BEGIN_MESSAGE_MAP(PrefsDialog, CPropertySheet)
+  ON_MESSAGE(WM_RESIZEPAGE, OnResizePage)  
+END_MESSAGE_MAP()
+
+BOOL PrefsDialog::OnInitDialog() 
+{
+  CPropertySheet::OnInitDialog();
+
+  // Get the height of the monitor
+  int monHeight = 0;
+  MONITORINFO monInfo;
+  ::ZeroMemory(&monInfo,sizeof monInfo);
+  monInfo.cbSize = sizeof monInfo;
+  HMONITOR mon = ::MonitorFromWindow(GetSafeHwnd(),MONITOR_DEFAULTTOPRIMARY);
+  if (::GetMonitorInfo(mon,&monInfo))
+    monHeight = monInfo.rcWork.bottom - monInfo.rcWork.top;
+  else
+    monHeight = ::GetSystemMetrics(SM_CYSCREEN);
+
+  // Is a smaller font needed?
+  CFont* font = theApp.GetFont(InformApp::FontSystem);
+  CSize fontSize = theApp.MeasureFont(font);
+  double scaleX = 1.0;
+  if (monHeight < 45*fontSize.cy)
   {
-    dialog->m_font.AddString(font->elfLogFont.lfFaceName);
-    if (font->elfLogFont.lfPitchAndFamily & FIXED_PITCH)
-      dialog->m_fixedFont.AddString(font->elfLogFont.lfFaceName);
+    LOGFONT lf;
+    font->GetLogFont(&lf);
+    lf.lfHeight = monHeight/45;
+    m_font.CreateFontIndirect(&lf);
+    font = &m_font;
+    scaleX = (double)fontSize.cx / (double)theApp.MeasureFont(font).cx;
   }
-  return 1;
+
+  // Change the font of the property sheet and its pages
+  ChangeDialogFont(this,font,scaleX);
+  CPropertyPage* page = GetActivePage();
+  for (int i = 0; i < GetPageCount(); i++)
+  {
+    SetActivePage(i);
+    CPropertyPage* page = GetActivePage();
+    ChangeDialogFont(page,font,scaleX);
+    page->SendMessage(WM_UPDATEFONT);
+  }
+  SetActivePage(page);
+
+  CTabCtrl* tab = GetTabControl();
+  tab->SetMinTabWidth(8);
+  tab->GetWindowRect(&m_page);
+  ScreenToClient(&m_page);
+  tab->AdjustRect(FALSE,&m_page);
+  page->MoveWindow(&m_page);
+  return TRUE;
+}
+
+BOOL PrefsDialog::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult) 
+{
+  NMHDR* pnmh = (LPNMHDR) lParam;
+  if (pnmh->code == TCN_SELCHANGE)
+    PostMessage(WM_RESIZEPAGE);
+  return CPropertySheet::OnNotify(wParam, lParam, pResult);
+}
+
+LONG PrefsDialog::OnResizePage(UINT, LONG)
+{
+  CPropertyPage* page = GetActivePage();
+  page->MoveWindow(&m_page);
+  return 0;
+}
+
+void PrefsDialog::ChangeDialogFont(CWnd* wnd, CFont* font, double scaleX)
+{
+  CRect windowRect;
+
+  TEXTMETRIC tmOld, tmNew;
+  CDC* dc = wnd->GetDC();
+  CFont* oldFont = dc->SelectObject(wnd->GetFont());
+  dc->GetTextMetrics(&tmOld);
+  dc->SelectObject(font);
+  dc->GetTextMetrics(&tmNew);
+  dc->SelectObject(oldFont);
+  wnd->ReleaseDC(dc);
+
+  long oldHeight = tmOld.tmHeight+tmOld.tmExternalLeading;
+  long newHeight = tmNew.tmHeight+tmNew.tmExternalLeading;
+  if (newHeight < oldHeight)
+    newHeight = oldHeight;
+  long oldWidth = tmOld.tmAveCharWidth;
+  long newWidth = tmNew.tmAveCharWidth;
+  if (newWidth < oldWidth)
+    newWidth = oldWidth;
+
+  // calculate new dialog window rectangle
+  CRect clientRect, newClientRect, newWindowRect;
+
+  wnd->GetWindowRect(windowRect);
+  wnd->GetClientRect(clientRect);
+  long xDiff = windowRect.Width() - clientRect.Width();
+  long yDiff = windowRect.Height() - clientRect.Height();
+
+  newClientRect.left = newClientRect.top = 0;
+  newClientRect.right = clientRect.right * scaleX * newWidth / oldWidth;
+  newClientRect.bottom = clientRect.bottom * newHeight / oldHeight;
+
+  newWindowRect.left = windowRect.left - (newClientRect.right - clientRect.right)/2;
+  newWindowRect.top = windowRect.top - (newClientRect.bottom - clientRect.bottom)/2;
+  newWindowRect.right = newWindowRect.left + newClientRect.right + xDiff;
+  newWindowRect.bottom = newWindowRect.top + newClientRect.bottom + yDiff;
+
+  wnd->MoveWindow(newWindowRect);
+  wnd->SetFont(font);
+
+  CWnd* childWnd = wnd->GetWindow(GW_CHILD);
+  while (childWnd)
+  {
+    childWnd->SetFont(font);
+    childWnd->GetWindowRect(windowRect);
+
+    CString className;
+    ::GetClassName(childWnd->GetSafeHwnd(),className.GetBufferSetLength(32),31);
+    className.MakeUpper();
+    if (className == "COMBOBOX")
+    {
+      CRect rect;
+      childWnd->SendMessage(CB_GETDROPPEDCONTROLRECT,0,(LPARAM)&rect);
+      windowRect.right = rect.right;
+      windowRect.bottom = rect.bottom;
+    }
+
+    wnd->ScreenToClient(windowRect);
+    windowRect.left = windowRect.left * scaleX * newWidth / oldWidth;
+    windowRect.right = windowRect.right *scaleX *  newWidth / oldWidth;
+    windowRect.top = windowRect.top * newHeight / oldHeight;
+    windowRect.bottom = windowRect.bottom * newHeight / oldHeight;
+    childWnd->MoveWindow(windowRect);
+
+    childWnd = childWnd->GetWindow(GW_HWNDNEXT);
+  }
+}
+
+void PrefsDialog::ShowDialog(void)
+{
+  PrefsEditPage editPage;
+  editPage.ReadSettings();
+  AddPage(&editPage);
+
+  PrefsTextPage textPage;
+  textPage.ReadSettings();
+  AddPage(&textPage);
+
+  PrefsAdvancedPage advPage;
+  advPage.ReadSettings();
+  AddPage(&advPage);
+
+  // Show the dialog
+  if (DoModal() == IDOK)
+  {
+    // Store the new settings
+    editPage.WriteSettings();
+    textPage.WriteSettings();
+    advPage.WriteSettings();
+
+    // Notify all project windows
+    theApp.SendAllFrames(InformApp::Preferences,0);
+  }
 }

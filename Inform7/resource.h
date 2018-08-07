@@ -17,7 +17,9 @@
 #define IDD_SEARCH                      153
 #define IDD_NEWPROJECT                  154
 #define IDD_SPELLING                    155
-#define IDD_PREFERENCES                 156
+#define IDD_PREFS_EDIT                  156
+#define IDD_PREFS_TEXT                  157
+#define IDD_PREFS_ADVANCED              158
 #define ID_FILE_INSTALL_EXT             200
 #define ID_FILE_INSTALL_FOLDER          201
 #define ID_FILE_INSTALL_XP              202
@@ -157,6 +159,31 @@
 #define IDC_RANDOM_BOX                  1049
 #define IDC_EXAMPLE_LIST                1050
 #define IDC_STOP                        1051
+#define IDC_COLOUR_SOURCE               1052
+#define IDC_COLOUR_EXT                  1053
+#define IDC_RESTORE                     1054
+#define IDC_ENABLE_HIGHLIGHT            1055
+#define IDC_HEAD_COLOUR                 1056
+#define IDC_HEAD_STYLE                  1057
+#define IDC_HEAD_UNDER                  1058
+#define IDC_HEAD_SIZE                   1059
+#define IDC_MAIN_COLOUR                 1060
+#define IDC_MAIN_STYLE                  1061
+#define IDC_MAIN_UNDER                  1062
+#define IDC_MAIN_SIZE                   1063
+#define IDC_COMMENT_COLOUR              1064
+#define IDC_COMMENT_STYLE               1065
+#define IDC_COMMENT_UNDER               1066
+#define IDC_COMMENT_SIZE                1067
+#define IDC_QUOTE_COLOUR                1068
+#define IDC_QUOTE_STYLE                 1069
+#define IDC_QUOTE_UNDER                 1070
+#define IDC_QUOTE_SIZE                  1071
+#define IDC_SUBST_COLOUR                1072
+#define IDC_SUBST_STYLE                 1073
+#define IDC_SUBST_UNDER                 1074
+#define IDC_SUBST_SIZE                  1075
+#define IDC_PREVIEW                     1076
 #define ID_OPEN_EXTENSIONS_LIST         2000
 #define ID_NEW_EXTENSIONS_LIST          3000
 
@@ -164,9 +191,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        283
+#define _APS_NEXT_RESOURCE_VALUE        284
 #define _APS_NEXT_COMMAND_VALUE         283
-#define _APS_NEXT_CONTROL_VALUE         1051
+#define _APS_NEXT_CONTROL_VALUE         1077
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif

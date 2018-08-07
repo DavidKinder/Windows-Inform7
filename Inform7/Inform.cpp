@@ -288,7 +288,7 @@ void InformApp::OnAppExit()
 void InformApp::OnAppPrefs()
 {
   PrefsDialog prefs;
-  prefs.DoModal();
+  prefs.ShowDialog();
 }
 
 void InformApp::OnAppAbout()
@@ -369,7 +369,7 @@ COLORREF InformApp::GetColour(Colours colour)
     return RGB(0x00,0x00,0x00);
   case ColourQuote:
     return RGB(0x0f,0x61,0xaa);
-  case ColourQuoteBracket:
+  case ColourSubstitution:
     return RGB(0x5f,0x66,0xaf);
   case ColourComment:
     return RGB(0x1b,0x7f,0x3f);

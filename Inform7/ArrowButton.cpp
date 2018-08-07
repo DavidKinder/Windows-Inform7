@@ -16,14 +16,14 @@ END_MESSAGE_MAP()
 
 ArrowButton::ArrowButton(ArrowStyle style) : m_style(style), m_mouseOver(false)
 {
-  // Use custom draw if possible, as with custom draw Windows can be used to
-  // perform the erase, allowing Vista to use its "glow" effect
-  m_customDraw = (theOS.GetDllVersion("comctl32.dll") >= DLLVERSION(6,0));
 }
 
 BOOL ArrowButton::PreCreateWindow(CREATESTRUCT& cs)
 {
-  cs.style |= m_customDraw ? BS_PUSHBUTTON : BS_PUSHBUTTON|BS_OWNERDRAW;
+  // Use custom draw if possible, as with custom draw Windows can be used to
+  // perform the erase, allowing Vista to use its "glow" effect
+  bool customDraw = (theOS.GetDllVersion("comctl32.dll") >= DLLVERSION(6,0));
+  cs.style |= customDraw ? BS_PUSHBUTTON : BS_PUSHBUTTON|BS_OWNERDRAW;
   return CButton::PreCreateWindow(cs);
 }
 

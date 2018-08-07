@@ -21,6 +21,7 @@ END_MESSAGE_MAP()
 
 SourceWindow::SourceWindow()
 {
+  m_border = false;
   m_back = 0;
   m_tearTop = false;
   m_tearBottom = false;
@@ -30,7 +31,7 @@ SourceWindow::SourceWindow()
   m_imageBottom = NULL;
 }
 
-void SourceWindow::Create(CWnd* parent, ProjectType projectType)
+void SourceWindow::Create(CWnd* parent, ProjectType projectType, bool border)
 {
   // Get the background colour
   switch (projectType)
@@ -58,6 +59,7 @@ void SourceWindow::Create(CWnd* parent, ProjectType projectType)
     break;
   }
 
+  m_border = border;
   CWnd::Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VSCROLL,CRect(0,0,0,0),parent,0);
 
   // Create the edit control and make this window in charge of the scroll bar
@@ -69,9 +71,28 @@ SourceEdit& SourceWindow::GetEdit(void)
   return m_edit;
 }
 
+void SourceWindow::LoadSettings(SourceSettings& set)
+{
+  DWORD colour = 0;
+  ProjectType projectType = (ProjectType)GetParentFrame()->SendMessage(WM_PROJECTTYPE);
+  switch (projectType)
+  {
+  case Project_I7:
+    if (set.GetDWord("Source Paper Colour",colour))
+      m_back = (COLORREF)colour;
+    break;
+  case Project_I7XP:
+    if (set.GetDWord("Ext Paper Colour",colour))
+      m_back = (COLORREF)colour;
+    break;
+  }
+
+  m_edit.LoadSettings(set,m_back);
+}
+
 void SourceWindow::PrefsChanged(void)
 {
-  m_edit.PrefsChanged(m_back);
+  m_edit.PrefsChanged();
   Resize();
   Invalidate();
 }
@@ -221,6 +242,8 @@ void SourceWindow::Resize(void)
     client.bottom -= m_imageBottom->GetSize().cy;
   else
     client.bottom -= fontSize.cy/4;
+  if (m_border)
+    client.left += 1;
 
   // Make sure that an integral number of lines are visible
   int lineHeight = m_edit.GetLineHeight();
@@ -261,6 +284,9 @@ void SourceWindow::Draw(CDC& dc)
   ScreenToClient(editRect);
   if (y > editRect.bottom)
     dc.FillSolidRect(0,editRect.bottom,client.Width(),y-editRect.bottom,m_back);
+
+  if (m_border)
+    dc.Draw3dRect(client,::GetSysColor(COLOR_BTNSHADOW),::GetSysColor(COLOR_BTNFACE));
 }
 
 CRect SourceWindow::PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bool top)

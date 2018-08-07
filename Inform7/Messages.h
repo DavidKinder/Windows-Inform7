@@ -180,3 +180,14 @@ public:
 // This command object is allocated on the heap and is freed by the
 // recipient.
 #define WM_ANIMATESKEIN   WM_APP+39
+
+// Sent to a property sheet page to set the font for any controls
+// that use a different font from the default for the page.
+#define WM_UPDATEFONT     WM_APP+40
+
+// Sent to a property sheet to resize the currently active page.
+#define WM_RESIZEPAGE     WM_APP+41
+
+// Sent to a preferences dialog sheet to indicate that the preview
+// is to be updated.
+#define WM_UPDATEPREVIEW  WM_APP+42

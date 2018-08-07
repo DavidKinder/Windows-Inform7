@@ -127,7 +127,7 @@ bool Style::EquivalentFontTo(const Style *other) const {
 }
 
 void Style::Realise(Surface &surface, int zoomLevel, Style *defaultStyle, bool extraFontFlag) {
-	sizeZoomed = size + zoomLevel;
+	sizeZoomed = size + (10 * zoomLevel) ; /* XXXXDK Font size 1/10 point */
 	if (sizeZoomed <= 2)	// Hangs if sizeZoomed <= 1
 		sizeZoomed = 2;
 

@@ -53,9 +53,9 @@ void SourceLexer::Process(int startPos, int endPos, bool includeExt)
       if (IsQuote(c,pos,true))
         ApplyStyle(startPos,pos+1,style,STYLE_TEXT,StyleMask);
       else if (c == '[')
-        ApplyStyle(startPos,pos,style,STYLE_QUOTEBRACKET,StyleMask);
+        ApplyStyle(startPos,pos,style,STYLE_SUBSTITUTION,StyleMask);
     }
-    else if (style == STYLE_QUOTEBRACKET)
+    else if (style == STYLE_SUBSTITUTION)
     {
       if (IsQuote(c,pos,true))
         ApplyStyle(startPos,pos+1,style,STYLE_TEXT,StyleMask);

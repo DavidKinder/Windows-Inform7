@@ -6,6 +6,7 @@
 #include "Inform.h"
 #include "Messages.h"
 #include "OSLayer.h"
+#include "SourceSettings.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -49,7 +50,7 @@ void TabSource::CreateTab(CWnd* parent)
 
   // Create the source and contents windows
   ProjectType projectType = (ProjectType)GetParentFrame()->SendMessage(WM_PROJECTTYPE);
-  m_source.Create(this,projectType);
+  m_source.Create(this,projectType,false);
   m_contents.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN,CRect(0,0,0,0),this,0);
   SetActiveTab(SrcTab_Source,false);
 
@@ -503,7 +504,8 @@ bool TabSource::IsProjectEdited(void)
 
 void TabSource::LoadSettings(CRegKey& key, bool primary)
 {
-  m_source.GetEdit().LoadSettings(key);
+  SourceSettingsRegistry set(key);
+  m_source.LoadSettings(set);
   m_contents.LoadSettings(key);
 }
 
@@ -515,7 +517,8 @@ void TabSource::SaveSettings(CRegKey& key, bool primary)
 
 void TabSource::PrefsChanged(CRegKey& key)
 {
-  m_source.GetEdit().LoadSettings(key);
+  SourceSettingsRegistry set(key);
+  m_source.LoadSettings(set);
   m_source.PrefsChanged();
   m_contents.PrefsChanged();
 }

@@ -150,6 +150,7 @@ void TabSkein::SaveSettings(CRegKey& key, bool primary)
 void TabSkein::PrefsChanged(CRegKey& key)
 {
   m_skeinWindow->PrefsChanged();
+  m_helpWindow->Refresh();
 }
 
 void TabSkein::SetSkein(Skein* skein)

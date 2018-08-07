@@ -4,6 +4,7 @@
 #include "SearchWindow.h"
 #include "SpellCheck.h"
 #include "SourceLexer.h"
+#include "SourceSettings.h"
 
 #include "Platform.h"
 #include "Scintilla.h"
@@ -23,6 +24,7 @@ protected:
   afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
   afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
   afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+  afx_msg UINT OnGetDlgCode();
 
   afx_msg void OnUpdateEditUndo(CCmdUI *pCmdUI);
   afx_msg void OnEditUndo();
@@ -58,6 +60,7 @@ protected:
 
 public:
   void SetStyles(COLORREF back);
+  void SetReadOnly(bool readOnly);
 
   void SetDocument(SourceEdit* master);
   void OpenFile(CFile* file);
@@ -84,8 +87,8 @@ public:
   CStringW GetTextRange(int cpMin, int cpMax, int len = -1);
   CHARRANGE FindText(LPCWSTR text, bool fromSelect, bool down, bool matchCase, bool wholeWord);
 
-  void LoadSettings(CRegKey& key);
-  void PrefsChanged(COLORREF back);
+  void LoadSettings(SourceSettings& set, COLORREF back);
+  void PrefsChanged(void);
   bool GetElasticTabStops(void);
   void SetElasticTabStops(bool enable);
 
@@ -102,6 +105,7 @@ private:
   void TokenizeLine(const CStringW& line, CArray<CStringW>& tokens);
   void RenumberHeadings(const CArray<SourceLexer::Heading>& headings);
   bool IsLineInExtDoc(const CArray<SourceLexer::Heading>& headings, int line);
+  void SetSourceStyle(int style, int boldItalic, bool underline, int size);
 
 private:
   sptr_t m_editPtr;
@@ -111,6 +115,32 @@ private:
   CHARRANGE m_markSel;
 
   bool m_includeExt;
+
+  CString m_fontName;
+  int m_fontSize;
+
+  bool m_syntaxHighlight;
+  COLORREF m_colourHead;
+  COLORREF m_colourMain;
+  COLORREF m_colourComment;
+  COLORREF m_colourQuote;
+  COLORREF m_colourSubst;
+  int m_styleHead;
+  int m_styleMain;
+  int m_styleComment;
+  int m_styleQuote;
+  int m_styleSubst;
+  bool m_underHead;
+  bool m_underMain;
+  bool m_underComment;
+  bool m_underQuote;
+  bool m_underSubst;
+  int m_sizeHead;
+  int m_sizeMain;
+  int m_sizeComment;
+  int m_sizeQuote;
+  int m_sizeSubst;
+
   bool m_autoIndent;
   bool m_autoNumber;
   bool m_elasticTabStops;
