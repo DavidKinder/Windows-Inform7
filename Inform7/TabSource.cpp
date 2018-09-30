@@ -50,7 +50,7 @@ void TabSource::CreateTab(CWnd* parent)
 
   // Create the source and contents windows
   ProjectType projectType = (ProjectType)GetParentFrame()->SendMessage(WM_PROJECTTYPE);
-  m_source.Create(this,projectType,false);
+  m_source.Create(this,projectType,SourceWindow::NoBorder);
   m_contents.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN,CRect(0,0,0,0),this,0);
   SetActiveTab(SrcTab_Source,false);
 

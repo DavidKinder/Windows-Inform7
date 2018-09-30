@@ -1089,7 +1089,11 @@ void ScintillaWin::SetMouseCapture(bool on) {
 			::ReleaseCapture();
 		}
 	}
-	capturedMouse = on;
+/*XXXXDK Mouse scrolling */
+	if (mouseDownCaptures) {
+		capturedMouse = on;
+	}
+/*XXXXDK Mouse scrolling */
 }
 
 bool ScintillaWin::HaveMouseCapture() {

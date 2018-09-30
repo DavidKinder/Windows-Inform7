@@ -13,7 +13,14 @@ class SourceWindow : public CWnd
 public:
   SourceWindow();
 
-  void Create(CWnd* parent, ProjectType projectType, bool border);
+  enum WindowType
+  {
+    NoBorder,
+    Border,
+    SingleLine
+  };
+
+  void Create(CWnd* parent, ProjectType projectType, WindowType windowType);
   SourceEdit& GetEdit(void);
   void LoadSettings(SourceSettings& set);
   void PrefsChanged(void);
@@ -46,7 +53,7 @@ private:
   CRect PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bool top);
   CDibSection* CreateTornImage(const char* inputImage, const char* outputName);
 
-  bool m_border;
+  WindowType m_windowType;
   COLORREF m_back;
   SourceEdit m_edit;
   SourceHeading m_heading;

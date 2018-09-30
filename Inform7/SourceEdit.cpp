@@ -133,7 +133,7 @@ BOOL SourceEdit::Create(CWnd* parent, UINT id, COLORREF back, bool includeExt)
   CallEdit(SCI_SETCODEPAGE,SC_CP_UTF8);
   CallEdit(SCI_SETEOLMODE,SC_EOL_LF);
   CallEdit(SCI_SETPASTECONVERTENDINGS,1);
-  CallEdit(SCI_SETWRAPMODE,1);
+  CallEdit(SCI_SETWRAPMODE,SC_WRAP_WORD);
   CallEdit(SCI_SETMODEVENTMASK,SC_MOD_INSERTTEXT|SC_MOD_DELETETEXT);
   for (int i = 0; i < 5; i++)
     CallEdit(SCI_SETMARGINWIDTHN,i,0);
@@ -799,6 +799,29 @@ void SourceEdit::SetReadOnly(bool readOnly)
   CallEdit(SCI_SETREADONLY,readOnly);
 }
 
+void SourceEdit::SetShowScrollBars(bool show)
+{
+  CallEdit(SCI_SETHSCROLLBAR,show);
+  CallEdit(SCI_SETVSCROLLBAR,show);
+}
+
+void SourceEdit::SetLineWrap(bool wrap)
+{
+  CallEdit(SCI_SETWRAPMODE,wrap ? SC_WRAP_WORD : SC_WRAP_NONE);
+}
+
+void SourceEdit::HideCaret(void)
+{
+  CallEdit(SCI_SETCARETSTYLE,CARETSTYLE_INVISIBLE);
+}
+
+void SourceEdit::DisableUserControl(void)
+{
+  CallEdit(SCI_CLEARALLCMDKEYS);
+  CallEdit(SCI_SETMOUSEDOWNCAPTURES,0);
+  CallEdit(SCI_HIDESELECTION,1);
+}
+
 void SourceEdit::SetDocument(SourceEdit* master)
 {
   sptr_t doc = master->CallEdit(SCI_GETDOCPOINTER);
@@ -1278,6 +1301,21 @@ void SourceEdit::SetElasticTabStops(bool enable)
     ElasticTabStops_OnModify(m_editPtr,0,CallEdit(SCI_GETLENGTH));
   else
     ElasticTabStops_OnClear(m_editPtr);
+}
+
+void SourceEdit::SetCustomTabStops(int num, int tabPixels)
+{
+  std::vector<int> tab_array;
+  tab_array.resize(num+1);
+  tab_array[num] = 0;
+  for (int i = 0; i < num; i++)
+    tab_array[i] = (i+1)*tabPixels;
+  CallEdit(SCIX_SETTABSTOPS,0,(LONG_PTR)&(tab_array.at(0)));
+}
+
+int SourceEdit::GetTabWidthPixels(void)
+{
+  return CallEdit(SCI_GETTABWIDTH) * CallEdit(SCI_TEXTWIDTH,0,(LONG_PTR)" ");
 }
 
 void SourceEdit::GetAllHeadings(CArray<SourceLexer::Heading>& headings)

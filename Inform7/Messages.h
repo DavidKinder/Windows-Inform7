@@ -181,9 +181,9 @@ public:
 // recipient.
 #define WM_ANIMATESKEIN   WM_APP+39
 
-// Sent to a property sheet page to set the font for any controls
-// that use a different font from the default for the page.
-#define WM_UPDATEFONT     WM_APP+40
+// Sent to a property sheet page after the dialog font has been set
+// and the page resized.
+#define WM_AFTERFONTSET   WM_APP+40
 
 // Sent to a property sheet to resize the currently active page.
 #define WM_RESIZEPAGE     WM_APP+41

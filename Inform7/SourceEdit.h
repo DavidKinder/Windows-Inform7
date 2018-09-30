@@ -61,6 +61,10 @@ protected:
 public:
   void SetStyles(COLORREF back);
   void SetReadOnly(bool readOnly);
+  void SetShowScrollBars(bool show);
+  void SetLineWrap(bool wrap);
+  void HideCaret(void);
+  void DisableUserControl(void);
 
   void SetDocument(SourceEdit* master);
   void OpenFile(CFile* file);
@@ -91,6 +95,8 @@ public:
   void PrefsChanged(void);
   bool GetElasticTabStops(void);
   void SetElasticTabStops(bool enable);
+  void SetCustomTabStops(int num, int tabPixels);
+  int GetTabWidthPixels(void);
 
   void GetAllHeadings(CArray<SourceLexer::Heading>& headings);
   int GetLineHeight(void);

@@ -2525,7 +2525,7 @@ void ProjectFrame::UpdateMenuParams(void)
 void ProjectFrame::UpdateExtensionsMenu(void)
 {
   CMenu* fileMenu = GetMenu()->GetSubMenu(0);
-  ASSERT(fileMenu->GetMenuItemCount() == 18);
+  ASSERT(fileMenu->GetMenuItemCount() == 17);
   CMenu* newExtMenu = fileMenu->GetSubMenu(3)->GetSubMenu(1);
   ASSERT(newExtMenu != NULL);
   CMenu* openExtMenu = fileMenu->GetSubMenu(6);

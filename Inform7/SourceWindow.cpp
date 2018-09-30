@@ -21,7 +21,7 @@ END_MESSAGE_MAP()
 
 SourceWindow::SourceWindow()
 {
-  m_border = false;
+  m_windowType = NoBorder;
   m_back = 0;
   m_tearTop = false;
   m_tearBottom = false;
@@ -31,7 +31,7 @@ SourceWindow::SourceWindow()
   m_imageBottom = NULL;
 }
 
-void SourceWindow::Create(CWnd* parent, ProjectType projectType, bool border)
+void SourceWindow::Create(CWnd* parent, ProjectType projectType, WindowType windowType)
 {
   // Get the background colour
   switch (projectType)
@@ -59,7 +59,7 @@ void SourceWindow::Create(CWnd* parent, ProjectType projectType, bool border)
     break;
   }
 
-  m_border = border;
+  m_windowType = windowType;
   CWnd::Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VSCROLL,CRect(0,0,0,0),parent,0);
 
   // Create the edit control and make this window in charge of the scroll bar
@@ -236,18 +236,25 @@ void SourceWindow::Resize(void)
   CSize fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontDisplay));
   if (m_tearTop)
     client.top += m_imageTop->GetSize().cy;
+  else if (m_windowType == SingleLine)
+    client.top += fontSize.cy/8;
   else
     client.top += fontSize.cy/4;
   if (m_tearBottom)
     client.bottom -= m_imageBottom->GetSize().cy;
+  else if (m_windowType == SingleLine)
+    client.bottom -= fontSize.cy/8;
   else
     client.bottom -= fontSize.cy/4;
-  if (m_border)
+  if (m_windowType != NoBorder)
     client.left += 1;
 
-  // Make sure that an integral number of lines are visible
-  int lineHeight = m_edit.GetLineHeight();
-  client.bottom -= client.Height() % lineHeight;
+  if (m_windowType != SingleLine)
+  {
+    // Make sure that an integral number of lines are visible
+    int lineHeight = m_edit.GetLineHeight();
+    client.bottom -= client.Height() % lineHeight;
+  }
 
   m_edit.MoveWindow(client,IsWindowVisible());
 }
@@ -285,7 +292,7 @@ void SourceWindow::Draw(CDC& dc)
   if (y > editRect.bottom)
     dc.FillSolidRect(0,editRect.bottom,client.Width(),y-editRect.bottom,m_back);
 
-  if (m_border)
+  if (m_windowType != NoBorder)
     dc.Draw3dRect(client,::GetSysColor(COLOR_BTNSHADOW),::GetSysColor(COLOR_BTNFACE));
 }
 

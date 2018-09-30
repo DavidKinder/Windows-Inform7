@@ -28,11 +28,13 @@ protected:
   afx_msg void OnChangeFont();
   afx_msg void OnChangeStyle();
   afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+  afx_msg LRESULT OnAfterFontSet(WPARAM, LPARAM);
   afx_msg LRESULT OnUpdatePreview(WPARAM, LPARAM);
 
   void UpdateControlStates(void);
   void UpdatePreview(void);
   void SetDefaults(void);
+  void AdjustControlRow(int ctrlId, int top, int ctrlId1, int ctrlId2);
 
   virtual bool GetDWord(const char* name, DWORD& value);
   virtual bool GetString(const char* name, char* value, ULONG len);
@@ -76,6 +78,7 @@ private:
   CSliderCtrl m_tabSizeCtrl;
 
   SourceWindow m_preview;
+  SourceWindow m_tabPreview;
 
   BOOL m_indentWrapped;
   BOOL m_autoIndent;
@@ -125,7 +128,7 @@ protected:
   virtual BOOL OnInitDialog();
 
   afx_msg void OnClickedCleanFiles();
-  afx_msg LRESULT OnUpdateFont(WPARAM, LPARAM);
+  afx_msg LRESULT OnAfterFontSet(WPARAM, LPARAM);
 
   void UpdateControlStates(void);
 

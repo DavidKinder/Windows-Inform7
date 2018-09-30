@@ -8064,6 +8064,7 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 /*XXXXDK tabs */
 	case SCIX_SETTABSTOPS:
 		pdoc->SetTabStops(wParam, reinterpret_cast<int*>(lParam));
+		InvalidateStyleRedraw();
 		return 0l;
 /*XXXXDK tabs */
 

@@ -163,27 +163,33 @@
 #define IDC_COLOUR_EXT                  1053
 #define IDC_RESTORE                     1054
 #define IDC_ENABLE_HIGHLIGHT            1055
-#define IDC_HEAD_COLOUR                 1056
-#define IDC_HEAD_STYLE                  1057
-#define IDC_HEAD_UNDER                  1058
-#define IDC_HEAD_SIZE                   1059
-#define IDC_MAIN_COLOUR                 1060
-#define IDC_MAIN_STYLE                  1061
-#define IDC_MAIN_UNDER                  1062
-#define IDC_MAIN_SIZE                   1063
-#define IDC_COMMENT_COLOUR              1064
-#define IDC_COMMENT_STYLE               1065
-#define IDC_COMMENT_UNDER               1066
-#define IDC_COMMENT_SIZE                1067
-#define IDC_QUOTE_COLOUR                1068
-#define IDC_QUOTE_STYLE                 1069
-#define IDC_QUOTE_UNDER                 1070
-#define IDC_QUOTE_SIZE                  1071
-#define IDC_SUBST_COLOUR                1072
-#define IDC_SUBST_STYLE                 1073
-#define IDC_SUBST_UNDER                 1074
-#define IDC_SUBST_SIZE                  1075
-#define IDC_PREVIEW                     1076
+#define IDC_HEAD_LABEL                  1056
+#define IDC_HEAD_COLOUR                 1057
+#define IDC_HEAD_STYLE                  1058
+#define IDC_HEAD_UNDER                  1059
+#define IDC_HEAD_SIZE                   1060
+#define IDC_MAIN_LABEL                  1061
+#define IDC_MAIN_COLOUR                 1062
+#define IDC_MAIN_STYLE                  1063
+#define IDC_MAIN_UNDER                  1064
+#define IDC_MAIN_SIZE                   1065
+#define IDC_COMMENT_LABEL               1066
+#define IDC_COMMENT_COLOUR              1067
+#define IDC_COMMENT_STYLE               1068
+#define IDC_COMMENT_UNDER               1069
+#define IDC_COMMENT_SIZE                1070
+#define IDC_QUOTE_LABEL                 1071
+#define IDC_QUOTE_COLOUR                1072
+#define IDC_QUOTE_STYLE                 1073
+#define IDC_QUOTE_UNDER                 1074
+#define IDC_QUOTE_SIZE                  1075
+#define IDC_SUBST_LABEL                 1076
+#define IDC_SUBST_COLOUR                1077
+#define IDC_SUBST_STYLE                 1078
+#define IDC_SUBST_UNDER                 1079
+#define IDC_SUBST_SIZE                  1080
+#define IDC_PREVIEW                     1081
+#define IDC_TABPREVIEW                  1082
 #define ID_OPEN_EXTENSIONS_LIST         2000
 #define ID_NEW_EXTENSIONS_LIST          3000
 
@@ -193,7 +199,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        284
 #define _APS_NEXT_COMMAND_VALUE         283
-#define _APS_NEXT_CONTROL_VALUE         1077
+#define _APS_NEXT_CONTROL_VALUE         1083
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif

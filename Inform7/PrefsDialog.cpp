@@ -9,6 +9,8 @@
 #define new DEBUG_NEW
 #endif
 
+#define NUM_PREVIEW_TABS 60
+
 PrefsEditPage::PrefsEditPage() : CPropertyPage(PrefsEditPage::IDD)
 {
   SetDefaults();
@@ -38,6 +40,7 @@ BEGIN_MESSAGE_MAP(PrefsEditPage, CPropertyPage)
   ON_BN_CLICKED(IDC_INDENT, OnChangeStyle)
   ON_BN_CLICKED(IDC_ELASTIC_TABS, OnChangeStyle)
   ON_WM_HSCROLL()
+  ON_MESSAGE(WM_AFTERFONTSET, OnAfterFontSet)
   ON_MESSAGE(WM_UPDATEPREVIEW, OnUpdatePreview)
 END_MESSAGE_MAP()
 
@@ -182,7 +185,6 @@ void PrefsEditPage::DoDataExchange(CDataExchange* pDX)
   DDX_CBIndex(pDX, IDC_SUBST_SIZE, m_sizeSubst);
   DDX_Control(pDX, IDC_TABSIZE, m_tabSizeCtrl);
   DDX_Slider(pDX, IDC_TABSIZE, m_tabSize);
-  DDV_MinMaxInt(pDX, m_tabSize, 1, 96);
   DDX_Check(pDX, IDC_INDENT, m_indentWrapped);
   DDX_Check(pDX, IDC_AUTO_INDENT, m_autoIndent);
   DDX_Check(pDX, IDC_ELASTIC_TABS, m_autoSpaceTables);
@@ -220,11 +222,11 @@ BOOL PrefsEditPage::OnInitDialog()
   m_underSubst.SubclassDlgItem(IDC_SUBST_UNDER,this);
 
   // Initialize the tab width slider
-  m_tabSizeCtrl.SetRange(1,96);
-  m_tabSizeCtrl.SetTicFreq(4);
+  m_tabSizeCtrl.SetRange(2,32);
+  m_tabSizeCtrl.SetTicFreq(1);
 
   // Create the preview window
-  m_preview.Create(this,Project_I7,true);
+  m_preview.Create(this,Project_I7,SourceWindow::Border);
   CRect previewRect;
   GetDlgItem(IDC_PREVIEW)->GetWindowRect(previewRect);
   ScreenToClient(previewRect);
@@ -245,9 +247,30 @@ BOOL PrefsEditPage::OnInitDialog()
     L"a green jersey\t1953\t\"highest point scorer on sprints\"\n"
     L"a white jersey\t1975\t\"best cyclist aged 25 or less\"");
   previewEdit.SetReadOnly(true);
+  previewEdit.HideCaret();
   CHARRANGE startRange = { 0,0 };
   previewEdit.SetSelect(startRange);
   m_preview.ShowWindow(SW_SHOW);
+
+  // Create the tab preview window
+  m_tabPreview.Create(this,Project_I7,SourceWindow::SingleLine);
+  GetDlgItem(IDC_TABPREVIEW)->GetWindowRect(previewRect);
+  ScreenToClient(previewRect);
+  m_tabPreview.MoveWindow(previewRect);
+  SourceEdit& tabPreviewEdit = m_tabPreview.GetEdit();
+  tabPreviewEdit.ReplaceSelect(
+    L"\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|"
+    L"\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|"
+    L"\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|");
+  tabPreviewEdit.SetCustomTabStops(NUM_PREVIEW_TABS,
+    previewEdit.GetTabWidthPixels());
+  tabPreviewEdit.SetReadOnly(true);
+  tabPreviewEdit.SetShowScrollBars(false);
+  tabPreviewEdit.SetLineWrap(false);
+  tabPreviewEdit.HideCaret();
+  tabPreviewEdit.DisableUserControl();
+  tabPreviewEdit.SetSelect(startRange);
+  m_tabPreview.ShowWindow(SW_SHOW);
 
   UpdateControlStates();
   return TRUE;
@@ -276,6 +299,8 @@ void PrefsEditPage::OnClickedRestore()
   m_colourSubst.Invalidate();
   m_preview.LoadSettings(*this);
   m_preview.PrefsChanged();
+  m_tabPreview.GetEdit().SetCustomTabStops(NUM_PREVIEW_TABS,
+    m_preview.GetEdit().GetTabWidthPixels());
 }
 
 void PrefsEditPage::OnChangeFont()
@@ -296,7 +321,24 @@ void PrefsEditPage::OnClickedEnableHighlight()
 
 void PrefsEditPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
-  UpdatePreview();
+  PostMessage(WM_UPDATEPREVIEW);
+}
+
+LRESULT PrefsEditPage::OnAfterFontSet(WPARAM, LPARAM)
+{
+  // Font scaling can leave uneven spacing between the syntax highlighting controls ...
+  CRect topRect, bottomRect;
+  GetDlgItem(IDC_HEAD_STYLE)->GetWindowRect(topRect);
+  ScreenToClient(topRect);
+  GetDlgItem(IDC_SUBST_STYLE)->GetWindowRect(bottomRect);
+  ScreenToClient(bottomRect);
+  int rowh = topRect.Height();
+  int space = (bottomRect.bottom - topRect.top - (5*rowh) + 3) / 5;
+  AdjustControlRow(IDC_MAIN_STYLE,topRect.top + rowh + space,IDC_MAIN_LABEL,IDC_MAIN_SIZE);
+  AdjustControlRow(IDC_COMMENT_STYLE,topRect.top + 2*(rowh + space),IDC_COMMENT_LABEL,IDC_COMMENT_SIZE);
+  AdjustControlRow(IDC_QUOTE_STYLE,topRect.top + 3*(rowh + space),IDC_QUOTE_LABEL,IDC_QUOTE_SIZE);
+  AdjustControlRow(IDC_SUBST_STYLE,topRect.top + 4*(rowh + space),IDC_SUBST_LABEL,IDC_SUBST_SIZE);
+  return 0;
 }
 
 LRESULT PrefsEditPage::OnUpdatePreview(WPARAM, LPARAM)
@@ -316,8 +358,11 @@ void PrefsEditPage::UpdatePreview(void)
 {
   UpdateData(TRUE);
   m_font.GetWindowText(m_fontName);
+
   m_preview.LoadSettings(*this);
   m_preview.PrefsChanged();
+  m_tabPreview.GetEdit().SetCustomTabStops(NUM_PREVIEW_TABS,
+    m_preview.GetEdit().GetTabWidthPixels());
 }
 
 // Set the default preferences values
@@ -355,6 +400,23 @@ void PrefsEditPage::SetDefaults(void)
   m_autoIndent = TRUE;
   m_autoSpaceTables = TRUE;
   m_autoNumber = FALSE;
+}
+
+void PrefsEditPage::AdjustControlRow(int ctrlId, int top, int ctrlId1, int ctrlId2)
+{
+  CRect ctrlRect;
+  GetDlgItem(ctrlId)->GetWindowRect(ctrlRect);
+  ScreenToClient(ctrlRect);
+  int adjust = top - ctrlRect.top;
+
+  for (int id = ctrlId1; id <= ctrlId2; id++)
+  {
+    CWnd* wnd = GetDlgItem(id);
+    wnd->GetWindowRect(ctrlRect);
+    ScreenToClient(ctrlRect);
+    ctrlRect.OffsetRect(0,adjust);
+    wnd->MoveWindow(ctrlRect);
+  }
 }
 
 bool PrefsEditPage::GetDWord(const char* name, DWORD& value)
@@ -632,7 +694,7 @@ PrefsAdvancedPage::PrefsAdvancedPage() : CPropertyPage(PrefsAdvancedPage::IDD)
 
 BEGIN_MESSAGE_MAP(PrefsAdvancedPage, CPropertyPage)
   ON_BN_CLICKED(IDC_CLEANFILES, OnClickedCleanFiles)
-  ON_MESSAGE(WM_UPDATEFONT, OnUpdateFont)
+  ON_MESSAGE(WM_AFTERFONTSET, OnAfterFontSet)
 END_MESSAGE_MAP()
 
 void PrefsAdvancedPage::ReadSettings(void)
@@ -691,7 +753,7 @@ void PrefsAdvancedPage::OnClickedCleanFiles()
   UpdateControlStates();
 }
 
-LRESULT PrefsAdvancedPage::OnUpdateFont(WPARAM wparam, LPARAM)
+LRESULT PrefsAdvancedPage::OnAfterFontSet(WPARAM, LPARAM)
 {
   // Set a smaller font for the "Also clean out ..." checkbox
   LOGFONT smallFont;
@@ -754,7 +816,7 @@ BOOL PrefsDialog::OnInitDialog()
     SetActivePage(i);
     CPropertyPage* page = GetActivePage();
     ChangeDialogFont(page,font,scaleX);
-    page->SendMessage(WM_UPDATEFONT);
+    page->SendMessage(WM_AFTERFONTSET);
   }
   SetActivePage(page);
 
