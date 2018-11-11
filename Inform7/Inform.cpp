@@ -434,9 +434,6 @@ void InformApp::SetIcon(CWnd* wnd)
 
 CString InformApp::GetAppDir(void) const
 {
-#ifdef DEBUG
-  return "Z:\\Programs\\Adv\\Inform7\\Build";
-#else
   // Get the path to this executable
   char path[_MAX_PATH];
   if (::GetModuleFileName(NULL,path,sizeof path) == 0)
@@ -446,8 +443,12 @@ CString InformApp::GetAppDir(void) const
   char* p = strrchr(path,'\\');
   if (p != NULL)
     *p = 0;
-  return path;
+
+#ifdef DEBUG
+  strcat(path,"\\..\\..\\Build");
 #endif
+
+  return path;
 }
 
 CString InformApp::GetLastProjectDir(void)
