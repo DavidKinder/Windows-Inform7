@@ -31,6 +31,7 @@ public:
 
 private:
   CStringW Unescape(const wchar_t* input);
+  CStringW UrlFromPath(const char* path);
 
   CStringW m_protocol;
   std::vector<std::string> m_dirs;

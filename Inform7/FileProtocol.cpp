@@ -77,13 +77,8 @@ CStringW FileProtocol::TranslateUrl(const wchar_t* url)
         {
           CString path;
           path.Format("%s%S",it->second[i].c_str(),fileName.GetString()+plen);
-
           if (::GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES)
-          {
-            CStringW url;
-            url.Format(L"file://%S%s",it->second[i].c_str(),fileName.GetString()+plen);
-            return url;
-          }
+            return UrlFromPath(path);
         }
       }
     }
@@ -94,14 +89,8 @@ CStringW FileProtocol::TranslateUrl(const wchar_t* url)
     CString path;
     path.Format("%s%S",m_dirs[i].c_str(),fileName.GetString());
     path.TrimRight("/");
-
     if (::GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES)
-    {
-      CStringW url;
-      url.Format(L"file://%S%s",m_dirs[i].c_str(),fileName.GetString());
-      url.TrimRight(L"/");
-      return url;
-    }
+      return UrlFromPath(path);
   }
 
   return L"";
@@ -135,6 +124,23 @@ CStringW FileProtocol::Unescape(const wchar_t* input)
   return output;
 }
 
+CStringW FileProtocol::UrlFromPath(const char* path)
+{
+  CStringW url;
+
+  DWORD urlBufLen = 32+3+2048; // INTERNET_MAX_URL_LENGTH
+  LPWSTR urlBuf = url.GetBufferSetLength(urlBufLen);
+  HRESULT urlCreate = UrlCreateFromPathW(CStringW(path),urlBuf,&urlBufLen,0);
+  url.ReleaseBuffer();
+
+  if (FAILED(urlCreate))
+  {
+    url.Format(L"file:///%S",path);
+    url.Replace('\\','/');
+  }
+  return url;
+}
+
 BEGIN_INTERFACE_MAP(FileProtocol, CCmdTarget)
   INTERFACE_PART(FileProtocol, IID_IInternetProtocolInfo, InternetProtocolInfo)
   INTERFACE_PART(FileProtocol, IID_IClassFactory, ClassFactory)
@@ -166,20 +172,21 @@ STDMETHODIMP FileProtocol::XInternetProtocolInfo::ParseUrl(
 {
   METHOD_PROLOGUE(FileProtocol, InternetProtocolInfo)
 
-  CStringW result;
+  CStringW parseUrl;
 
-  if (ParseAction == PARSE_CANONICALIZE)
-    result = pThis->TranslateUrl(pwzUrl);
+  if ((ParseAction == PARSE_CANONICALIZE) || (ParseAction == PARSE_SECURITY_URL))
+    parseUrl = pThis->TranslateUrl(pwzUrl);
 
-  int len = result.GetLength();
+  int len = parseUrl.GetLength();
   if (len > 0)
   {
-    *pcchResult = len+1;
+    if (pcchResult)
+      *pcchResult = len+1;
 
     if (len+1 > (int)cchResult)
       return S_FALSE;
 
-    wcscpy(pwzResult,result);
+    wcscpy(pwzResult,parseUrl);
     return S_OK;
   }
 
