@@ -578,8 +578,14 @@ public:
     return E_NOTIMPL;
   }
 
-  HRESULT STDMETHODCALLTYPE GetBindInfo(DWORD*, BINDINFO*)
+  HRESULT STDMETHODCALLTYPE GetBindInfo(DWORD* grfBINDF, BINDINFO*)
   {
+    if (grfBINDF)
+    {
+      // Always download, never use cache
+      *grfBINDF |= BINDF_GETNEWESTVERSION;
+      *grfBINDF &= ~BINDF_GETFROMCACHE_IF_NET_FAIL;
+    }
     return E_NOTIMPL;
   }
 
@@ -633,8 +639,13 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
       }
       downPath.Append("PubLibDownload.i7x");
 
-      // Download from the public library
+      // Determine the URL for the extension
       url.Format("http://www.emshort.com/pl%s",(LPCSTR)url.Mid(8));
+
+      // Make sure there is no matching IE cache entry
+      ::DeleteUrlCacheEntry(url);
+
+      // Download from the public library
       WaitForDownload wait;
       if (FAILED(::URLDownloadToFile(NULL,url,(LPCSTR)downPath,0,&wait)))
         continue;
