@@ -37,6 +37,7 @@
 #include <textserv.h>
 #include <tom.h>
 #include <uxtheme.h>
+#include <wininet.h>
 
 #if (_MSC_VER >= 1400)
 #include <shlobj.h>
