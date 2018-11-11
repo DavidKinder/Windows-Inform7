@@ -29,6 +29,8 @@ public:
 
 private:
   DECLARE_DISPATCH_MAP()
+
+  CStringW UnescapeUnicode(LPCWSTR input);
   ReportHtml* m_html;
 };
 

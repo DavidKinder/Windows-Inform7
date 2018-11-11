@@ -1019,27 +1019,7 @@ bool SourceEdit::IsLineShown(int line)
 
 void SourceEdit::PasteCode(const wchar_t* code)
 {
-  // Process escapes in the code string
-  size_t len = wcslen(code);
-  CStringW theCode;
-  theCode.Preallocate((int)len);
-  for (size_t i = 0; i < len; i++)
-  {
-    wchar_t c = code[i];
-    if (c == '[')
-    {
-      int unicode = 0;
-      if (swscanf(code+i,L"[=0x%x=]",&unicode) == 1)
-      {
-        theCode.AppendChar((wchar_t)unicode);
-        i += 9;
-        continue;
-      }
-    }
-    theCode.AppendChar(c);
-  }
-
-  CString theCodeUtf = TextFormat::UnicodeToUTF8(theCode);
+  CString theCodeUtf = TextFormat::UnicodeToUTF8(code);
   CallEdit(SCI_REPLACESEL,0,(sptr_t)(LPCSTR)theCodeUtf);
 }
 

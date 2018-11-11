@@ -557,12 +557,16 @@ void ScriptProject::SelectView(LPCSTR view)
 
 void ScriptProject::PasteCode(LPCWSTR code)
 {
-  m_html->GetParentFrame()->SendMessage(WM_PASTECODE,(WPARAM)code);
+  CStringW theCode = UnescapeUnicode(code);
+  m_html->GetParentFrame()->SendMessage(WM_PASTECODE,(WPARAM)(LPCWSTR)theCode);
 }
 
 void ScriptProject::CreateNewProject(LPCWSTR title, LPCWSTR code)
 {
-  m_html->GetParentFrame()->SendMessage(WM_NEWPROJECT,(WPARAM)code,(LPARAM)title);
+  CStringW theTitle = UnescapeUnicode(title);
+  CStringW theCode = UnescapeUnicode(code);
+  m_html->GetParentFrame()->SendMessage(WM_NEWPROJECT,
+    (WPARAM)(LPCWSTR)theCode,(LPARAM)(LPCWSTR)theTitle);
 }
 
 void ScriptProject::OpenFile(LPCWSTR path)
@@ -698,6 +702,29 @@ void ScriptProject::ExtDownload(VARIANT& extArray)
     }
   }
   m_html->GetParentFrame()->PostMessage(WM_EXTDOWNLOAD,(WPARAM)libraryUrls);
+}
+
+CStringW ScriptProject::UnescapeUnicode(LPCWSTR input)
+{
+  size_t len = wcslen(input);
+  CStringW output;
+  output.Preallocate((int)len);
+  for (size_t i = 0; i < len; i++)
+  {
+    wchar_t c = input[i];
+    if (c == '[')
+    {
+      int unicode = 0;
+      if (swscanf(input+i,L"[=0x%x=]",&unicode) == 1)
+      {
+        output.AppendChar((wchar_t)unicode);
+        i += 9;
+        continue;
+      }
+    }
+    output.AppendChar(c);
+  }
+  return output;
 }
 
 // Internet Explorer window, used to set the context menu
