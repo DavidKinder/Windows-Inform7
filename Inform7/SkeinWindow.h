@@ -27,6 +27,8 @@ public:
   void AnimatePrepare();
   void Animate(int pct);
 
+  virtual CSize GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL bVert);
+
 protected:
   DECLARE_MESSAGE_MAP()
 

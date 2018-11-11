@@ -604,6 +604,20 @@ void SkeinWindow::Animate(int pct)
   UpdateWindow();
 }
 
+CSize SkeinWindow::GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL bVert)
+{
+  CSize sizeRet;
+  if (bHorz)
+    sizeRet.cx = sizeDistance.cx / 2;
+  else
+    sizeRet.cx = 0;
+  if (bVert)
+    sizeRet.cy = sizeDistance.cy / 2;
+  else
+    sizeRet.cy = 0;
+  return sizeRet;
+}
+
 CSize SkeinWindow::GetLayoutSize(bool force)
 {
   CSize size(0,0);
