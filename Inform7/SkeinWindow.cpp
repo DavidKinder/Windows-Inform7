@@ -23,6 +23,7 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
   ON_WM_CONTEXTMENU()
   ON_WM_MOUSEACTIVATE()
   ON_WM_MOUSEMOVE()
+  ON_WM_MOUSEWHEEL()
   ON_WM_TIMER()
 
   ON_MESSAGE(WM_RENAMENODE, OnRenameNode)
@@ -332,6 +333,13 @@ void SkeinWindow::OnMouseMove(UINT nFlags, CPoint point)
   }
 
   CScrollView::OnMouseMove(nFlags,point);
+}
+
+BOOL SkeinWindow::OnMouseWheel(UINT fFlags, short zDelta, CPoint point)
+{
+  if (fFlags & (MK_SHIFT|MK_CONTROL))
+    return FALSE;
+  return DoMouseWheel(fFlags,zDelta,point);
 }
 
 void SkeinWindow::OnTimer(UINT nIDEvent)
