@@ -8,12 +8,15 @@
 #include <map>
 #include <vector>
 
+class SkeinMouseAnchorWnd;
+
 class SkeinWindow : public CScrollView, public Skein::Listener
 {
   DECLARE_DYNCREATE(SkeinWindow)
 
 public:
   SkeinWindow();
+  virtual ~SkeinWindow();
 
   void SetSkein(Skein* skein);
   void Layout(bool force);
@@ -42,8 +45,10 @@ protected:
   afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
   afx_msg void OnMouseMove(UINT nFlags, CPoint point);
   afx_msg BOOL OnMouseWheel(UINT fFlags, short zDelta, CPoint point);
+  afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
   afx_msg void OnTimer(UINT nIDEvent);
 
+  afx_msg LRESULT HandleMButtonDown(WPARAM wParam, LPARAM lParam);
   afx_msg LRESULT OnRenameNode(WPARAM, LPARAM);
   afx_msg LRESULT OnLabelNode(WPARAM, LPARAM);
 
@@ -113,6 +118,9 @@ private:
   DWORD m_lastClickTime;
   CPoint m_lastPoint;
 
+  SkeinMouseAnchorWnd* m_anchorWindow;
+  friend class SkeinMouseAnchorWnd;
+
   class CommandStartEdit : public Command
   {
   public:
@@ -124,4 +132,27 @@ private:
     Skein::Node* m_node;
     bool m_label;
   };
+};
+
+class SkeinMouseAnchorWnd : public CWnd
+{
+public:
+  SkeinMouseAnchorWnd(CPoint& ptAnchor);
+
+  BOOL Create(SkeinWindow* pParent);
+  void SetBitmap(UINT nID);
+
+  virtual BOOL PreTranslateMessage(MSG* pMsg);
+
+  afx_msg void OnPaint();
+  afx_msg void OnTimer(UINT_PTR nIDEvent);
+  
+  DECLARE_MESSAGE_MAP()
+
+private:
+  CRect m_rectDrag;
+  CPoint m_ptAnchor;
+  BOOL m_bQuitTracking;
+  UINT m_nAnchorID;
+  HCURSOR m_hAnchorCursor;
 };

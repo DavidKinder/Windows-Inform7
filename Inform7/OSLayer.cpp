@@ -40,6 +40,12 @@ bool OSLayer::IsWindows9X(void)
   return (m_osVer.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS);
 }
 
+bool OSLayer::IsWindows95(void)
+{
+  return IsWindows9X() &&
+   (m_osVer.dwMajorVersion == 4) && (m_osVer.dwMinorVersion == 0);
+}
+
 int OSLayer::GetWindowsVersion(void)
 {
   return m_osVer.dwMajorVersion;

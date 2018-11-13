@@ -26,13 +26,21 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
   ON_WM_MOUSEWHEEL()
   ON_WM_TIMER()
 
+  ON_MESSAGE(WM_MBUTTONDOWN, HandleMButtonDown)
   ON_MESSAGE(WM_RENAMENODE, OnRenameNode)
   ON_MESSAGE(WM_LABELNODE, OnLabelNode)
 END_MESSAGE_MAP()
 
 SkeinWindow::SkeinWindow() : m_skein(NULL),
-  m_mouseOverNode(NULL), m_mouseOverMenu(false), m_lastClick(false), m_lastClickTime(0), m_pctAnim(-1)
+  m_mouseOverNode(NULL), m_mouseOverMenu(false), m_lastClick(false), m_lastClickTime(0),
+  m_pctAnim(-1), m_anchorWindow(NULL)
 {
+}
+
+SkeinWindow::~SkeinWindow()
+{
+  if (m_anchorWindow != NULL)
+    m_anchorWindow->DestroyWindow();
 }
 
 int SkeinWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -340,6 +348,74 @@ BOOL SkeinWindow::OnMouseWheel(UINT fFlags, short zDelta, CPoint point)
   if (fFlags & (MK_SHIFT|MK_CONTROL))
     return FALSE;
   return DoMouseWheel(fFlags,zDelta,point);
+}
+
+LRESULT SkeinWindow::HandleMButtonDown(WPARAM wParam, LPARAM lParam)
+{
+  UINT nFlags = static_cast<UINT>(wParam);
+  CPoint point(lParam);
+
+  if (nFlags & (MK_SHIFT|MK_CONTROL))
+  {
+    CView::OnMButtonDown(nFlags,point);
+    return FALSE;
+  }
+
+  BOOL bSupport = FALSE;
+  if (theOS.IsWindows95())
+  {
+    UINT msgWheel;
+    UINT msg3DSupport;
+    UINT msgScrollLines;
+    INT nScrollLines;
+    HwndMSWheel(&msgWheel,&msg3DSupport,&msgScrollLines,&bSupport,&nScrollLines);
+  }
+
+  if (!bSupport)
+    bSupport = ::GetSystemMetrics(SM_MOUSEWHEELPRESENT);
+
+  if (!bSupport)
+    CView::OnMButtonDown(nFlags,point);
+  else
+  {
+    if (m_anchorWindow == NULL)
+    {
+      BOOL bVertBar;
+      BOOL bHorzBar;
+      CheckScrollBars(bHorzBar,bVertBar);
+
+      UINT nBitmapID = 0;
+      if (bVertBar)
+      {
+        if (bHorzBar)
+          nBitmapID = AFX_IDC_MOUSE_ORG_HV;
+        else
+          nBitmapID = AFX_IDC_MOUSE_ORG_VERT;
+      }
+      else if (bHorzBar)
+        nBitmapID = AFX_IDC_MOUSE_ORG_HORZ;
+
+      if (nBitmapID == 0)
+      {
+        CView::OnMButtonDown(nFlags,point);
+        return FALSE;
+      }
+      else
+      {
+        m_anchorWindow = new SkeinMouseAnchorWnd(point);
+        m_anchorWindow->SetBitmap(nBitmapID);
+        m_anchorWindow->Create(this);
+        m_anchorWindow->ShowWindow(SW_SHOWNA);
+      }
+    }
+    else
+    {
+      m_anchorWindow->DestroyWindow();
+      delete m_anchorWindow;
+      m_anchorWindow = NULL;
+    }
+  }
+  return TRUE;
 }
 
 void SkeinWindow::OnTimer(UINT nIDEvent)
@@ -1272,4 +1348,194 @@ SkeinWindow::CommandStartEdit::CommandStartEdit(SkeinWindow* wnd, Skein::Node* n
 void SkeinWindow::CommandStartEdit::Run(void)
 {
   m_wnd->StartEdit(m_node,m_label);
+}
+
+// SkeinMouseAnchorWnd
+
+#define ID_TIMER_TRACKING	0xE000
+#define AFX_CX_ANCHOR_BITMAP	32
+#define AFX_CY_ANCHOR_BITMAP	32
+
+BEGIN_MESSAGE_MAP(SkeinMouseAnchorWnd, CWnd)
+  ON_WM_PAINT()
+  ON_WM_TIMER()
+END_MESSAGE_MAP()
+
+SkeinMouseAnchorWnd::SkeinMouseAnchorWnd(CPoint& ptAnchor)
+  : m_ptAnchor(ptAnchor), m_bQuitTracking(FALSE)
+{
+}
+
+BOOL SkeinMouseAnchorWnd::Create(SkeinWindow* pParent)
+{
+  ASSERT(pParent != NULL);
+
+  pParent->ClientToScreen(&m_ptAnchor);
+
+  m_rectDrag.top = m_ptAnchor.y - GetSystemMetrics(SM_CYDOUBLECLK);
+  m_rectDrag.bottom = m_ptAnchor.y + GetSystemMetrics(SM_CYDOUBLECLK);
+  m_rectDrag.left = m_ptAnchor.x - GetSystemMetrics(SM_CXDOUBLECLK);
+  m_rectDrag.right = m_ptAnchor.x + GetSystemMetrics(SM_CXDOUBLECLK);
+
+  BOOL bRetVal = 
+    CreateEx(WS_EX_TOOLWINDOW|WS_EX_TOPMOST,
+      AfxRegisterWndClass(CS_SAVEBITS),
+      NULL,
+      WS_POPUP,
+      m_ptAnchor.x - AFX_CX_ANCHOR_BITMAP/2,
+      m_ptAnchor.y - AFX_CY_ANCHOR_BITMAP/2,
+      AFX_CX_ANCHOR_BITMAP,AFX_CY_ANCHOR_BITMAP,
+      NULL,NULL);
+  SetOwner(pParent);
+
+  if (bRetVal)
+  {
+    CRgn rgn;
+    rgn.CreateEllipticRgn(0,0,AFX_CX_ANCHOR_BITMAP,AFX_CY_ANCHOR_BITMAP);
+    SetWindowRgn(rgn,TRUE);
+
+    SetCapture();
+    SetTimer(ID_TIMER_TRACKING,50,NULL);
+  }
+  return bRetVal;
+}
+
+void SkeinMouseAnchorWnd::SetBitmap(UINT nID)
+{
+  HINSTANCE hInst = AfxFindResourceHandle(MAKEINTRESOURCE(nID),RT_GROUP_CURSOR);
+  ASSERT(hInst != NULL);
+  m_hAnchorCursor = ::LoadCursor(hInst,MAKEINTRESOURCE(nID));
+  m_nAnchorID = nID;
+}
+
+BOOL SkeinMouseAnchorWnd::PreTranslateMessage(MSG* pMsg)
+{
+  BOOL bRetVal = FALSE;
+
+  switch (pMsg->message)
+  {
+  case WM_MOUSEWHEEL:
+  case WM_KEYDOWN:
+  case WM_CHAR:
+  case WM_KEYUP:
+  case WM_SYSKEYDOWN:
+  case WM_SYSKEYUP:
+  case WM_LBUTTONDOWN:
+  case WM_LBUTTONUP:
+  case WM_RBUTTONDOWN:
+  case WM_RBUTTONUP:
+  case WM_MBUTTONDOWN:
+    m_bQuitTracking = TRUE;
+    bRetVal = TRUE;
+    break;
+
+  case WM_MBUTTONUP:
+    {
+      CPoint pt(pMsg->lParam);
+      ClientToScreen(&pt);
+      if (!PtInRect(&m_rectDrag,pt))
+        m_bQuitTracking = TRUE;
+      bRetVal = TRUE;
+    }
+    break;
+  }
+  return bRetVal;
+}
+
+void SkeinMouseAnchorWnd::OnTimer(UINT_PTR nIDEvent)
+{
+  ASSERT(nIDEvent == ID_TIMER_TRACKING);
+
+  CPoint ptNow;
+  GetCursorPos(&ptNow);
+
+  CRect rectClient;
+  GetWindowRect(&rectClient);
+
+  int nCursor = 0;
+  if (m_nAnchorID == AFX_IDC_MOUSE_ORG_HV || m_nAnchorID == AFX_IDC_MOUSE_ORG_VERT)
+  {
+    if (ptNow.y < rectClient.top)
+      nCursor = AFX_IDC_MOUSE_PAN_N;
+    else if (ptNow.y > rectClient.bottom)
+      nCursor = AFX_IDC_MOUSE_PAN_S;
+  }
+  if (m_nAnchorID == AFX_IDC_MOUSE_ORG_HV || m_nAnchorID == AFX_IDC_MOUSE_ORG_HORZ)
+  {
+    if (ptNow.x < rectClient.left)
+    {
+      if (nCursor == 0)
+        nCursor = AFX_IDC_MOUSE_PAN_W;
+      else if (m_nAnchorID == AFX_IDC_MOUSE_ORG_HV)
+        nCursor--;
+    }
+    else if (ptNow.x > rectClient.right)
+    {
+      if (nCursor == 0)
+        nCursor = AFX_IDC_MOUSE_PAN_E;
+      else if (m_nAnchorID == AFX_IDC_MOUSE_ORG_HV)
+        nCursor++;
+    }
+  }
+
+  if (m_bQuitTracking)
+  {
+    KillTimer(ID_TIMER_TRACKING);
+    ReleaseCapture();
+    SetCursor(NULL);
+    SkeinWindow* pView = (SkeinWindow*)GetOwner();
+    DestroyWindow();
+    delete pView->m_anchorWindow;
+    pView->m_anchorWindow = NULL;
+  }
+  else if (nCursor == 0)
+    SetCursor(m_hAnchorCursor);
+  else
+  {
+    HINSTANCE hInst = AfxFindResourceHandle(MAKEINTRESOURCE(nCursor),
+      RT_GROUP_CURSOR);
+    HICON hCursor = ::LoadCursor(hInst,MAKEINTRESOURCE(nCursor));
+    ASSERT(hCursor != NULL);
+    SetCursor(hCursor);
+
+    CSize sizeDistance;
+    if (ptNow.x > rectClient.right)
+      sizeDistance.cx = ptNow.x - rectClient.right;
+    else if (ptNow.x < rectClient.left)
+      sizeDistance.cx = ptNow.x - rectClient.left;
+    else
+      sizeDistance.cx = 0;
+
+    if (ptNow.y > rectClient.bottom)
+      sizeDistance.cy = ptNow.y - rectClient.bottom;
+    else if (ptNow.y < rectClient.top)
+      sizeDistance.cy = ptNow.y - rectClient.top;
+    else
+      sizeDistance.cy = 0;
+
+    SkeinWindow* pView = (SkeinWindow*)GetOwner();
+
+    CSize sizeToScroll = pView->GetWheelScrollDistance(sizeDistance,
+      m_nAnchorID == AFX_IDC_MOUSE_ORG_HV || m_nAnchorID == AFX_IDC_MOUSE_ORG_HORZ,
+      m_nAnchorID == AFX_IDC_MOUSE_ORG_HV || m_nAnchorID == AFX_IDC_MOUSE_ORG_VERT);
+
+    ShowWindow(SW_HIDE);
+    pView->OnScrollBy(sizeToScroll,TRUE);
+    UpdateWindow();
+    SetWindowPos(&CWnd::wndTop,
+      m_ptAnchor.x - AFX_CX_ANCHOR_BITMAP/2,
+      m_ptAnchor.y - AFX_CY_ANCHOR_BITMAP/2,0,0,
+      SWP_NOACTIVATE|SWP_NOSIZE|SWP_SHOWWINDOW);
+  }
+}
+
+void SkeinMouseAnchorWnd::OnPaint()
+{
+  CPaintDC dc(this);
+  CRect rect;
+  GetClientRect(&rect);
+
+  rect.DeflateRect(1,1,1,1);
+  dc.Ellipse(rect);
+  ::DrawIconEx(dc.GetSafeHdc(),0,0,m_hAnchorCursor,0,0,0,NULL,DI_NORMAL);
 }

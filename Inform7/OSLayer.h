@@ -9,6 +9,7 @@ public:
   void Init(void);
 
   bool IsWindows9X(void);
+  bool IsWindows95(void);
   int GetWindowsVersion(void);
   DWORD GetDllVersion(const char* dllName);
 
