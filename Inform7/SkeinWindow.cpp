@@ -1392,7 +1392,8 @@ BOOL SkeinMouseAnchorWnd::Create(SkeinWindow* pParent)
   {
     CRgn rgn;
     rgn.CreateEllipticRgn(0,0,AFX_CX_ANCHOR_BITMAP,AFX_CY_ANCHOR_BITMAP);
-    SetWindowRgn(rgn,TRUE);
+    if (SetWindowRgn(rgn,TRUE))
+      rgn.Detach();
 
     SetCapture();
     SetTimer(ID_TIMER_TRACKING,50,NULL);
@@ -1519,7 +1520,6 @@ void SkeinMouseAnchorWnd::OnTimer(UINT_PTR nIDEvent)
       m_nAnchorID == AFX_IDC_MOUSE_ORG_HV || m_nAnchorID == AFX_IDC_MOUSE_ORG_HORZ,
       m_nAnchorID == AFX_IDC_MOUSE_ORG_HV || m_nAnchorID == AFX_IDC_MOUSE_ORG_VERT);
 
-    ShowWindow(SW_HIDE);
     pView->OnScrollBy(sizeToScroll,TRUE);
     UpdateWindow();
     SetWindowPos(&CWnd::wndTop,
