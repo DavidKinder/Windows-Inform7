@@ -1,6 +1,6 @@
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <io.h>
 #include <windows.h>
@@ -140,7 +140,8 @@ void writeIconHeader(struct BitmapInfo* info)
 {
   FILE* in = fopen(info->name,"rb");
   if (in == 0)
-    fatal();
+    return;
+    
   info->data = (unsigned char*)malloc(256*1024);
   info->len = _filelength(_fileno(in));
   fread(info->data,1,info->len,in);
@@ -461,6 +462,9 @@ void writeIconDataPNG(struct BitmapInfo* info)
 
 void writeIconData(struct BitmapInfo* info)
 {
+  if (info->data == NULL)
+    return;
+
   int pos1 = ftell(out);
 
   switch (info->mode)
@@ -492,6 +496,22 @@ void writeIconData(struct BitmapInfo* info)
   fseek(out,0,SEEK_END);
 }
 
+int getIconCount(void)
+{
+  int len = 0;
+  int maxLen = sizeof bitmaps / sizeof bitmaps[0];
+  for (int i = 0; i < maxLen; i++)
+  {
+    FILE* in = fopen(bitmaps[i].name,"rb");
+    if (in != 0)
+    {
+      fclose(in);
+      len++;
+    }
+  }
+  return len;
+}
+
 int main()
 {
   out = fopen("output.ico","wb");
@@ -500,12 +520,12 @@ int main()
 
   writeShort(0);
   writeShort(1);
+  writeShort(getIconCount());
 
-  int len = sizeof bitmaps / sizeof bitmaps[0];
-  writeShort(len);
-  for (int i = 0; i < len; i++)
+  int maxLen = sizeof bitmaps / sizeof bitmaps[0];
+  for (int i = 0; i < maxLen; i++)
     writeIconHeader(bitmaps+i);
-  for (int i = 0; i < len; i++)
+  for (int i = 0; i < maxLen; i++)
     writeIconData(bitmaps+i);
 
   printf("Success!");

@@ -105,9 +105,6 @@
 			Name="libpng"
 			Filter="">
 			<File
-				RelativePath="..\..\..\Libraries\libpng\dk_png.c">
-			</File>
-			<File
 				RelativePath="..\..\..\Libraries\libpng\png.c">
 			</File>
 			<File
