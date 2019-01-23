@@ -1187,7 +1187,7 @@ void Skein::Node::SaveNodes(FILE* skeinFile)
     "    <result xml:space=\"preserve\">%s</result>\n"
     "    <commentary xml:space=\"preserve\">%s</commentary>\n"
     "    <changed>%s</changed>\n",
-    m_id,
+    (LPCTSTR)m_id,
     (LPCTSTR)TextFormat::ToXML_UTF8(m_line),
     (LPCTSTR)TextFormat::ToXML_UTF8(m_textTranscript),
     (LPCTSTR)TextFormat::ToXML_UTF8(m_textExpected),
@@ -1204,7 +1204,10 @@ void Skein::Node::SaveNodes(FILE* skeinFile)
   {
     fprintf(skeinFile,"    <children>\n");
     for (int i = 0; i < m_children.GetSize(); i++)
-      fprintf(skeinFile,"      <child nodeId=\"%s\"/>\n",m_children[i]->m_id);
+    {
+      fprintf(skeinFile,"      <child nodeId=\"%s\"/>\n",
+        (LPCTSTR)m_children[i]->m_id);
+    }
     fprintf(skeinFile,"    </children>\n");
   }
   fprintf(skeinFile,"  </item>\n");

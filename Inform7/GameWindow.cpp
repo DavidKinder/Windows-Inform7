@@ -111,7 +111,7 @@ void GameWindow::RunInterpreter(const char* dir, const char* file, bool glulx)
 
   // Reset the media cache
   CString manifestPath;
-  manifestPath.Format("%s"MANIFEST_FILE,
+  manifestPath.Format("%s" MANIFEST_FILE,
     (LPCSTR)GetParentFrame()->SendMessage(WM_PROJECTDIR));
   m_manifest.Load(manifestPath);
   ClearMedia();

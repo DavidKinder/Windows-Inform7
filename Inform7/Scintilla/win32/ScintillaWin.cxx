@@ -769,7 +769,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 		case WM_CHAR:
 			if (((wParam >= 128) || !iscntrl(wParam)) || !lastKeyDownConsumed) {
 				if (::IsWindowUnicode(MainHWND()) || keysAlwaysUnicode) {
-					wchar_t wcs[2] = {wParam, 0};
+					wchar_t wcs[2] = {(wchar_t)wParam, 0}; //XXXXDK add cast
 					if (IsUnicodeMode()) {
 						// For a wide character version of the window:
 						char utfval[4];
