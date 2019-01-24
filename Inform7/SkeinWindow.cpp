@@ -418,7 +418,7 @@ LRESULT SkeinWindow::HandleMButtonDown(WPARAM wParam, LPARAM lParam)
   return TRUE;
 }
 
-void SkeinWindow::OnTimer(UINT nIDEvent)
+void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
 {
   if (nIDEvent == 1)
   {

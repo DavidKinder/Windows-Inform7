@@ -1,0 +1,963 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Core">
+      <UniqueIdentifier>{99b02580-c62e-4a5e-9555-ba84acd410cb}</UniqueIdentifier>
+      <Extensions>cpp;h</Extensions>
+    </Filter>
+    <Filter Include="Tabs">
+      <UniqueIdentifier>{809dcabe-4c8c-4c9c-a795-f0f4980691df}</UniqueIdentifier>
+      <Extensions>cpp;h</Extensions>
+    </Filter>
+    <Filter Include="Dialogs">
+      <UniqueIdentifier>{c0fbc0e1-f0b2-408e-b36f-2c53ae23b552}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Text">
+      <UniqueIdentifier>{5466b050-3e1d-4e30-972c-f74b3394680c}</UniqueIdentifier>
+      <Extensions>cpp;h</Extensions>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{9d742ded-d8e7-46bf-a4a9-134d9d44be6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{18d5b24f-af4f-47cc-af49-9e92b44fb69d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound">
+      <UniqueIdentifier>{72bf1c8d-edb9-41ab-8210-3d9ee110b69a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Skein">
+      <UniqueIdentifier>{224b8d40-c2fd-48b3-9a40-abb39d8d6c9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Search">
+      <UniqueIdentifier>{8cc37602-440f-480d-a0fc-4f878133af05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Bitmaps">
+      <UniqueIdentifier>{813955fc-0c25-44d0-8019-d6fc32b4ef3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Controls">
+      <UniqueIdentifier>{8d36f629-c499-4e8c-b648-72f7ab05c2f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{370b3d03-ee50-49e7-9b60-35e0e4694a9c}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;jpg;jpeg;jpe;manifest</Extensions>
+    </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{ed018ecd-e749-42a5-a9dc-a5977c88fbff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\libpng">
+      <UniqueIdentifier>{477cd511-9b3e-43d3-9ddf-c965f79a8ccc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\zlib">
+      <UniqueIdentifier>{7c0c2b07-2d2c-4e44-b5df-be538bac4bb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\jpeg">
+      <UniqueIdentifier>{d877b6e0-f539-403c-9759-5a6b868a5ff9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\libogg">
+      <UniqueIdentifier>{fab53aae-6616-4a44-9fab-dfae12975139}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\libvorbis">
+      <UniqueIdentifier>{f649c49a-789c-47b1-ac3f-cf041e0e2c57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\hunspell">
+      <UniqueIdentifier>{7c2f9d3a-5a2e-4906-a4e8-925714077252}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\libmodplug">
+      <UniqueIdentifier>{0ccfa24f-8001-4cf0-aae7-c28642dff429}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\scintilla">
+      <UniqueIdentifier>{7f4c1d4c-1cbd-4533-8aca-c1524109c46d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Build.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtensionFrame.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Inform.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Messages.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="OSLayer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Panel.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectFrame.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectSettings.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="FlatTab.h">
+      <Filter>Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="TabBase.h">
+      <Filter>Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="TabDoc.h">
+      <Filter>Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="TabExtensions.h">
+      <Filter>Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="TabIndex.h">
+      <Filter>Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="TabInterface.h">
+      <Filter>Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="TabResults.h">
+      <Filter>Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="TabSettings.h">
+      <Filter>Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="TabSkein.h">
+      <Filter>Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="TabSource.h">
+      <Filter>Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="TabStory.h">
+      <Filter>Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="TabTranscript.h">
+      <Filter>Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="AboutDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Libraries\mfc\Dialogs.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="FindReplaceDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="NewDialogs.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="PrefsDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="ProgressWnd.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectDirDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="SplashScreen.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="EditFind.h">
+      <Filter>Text</Filter>
+    </ClInclude>
+    <ClInclude Include="FileProtocol.h">
+      <Filter>Text</Filter>
+    </ClInclude>
+    <ClInclude Include="PropList.h">
+      <Filter>Text</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportEdit.h">
+      <Filter>Text</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportHtml.h">
+      <Filter>Text</Filter>
+    </ClInclude>
+    <ClInclude Include="TextFormat.h">
+      <Filter>Text</Filter>
+    </ClInclude>
+    <ClInclude Include="ContentsWindow.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceEdit.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceLexer.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceSettings.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceWindow.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="SpellCheck.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="GameBase.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameBlank.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameGraphics.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameGrid.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GamePair.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameText.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameWindow.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="InterpreterCommands.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="MapIterator.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Libraries\mfc\DSoundEngine.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Glk\GlkDll\GlkSound.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Glk\GlkDll\GlkSoundAIFF.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Glk\GlkDll\GlkSoundMOD.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Glk\GlkDll\GlkSoundOGG.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="Diff.h">
+      <Filter>Skein</Filter>
+    </ClInclude>
+    <ClInclude Include="Skein.h">
+      <Filter>Skein</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeinEdit.h">
+      <Filter>Skein</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeinWindow.h">
+      <Filter>Skein</Filter>
+    </ClInclude>
+    <ClInclude Include="TranscriptEdit.h">
+      <Filter>Skein</Filter>
+    </ClInclude>
+    <ClInclude Include="TranscriptWindow.h">
+      <Filter>Skein</Filter>
+    </ClInclude>
+    <ClInclude Include="SearchBar.h">
+      <Filter>Search</Filter>
+    </ClInclude>
+    <ClInclude Include="SearchEdit.h">
+      <Filter>Search</Filter>
+    </ClInclude>
+    <ClInclude Include="SearchWindow.h">
+      <Filter>Search</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Libraries\mfc\Dib.h">
+      <Filter>Bitmaps</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrowButton.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Libraries\mfc\ColourButton.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="FlatButton.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="FlatSplitter.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Libraries\mfc\MenuBar.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="NoFocusCheck.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="RichEdit.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="StopButton.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="UnicodeEdit.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Libraries\mfc\DpiFunctions.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ExtensionFrame.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="HookApiFunction.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Inform.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="OSLayer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Panel.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjectFrame.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjectSettings.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="StackTrace.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="FlatTab.cpp">
+      <Filter>Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="TabBase.cpp">
+      <Filter>Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="TabDoc.cpp">
+      <Filter>Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="TabExtensions.cpp">
+      <Filter>Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="TabIndex.cpp">
+      <Filter>Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="TabResults.cpp">
+      <Filter>Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="TabSettings.cpp">
+      <Filter>Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="TabSkein.cpp">
+      <Filter>Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="TabSource.cpp">
+      <Filter>Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="TabStory.cpp">
+      <Filter>Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="TabTranscript.cpp">
+      <Filter>Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="AboutDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\mfc\Dialogs.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="FindReplaceDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="NewDialogs.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="PrefsDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="ProgressWnd.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjectDirDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="SplashScreen.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="EditFind.cpp">
+      <Filter>Text</Filter>
+    </ClCompile>
+    <ClCompile Include="FileProtocol.cpp">
+      <Filter>Text</Filter>
+    </ClCompile>
+    <ClCompile Include="PropList.cpp">
+      <Filter>Text</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportEdit.cpp">
+      <Filter>Text</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportHtml.cpp">
+      <Filter>Text</Filter>
+    </ClCompile>
+    <ClCompile Include="TextFormat.cpp">
+      <Filter>Text</Filter>
+    </ClCompile>
+    <ClCompile Include="ContentsWindow.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ElasticTabStops.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceEdit.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceLexer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceSettings.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceWindow.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SpellCheck.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GameBlank.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameGraphics.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameGrid.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GamePair.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameText.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameWindow.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\mfc\DSoundEngine.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Glk\GlkDll\GlkSound.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Glk\GlkDll\GlkSoundAIFF.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Glk\GlkDll\GlkSoundMOD.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Glk\GlkDll\GlkSoundOGG.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="Diff.cpp">
+      <Filter>Skein</Filter>
+    </ClCompile>
+    <ClCompile Include="Skein.cpp">
+      <Filter>Skein</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeinEdit.cpp">
+      <Filter>Skein</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeinWindow.cpp">
+      <Filter>Skein</Filter>
+    </ClCompile>
+    <ClCompile Include="TranscriptEdit.cpp">
+      <Filter>Skein</Filter>
+    </ClCompile>
+    <ClCompile Include="TranscriptWindow.cpp">
+      <Filter>Skein</Filter>
+    </ClCompile>
+    <ClCompile Include="SearchBar.cpp">
+      <Filter>Search</Filter>
+    </ClCompile>
+    <ClCompile Include="SearchEdit.cpp">
+      <Filter>Search</Filter>
+    </ClCompile>
+    <ClCompile Include="SearchWindow.cpp">
+      <Filter>Search</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\mfc\Dib.cpp">
+      <Filter>Bitmaps</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrowButton.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\mfc\ColourButton.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="FlatButton.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="FlatSplitter.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\mfc\MenuBar.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="NoFocusCheck.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="RichEdit.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="StopButton.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="UnicodeEdit.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libpng\png.c">
+      <Filter>Libraries\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libpng\pngerror.c">
+      <Filter>Libraries\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libpng\pngget.c">
+      <Filter>Libraries\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libpng\pngmem.c">
+      <Filter>Libraries\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libpng\pngread.c">
+      <Filter>Libraries\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libpng\pngrio.c">
+      <Filter>Libraries\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libpng\pngrtran.c">
+      <Filter>Libraries\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libpng\pngrutil.c">
+      <Filter>Libraries\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libpng\pngset.c">
+      <Filter>Libraries\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libpng\pngtrans.c">
+      <Filter>Libraries\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\zlib\adler32.c">
+      <Filter>Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\zlib\crc32.c">
+      <Filter>Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\zlib\inffast.c">
+      <Filter>Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\zlib\inflate.c">
+      <Filter>Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\zlib\inftrees.c">
+      <Filter>Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\zlib\trees.c">
+      <Filter>Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\zlib\uncompr.c">
+      <Filter>Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\zlib\zutil.c">
+      <Filter>Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jcomapi.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdapimin.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdapistd.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdatadst.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdatasrc.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdcoefct.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdcolor.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jddctmgr.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdhuff.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdinput.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdmainct.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdmarker.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdmaster.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdmerge.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdphuff.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdpostct.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdsample.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jdtrans.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jerror.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jidctflt.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jidctfst.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jidctint.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jidctred.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jmemmgr.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jmemnobs.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jquant1.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jquant2.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\jpeg\jutils.c">
+      <Filter>Libraries\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libogg\src\bitwise.c">
+      <Filter>Libraries\libogg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libogg\src\framing.c">
+      <Filter>Libraries\libogg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\analysis.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\bitrate.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\block.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\codebook.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\envelope.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\floor0.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\floor1.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\info.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\lpc.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\lsp.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\mapping0.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\mdct.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\psy.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\registry.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\res0.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\sharedbook.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\smallft.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\synthesis.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\vorbisfile.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libvorbis\lib\window.c">
+      <Filter>Libraries\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\hunspell\affentry.cxx">
+      <Filter>Libraries\hunspell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\hunspell\affixmgr.cxx">
+      <Filter>Libraries\hunspell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\hunspell\csutil.cxx">
+      <Filter>Libraries\hunspell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\hunspell\dictmgr.cxx">
+      <Filter>Libraries\hunspell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\hunspell\filemgr.cxx">
+      <Filter>Libraries\hunspell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\hunspell\hashmgr.cxx">
+      <Filter>Libraries\hunspell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\hunspell\hunspell.cxx">
+      <Filter>Libraries\hunspell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\hunspell\hunzip.cxx">
+      <Filter>Libraries\hunspell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\hunspell\phonet.cxx">
+      <Filter>Libraries\hunspell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\hunspell\replist.cxx">
+      <Filter>Libraries\hunspell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\hunspell\suggestmgr.cxx">
+      <Filter>Libraries\hunspell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\fastmix.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_669.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_amf.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_ams.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_dbm.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_dmf.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_dsm.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_far.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_it.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_j2b.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_mdl.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_med.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_mod.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_mt2.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_mtm.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_okt.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_psm.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_ptm.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_s3m.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_stm.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_ult.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_umx.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_wav.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\load_xm.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\mmcmp.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\snd_dsp.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\snd_flt.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\snd_fx.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\sndfile.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\sndmix.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libmodplug\tables.cpp">
+      <Filter>Libraries\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\AutoComplete.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\CallTip.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\CellBuffer.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\CharClassify.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\ContractionState.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\Decoration.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\Document.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\Editor.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\Indicator.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\KeyMap.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\LineMarker.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\PerLine.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\win32\PlatWin.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\PositionCache.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\PropSet.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\RESearch.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\RunStyles.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\ScintillaBase.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\win32\ScintillaWin.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\Style.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\UniConversion.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\ViewStyle.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\XPM.cxx">
+      <Filter>Libraries\scintilla</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\mfc\DpiFunctions.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\BigLogo.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="res\SmallLogo.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="res\TabSelect.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="res\Toolbar.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="res\ToolbarDisable.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="res\ToolbarGrey.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="res\Inform7.ico">
+      <Filter>Resources</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="res\Inform7.manifest">
+      <Filter>Resources</Filter>
+    </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\Inform7.rc2">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Inform7.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

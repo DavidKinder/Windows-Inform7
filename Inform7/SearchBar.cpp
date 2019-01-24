@@ -40,7 +40,7 @@ BOOL SearchBar::Create(CWnd* parent, UINT style, UINT id)
   return created;
 }
 
-int SearchBar::OnToolHitTest(CPoint point, TOOLINFO* ti) const
+INT_PTR SearchBar::OnToolHitTest(CPoint point, TOOLINFO* ti) const
 {
   const CWnd* wnd = ChildWindowFromPoint(point);
   if ((wnd == &m_source) || (wnd == &m_docs))

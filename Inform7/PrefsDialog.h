@@ -155,7 +155,7 @@ public:
   virtual BOOL OnInitDialog();
   virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 
-  afx_msg LONG OnResizePage(UINT, LONG);
+  afx_msg LRESULT OnResizePage(WPARAM, LPARAM);
 
 protected:
   DECLARE_MESSAGE_MAP()

@@ -1159,7 +1159,7 @@ void GameWindow::OnSize(UINT nType, int cx, int cy)
   Resize(true);
 }
 
-void GameWindow::OnTimer(UINT nIDEvent)
+void GameWindow::OnTimer(UINT_PTR nIDEvent)
 {
   static bool processingTimer = false;
   if (processingTimer)

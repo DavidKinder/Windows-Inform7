@@ -79,11 +79,16 @@ void PrintStackTrace(HANDLE process, HANDLE thread,
   if (!GotFunctions())
     return;
 
-  // Check that this is an X86 processor
+  // Check that this is an appropriate  processor
   SYSTEM_INFO si;
   ::GetSystemInfo(&si);
+#ifdef _WIN64
+  if (si.wProcessorArchitecture != PROCESSOR_ARCHITECTURE_AMD64)
+    return;
+#else
   if (si.wProcessorArchitecture != PROCESSOR_ARCHITECTURE_INTEL)
     return;
+#endif
 
   // Set symbol options
   (*symSetOptions)(SYMOPT_DEFERRED_LOADS|SYMOPT_LOAD_LINES);
@@ -107,17 +112,28 @@ void PrintStackTrace(HANDLE process, HANDLE thread,
   // Set up the initial stack frame
   STACKFRAME64 frame;
   ::ZeroMemory(&frame,sizeof frame);
-  frame.AddrPC.Offset = context->Eip;
   frame.AddrPC.Mode = AddrModeFlat;
-  frame.AddrFrame.Offset = context->Ebp;
   frame.AddrFrame.Mode = AddrModeFlat;
-  frame.AddrStack.Offset = context->Esp;
   frame.AddrStack.Mode = AddrModeFlat;
+#ifdef _WIN64
+  frame.AddrPC.Offset = context->Rip;
+  frame.AddrFrame.Offset = context->Rbp;
+  frame.AddrStack.Offset = context->Rsp;
+#else
+  frame.AddrPC.Offset = context->Eip;
+  frame.AddrFrame.Offset = context->Ebp;
+  frame.AddrStack.Offset = context->Esp;
+#endif
 
   while (true)
   {
     // Get the next stack frame
-    if ((*stackWalk64)(IMAGE_FILE_MACHINE_I386,process,thread,&frame,context,
+#ifdef _WIN64
+    DWORD machine = IMAGE_FILE_MACHINE_AMD64;
+#else
+    DWORD machine = IMAGE_FILE_MACHINE_I386;
+#endif
+    if ((*stackWalk64)(machine,process,thread,&frame,context,
                        NULL,symFunctionTableAccess64,symGetModuleBase64,NULL) == 0)
       break;
 
@@ -172,6 +188,9 @@ void LogStackTrace(void)
   // Get the thread's context
   CONTEXT context;
   ::ZeroMemory(&context,sizeof context);
+#ifdef _WIN64
+  ::RtlCaptureContext(&context);
+#else
   context.ContextFlags = CONTEXT_FULL;
   {
     __asm    call x
@@ -180,6 +199,7 @@ void LogStackTrace(void)
     __asm    mov context.Ebp, ebp
     __asm    mov context.Esp, esp
   }
+#endif
 
   // Create a stream to write to the log file
   CString logPath = theOS.SHGetFolderPath(0,CSIDL_PERSONAL,NULL,SHGFP_TYPE_CURRENT);
@@ -200,8 +220,11 @@ CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString
   if (::GetThreadContext(thread,&context))
   {
     std::ostringstream log;
+#ifdef _WIN64
+    log << "Exception code 0x" << std::hex << exCode << " at PC=0x" << context.Rip << std::endl;
+#else
     log << "Exception code 0x" << std::hex << exCode << " at PC=0x" << context.Eip << std::endl;
-
+#endif
     PrintStackTrace(process,thread,imageFile,imageBase,imageSize,&context,log);
     return CString(log.str().c_str());
   }

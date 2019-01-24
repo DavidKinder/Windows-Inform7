@@ -184,7 +184,7 @@ CString TabSkein::GetToolTip(UINT_PTR id)
   case ID_SKEIN_SAVE_TRANSCRIPT:
     {
       CString tt;
-      tt.LoadString(id);
+      tt.LoadString((UINT)id);
       return tt;
     }
     break;

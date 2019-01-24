@@ -51,7 +51,7 @@ protected:
   afx_msg void OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT mi);
   afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di);
   afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
-  afx_msg void OnTimer(UINT nIDEvent);
+  afx_msg void OnTimer(UINT_PTR nIDEvent);
   afx_msg void OnChangedExample();
   afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
 

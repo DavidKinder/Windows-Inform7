@@ -7,6 +7,10 @@
 // Turn off deprecation warnings
 #pragma warning (disable: 4996)
 
+#if (_MSC_VER >= 1910) // Visual Studio 2017
+#define _WIN32_WINNT _WIN32_WINNT_WIN7
+#endif
+
 #ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN    // Exclude rarely-used stuff from Windows headers
 #endif

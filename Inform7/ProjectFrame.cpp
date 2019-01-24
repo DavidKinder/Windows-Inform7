@@ -2737,7 +2737,7 @@ void ProjectFrame::MonitorProcess(InformApp::CreatedProcess cp, ProcessAction ac
     SetTimer(1,200,NULL);
 }
 
-void ProjectFrame::OnTimer(UINT nIDEvent)
+void ProjectFrame::OnTimer(UINT_PTR nIDEvent)
 {
   if (nIDEvent == 1)
   {

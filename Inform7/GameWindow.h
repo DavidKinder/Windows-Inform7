@@ -59,7 +59,7 @@ protected:
 
   afx_msg void OnPaint();
   afx_msg void OnSize(UINT nType, int cx, int cy);
-  afx_msg void OnTimer(UINT nIDEvent);
+  afx_msg void OnTimer(UINT_PTR nIDEvent);
 
   afx_msg LRESULT OnEndLineInput(WPARAM, LPARAM);
   afx_msg LRESULT OnEndCharInput(WPARAM, LPARAM);

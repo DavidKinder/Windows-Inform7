@@ -82,7 +82,7 @@ protected:
   afx_msg void OnEditSelectAll();
   afx_msg void OnUpdateEditFind(CCmdUI* pCmdUI);
   afx_msg void OnEditFind();
-  afx_msg void OnTimer(UINT nIDEvent);
+  afx_msg void OnTimer(UINT_PTR nIDEvent);
 
 private:
   void HighlightFound(bool goToFound);

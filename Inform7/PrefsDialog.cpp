@@ -837,7 +837,7 @@ BOOL PrefsDialog::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
   return CPropertySheet::OnNotify(wParam, lParam, pResult);
 }
 
-LONG PrefsDialog::OnResizePage(UINT, LONG)
+LRESULT PrefsDialog::OnResizePage(WPARAM, LPARAM)
 {
   CPropertyPage* page = GetActivePage();
   page->MoveWindow(&m_page);

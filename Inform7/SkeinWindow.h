@@ -46,7 +46,7 @@ protected:
   afx_msg void OnMouseMove(UINT nFlags, CPoint point);
   afx_msg BOOL OnMouseWheel(UINT fFlags, short zDelta, CPoint point);
   afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
-  afx_msg void OnTimer(UINT nIDEvent);
+  afx_msg void OnTimer(UINT_PTR nIDEvent);
 
   afx_msg LRESULT HandleMButtonDown(WPARAM wParam, LPARAM lParam);
   afx_msg LRESULT OnRenameNode(WPARAM, LPARAM);

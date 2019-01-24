@@ -358,7 +358,7 @@ void ReportHtml::SetIEPreferences(const char* path)
   // so cause all Internet Explorer windows to update
   if (path == NULL)
   {
-    DWORD result;
+    DWORD_PTR result;
     SendMessageTimeout(HWND_BROADCAST,
       WM_SETTINGCHANGE,0x1F,(LPARAM)"Software\\Microsoft\\Internet Explorer",SMTO_BLOCK,1000,&result);
   }
@@ -494,7 +494,7 @@ void ReportHtml::HighlightFound(bool goToFound)
   }
 }
 
-void ReportHtml::OnTimer(UINT nIDEvent)
+void ReportHtml::OnTimer(UINT_PTR nIDEvent)
 {
   if (nIDEvent == 1)
   {
