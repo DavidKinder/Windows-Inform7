@@ -16,7 +16,6 @@ extern "C" {
 }
 
 CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString& imageFile, LPVOID imageBase, DWORD imageSize);
-extern "C" __declspec(dllimport) void ScaleGfx(COLORREF*, UINT, UINT, COLORREF*, UINT, UINT);
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -1453,3 +1452,14 @@ void InformApp::CreatedProcess::close()
     processId = -1;
   }
 }
+
+#ifdef _WIN64
+namespace {
+#include "2PassScale.h"
+}
+void ScaleGfx(COLORREF* srcImage, UINT srcWidth, UINT srcHeight, COLORREF* destImage, UINT destWidth, UINT destHeight)
+{
+  TwoPassScale<BilinearFilter> scaler;
+  scaler.Scale(srcImage,srcWidth,srcHeight,destImage,destWidth,destHeight);
+}
+#endif

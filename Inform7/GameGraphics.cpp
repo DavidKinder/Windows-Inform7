@@ -2,8 +2,6 @@
 #include "Inform.h"
 #include "GameGraphics.h"
 
-extern "C" __declspec(dllimport) void ScaleGfx(COLORREF*, UINT, UINT, COLORREF*, UINT, UINT);
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
