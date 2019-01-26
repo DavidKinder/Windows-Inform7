@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -70,25 +70,25 @@
     <OutDir>Debug\</OutDir>
     <IntDir>Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>C:\Program Files %28x86%29\Microsoft SDKs\Windows\v7.1A\Lib;$(LibraryPath)</LibraryPath>
-    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <GenerateManifest>true</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>C:\Program Files %28x86%29\Microsoft SDKs\Windows\v7.1A\Lib;$(LibraryPath)</LibraryPath>
-    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <GenerateManifest>true</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>Release\</OutDir>
     <IntDir>Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <LibraryPath>C:\Program Files %28x86%29\Microsoft SDKs\Windows\v7.1A\Lib;$(LibraryPath)</LibraryPath>
-    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <GenerateManifest>true</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <LibraryPath>C:\Program Files %28x86%29\Microsoft SDKs\Windows\v7.1A\Lib;$(LibraryPath)</LibraryPath>
-    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <GenerateManifest>true</GenerateManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -103,7 +103,7 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>msxml2.lib;rpcrt4.lib;riched20.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;nafxcwd.lib;libcmtd.lib;scalegfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msxml2.lib;rpcrt4.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;nafxcwd.lib;libcmtd.lib;scalegfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>../../../Libraries/ScaleGfx;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -128,7 +128,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\Libraries\mfc;..\..\..\Libraries\libpng;..\..\..\Libraries\zlib;..\..\..\Libraries\jpeg;..\..\..\Libraries\libogg\include;..\..\..\Libraries\libvorbis\include;..\..\..\Libraries\hunspell;..\..\..\Libraries\libmodplug;Scintilla\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\Libraries\mfc;..\..\..\Libraries\libpng;..\..\..\Libraries\zlib;..\..\..\Libraries\jpeg;..\..\..\Libraries\libogg\include;..\..\..\Libraries\libvorbis\include;..\..\..\Libraries\hunspell;..\..\..\Libraries\libmodplug;..\..\..\Libraries\scalegfx;Scintilla\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;I7GLK;HUNSPELL_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -138,7 +138,7 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>msxml2.lib;rpcrt4.lib;riched20.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;nafxcwd.lib;libcmtd.lib;scalegfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msxml2.lib;rpcrt4.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;nafxcwd.lib;libcmtd.lib%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>../../../Libraries/ScaleGfx;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -176,7 +176,7 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>msxml2.lib;rpcrt4.lib;riched20.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;nafxcw.lib;libcmt.lib;scalegfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msxml2.lib;rpcrt4.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;nafxcw.lib;libcmt.lib;scalegfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>../Build/$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>../../../Libraries/ScaleGfx;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -206,7 +206,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\..\..\Libraries\mfc;..\..\..\Libraries\libpng;..\..\..\Libraries\zlib;..\..\..\Libraries\jpeg;..\..\..\Libraries\libogg\include;..\..\..\Libraries\libvorbis\include;..\..\..\Libraries\hunspell;..\..\..\Libraries\libmodplug;Scintilla\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\Libraries\mfc;..\..\..\Libraries\libpng;..\..\..\Libraries\zlib;..\..\..\Libraries\jpeg;..\..\..\Libraries\libogg\include;..\..\..\Libraries\libvorbis\include;..\..\..\Libraries\hunspell;..\..\..\Libraries\libmodplug;..\..\..\Libraries\scalegfx;Scintilla\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;I7GLK;HUNSPELL_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -217,7 +217,7 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>msxml2.lib;rpcrt4.lib;riched20.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;nafxcw.lib;libcmt.lib;scalegfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msxml2.lib;rpcrt4.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;nafxcw.lib;libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>../Build/$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>../../../Libraries/ScaleGfx;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -2234,9 +2234,6 @@
     <Image Include="res\Toolbar.bmp" />
     <Image Include="res\ToolbarDisable.bmp" />
     <Image Include="res\ToolbarGrey.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="res\Inform7.manifest" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Inform7.rc">

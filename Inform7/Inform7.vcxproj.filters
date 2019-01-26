@@ -946,11 +946,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="res\Inform7.manifest">
-      <Filter>Resources</Filter>
-    </Manifest>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="res\Inform7.rc2">
       <Filter>Resources</Filter>
     </None>
