@@ -3,8 +3,6 @@
 #include "Inform.h"
 #include "ProjectFrame.h"
 
-extern "C" __declspec(dllimport) void ScaleGfx(COLORREF*, UINT, UINT, COLORREF*, UINT, UINT);
-
 IMPLEMENT_DYNAMIC(SplashScreen, I7BaseDialog)
 
 SplashScreen::SplashScreen(CWnd* pParent) : I7BaseDialog(SplashScreen::IDD,pParent)

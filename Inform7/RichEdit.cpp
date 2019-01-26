@@ -22,20 +22,27 @@ BEGIN_MESSAGE_MAP(RichEdit, CWnd)
   ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
 END_MESSAGE_MAP()
 
-static RichEdit::RichVersion m_richVersion = RichEdit::RichEditNotLoaded;
+namespace {
+  RichEdit::RichVersion richVersion = RichEdit::RichEditNotLoaded;
+  HMODULE richLib = 0;
+}
 
 RichEdit::RichEdit()
 {
-  if (m_richVersion != RichEditNotLoaded)
+  if (richVersion != RichEditNotLoaded)
     return;
 
   // Load the usual RichEdit 2/3 DLL
-  ::LoadLibrary("riched20.dll");
-  m_richVersion = RichEdit20;
+  richLib = ::LoadLibrary("riched20.dll");
+  richVersion = RichEdit20;
 
   // Attempt to load RichEdit 4.1
-  if (::LoadLibrary("msftedit.dll") != 0)
-    m_richVersion = RichEdit41;
+  HMODULE rich41Lib = ::LoadLibrary("msftedit.dll");
+  if (rich41Lib != 0)
+  {
+    richLib = rich41Lib;
+    richVersion = RichEdit41;
+  }
 }
 
 void RichEdit::OnDestroy()
@@ -99,7 +106,7 @@ BOOL RichEdit::Create(DWORD style, CWnd* parent, UINT id)
 {
   CRect zeroRect(0,0,0,0);
 
-  if (m_richVersion == RichEdit41)
+  if (richVersion == RichEdit41)
     return CWnd::Create("RICHEDIT50W",NULL,style,zeroRect,parent,id);
   return CWnd::Create("RichEdit20A",NULL,style,zeroRect,parent,id);
 }
@@ -277,12 +284,45 @@ bool RichEdit::RejectMsg(MSG* msg)
   return false;
 }
 
-// The IID in riched20.lib in the Plaform SDK appears to be incorrect.
-// This one is from the Microsoft Knowledge Base, article Q270161.
+// Interfaces and functions for Rich Edit, as the linker library is not present in later Windows SDKs
+
+const IID IID_ITextHost = {
+  // 13e670f4-1a5a-11cf-abeb-00aa00b65ea1
+  0x13e670f4, 0x1a5a, 0x11cf,{ 0xab, 0xeb, 0x00, 0xaa, 0x00, 0xb6, 0x5e, 0xa1 }
+};
+
 const IID IID_ITextServices = {
   // 8d33f740-cf58-11ce-a89d-00aa006cadc5
   0x8d33f740, 0xcf58, 0x11ce, {0xa8, 0x9d, 0x00, 0xaa, 0x00, 0x6c, 0xad, 0xc5}
 };
+
+STDAPI CreateTextServices(IUnknown* punkOuter, ITextHost* pITextHost, IUnknown** ppUnk)
+{
+  typedef HRESULT(__stdcall *CREATETEXTSERVICES)(IUnknown*, ITextHost*, IUnknown**);
+
+  if (richLib)
+  {
+    CREATETEXTSERVICES createTextServices =
+      (CREATETEXTSERVICES)::GetProcAddress(richLib,"CreateTextServices");
+    if (createTextServices)
+      return (*createTextServices)(punkOuter,pITextHost,ppUnk);
+  }
+  return E_NOTIMPL;
+}
+
+STDAPI ShutdownTextServices(IUnknown* pTextServices)
+{
+  typedef HRESULT(__stdcall *SHUTDOWNTEXTSERVICES)(IUnknown*);
+
+  if (richLib)
+  {
+    SHUTDOWNTEXTSERVICES shutdownTextServices =
+      (SHUTDOWNTEXTSERVICES)::GetProcAddress(richLib,"ShutdownTextServices");
+    if (shutdownTextServices)
+      return (*shutdownTextServices)(pTextServices);
+  }
+  return E_NOTIMPL;
+}
 
 RichDrawText::RichDrawText()
 {
@@ -303,11 +343,16 @@ RichDrawText::RichDrawText()
   m_paraFormat.wAlignment = PFA_LEFT;
 
   CComPtr<IUnknown> unknown;
-  HRESULT hr = ::CreateTextServices(NULL,&m_xTextHost,&unknown);
+  HRESULT hr = CreateTextServices(NULL,&m_xTextHost,&unknown);
   ASSERT(SUCCEEDED(hr));
 
   m_textDoc = unknown;
   m_textServ = unknown;
+}
+
+RichDrawText::~RichDrawText()
+{
+  ShutdownTextServices(m_textServ);
 }
 
 void RichDrawText::SetText(LPCWSTR text)

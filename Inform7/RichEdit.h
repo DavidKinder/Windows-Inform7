@@ -59,6 +59,7 @@ class RichDrawText : public CCmdTarget
 {
 public:
   RichDrawText();
+  ~RichDrawText();
 
   void SetText(LPCWSTR text);
   void Range(long cpFirst, long cpLim, ITextRange** ppRange);

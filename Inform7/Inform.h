@@ -210,3 +210,9 @@ protected:
 };
 
 extern InformApp theApp;
+
+#ifdef _WIN64
+void ScaleGfx(COLORREF*, UINT, UINT, COLORREF*, UINT, UINT);
+#else
+extern "C" __declspec(dllimport) void ScaleGfx(COLORREF*, UINT, UINT, COLORREF*, UINT, UINT);
+#endif
