@@ -327,6 +327,10 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   UpdateMenuParams();
   UpdateExtensionsMenu();
 
+  // Remove menu items that do not apply to the project
+  if (m_projectType != Project_I7XP)
+    GetMenu()->RemoveMenu(ID_FILE_EXPORT_EXT,MF_BYCOMMAND);
+
   if (getenv("INFORM7_TEST") == NULL)
   {
     // Remove test menu item
