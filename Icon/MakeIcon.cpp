@@ -218,7 +218,7 @@ int match(RGBQUAD* colours, int index, int max)
   return best;
 }
 
-void writeIconData4(struct BitmapInfo* info)
+void writeIconData4(struct BitmapInfo* info, bool opaque)
 {
   BITMAPINFOHEADER* head = (BITMAPINFOHEADER*)(info->data);
   if (head->biBitCount != 8)
@@ -242,8 +242,11 @@ void writeIconData4(struct BitmapInfo* info)
   int backcol = data[0];
   if (backcol >= 16)
     fatal();
-  for (int i = 0; i < 4; i++)
-    colours[(backcol*4)+i] = 0;
+  if (!opaque)
+  {
+    for (int i = 0; i < 4; i++)
+      colours[(backcol*4)+i] = 0;
+  }
 
   for (int i = 0; i < 16*4; i++)
     fputc(colours[i],out);
@@ -269,7 +272,7 @@ void writeIconData4(struct BitmapInfo* info)
       for (int x = 0; x < 8; x++)
       {
         mask <<= 1;
-        if (data[(h*outHead.biWidth)+(w*8)+x] == backcol)
+        if (!opaque && (data[(h*outHead.biWidth)+(w*8)+x] == backcol))
           mask |= 1;
       }
       fputc(mask,out);
@@ -282,7 +285,7 @@ void writeIconData4(struct BitmapInfo* info)
   }
 }
 
-void writeIconData8(struct BitmapInfo* info)
+void writeIconData8(struct BitmapInfo* info, bool opaque)
 {
   BITMAPINFOHEADER* head = (BITMAPINFOHEADER*)(info->data);
   if (head->biBitCount != 8)
@@ -304,8 +307,11 @@ void writeIconData8(struct BitmapInfo* info)
   unsigned char* data = colours+(256*4);
 
   int backcol = data[0];
-  for (int i = 0; i < 4; i++)
-    colours[(backcol*4)+i] = 0;
+  if (!opaque)
+  {
+    for (int i = 0; i < 4; i++)
+      colours[(backcol*4)+i] = 0;
+  }
 
   for (int i = 0; i < 256*4; i++)
     fputc(colours[i],out);
@@ -323,7 +329,7 @@ void writeIconData8(struct BitmapInfo* info)
       for (int x = 0; x < 8; x++)
       {
         mask <<= 1;
-        if (data[(h*outHead.biWidth)+(w*8)+x] == backcol)
+        if (!opaque && (data[(h*outHead.biWidth)+(w*8)+x] == backcol))
           mask |= 1;
       }
       fputc(mask,out);
@@ -336,7 +342,7 @@ void writeIconData8(struct BitmapInfo* info)
   }
 }
 
-void writeIconData24(struct BitmapInfo* info)
+void writeIconData24(struct BitmapInfo* info, bool opaque)
 {
   BITMAPINFOHEADER* head = (BITMAPINFOHEADER*)(info->data);
   if (head->biBitCount != 8)
@@ -356,8 +362,11 @@ void writeIconData24(struct BitmapInfo* info)
   unsigned char* data = colours+(256*4);
 
   int backcol = data[0];
-  for (int i = 0; i < 4; i++)
-    colours[(backcol*4)+i] = 0;
+  if (!opaque)
+  {
+    for (int i = 0; i < 4; i++)
+      colours[(backcol*4)+i] = 0;
+  }
 
   int datasz = outHead.biWidth*head->biHeight;
   for (int i = 0; i < datasz; i++)
@@ -366,7 +375,7 @@ void writeIconData24(struct BitmapInfo* info)
     fputc(colour[0],out);
     fputc(colour[1],out);
     fputc(colour[2],out);
-    if (data[i] == backcol)
+    if (!opaque && (data[i] == backcol))
       fputc(0,out);
     else
       fputc(255,out);
@@ -381,7 +390,7 @@ void writeIconData24(struct BitmapInfo* info)
       for (int x = 0; x < 8; x++)
       {
         mask <<= 1;
-        if (data[(h*outHead.biWidth)+(w*8)+x] == backcol)
+        if (!opaque && (data[(h*outHead.biWidth)+(w*8)+x] == backcol))
           mask |= 1;
       }
       fputc(mask,out);
@@ -394,7 +403,7 @@ void writeIconData24(struct BitmapInfo* info)
   }
 }
 
-void writeIconData32(struct BitmapInfo* info)
+void writeIconData32(struct BitmapInfo* info, bool opaque)
 {
   BITMAPINFOHEADER* head = (BITMAPINFOHEADER*)(info->data);
   if (head->biBitCount != 32)
@@ -416,7 +425,7 @@ void writeIconData32(struct BitmapInfo* info)
   int datasz = outHead.biWidth*head->biHeight;
   for (int i = 0; i < datasz; i++)
   {
-    if (*(DWORD*)(data+(i*4)) == backcol)
+    if (!opaque && (*(DWORD*)(data+(i*4)) == backcol))
     {
       fputc(0,out);
       fputc(0,out);
@@ -441,7 +450,7 @@ void writeIconData32(struct BitmapInfo* info)
       for (int x = 0; x < 8; x++)
       {
         mask <<= 1;
-        if (*(DWORD*)(data+4*((h*outHead.biWidth)+(w*8)+x)) == backcol)
+        if (!opaque && (*(DWORD*)(data+4*((h*outHead.biWidth)+(w*8)+x)) == backcol))
           mask |= 1;
       }
       fputc(mask,out);
@@ -460,7 +469,7 @@ void writeIconDataPNG(struct BitmapInfo* info)
     fputc(info->data[i],out);
 }
 
-void writeIconData(struct BitmapInfo* info)
+void writeIconData(struct BitmapInfo* info, bool opaque)
 {
   if (info->data == NULL)
     return;
@@ -470,16 +479,16 @@ void writeIconData(struct BitmapInfo* info)
   switch (info->mode)
   {
   case 0:
-    writeIconData4(info);
+    writeIconData4(info,opaque);
     break;
   case 1:
-    writeIconData8(info);
+    writeIconData8(info,opaque);
     break;
   case 2:
-    writeIconData24(info);
+    writeIconData24(info,opaque);
     break;
   case 3:
-    writeIconData32(info);
+    writeIconData32(info,opaque);
     break;
   case 4:
     writeIconDataPNG(info);
@@ -512,8 +521,15 @@ int getIconCount(void)
   return len;
 }
 
-int main()
+int main(int argc, char** argv)
 {
+  bool opaque = false;
+  if (argc > 1)
+  {
+    if (strcmp(argv[1],"opaque") == 0)
+      opaque = true;
+  }
+
   out = fopen("output.ico","wb");
   if (out == 0)
     fatal();
@@ -526,7 +542,7 @@ int main()
   for (int i = 0; i < maxLen; i++)
     writeIconHeader(bitmaps+i);
   for (int i = 0; i < maxLen; i++)
-    writeIconData(bitmaps+i);
+    writeIconData(bitmaps+i,opaque);
 
   printf("Success!");
   return 0;
