@@ -7,6 +7,16 @@
 #define new DEBUG_NEW
 #endif
 
+// Interfaces for Rich Edit, as the linker library is not present in later Windows SDKs
+const IID IID_ITextHost = {
+  // 13e670f4-1a5a-11cf-abeb-00aa00b65ea1
+  0x13e670f4, 0x1a5a, 0x11cf,{ 0xab, 0xeb, 0x00, 0xaa, 0x00, 0xb6, 0x5e, 0xa1 }
+};
+const IID IID_ITextServices = {
+  // 8d33f740-cf58-11ce-a89d-00aa006cadc5
+  0x8d33f740, 0xcf58, 0x11ce, {0xa8, 0x9d, 0x00, 0xaa, 0x00, 0x6c, 0xad, 0xc5}
+};
+
 IMPLEMENT_DYNAMIC(RichEdit, CWnd)
 
 BEGIN_MESSAGE_MAP(RichEdit, CWnd)
@@ -228,6 +238,11 @@ bool RichEdit::Setup(void)
   // Set font and colour
   FontChanged();
   SendMessage(EM_SETBKGNDCOLOR,FALSE,theApp.GetColour(InformApp::ColourBack));
+
+  // Disable any beeping
+  CComQIPtr<ITextServices,&IID_ITextServices> txtSvcs(reo);
+  if (txtSvcs)
+    txtSvcs->OnTxPropertyBitsChange(TXTBIT_ALLOWBEEP,0);
   return true;
 }
 
@@ -284,17 +299,7 @@ bool RichEdit::RejectMsg(MSG* msg)
   return false;
 }
 
-// Interfaces and functions for Rich Edit, as the linker library is not present in later Windows SDKs
-
-const IID IID_ITextHost = {
-  // 13e670f4-1a5a-11cf-abeb-00aa00b65ea1
-  0x13e670f4, 0x1a5a, 0x11cf,{ 0xab, 0xeb, 0x00, 0xaa, 0x00, 0xb6, 0x5e, 0xa1 }
-};
-
-const IID IID_ITextServices = {
-  // 8d33f740-cf58-11ce-a89d-00aa006cadc5
-  0x8d33f740, 0xcf58, 0x11ce, {0xa8, 0x9d, 0x00, 0xaa, 0x00, 0x6c, 0xad, 0xc5}
-};
+// Functions for Rich Edit, as the linker library is not present in later Windows SDKs
 
 STDAPI CreateTextServices(IUnknown* punkOuter, ITextHost* pITextHost, IUnknown** ppUnk)
 {
