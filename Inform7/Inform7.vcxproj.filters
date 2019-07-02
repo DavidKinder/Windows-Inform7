@@ -301,6 +301,9 @@
     <ClInclude Include="..\..\..\Libraries\mfc\DpiFunctions.h">
       <Filter>Controls</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Libraries\mfc\ImagePNG.h">
+      <Filter>Bitmaps</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -920,6 +923,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\mfc\DpiFunctions.cpp">
       <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\mfc\ImagePNG.cpp">
+      <Filter>Bitmaps</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
