@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <algorithm>
+
 #include <io.h>
 #include <windows.h>
 
@@ -197,25 +199,42 @@ void writeIconHeader(struct BitmapInfo* info)
   writeLong(0); // offset
 }
 
-int match(RGBQUAD* colours, int index, int max)
+struct ColourHistogramElement
 {
-  int best = 0;
+  int idx;
+  int count;
+  RGBQUAD colour;
+
+  ColourHistogramElement()
+  {
+    idx = 0;
+    count = 0;
+  }
+
+  bool operator<(const ColourHistogramElement& che) const
+  {
+    return count > che.count;
+  }
+};
+
+int bestMatch(ColourHistogramElement* hist, RGBQUAD find, int max)
+{
+  int bestIdx = 0;
   double bestDiff = 0.0;
-  RGBQUAD find = colours[index];
   for (int i = 0; i < max; i++)
   {
-    RGBQUAD test = colours[i];
+    RGBQUAD test = hist[i].colour;
     double diff = pow(abs(find.rgbBlue-test.rgbBlue),2.0);
     diff += pow(abs(find.rgbGreen-test.rgbGreen),2.0);
     diff += pow(abs(find.rgbRed-test.rgbRed),2.0);
 
     if ((i == 0) || (diff < bestDiff))
     {
-      best = i;
+      bestIdx = i;
       bestDiff = diff;
     }
   }
-  return best;
+  return bestIdx;
 }
 
 void writeIconData4(struct BitmapInfo* info, bool opaque)
@@ -238,28 +257,46 @@ void writeIconData4(struct BitmapInfo* info, bool opaque)
 
   unsigned char* colours = info->data+sizeof(BITMAPINFOHEADER);
   unsigned char* data = colours+(256*4);
-
-  int backcol = data[0];
-  if (backcol >= 16)
-    fatal();
-  if (!opaque)
-  {
-    for (int i = 0; i < 4; i++)
-      colours[(backcol*4)+i] = 0;
-  }
-
-  for (int i = 0; i < 16*4; i++)
-    fputc(colours[i],out);
-
   int datasz = (outHead.biWidth*head->biHeight)/2;
+
+  ColourHistogramElement hist[256];
+  for (int i = 0; i < 256; i++)
+  {
+    hist[i].idx = i;
+    hist[i].colour = ((RGBQUAD*)colours)[i];
+  }
   for (int i = 0; i < datasz; i++)
   {
     int d0 = data[(i*2)+0];
     int d1 = data[(i*2)+1];
-    if (d0 >= 16)
-      d0 = match((RGBQUAD*)colours,d0,16);
-    if (d1 >= 16)
-      d1 = match((RGBQUAD*)colours,d1,16);
+    hist[d0].count++;
+    hist[d1].count++;
+  }
+
+  int backcol = data[0];
+  std::sort(hist,hist+256);
+  for (int i = 0; i < 16; i++)
+  {
+    int idx = hist[i].idx;
+    if (!opaque && (idx == backcol))
+    {
+      for (int j = 0; j < 4; j++)
+        fputc(0,out);
+    }
+    else
+    {
+      unsigned char* colour = colours+(idx*4);
+      for (int j = 0; j < 4; j++)
+        fputc(colour[j],out);
+    }
+  }
+
+  for (int i = 0; i < datasz; i++)
+  {
+    int d0 = data[(i*2)+0];
+    int d1 = data[(i*2)+1];
+    d0 = bestMatch(hist,((RGBQUAD*)colours)[d0],16);
+    d1 = bestMatch(hist,((RGBQUAD*)colours)[d1],16);
     fputc((d0<<4)|d1,out);
   }
 
