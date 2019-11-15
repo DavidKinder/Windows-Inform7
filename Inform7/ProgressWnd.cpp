@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "ProgressWnd.h"
 #include "Inform.h"
-
-#include <MultiMon.h>
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -80,15 +79,7 @@ void ProgressWnd::TaskProgress(const char* text, int progress)
   else
   {
     // Get the width of the monitor
-    int monWidth = 0;
-    MONITORINFO monInfo;
-    ::ZeroMemory(&monInfo,sizeof monInfo);
-    monInfo.cbSize = sizeof monInfo;
-    HMONITOR mon = ::MonitorFromWindow(GetSafeHwnd(),MONITOR_DEFAULTTOPRIMARY);
-    if (::GetMonitorInfo(mon,&monInfo))
-      monWidth = monInfo.rcWork.right - monInfo.rcWork.left;
-    else
-      monWidth = ::GetSystemMetrics(SM_CXSCREEN);
+    int monWidth = DPI::getMonitorWorkRect(this).Width();
 
     // Get the width of the parent window
     CWnd* parentWnd = GetParentFrame();

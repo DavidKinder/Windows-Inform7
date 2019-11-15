@@ -2,6 +2,7 @@
 #include "Inform.h"
 #include "Panel.h"
 #include "Messages.h"
+#include "DpiFunctions.h"
 
 #include "TabDoc.h"
 #include "TabExtensions.h"
@@ -12,8 +13,6 @@
 #include "TabSource.h"
 #include "TabStory.h"
 #include "TabTranscript.h"
-
-#include <MultiMon.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -350,15 +349,7 @@ double Panel::GetFontScale(CWnd* wnd, CDC* dc)
     " Source | Results | Index | Skein | Transcript | Story | Documentation | Extensions | Settings |").cx;
 
   // Get the width of the monitor
-  int monWidth = 0;
-  MONITORINFO monInfo;
-  ::ZeroMemory(&monInfo,sizeof monInfo);
-  monInfo.cbSize = sizeof monInfo;
-  HMONITOR mon = ::MonitorFromWindow(wnd->GetSafeHwnd(),MONITOR_DEFAULTTOPRIMARY);
-  if (::GetMonitorInfo(mon,&monInfo))
-    monWidth = monInfo.rcWork.right - monInfo.rcWork.left;
-  else
-    monWidth = ::GetSystemMetrics(SM_CXSCREEN);
+  int monWidth = DPI::getMonitorWorkRect(wnd).Width();
 
   // Work out a scaling factor for the tab font
   double scale = monWidth / (2.1*tabWidth);

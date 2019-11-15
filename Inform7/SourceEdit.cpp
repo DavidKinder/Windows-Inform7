@@ -5,9 +5,9 @@
 #include "EditFind.h"
 #include "TextFormat.h"
 #include "OSLayer.h"
+#include "DpiFunctions.h"
 
 #include "SciLexer.h"
-#include <MultiMon.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -1053,11 +1053,7 @@ void SourceEdit::MoveShowSelect(CWnd* child)
   if (intersectR.IntersectRect(wordR,wndR))
   {
     // Get the size of the display
-    MONITORINFO monInfo;
-    ::ZeroMemory(&monInfo,sizeof monInfo);
-    monInfo.cbSize = sizeof monInfo;
-    HMONITOR mon = ::MonitorFromWindow(child->GetSafeHwnd(),MONITOR_DEFAULTTOPRIMARY);
-    ::GetMonitorInfo(mon,&monInfo);
+    CRect workRect = DPI::getMonitorWorkRect(child);
 
     // Try moving the dialog, but keep it on-screen
     if (wordR.top-wndR.Height() >= 0)
@@ -1065,7 +1061,7 @@ void SourceEdit::MoveShowSelect(CWnd* child)
       child->SetWindowPos(&CWnd::wndTop,wndR.left,wordR.top-wndR.Height(),0,0,
         SWP_NOOWNERZORDER|SWP_NOZORDER|SWP_NOSIZE);
     }
-    else if (wordR.bottom+wndR.Height() < monInfo.rcWork.bottom)
+    else if (wordR.bottom+wndR.Height() < workRect.bottom)
     {
       child->SetWindowPos(&CWnd::wndTop,wndR.left,wordR.bottom,0,0,
         SWP_NOOWNERZORDER|SWP_NOZORDER|SWP_NOSIZE);

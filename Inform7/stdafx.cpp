@@ -3,8 +3,3 @@
 // stdafx.obj will contain the pre-compiled type information
 
 #include "stdafx.h"
-
-#if (_MSC_VER >= 1700)
-#define COMPILE_MULTIMON_STUBS
-#include <MultiMon.h>
-#endif

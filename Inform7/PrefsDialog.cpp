@@ -2,8 +2,7 @@
 #include "PrefsDialog.h"
 #include "Inform.h"
 #include "Messages.h"
-
-#include <MultiMon.h>
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -784,15 +783,7 @@ BOOL PrefsDialog::OnInitDialog()
   CPropertySheet::OnInitDialog();
 
   // Get the height of the monitor
-  int monHeight = 0;
-  MONITORINFO monInfo;
-  ::ZeroMemory(&monInfo,sizeof monInfo);
-  monInfo.cbSize = sizeof monInfo;
-  HMONITOR mon = ::MonitorFromWindow(GetSafeHwnd(),MONITOR_DEFAULTTOPRIMARY);
-  if (::GetMonitorInfo(mon,&monInfo))
-    monHeight = monInfo.rcWork.bottom - monInfo.rcWork.top;
-  else
-    monHeight = ::GetSystemMetrics(SM_CYSCREEN);
+  int monHeight = DPI::getMonitorWorkRect(this).Height();
 
   // Is a smaller font needed?
   CFont* font = theApp.GetFont(InformApp::FontSystem);
