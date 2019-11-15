@@ -4,6 +4,7 @@
 #include "Inform.h"
 #include "Dialogs.h"
 #include "OSLayer.h"
+#include "DpiFunctions.h"
 
 #include <math.h>
 
@@ -1372,10 +1373,11 @@ BOOL SkeinMouseAnchorWnd::Create(SkeinWindow* pParent)
 
   pParent->ClientToScreen(&m_ptAnchor);
 
-  m_rectDrag.top = m_ptAnchor.y - GetSystemMetrics(SM_CYDOUBLECLK);
-  m_rectDrag.bottom = m_ptAnchor.y + GetSystemMetrics(SM_CYDOUBLECLK);
-  m_rectDrag.left = m_ptAnchor.x - GetSystemMetrics(SM_CXDOUBLECLK);
-  m_rectDrag.right = m_ptAnchor.x + GetSystemMetrics(SM_CXDOUBLECLK);
+  int dpi = DPI::getWindowDPI(this);
+  m_rectDrag.top = m_ptAnchor.y - DPI::getSystemMetrics(SM_CYDOUBLECLK,dpi);
+  m_rectDrag.bottom = m_ptAnchor.y + DPI::getSystemMetrics(SM_CYDOUBLECLK,dpi);
+  m_rectDrag.left = m_ptAnchor.x - DPI::getSystemMetrics(SM_CXDOUBLECLK,dpi);
+  m_rectDrag.right = m_ptAnchor.x + DPI::getSystemMetrics(SM_CXDOUBLECLK,dpi);
 
   BOOL bRetVal = 
     CreateEx(WS_EX_TOOLWINDOW|WS_EX_TOPMOST,

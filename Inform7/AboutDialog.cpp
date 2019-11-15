@@ -2,6 +2,7 @@
 #include "AboutDialog.h"
 #include "Inform.h"
 #include "OSLayer.h"
+#include "DpiFunctions.h"
 #include "Build.h"
 
 #ifdef _DEBUG
@@ -194,6 +195,8 @@ BOOL AboutDialog::OnInitDialog()
 
 BOOL AboutDialog::OnEraseBkgnd(CDC* dc)
 {
+  int dpi = DPI::getWindowDPI(this);
+
   CRect dlgRect, creditsRect;
   GetClientRect(dlgRect);
   m_credits.GetWindowRect(creditsRect);
@@ -207,8 +210,8 @@ BOOL AboutDialog::OnEraseBkgnd(CDC* dc)
   dc->FillSolidRect(CRect(creditsRect.right,0,dlgRect.right,dlgRect.bottom),back);
 
   CRect gripRect = dlgRect;
-  gripRect.left = gripRect.right - ::GetSystemMetrics(SM_CXHSCROLL);
-  gripRect.top = gripRect.bottom - ::GetSystemMetrics(SM_CYVSCROLL);
+  gripRect.left = gripRect.right - DPI::getSystemMetrics(SM_CXHSCROLL,dpi);
+  gripRect.top = gripRect.bottom - DPI::getSystemMetrics(SM_CYVSCROLL,dpi);
 
   // Draw a gripper to show that the dialog can be resized
   bool drawn = false;

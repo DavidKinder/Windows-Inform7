@@ -6,6 +6,7 @@
 #include "ProjectDirDialog.h"
 #include "NewDialogs.h"
 #include "Dialogs.h"
+#include "DpiFunctions.h"
 #include "Build.h"
 
 #include "TabDoc.h"
@@ -3121,7 +3122,7 @@ bool ProjectFrame::LoadToolBar(void)
 
       // Position and size the examples list control
       m_exampleList.MoveWindow(r1.left+4,(r1.bottom+r1.top-h)/2,r2.right-r1.left-8,
-        ::GetSystemMetrics(SM_CYSCREEN)/2);
+        DPI::getMonitorRect(this).Width()/2);
 
       // Set the initial contents and selection for the examples
       m_exampleList.AddString("Test All");
