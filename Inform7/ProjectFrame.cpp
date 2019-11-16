@@ -2487,12 +2487,9 @@ void ProjectFrame::UpdateMenuParams(void)
   m_menuFonts[1].DeleteObject();
 
   // Create the menu item fonts
-  NONCLIENTMETRICS ncm;
-  ncm.cbSize = sizeof ncm;
-  ::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,ncm.cbSize,&ncm,0);
-  m_menuFonts[0].CreateFontIndirect(&ncm.lfMenuFont);
-  ncm.lfMenuFont.lfHeight = (int)(0.9*ncm.lfMenuFont.lfHeight);
-  m_menuFonts[1].CreateFontIndirect(&ncm.lfMenuFont);
+  int dpi = DPI::getWindowDPI(this);
+  DPI::createSystemMenuFont(&(m_menuFonts[0]),dpi,1.0);
+  DPI::createSystemMenuFont(&(m_menuFonts[1]),dpi,0.9);
 
   // Get the theme, if any
   HTHEME theme = 0;
@@ -2530,7 +2527,6 @@ void ProjectFrame::UpdateMenuParams(void)
 void ProjectFrame::UpdateExtensionsMenu(void)
 {
   CMenu* fileMenu = GetMenu()->GetSubMenu(0);
-  ASSERT(fileMenu->GetMenuItemCount() == 17);
   CMenu* newExtMenu = fileMenu->GetSubMenu(3)->GetSubMenu(1);
   ASSERT(newExtMenu != NULL);
   CMenu* openExtMenu = fileMenu->GetSubMenu(6);
