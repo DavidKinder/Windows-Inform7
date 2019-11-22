@@ -444,11 +444,7 @@ CString InformApp::GetAppDir(void) const
     *p = 0;
 
 #ifdef DEBUG
- #ifdef _WIN64
-  strcat(path,"\\..\\..\\..\\Build");
- #else
   strcat(path,"\\..\\..\\Build");
- #endif
 #endif
   return path;
 }

@@ -77,6 +77,8 @@
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <GenerateManifest>true</GenerateManifest>
+    <OutDir>DebugX64\</OutDir>
+    <IntDir>DebugX64\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>Release\</OutDir>
@@ -89,6 +91,8 @@
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <GenerateManifest>true</GenerateManifest>
+    <OutDir>ReleaseX64\</OutDir>
+    <IntDir>ReleaseX64\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -151,7 +155,7 @@
     </Midl>
     <PreBuildEvent>
       <Message>Updating build header...</Message>
-      <Command>"../BuildDate/$(Configuration)/BuildDate"</Command>
+      <Command>"../BuildDate/DebugX64/BuildDate"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -232,7 +236,7 @@
     </Midl>
     <PreBuildEvent>
       <Message>Updating build header...</Message>
-      <Command>"../BuildDate/$(Configuration)/BuildDate"</Command>
+      <Command>"../BuildDate/ReleaseX64/BuildDate"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
