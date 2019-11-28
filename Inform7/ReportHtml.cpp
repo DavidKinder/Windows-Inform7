@@ -36,6 +36,8 @@ bool ReportHtml::InitCEF(void)
 
   // Initialize settings
   cefSettings.no_sandbox = true;
+  cefSettings.command_line_args_disabled = true;
+  cefSettings.log_severity = LOGSEVERITY_DISABLE;
   CString dir = theApp.GetAppDir();
   CefString(&cefSettings.resources_dir_path).FromASCII(dir+"\\Chrome");
   CefString(&cefSettings.locales_dir_path).FromASCII(dir+"\\Chrome\\locale");
