@@ -330,9 +330,6 @@
     <ClCompile Include="ExtensionFrame.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="HookApiFunction.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Inform.cpp">
       <Filter>Core</Filter>
     </ClCompile>

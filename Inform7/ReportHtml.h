@@ -39,6 +39,11 @@ class ReportHtml : public CHtmlView
   DECLARE_DYNCREATE(ReportHtml)
 
 public:
+  static bool InitCEF(void);
+
+///////////////////////////////////////////////////////////////////////////////
+
+public:
   class LinkConsumer
   {
   public:
@@ -86,9 +91,6 @@ protected:
 
 private:
   void HighlightFound(bool goToFound);
-
-  static LONG WINAPI HookRegOpenKeyExW(
-    HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
 
   static CString m_registryPath;
   LinkConsumer* m_consumer;

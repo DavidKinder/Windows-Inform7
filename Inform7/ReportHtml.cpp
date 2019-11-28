@@ -5,9 +5,48 @@
 #include "Panel.h"
 #include "Messages.h"
 
+#include "include/cef_app.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+// Settings for all browser instances
+CefSettings cefSettings;
+
+// Application level callbacks for all browser instances
+class I7CefApp : public CefApp
+{
+public:
+  I7CefApp()
+  {
+  }
+
+private:
+  IMPLEMENT_REFCOUNTING(I7CefApp);
+};
+
+bool ReportHtml::InitCEF(void)
+{
+  CefMainArgs cefArgs(::GetModuleHandle(0));
+
+  // If this is a CEF sub-process, call CEF straight away
+  if (CefExecuteProcess(cefArgs,NULL,NULL) >= 0)
+    return false;
+
+  // Initialize settings
+  cefSettings.no_sandbox = true;
+  CString dir = theApp.GetAppDir();
+  CefString(&cefSettings.resources_dir_path).FromASCII(dir+"\\Chrome");
+  CefString(&cefSettings.locales_dir_path).FromASCII(dir+"\\Chrome\\locale");
+
+  // Initialize CEF
+  CefRefPtr<CefApp> app(new I7CefApp());
+  CefInitialize(cefArgs,cefSettings,app.get(),NULL);
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 // Internet Explorer window, used to set the context menu
 class IEWnd : public CWnd
@@ -265,9 +304,6 @@ void ReportHtml::OnUpdateEditFind(CCmdUI* pCmdUI)
 
 CString ReportHtml::m_registryPath;
 
-void HookApiFunction(
-  HMODULE callingdll, HMODULE calledDll, const char* calledDllName, const char* functionName, PROC newFunction);
-
 void ReportHtml::SetIEPreferences(const char* path)
 {
   if (path != NULL)
@@ -340,20 +376,6 @@ void ReportHtml::SetIEPreferences(const char* path)
     featureKey.SetDWORDValue("Inform7.exe",8888);
   }
 
-  if (path != NULL)
-  {
-    // IE9 has a nasty bug: IDocHostUIHandler::GetOptionKeyPath() is never called.
-    // To work around this, we intercept and re-direct calls to open the IE registry key.
-    if ((ieVer >= 9.0) && (ieVer < 10.0))
-    {
-      HMODULE advadi = ::LoadLibrary("advapi32.dll");
-      HMODULE mshtml = ::LoadLibrary("mshtml.dll");
-      HookApiFunction(mshtml,advadi,"advapi32.dll","RegOpenKeyExW",(PROC)HookRegOpenKeyExW);
-      HMODULE iertutil = ::LoadLibrary("iertutil.dll");
-      HookApiFunction(iertutil,advadi,"advapi32.dll","RegOpenKeyExW",(PROC)HookRegOpenKeyExW);
-    }
-  }
-
   // If the registry path hasn't been changed, this is a preferences update,
   // so cause all Internet Explorer windows to update
   if (path == NULL)
@@ -362,25 +384,6 @@ void ReportHtml::SetIEPreferences(const char* path)
     SendMessageTimeout(HWND_BROADCAST,
       WM_SETTINGCHANGE,0x1F,(LPARAM)"Software\\Microsoft\\Internet Explorer",SMTO_BLOCK,1000,&result);
   }
-}
-
-LONG WINAPI ReportHtml::HookRegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult)
-{
-  static const wchar_t* ieKey = L"Software\\Microsoft\\Internet Explorer";
-
-  // Never redirect any of the FeatureControl settings
-  if (wcsstr(lpSubKey,L"FeatureControl") != NULL)
-    return ::RegOpenKeyExW(hKey,lpSubKey,ulOptions,samDesired,phkResult);
-
-  if (wcsnicmp(lpSubKey,ieKey,wcslen(ieKey)) == 0)
-  {
-    // Redirect the IE settings to our registry key
-    CStringW newSubKey(m_registryPath);
-    newSubKey.Append(lpSubKey+wcslen(ieKey));
-    return ::RegOpenKeyExW(hKey,newSubKey,ulOptions,samDesired,phkResult);
-  }
-  else
-    return ::RegOpenKeyExW(hKey,lpSubKey,ulOptions,samDesired,phkResult);
 }
 
 void ReportHtml::SetLinkConsumer(LinkConsumer* consumer)

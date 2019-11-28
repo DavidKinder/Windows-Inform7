@@ -88,7 +88,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>xcopy /y /s ..\..\..\Libraries\libcef\bin64 $(OutDir)</Command>
+      <Command>xcopy /y ..\..\..\Libraries\libcef\bin64 $(OutDir)</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying CEF files...</Message>
@@ -2004,7 +2004,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../../Glk/GlkDll;../../Glk/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../Glk/GlkDll;../../Glk/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
-    <ClCompile Include="HookApiFunction.cpp" />
     <ClCompile Include="Inform.cpp" />
     <ClCompile Include="NewDialogs.cpp" />
     <ClCompile Include="NoFocusCheck.cpp" />

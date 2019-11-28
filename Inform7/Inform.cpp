@@ -44,6 +44,8 @@ BOOL InformApp::InitInstance()
   theOS.Init();
   theOS.BufferedPaintInit();
 
+  if (!ReportHtml::InitCEF())
+    return FALSE;
   if (!AfxOleInit())
     return FALSE;
   if (!Scintilla_RegisterClasses(AfxGetInstanceHandle()))
@@ -444,7 +446,14 @@ CString InformApp::GetAppDir(void) const
     *p = 0;
 
 #ifdef DEBUG
-  strcat(path,"\\..\\..\\Build");
+  // Go up two directories
+  for (int i = 0; i < 2; i++)
+  {
+    p = strrchr(path,'\\');
+    ASSERT(p != NULL);
+    *p = 0;
+  }
+  strcat(path,"\\Build");
 #endif
   return path;
 }
