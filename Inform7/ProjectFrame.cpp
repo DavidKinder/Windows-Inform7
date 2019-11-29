@@ -332,7 +332,7 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   if (m_projectType != Project_I7XP)
     GetMenu()->RemoveMenu(ID_FILE_EXPORT_EXT,MF_BYCOMMAND);
 
-  if (getenv("INFORM7_TEST") == NULL)
+  if (theApp.GetTestMode())
   {
     // Remove test menu item
     GetMenu()->RemoveMenu(ID_PLAY_LOAD,MF_BYCOMMAND);

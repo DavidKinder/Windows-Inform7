@@ -39,7 +39,7 @@ class ReportHtml : public CHtmlView
   DECLARE_DYNCREATE(ReportHtml)
 
 public:
-  static bool InitCEF(void);
+  static bool InitWebBrowser(void);
 
 ///////////////////////////////////////////////////////////////////////////////
 

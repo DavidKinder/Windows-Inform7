@@ -26,25 +26,28 @@ private:
   IMPLEMENT_REFCOUNTING(I7CefApp);
 };
 
-bool ReportHtml::InitCEF(void)
+bool ReportHtml::InitWebBrowser(void)
 {
-  CefMainArgs cefArgs(::GetModuleHandle(0));
-
   // If this is a CEF sub-process, call CEF straight away
+  CefMainArgs cefArgs(::GetModuleHandle(0));
   if (CefExecuteProcess(cefArgs,NULL,NULL) >= 0)
     return false;
 
   // Initialize settings
   cefSettings.no_sandbox = true;
   cefSettings.command_line_args_disabled = true;
-  cefSettings.log_severity = LOGSEVERITY_DISABLE;
+  cefSettings.log_severity = theApp.GetTestMode() ? LOGSEVERITY_DEFAULT : LOGSEVERITY_DISABLE;
   CString dir = theApp.GetAppDir();
   CefString(&cefSettings.resources_dir_path).FromASCII(dir+"\\Chrome");
-  CefString(&cefSettings.locales_dir_path).FromASCII(dir+"\\Chrome\\locale");
+  CefString(&cefSettings.locales_dir_path).FromASCII(dir+"\\Chrome\\locales");
 
   // Initialize CEF
   CefRefPtr<CefApp> app(new I7CefApp());
-  CefInitialize(cefArgs,cefSettings,app.get(),NULL);
+  if (!CefInitialize(cefArgs,cefSettings,app.get(),NULL))
+  {
+    AfxMessageBox("Failed to initialize Chrome Extension Framework",MB_ICONSTOP|MB_OK);
+    exit(0);
+  }
   return true;
 }
 

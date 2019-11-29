@@ -44,7 +44,7 @@ BOOL InformApp::InitInstance()
   theOS.Init();
   theOS.BufferedPaintInit();
 
-  if (!ReportHtml::InitCEF())
+  if (!ReportHtml::InitWebBrowser())
     return FALSE;
   if (!AfxOleInit())
     return FALSE;
@@ -431,6 +431,11 @@ void InformApp::SetIcon(CWnd* wnd)
 {
   wnd->SetIcon(LoadIcon(IDR_ICON),TRUE);
   wnd->SetIcon(LoadIcon(IDR_ICON),FALSE);
+}
+
+bool InformApp::GetTestMode(void) const
+{
+  return (getenv("INFORM7_TEST") != NULL);
 }
 
 CString InformApp::GetAppDir(void) const

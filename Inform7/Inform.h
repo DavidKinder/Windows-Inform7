@@ -100,6 +100,7 @@ public:
   CSize MeasureText(CWnd* button);
   CSize MeasureText(LPCSTR text, CFont* font);
 
+  bool GetTestMode(void) const;
   CString GetAppDir(void) const;
   CString GetLastProjectDir(void);
   CString GetHomeDir(void);
