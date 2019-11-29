@@ -15,10 +15,23 @@
 CefSettings cefSettings;
 
 // Application level callbacks for all browser instances
-class I7CefApp : public CefApp
+class I7CefApp : public CefApp, public CefBrowserProcessHandler
 {
 public:
   I7CefApp()
+  {
+  }
+
+  void OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar)
+  {
+  }
+
+  CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler()
+  {
+    return this;
+  }
+
+  void OnScheduleMessagePumpWork(int64 delay_ms)
   {
   }
 
@@ -40,6 +53,7 @@ bool ReportHtml::InitWebBrowser(void)
   CString dir = theApp.GetAppDir();
   CefString(&cefSettings.resources_dir_path).FromASCII(dir+"\\Chrome");
   CefString(&cefSettings.locales_dir_path).FromASCII(dir+"\\Chrome\\locales");
+  CefString(&cefSettings.log_file).FromASCII(theApp.GetHomeDir() + "\\Inform\\ceflog.txt");
 
   // Initialize CEF
   CefRefPtr<CefApp> app(new I7CefApp());
