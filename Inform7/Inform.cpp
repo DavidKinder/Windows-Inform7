@@ -44,8 +44,6 @@ BOOL InformApp::InitInstance()
   theOS.Init();
   theOS.BufferedPaintInit();
 
-  if (!ReportHtml::InitWebBrowser())
-    return FALSE;
   if (!AfxOleInit())
     return FALSE;
   if (!Scintilla_RegisterClasses(AfxGetInstanceHandle()))
@@ -53,14 +51,16 @@ BOOL InformApp::InitInstance()
 
   CheckInstalledVersions();
 
-  SetRegistryKey("David Kinder");
-  SetFonts();
-  ReportHtml::SetIEPreferences(REGISTRY_PATH_BROWSER);
-
   // Set the HOME environment variable to the My Documents folder,
   // used by the Natural Inform compiler, and make sure directories
   // under My Documents exist.
   SetMyDocuments();
+
+  SetRegistryKey("David Kinder");
+  SetFonts();
+  ReportHtml::SetIEPreferences(REGISTRY_PATH_BROWSER);
+  if (!ReportHtml::InitWebBrowser())
+    return FALSE;
 
   // If possible, create a job to assign child processes to. Since the
   // job will be closed when this process exits, this ensures that any
