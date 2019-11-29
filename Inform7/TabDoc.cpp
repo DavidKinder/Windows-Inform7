@@ -28,6 +28,7 @@ const char* TabDoc::m_files[TabDoc::Number_DocTabs] =
 };
 
 TabDoc::DocData* TabDoc::m_data = new TabDoc::DocData();
+CWinThread* TabDoc::m_pThread = NULL;
 
 TabDoc::TabDoc() : m_tab(true), m_html(NULL), m_initialised(false)
 {
@@ -141,6 +142,19 @@ void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
     }
     ::Sleep(100);
     theApp.RunMessagePump();
+  }
+
+  if (m_pThread)
+  {
+    DWORD code = 0;
+    if (::GetExitCodeThread(*m_pThread,&code))
+    {
+      if (code != STILL_ACTIVE)
+      {
+        delete m_pThread;
+        m_pThread = NULL;
+      }
+    }
   }
 
   {
@@ -564,24 +578,52 @@ UINT TabDoc::BackgroundDecodeThread(LPVOID)
     }
   }
 
-  CSingleLock lock(&(m_data->lock),TRUE);
-  m_data->done = true;
+  {
+    CSingleLock lock(&(m_data->lock),TRUE);
+    m_data->done = true;
+  }
   return 0;
 }
 
 void TabDoc::InitInstance(void)
 {
-  AfxBeginThread(BackgroundDecodeThread,NULL);
+  m_pThread = AfxBeginThread(BackgroundDecodeThread,
+    NULL,THREAD_PRIORITY_NORMAL,0,CREATE_SUSPENDED);
+  if (m_pThread)
+  {
+    m_pThread->m_bAutoDelete = FALSE;
+    m_pThread->ResumeThread();
+  }
 }
 
 void TabDoc::ExitInstance(void)
 {
-  CSingleLock lock(&(m_data->lock),TRUE);
-  if (m_data->done)
   {
-    for (int i = 0; i < m_data->texts.GetSize(); i++)
-      delete m_data->texts[i];
-    m_data->texts.RemoveAll();
+    CSingleLock lock(&(m_data->lock),TRUE);
+    if (m_data->done)
+    {
+      for (int i = 0; i < m_data->texts.GetSize(); i++)
+        delete m_data->texts[i];
+      m_data->texts.RemoveAll();
+    }
+  }
+
+  if (m_pThread)
+  {
+    DWORD code = 0;
+    if (::GetExitCodeThread(*m_pThread,&code))
+    {
+      if (code == STILL_ACTIVE)
+      {
+        // Stop the thread as we are shutting down
+        m_pThread->SuspendThread();
+      }
+      else
+      {
+        delete m_pThread;
+        m_pThread = NULL;
+      }
+    }
   }
 }
 

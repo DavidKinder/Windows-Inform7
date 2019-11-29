@@ -89,4 +89,5 @@ private:
   };
 
   static DocData* m_data;
+  static CWinThread* m_pThread;
 };
