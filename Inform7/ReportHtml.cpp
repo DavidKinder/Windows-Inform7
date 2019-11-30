@@ -49,11 +49,12 @@ bool ReportHtml::InitWebBrowser(void)
   // Initialize settings
   cefSettings.no_sandbox = true;
   cefSettings.command_line_args_disabled = true;
-  cefSettings.log_severity = theApp.GetTestMode() ? LOGSEVERITY_DEFAULT : LOGSEVERITY_DISABLE;
   CString dir = theApp.GetAppDir();
   CefString(&cefSettings.resources_dir_path).FromASCII(dir+"\\Chrome");
   CefString(&cefSettings.locales_dir_path).FromASCII(dir+"\\Chrome\\locales");
-  CefString(&cefSettings.log_file).FromASCII(theApp.GetHomeDir() + "\\Inform\\ceflog.txt");
+  dir = theApp.GetHomeDir() + "\\Inform\\ceflog.txt";
+  ::DeleteFile(dir);
+  CefString(&cefSettings.log_file).FromASCII(dir);
 
   // Initialize CEF
   CefRefPtr<CefApp> app(new I7CefApp());
@@ -63,6 +64,11 @@ bool ReportHtml::InitWebBrowser(void)
     exit(0);
   }
   return true;
+}
+
+void ReportHtml::ShutWebBrowser(void)
+{
+  CefShutdown();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

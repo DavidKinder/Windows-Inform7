@@ -122,6 +122,7 @@ int InformApp::ExitInstance()
   GameWindow::ExitInstance();
   TabDoc::ExitInstance();
   SpellCheck::Finalize();
+  ReportHtml::ShutWebBrowser();
   Scintilla_ReleaseResources();
 
   return CWinApp::ExitInstance();

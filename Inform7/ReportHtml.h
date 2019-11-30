@@ -40,6 +40,7 @@ class ReportHtml : public CHtmlView
 
 public:
   static bool InitWebBrowser(void);
+  static void ShutWebBrowser(void);
 
 ///////////////////////////////////////////////////////////////////////////////
 
