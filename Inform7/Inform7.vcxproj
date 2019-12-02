@@ -133,6 +133,10 @@
       <Culture>0x0409</Culture>
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
+    <PostBuildEvent>
+      <Message>Copying CEF files...</Message>
+      <Command>xcopy /y ..\..\..\Libraries\libcef\bin64 ..\Build</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Libraries\mfc\ColourButton.h" />

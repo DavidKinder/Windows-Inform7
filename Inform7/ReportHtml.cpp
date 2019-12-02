@@ -6,6 +6,8 @@
 #include "Messages.h"
 
 #include "include/cef_app.h"
+#include "include/cef_browser.h"
+#include "include/cef_client.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -13,9 +15,10 @@
 
 // Settings for all browser instances
 CefSettings cefSettings;
+CefBrowserSettings cefBrowserSettings;
 
 // Application level callbacks for all browser instances
-class I7CefApp : public CefApp, public CefBrowserProcessHandler
+class I7CefApp : public CefApp
 {
 public:
   I7CefApp()
@@ -26,17 +29,26 @@ public:
   {
   }
 
-  CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler()
-  {
-    return this;
-  }
+private:
+  IMPLEMENT_REFCOUNTING(I7CefApp);
+};
 
-  void OnScheduleMessagePumpWork(int64 delay_ms)
+// Handler implementations for each browser instance
+class I7CefClient : public CefClient
+{
+public:
+  I7CefClient()
   {
   }
 
 private:
-  IMPLEMENT_REFCOUNTING(I7CefApp);
+  IMPLEMENT_REFCOUNTING(I7CefClient);
+};
+
+// Private implementation data not exposed in the class header file
+struct ReportHtml::Private : public CefRefPtr<CefBrowser>
+{
+  CefRefPtr<CefBrowser> browser;
 };
 
 bool ReportHtml::InitWebBrowser(void)
@@ -71,6 +83,54 @@ void ReportHtml::ShutWebBrowser(void)
   CefShutdown();
 }
 
+void ReportHtml::DoWebBrowserWork(void)
+{
+  for (int i = 0; i < 10; i++)
+    CefDoMessageLoopWork();
+}
+
+ReportHtml::~ReportHtml()
+{
+  delete m_private;
+}
+
+BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
+  const RECT& rect, CWnd* parentWnd, UINT id, CCreateContext*)
+{
+  CefWindowInfo windowInfo;
+  windowInfo.SetAsChild(parentWnd->GetSafeHwnd(),rect);
+  windowInfo.style = style;
+  windowInfo.menu = (HMENU)(UINT_PTR)id;
+
+  CefRefPtr<CefClient> client(new I7CefClient());
+  CefRefPtr<CefBrowser> browser = CefBrowserHost::CreateBrowserSync(
+    windowInfo,client,"",cefBrowserSettings,NULL,NULL);
+  if (browser.get() == NULL)
+    return FALSE;
+
+  m_private->browser = browser;
+  Attach(browser->GetHost()->GetWindowHandle());
+  return TRUE;
+}
+
+void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
+{
+  if (m_private->browser)
+  {
+    // Stop any current page loading
+    if (m_private->browser->IsLoading())
+      m_private->browser->StopLoad();
+
+    m_private->browser->GetMainFrame()->LoadURL(url);
+  }
+}
+
+void ReportHtml::Refresh(void)
+{
+  if (m_private->browser)
+    m_private->browser->Reload();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // Internet Explorer window, used to set the context menu
@@ -90,15 +150,16 @@ public:
   afx_msg LRESULT OnInitMenuPopup(WPARAM, LPARAM);
 };
 
-IMPLEMENT_DYNCREATE(ReportHtml, CHtmlView)
+IMPLEMENT_DYNCREATE(ReportHtml, CWnd)
 
 ReportHtml::ReportHtml() : m_consumer(NULL), m_rewriter(NULL),
   m_setFocus(true), m_notify(true), m_findTimer(0),
   m_scriptExternal(this), m_scriptProject(this)
 {
+  m_private = new Private();
 }
 
-BEGIN_MESSAGE_MAP(ReportHtml, CHtmlView)
+BEGIN_MESSAGE_MAP(ReportHtml, CWnd)
   ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
   ON_UPDATE_COMMAND_UI(ID_EDIT_FIND, OnUpdateEditFind)
   ON_COMMAND(ID_EDIT_FIND, OnEditFind)
@@ -188,6 +249,7 @@ void ReportHtml::OnNavigateError(LPCTSTR lpszURL, LPCTSTR, DWORD, BOOL* pbCancel
 
 void ReportHtml::OnDocumentComplete(LPCTSTR lpszURL)
 {
+/*
   CHtmlView::OnDocumentComplete(lpszURL);
 
   // Make this the active window, except for blank URLs
@@ -218,7 +280,7 @@ void ReportHtml::OnDocumentComplete(LPCTSTR lpszURL)
   {
     HighlightFound(true);
     m_find.Empty();
-  }
+  }*/
 }
 
 void ReportHtml::OnStatusTextChange(LPCTSTR)
@@ -228,6 +290,7 @@ void ReportHtml::OnStatusTextChange(LPCTSTR)
 
 HRESULT ReportHtml::OnShowContextMenu(DWORD dwID,  LPPOINT ppt, LPUNKNOWN pcmdTarget, LPDISPATCH)
 {
+/*
   // Get COM interfaces
   CComQIPtr<IOleWindow> oleWindow(pcmdTarget);
   if (oleWindow == NULL)
@@ -271,7 +334,7 @@ HRESULT ReportHtml::OnShowContextMenu(DWORD dwID,  LPPOINT ppt, LPUNKNOWN pcmdTa
   case ID_MENU_PROPERTIES:
     ExecWB(OLECMDID_PROPERTIES,OLECMDEXECOPT_DODEFAULT,NULL,NULL); 
     break;
-  }
+  }*/
   return S_OK;
 }
 
@@ -283,6 +346,7 @@ HRESULT ReportHtml::OnGetExternal(LPDISPATCH *lppDispatch)
 
 HRESULT ReportHtml::OnTranslateAccelerator(LPMSG lpMsg, const GUID* pguidCmdGroup, DWORD nCmdID)
 {
+/*
   if ((lpMsg != NULL) && (lpMsg->message == WM_SYSKEYDOWN))
   {
     switch (lpMsg->wParam)
@@ -294,17 +358,18 @@ HRESULT ReportHtml::OnTranslateAccelerator(LPMSG lpMsg, const GUID* pguidCmdGrou
       GetParent()->PostMessage(WM_COMMAND,ID_NAVIGATE_FORE);
       return S_OK;
     }
-  }
+  }*/
   return S_FALSE;
 }
 
 void ReportHtml::OnEditSelectAll()
 {
-  ExecWB(OLECMDID_SELECTALL,OLECMDEXECOPT_DONTPROMPTUSER,NULL,NULL);
+//  ExecWB(OLECMDID_SELECTALL,OLECMDEXECOPT_DONTPROMPTUSER,NULL,NULL);
 }
 
 void ReportHtml::OnEditFind()
 {
+/*
   IDispatch* disp = GetHtmlDocument();
   CComQIPtr<IOleCommandTarget> target(disp);
   disp->Release();
@@ -315,16 +380,18 @@ void ReportHtml::OnEditFind()
     static const GUID CGID_IWebBrowser =
       { 0xED016940L,0xBD5B,0x11CF,{0xBA,0x4E,0x00,0xC0,0x4F,0xD7,0x08,0x16}};
     target->Exec(&CGID_IWebBrowser,1,0,NULL,NULL);
-  }
+  }*/
 }
 
 void ReportHtml::OnUpdateEditFind(CCmdUI* pCmdUI)
 {
+/*
   IDispatch* disp = GetHtmlDocument();
   CComQIPtr<IOleCommandTarget> target(disp);
   disp->Release();
 
   pCmdUI->Enable(target != NULL);
+  */
 }
 
 CString ReportHtml::m_registryPath;
@@ -423,11 +490,13 @@ void ReportHtml::SetPageRewriter(PageRewriter* rewriter)
 
 void ReportHtml::SetFocusOnContent(void)
 {
+/*
   CPoint point(0,0);
   ClientToScreen(&point);
   CWnd* wnd = WindowFromPoint(point);
   if (wnd != NULL)
     wnd->SetFocus();
+*/
 }
 
 void ReportHtml::SetFocusFlag(bool focus)
@@ -435,6 +504,7 @@ void ReportHtml::SetFocusFlag(bool focus)
   m_setFocus = focus;
 }
 
+/*
 void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
 {
   // Stop any current page loading
@@ -454,6 +524,7 @@ void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
   SetSilent(TRUE);
   CHtmlView::Navigate(url);
 }
+*/
 
 CString ReportHtml::GetURL(void)
 {
@@ -462,6 +533,7 @@ CString ReportHtml::GetURL(void)
 
 void ReportHtml::Invoke(LPCWSTR method, VARIANT* arg)
 {
+/*
   IDispatch* disp = GetHtmlDocument();
   CComQIPtr<IHTMLDocument> doc(disp);
   disp->Release();
@@ -469,10 +541,12 @@ void ReportHtml::Invoke(LPCWSTR method, VARIANT* arg)
   CComPtr<IDispatch> script;
   doc->get_Script(&script);
   script.Invoke1(method,arg);
+*/
 }
 
 void ReportHtml::HighlightFound(bool goToFound)
 {
+/*
   if (m_find.IsEmpty())
     return;
 
@@ -520,10 +594,12 @@ void ReportHtml::HighlightFound(bool goToFound)
       range->moveEnd(CComBSTR("textedit"),1,&moved);
     }
   }
+*/
 }
 
 void ReportHtml::OnTimer(UINT_PTR nIDEvent)
 {
+/*
   if (nIDEvent == 1)
   {
     HighlightFound(false);
@@ -537,6 +613,7 @@ void ReportHtml::OnTimer(UINT_PTR nIDEvent)
       m_find.Empty();
     }
   }
+  */
 }
 
 // COM object for the root Javascript external object
@@ -579,26 +656,33 @@ ScriptProject::ScriptProject(ReportHtml* html) : m_html(html)
 
 void ScriptProject::SelectView(LPCSTR view)
 {
+/*
   m_html->GetParentFrame()->SendMessage(
     WM_SELECTVIEW,(WPARAM)view,(LPARAM)m_html->GetSafeHwnd());
+*/
 }
 
 void ScriptProject::PasteCode(LPCWSTR code)
 {
+/*
   CStringW theCode = UnescapeUnicode(code);
   m_html->GetParentFrame()->SendMessage(WM_PASTECODE,(WPARAM)(LPCWSTR)theCode);
+*/
 }
 
 void ScriptProject::CreateNewProject(LPCWSTR title, LPCWSTR code)
 {
+/*
   CStringW theTitle = UnescapeUnicode(title);
   CStringW theCode = UnescapeUnicode(code);
   m_html->GetParentFrame()->SendMessage(WM_NEWPROJECT,
     (WPARAM)(LPCWSTR)theCode,(LPARAM)(LPCWSTR)theTitle);
+*/
 }
 
 void ScriptProject::OpenFile(LPCWSTR path)
 {
+/*
   CString pathA(path);
   DWORD attrs = ::GetFileAttributes(pathA);
 
@@ -635,6 +719,7 @@ void ScriptProject::OpenFile(LPCWSTR path)
       }
     }
   }
+  */
 }
 
 void ScriptProject::OpenUrl(LPCWSTR url)
@@ -701,6 +786,7 @@ BSTR ScriptProject::ExtGetVersion(LPCWSTR author, LPCWSTR title)
 
 void ScriptProject::ExtDownload(VARIANT& extArray)
 {
+/*
   if (extArray.vt != VT_DISPATCH)
     return;
 
@@ -730,6 +816,7 @@ void ScriptProject::ExtDownload(VARIANT& extArray)
     }
   }
   m_html->GetParentFrame()->PostMessage(WM_EXTDOWNLOAD,(WPARAM)libraryUrls);
+  */
 }
 
 CStringW ScriptProject::UnescapeUnicode(LPCWSTR input)
@@ -769,6 +856,7 @@ IEWnd::IEWnd(ReportHtml* html, HMENU menu) : m_html(html), m_menu(menu)
 
 LRESULT IEWnd::OnInitMenuPopup(WPARAM, LPARAM)
 {
+/*
   Panel* panel = Panel::GetPanel(this);
   LRESULT result = Default();
 
@@ -786,4 +874,6 @@ LRESULT IEWnd::OnInitMenuPopup(WPARAM, LPARAM)
   ::EnableMenuItem(m_menu,ID_MENU_PROPERTIES,MF_ENABLED|MF_BYCOMMAND);
 
   return result;
+  */
+  return 0;
 }

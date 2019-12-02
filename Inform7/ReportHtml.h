@@ -34,13 +34,26 @@ private:
   ReportHtml* m_html;
 };
 
-class ReportHtml : public CHtmlView
+class ReportHtml : public CWnd
 {
   DECLARE_DYNCREATE(ReportHtml)
 
 public:
   static bool InitWebBrowser(void);
   static void ShutWebBrowser(void);
+  static void DoWebBrowserWork(void);
+
+  ~ReportHtml();
+
+  BOOL Create(LPCSTR, LPCSTR, DWORD style,
+    const RECT& rect, CWnd* parentWnd, UINT id, CCreateContext* = NULL);
+
+  void Navigate(const char* url, bool focus, const wchar_t* find = NULL);
+  void Refresh(void);
+
+private:
+  struct Private;
+  Private* m_private;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -67,7 +80,6 @@ public:
   void SetPageRewriter(PageRewriter* rewriter);
   void SetFocusOnContent(void);
   void SetFocusFlag(bool focus);
-  void Navigate(const char* url, bool focus, const wchar_t* find = NULL);
   CString GetURL(void);
   void Invoke(LPCWSTR method, VARIANT* arg);
 

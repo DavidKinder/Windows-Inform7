@@ -72,6 +72,11 @@ BOOL InformApp::InitInstance()
     jeli.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
     VERIFY(theOS.SetInformationJobObject(m_job,
       JobObjectExtendedLimitInformation,&jeli,sizeof(jeli)));
+
+    // Add this process to the job object, if we have one:
+    // if this succeeds any processes created by us will be
+    // destroyed on shutdown, even if we crash.
+    theOS.AssignProcessToJobObject(m_job,::GetCurrentProcess());
   }
 
   // Discard any log file from a previous run
@@ -164,7 +169,10 @@ void InformApp::DoWaitCursor(int nCode)
 BOOL InformApp::OnIdle(LONG lCount)
 {
   if (lCount == 0)
+  {
     HandleDebugEvents();
+    ReportHtml::DoWebBrowserWork();
+  }
   return CWinApp::OnIdle(lCount);
 }
 
