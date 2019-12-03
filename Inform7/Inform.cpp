@@ -58,7 +58,6 @@ BOOL InformApp::InitInstance()
 
   SetRegistryKey("David Kinder");
   SetFonts();
-  ReportHtml::SetIEPreferences(REGISTRY_PATH_BROWSER);
   if (!ReportHtml::InitWebBrowser())
     return FALSE;
 
@@ -544,7 +543,7 @@ void InformApp::SendAllFrames(Changed changed, int value)
   {
     SetFonts();
     ClearScaledImages();
-    ReportHtml::SetIEPreferences(NULL);
+    ReportHtml::UpdateWebBrowserPreferences();
   }
 
   CArray<CFrameWnd*> frames;
