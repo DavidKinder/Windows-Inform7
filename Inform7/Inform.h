@@ -4,7 +4,6 @@
   #error include 'stdafx.h' before including this file for PCH
 #endif
 
-#include "FileProtocol.h"
 #include "Dib.h"
 
 #include <map>
@@ -104,7 +103,6 @@ public:
   CString GetAppDir(void) const;
   CString GetLastProjectDir(void);
   CString GetHomeDir(void);
-  FileProtocol& GetUrlProtocol(void);
   double GetIEVersion(void);
 
   void NewFrame(CFrameWnd* frame);
@@ -205,8 +203,6 @@ protected:
   std::map<DWORD,CString> m_traces;
 
   CString m_home;
-  FileProtocol m_protocol;
-
   HANDLE m_job;
 };
 

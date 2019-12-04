@@ -76,16 +76,6 @@ BOOL InformApp::InitInstance()
   // Discard any log file from a previous run
   /*::DeleteFile(m_home+LOG_FILE);*/
 
-  // Install the protocol for inform: URLs
-  m_protocol.Install(L"inform");
-  CString dir = GetAppDir();
-  m_protocol.AddDirectory(dir+"\\Documentation");
-  m_protocol.AddDirectory(dir+"\\Documentation\\doc_images");
-  m_protocol.AddDirectory(dir+"\\Documentation\\sections");
-  m_protocol.AddDirectory(dir+"\\Images");
-  m_protocol.AddDirectory(L"//Extensions",m_home+"\\Inform\\Documentation");
-  m_protocol.AddDirectory(L"//Extensions",dir+"\\Documentation");
-
   // Find and create documentation for extensions
   FindExtensions();
   CreatedProcess ni = RunCensus();
@@ -482,11 +472,6 @@ CString InformApp::GetLastProjectDir(void)
 CString InformApp::GetHomeDir(void)
 {
   return m_home;
-}
-
-FileProtocol& InformApp::GetUrlProtocol(void)
-{
-  return m_protocol;
 }
 
 void InformApp::NewFrame(CFrameWnd* frame)
