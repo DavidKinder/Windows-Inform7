@@ -17,36 +17,6 @@
 CefSettings cefSettings;
 CefBrowserSettings cefBrowserSettings;
 
-// Application level callbacks for all browser instances
-class I7CefApp : public CefApp
-{
-public:
-  I7CefApp()
-  {
-  }
-
-  void OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar)
-  {
-    registrar->AddCustomScheme(
-      "inform",CEF_SCHEME_OPTION_STANDARD|CEF_SCHEME_OPTION_CORS_ENABLED);
-  }
-
-private:
-  IMPLEMENT_REFCOUNTING(I7CefApp);
-};
-
-// Handler implementations for each browser instance
-class I7CefClient : public CefClient
-{
-public:
-  I7CefClient()
-  {
-  }
-
-private:
-  IMPLEMENT_REFCOUNTING(I7CefClient);
-};
-
 // Implementation of inform: handlers
 class I7SchemeHandler : public CefResourceHandler
 {
@@ -62,12 +32,14 @@ public:
 
   bool Open(CefRefPtr<CefRequest> request, bool& handle_request, CefRefPtr<CefCallback>)
   {
+    ASSERT(m_data == NULL);
+    ASSERT(m_dataLen == 0);
+
+    handle_request = true;
+
     std::string url = request->GetURL();
     if (url.substr(0,7) != "inform:")
       return false;
-
-    handle_request = true;
-    CString fileName = Unescape(url.c_str()+8);
 
     static const char* dirs[] =
     {
@@ -78,14 +50,31 @@ public:
     };
 
     CString appDir = theApp.GetAppDir();
+    CString fileName = Unescape(url.c_str()+8);
     for (int i = 0; i < sizeof dirs / sizeof dirs[0]; i++)
     {
       CString path;
       path.Format("%s%s%s",appDir.GetString(),dirs[i],fileName.GetString());
-      path.TrimRight("/");
       if (UseFileForRequest(path))
         return true;
     }
+
+    if (fileName.Left(11) == "/extensions")
+    {
+      fileName = fileName.Mid(11);
+
+      CString path;
+      path.Format("%s\\Inform\\Documentation%s",
+        theApp.GetHomeDir().GetString(),fileName.GetString());
+      if (UseFileForRequest(path))
+        return true;
+
+      path.Format("%s\\Documentation%s",appDir.GetString(),fileName.GetString());
+      if (UseFileForRequest(path))
+        return true;
+    }
+
+    ASSERT(FALSE);
     return false;
   }
 
@@ -149,28 +138,31 @@ private:
     return output;
   }
 
-  bool UseFileForRequest(const CString& path)
+  bool UseFileForRequest(CString& path)
   {
+    path.TrimRight("/");
+
     CFileStatus status;
     if (CFile::GetStatus(path,status))
     {
-      CStdioFile reqFile;
-      if (reqFile.Open(path,CFile::modeRead|CFile::typeBinary))
+      CFile reqFile;
+      if (reqFile.Open(path,CFile::modeRead|CFile::typeBinary|CFile::shareDenyWrite))
       {
         m_dataLen = status.m_size;
         m_data = new char[m_dataLen];
-        reqFile.Read(m_data,m_dataLen);
+        int64 read = reqFile.Read(m_data,m_dataLen);
+        ASSERT(read == m_dataLen);
         reqFile.Close();
 
         CString ext = ::PathFindExtension(path);
         ext.MakeLower();
-        if (ext == "gif")
+        if (ext == ".gif")
           m_dataType = "image/gif";
-        else if ((ext == "jpg") || (ext == "jpeg"))
+        else if ((ext == ".jpg") || (ext == ".jpeg"))
           m_dataType = "image/jpeg";
-        else if (ext == "png")
+        else if (ext == ".png")
           m_dataType = "image/png";
-        else if ((ext == "tif") || (ext == "tiff"))
+        else if ((ext == ".tif") || (ext == ".tiff"))
           m_dataType = "image/tiff";
         else
           m_dataType = "text/html";
@@ -201,6 +193,46 @@ private:
   IMPLEMENT_REFCOUNTING(I7SchemeHandlerFactory);
 };
 
+// Application level callbacks for all browser instances
+class I7CefApp : public CefApp, public CefBrowserProcessHandler
+{
+public:
+  I7CefApp()
+  {
+  }
+
+  void OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar)
+  {
+    registrar->AddCustomScheme(
+      "inform",CEF_SCHEME_OPTION_STANDARD|CEF_SCHEME_OPTION_CORS_ENABLED);
+  }
+
+  CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler()
+  {
+    return this;
+  }
+
+  void OnContextInitialized()
+  {
+    CefRegisterSchemeHandlerFactory("inform","",new I7SchemeHandlerFactory());
+  }
+
+private:
+  IMPLEMENT_REFCOUNTING(I7CefApp);
+};
+
+// Handler implementations for each browser instance
+class I7CefClient : public CefClient
+{
+public:
+  I7CefClient()
+  {
+  }
+
+private:
+  IMPLEMENT_REFCOUNTING(I7CefClient);
+};
+
 // Private implementation data not exposed in the class header file
 struct ReportHtml::Private : public CefRefPtr<CefBrowser>
 {
@@ -213,7 +245,8 @@ bool ReportHtml::InitWebBrowser(void)
 {
   // If this is a CEF sub-process, call CEF straight away
   CefMainArgs cefArgs(::GetModuleHandle(0));
-  if (CefExecuteProcess(cefArgs,NULL,NULL) >= 0)
+  CefRefPtr<CefApp> app(new I7CefApp());
+  if (CefExecuteProcess(cefArgs,app.get(),NULL) >= 0)
     return false;
 
   // Initialize settings
@@ -227,15 +260,11 @@ bool ReportHtml::InitWebBrowser(void)
   CefString(&cefSettings.log_file).FromASCII(dir);
 
   // Initialize CEF
-  CefRefPtr<CefApp> app(new I7CefApp());
   if (!CefInitialize(cefArgs,cefSettings,app.get(),NULL))
   {
     AfxMessageBox("Failed to initialize Chrome Extension Framework",MB_ICONSTOP|MB_OK);
     exit(0);
   }
-
-  // Register the inform: handler
-  CefRegisterSchemeHandlerFactory("inform","",new I7SchemeHandlerFactory());
   return true;
 }
 
