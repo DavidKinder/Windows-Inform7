@@ -19,7 +19,7 @@ BEGIN_MESSAGE_MAP(TabResults, TabBase)
   ON_WM_SIZE()
 END_MESSAGE_MAP()
 
-TabResults::TabResults() : m_tab(true), m_report(NULL), m_notify(NULL), m_inform6(NoError)
+TabResults::TabResults() : m_tab(true), m_notify(NULL), m_inform6(NoError)
 {
 }
 
@@ -42,12 +42,11 @@ void TabResults::CreateTab(CWnd* parent)
   m_tab.InsertItem(ResTab_Console,"Console");
 
   // Create the report HTML control
-  m_report = (ReportHtml*)(RUNTIME_CLASS(ReportHtml)->CreateObject());
-  if (!m_report->Create(NULL,NULL,WS_CHILD,zeroRect,this,0))
+  if (!m_report.Create(NULL,NULL,WS_CHILD,zeroRect,this,0))
   {
     TRACE("Failed to create report HTML control\n");
   }
-  m_report->SetLinkConsumer(this);
+  m_report.SetLinkConsumer(this);
 
   // Create the console edit control
   m_console.Create(this,0);
@@ -72,7 +71,7 @@ void TabResults::MakeActive(TabState& state)
   {
     Panel::FreezeHistory freeze(Panel::GetPanel(this));
     if ((ResultTabs)state.section == ResTab_Report)
-      m_report->Navigate(state.url,true);
+      m_report.Navigate(state.url,true);
     SetActiveTab((ResultTabs)state.section,true);
   }
   GetTabState(state);
@@ -84,7 +83,7 @@ BOOL TabResults::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO*
   switch (GetActiveTab())
   {
   case ResTab_Report:
-    if (m_report->OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
+    if (m_report.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
       return TRUE;
     break;
   case ResTab_Console:
@@ -100,7 +99,7 @@ void TabResults::OpenProject(const char* path, bool primary)
   m_projectDir = path;
 
   // Clear previous compile information
-  m_report->Navigate("about:blank",false);
+  m_report.Navigate("about:blank",false);
   m_console.ClearText();
 }
 
@@ -116,7 +115,7 @@ void TabResults::CompileProject(CompileStage stage, int code)
   {
   case CompileStart:
     // Clear previous compile information
-    m_report->Navigate("about:blank",false);
+    m_report.Navigate("about:blank",false);
     m_console.ClearText();
     m_inform6 = NoError;
     break;
@@ -127,22 +126,22 @@ void TabResults::CompileProject(CompileStage stage, int code)
     {
     case 0:
     case 1:
-      m_report->Navigate(m_projectDir+PROBLEMS_FILE,false);
+      m_report.Navigate(m_projectDir+PROBLEMS_FILE,false);
       break;
     case 2:
-      m_report->Navigate(theApp.GetAppDir()+
+      m_report.Navigate(theApp.GetAppDir()+
         "\\Documentation\\sections\\Error2.html",false);
       break;
     case 10:
-      m_report->Navigate(theApp.GetAppDir()+
+      m_report.Navigate(theApp.GetAppDir()+
         "\\Documentation\\sections\\Error10.html",false);
       break;
     case 11:
-      m_report->Navigate(theApp.GetAppDir()+
+      m_report.Navigate(theApp.GetAppDir()+
         "\\Documentation\\sections\\Error11.html",false);
       break;
     default:
-      m_report->Navigate(theApp.GetAppDir()+
+      m_report.Navigate(theApp.GetAppDir()+
         "\\Documentation\\sections\\Error0.html",false);
       break;
     }
@@ -158,19 +157,19 @@ void TabResults::CompileProject(CompileStage stage, int code)
       switch (m_inform6)
       {
       case MemorySetting:
-        m_report->Navigate(theApp.GetAppDir()+
+        m_report.Navigate(theApp.GetAppDir()+
           "\\Documentation\\sections\\ErrorI6MemorySetting.html",false);
         break;
       case ReadableMemory:
-        m_report->Navigate(theApp.GetAppDir()+
+        m_report.Navigate(theApp.GetAppDir()+
           "\\Documentation\\sections\\ErrorI6Readable.html",false);
         break;
       case StoryFileLimit:
-        m_report->Navigate(theApp.GetAppDir()+
+        m_report.Navigate(theApp.GetAppDir()+
           "\\Documentation\\sections\\ErrorI6TooBig.html",false);
         break;
       default:
-        m_report->Navigate(theApp.GetAppDir()+
+        m_report.Navigate(theApp.GetAppDir()+
           "\\Documentation\\sections\\ErrorI6.html",false);
         break;
       }
@@ -184,12 +183,12 @@ void TabResults::CompileProject(CompileStage stage, int code)
     case 0:
     case 1:
       // Show the cBlorb status report
-      m_report->Navigate(m_projectDir+CBLORB_FILE,false);
+      m_report.Navigate(m_projectDir+CBLORB_FILE,false);
       SetActiveTab(ResTab_Report,false);
       break;
     default:
       // Show the generic cBlorb error page
-      m_report->Navigate(theApp.GetAppDir()+
+      m_report.Navigate(theApp.GetAppDir()+
         "\\Documentation\\sections\\ErrorCblorb.html",false);
       SetActiveTab(ResTab_Report,false);
       break;
@@ -207,10 +206,10 @@ void TabResults::CompileProject(CompileStage stage, int code)
     {
       CString reportPath;
       reportPath.Format("%s\\Build\\Inform-Report-%d.html",(LPCSTR)m_projectDir,code);
-      m_report->Navigate(reportPath,false);
+      m_report.Navigate(reportPath,false);
     }
     else
-      m_report->Navigate(m_projectDir+PROBLEMS_FILE,false);
+      m_report.Navigate(m_projectDir+PROBLEMS_FILE,false);
     SetActiveTab(ResTab_Report,false);
     break;
   }
@@ -262,7 +261,7 @@ void TabResults::Progress(const char* msg)
 
 void TabResults::PrefsChanged(CRegKey& key)
 {
-  m_report->Refresh();
+  m_report.Refresh();
   m_console.FontChanged();
 }
 
@@ -284,7 +283,7 @@ void TabResults::ShowRuntimeProblem(int problem)
 {
   CString runtime;
   runtime.Format("%s\\Documentation\\sections\\RTP_P%d.html",theApp.GetAppDir(),problem);
-  m_report->Navigate(runtime,false);
+  m_report.Navigate(runtime,false);
   SetActiveTab(ResTab_Report,false);
 }
 
@@ -292,7 +291,7 @@ void TabResults::ShowTerpFailed(void)
 {
   CString failed;
   failed.Format("%s\\Documentation\\windows\\ErrorTerp.html",theApp.GetAppDir());
-  m_report->Navigate(failed,false);
+  m_report.Navigate(failed,false);
   SetActiveTab(ResTab_Report,false);
 }
 
@@ -372,7 +371,7 @@ void TabResults::OnSize(UINT nType, int cx, int cy)
   client.top = tabArea.top;
 
   // Resize the tab page controls
-  m_report->MoveWindow(client,TRUE);
+  m_report.MoveWindow(client,TRUE);
   m_console.MoveWindow(client,TRUE);
 }
 
@@ -394,11 +393,11 @@ void TabResults::SetActiveTab(ResultTabs tab, bool focus)
     {
     case ResTab_Report:
       m_console.ShowWindow(SW_HIDE);
-      m_report->ShowWindow(SW_SHOW);
+      m_report.ShowWindow(SW_SHOW);
       break;
     case ResTab_Console:
       m_console.ShowWindow(SW_SHOW);
-      m_report->ShowWindow(SW_HIDE);
+      m_report.ShowWindow(SW_HIDE);
       break;
     }
 
@@ -419,7 +418,7 @@ void TabResults::GetTabState(TabState& state)
   state.tab = Panel::Tab_Results;
   state.section = GetActiveTab();
   if ((ResultTabs)state.section == ResTab_Report)
-    state.url = m_report->GetURL();
+    state.url = m_report.GetURL();
 }
 
 void TabResults::SetFocusOnContent(void)
@@ -427,7 +426,7 @@ void TabResults::SetFocusOnContent(void)
   switch (GetActiveTab())
   {
   case ResTab_Report:
-    m_report->SetFocusOnContent();
+    m_report.SetFocusOnContent();
     break;
   case ResTab_Console:
     m_console.SetFocus();

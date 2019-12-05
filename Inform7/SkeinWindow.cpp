@@ -541,11 +541,6 @@ BOOL SkeinWindow::PreCreateWindow(CREATESTRUCT& cs)
   return CScrollView::PreCreateWindow(cs);
 }
 
-void SkeinWindow::PostNcDestroy()
-{
-  // Do nothing
-}
-
 void SkeinWindow::SetSkein(Skein* skein)
 {
   m_skein = skein;

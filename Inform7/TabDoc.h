@@ -58,7 +58,7 @@ private:
   void GetTabState(TabState& state);
 
   FlatTab m_tab;
-  ReportHtml* m_html;
+  ReportHtml m_html;
   bool m_initialised;
 
   struct DocText

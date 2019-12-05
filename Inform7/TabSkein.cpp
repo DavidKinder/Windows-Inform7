@@ -30,6 +30,11 @@ TabSkein::TabSkein() : m_splitter(false),
 {
 }
 
+TabSkein::~TabSkein()
+{
+  delete m_helpWindow;
+}
+
 const char* TabSkein::GetName(void)
 {
   return "Skein";

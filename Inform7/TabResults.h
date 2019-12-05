@@ -55,7 +55,7 @@ private:
   void SetFocusOnContent(void);
 
   FlatTab m_tab;
-  ReportHtml* m_report;
+  ReportHtml m_report;
   ReportEdit m_console;
 
   CString m_projectDir;

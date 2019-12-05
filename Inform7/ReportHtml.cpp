@@ -290,6 +290,7 @@ ReportHtml::ReportHtml()
 
 ReportHtml::~ReportHtml()
 {
+  Detach();
   delete m_private;
 }
 
@@ -445,11 +446,6 @@ void ReportHtml::OnDocumentComplete(LPCTSTR lpszURL)
     HighlightFound(true);
     m_find.Empty();
   }
-}
-
-void ReportHtml::OnStatusTextChange(LPCTSTR)
-{
-  // Do nothing
 }
 
 HRESULT ReportHtml::OnShowContextMenu(DWORD dwID,  LPPOINT ppt, LPUNKNOWN pcmdTarget, LPDISPATCH)

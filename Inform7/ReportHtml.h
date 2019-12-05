@@ -10,6 +10,7 @@ public:
   static void DoWebBrowserWork(void);
   static void UpdateWebBrowserPreferences(void);
 
+  ReportHtml();
   ~ReportHtml();
 
   BOOL Create(LPCSTR, LPCSTR, DWORD style,
@@ -20,8 +21,6 @@ public:
   void Refresh(void);
 
 protected:
-  ReportHtml();
-
   DECLARE_MESSAGE_MAP()
 
 private:

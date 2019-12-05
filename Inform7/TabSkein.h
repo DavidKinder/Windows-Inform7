@@ -13,6 +13,7 @@ class TabSkein : public TabBase
 
 public:
   TabSkein();
+  ~TabSkein();
 
   const char* GetName(void);
   void CreateTab(CWnd* parent);

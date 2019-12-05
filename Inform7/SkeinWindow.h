@@ -54,7 +54,6 @@ protected:
 
   virtual void OnDraw(CDC* pDC);
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-  virtual void PostNcDestroy();
 
 private:
   CSize GetLayoutSize(bool force);

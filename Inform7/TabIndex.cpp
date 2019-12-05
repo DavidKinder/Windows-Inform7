@@ -29,7 +29,7 @@ BEGIN_MESSAGE_MAP(TabIndex, TabBase)
   ON_MESSAGE(WM_USERNAVIGATE, OnUserNavigate)
 END_MESSAGE_MAP()
 
-TabIndex::TabIndex() : m_tab(true), m_index(NULL), m_notify(NULL)
+TabIndex::TabIndex() : m_tab(true), m_notify(NULL)
 {
 }
 
@@ -59,12 +59,11 @@ void TabIndex::CreateTab(CWnd* parent)
   m_tab.InsertItem(IdxTab_World,"World");
 
   // Create the index HTML control
-  m_index = (ReportHtml*)(RUNTIME_CLASS(ReportHtml)->CreateObject());
-  if (!m_index->Create(NULL,NULL,WS_CHILD|WS_VISIBLE,zeroRect,this,0))
+  if (!m_index.Create(NULL,NULL,WS_CHILD|WS_VISIBLE,zeroRect,this,0))
   {
     TRACE("Failed to create index HTML control\n");
   }
-  m_index->SetLinkConsumer(this);
+  m_index.SetLinkConsumer(this);
 
   // Make contents the initial tab
   Panel::FreezeHistory freeze(Panel::GetPanel(this));
@@ -79,13 +78,13 @@ void TabIndex::MoveTab(CRect& rect)
 void TabIndex::MakeActive(TabState& state)
 {
   ShowWindow(SW_SHOW);
-  m_index->SetFocusOnContent();
+  m_index.SetFocusOnContent();
 
   if (state.tab == Panel::Tab_Index)
   {
     Panel::FreezeHistory freeze(Panel::GetPanel(this));
     SetActiveTab((IndexTabs)state.section,true);
-    m_index->Navigate(state.url,true);
+    m_index.Navigate(state.url,true);
   }
   GetTabState(state);
 }
@@ -93,7 +92,7 @@ void TabIndex::MakeActive(TabState& state)
 BOOL TabIndex::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
   // Let the active tab process the command first
-  if (m_index->OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
+  if (m_index.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
       return TRUE;
   return CWnd::OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
@@ -124,7 +123,7 @@ void TabIndex::CompileProject(CompileStage stage, int code)
 
 void TabIndex::PrefsChanged(CRegKey& key)
 {
-  m_index->Refresh();
+  m_index.Refresh();
 }
 
 void TabIndex::SetLinkNotify(LinkNotify* notify)
@@ -209,7 +208,7 @@ void TabIndex::OnSize(UINT nType, int cx, int cy)
   client.top = tabArea.top;
 
   // Resize the index control
-  m_index->MoveWindow(client,TRUE);
+  m_index.MoveWindow(client,TRUE);
 }
 
 LRESULT TabIndex::OnUserNavigate(WPARAM, LPARAM)
@@ -217,7 +216,7 @@ LRESULT TabIndex::OnUserNavigate(WPARAM, LPARAM)
   if (IsWindowVisible())
   {
     // Has the user switched to a different section of the index?
-    CString url = m_index->GetURL();
+    CString url = m_index.GetURL();
     int idx = No_IdxTab;
     for (int i = 0; i < sizeof m_files / sizeof m_files[0]; i++)
     {
@@ -257,12 +256,12 @@ void TabIndex::SetActiveTab(IndexTabs tab, bool focus)
 
     // If the index file exists, show it
     if (::GetFileAttributes(htmlFile) != INVALID_FILE_ATTRIBUTES)
-      m_index->Navigate(htmlFile,focus);
+      m_index.Navigate(htmlFile,focus);
     else
-      m_index->Navigate("about:blank",false);
+      m_index.Navigate("about:blank",false);
 
     if (focus)
-      m_index->SetFocusOnContent();
+      m_index.SetFocusOnContent();
 
     if (IsWindowVisible())
     {
@@ -277,5 +276,5 @@ void TabIndex::GetTabState(TabState& state)
 {
   state.tab = Panel::Tab_Index;
   state.section = GetActiveTab();
-  state.url = m_index->GetURL();
+  state.url = m_index.GetURL();
 }

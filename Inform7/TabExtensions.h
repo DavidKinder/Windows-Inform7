@@ -64,7 +64,7 @@ private:
   CString GetUrlForTab(ExtTabs tab);
 
   FlatTab m_tab;
-  ReportHtml* m_html;
+  ReportHtml m_html;
   bool m_initialised;
   LinkNotify* m_notify;
   CStringW m_imagesUrl;

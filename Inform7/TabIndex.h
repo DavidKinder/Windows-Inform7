@@ -57,7 +57,7 @@ private:
   void GetTabState(TabState& state);
 
   FlatTab m_tab;
-  ReportHtml* m_index;
+  ReportHtml m_index;
 
   CString m_projectDir;
   LinkNotify* m_notify;
