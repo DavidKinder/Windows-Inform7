@@ -184,9 +184,6 @@
     <ClInclude Include="EditFind.h">
       <Filter>Text</Filter>
     </ClInclude>
-    <ClInclude Include="FileProtocol.h">
-      <Filter>Text</Filter>
-    </ClInclude>
     <ClInclude Include="PropList.h">
       <Filter>Text</Filter>
     </ClInclude>
@@ -412,9 +409,6 @@
       <Filter>Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="EditFind.cpp">
-      <Filter>Text</Filter>
-    </ClCompile>
-    <ClCompile Include="FileProtocol.cpp">
       <Filter>Text</Filter>
     </ClCompile>
     <ClCompile Include="PropList.cpp">

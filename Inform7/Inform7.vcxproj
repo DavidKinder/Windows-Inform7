@@ -158,7 +158,6 @@
     <ClInclude Include="Diff.h" />
     <ClInclude Include="EditFind.h" />
     <ClInclude Include="ExtensionFrame.h" />
-    <ClInclude Include="FileProtocol.h" />
     <ClInclude Include="FindReplaceDialog.h" />
     <ClInclude Include="FlatButton.h" />
     <ClInclude Include="FlatSplitter.h" />
@@ -1994,7 +1993,6 @@
     <ClCompile Include="EditFind.cpp" />
     <ClCompile Include="ElasticTabStops.cpp" />
     <ClCompile Include="ExtensionFrame.cpp" />
-    <ClCompile Include="FileProtocol.cpp" />
     <ClCompile Include="FindReplaceDialog.cpp" />
     <ClCompile Include="FlatButton.cpp" />
     <ClCompile Include="FlatSplitter.cpp" />
