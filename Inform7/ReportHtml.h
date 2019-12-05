@@ -20,18 +20,8 @@ public:
   CString GetURL(void);
   void Refresh(void);
 
-protected:
-  DECLARE_MESSAGE_MAP()
+  bool OnBeforeBrowse(const char* url, bool user);
 
-private:
-  struct Private;
-  Private* m_private;
-
-  CString m_url;
-
-///////////////////////////////////////////////////////////////////////////////
-
-public:
   class LinkConsumer
   {
   public:
@@ -42,13 +32,27 @@ public:
     virtual bool LinkError(const char* url) = 0;
   };
 
+  void SetLinkConsumer(LinkConsumer* consumer);
+
+protected:
+  DECLARE_MESSAGE_MAP()
+
+private:
+  struct Private;
+  Private* m_private;
+
+  CString m_url;
+  LinkConsumer* m_consumer;
+
+///////////////////////////////////////////////////////////////////////////////
+
+public:
   class PageRewriter
   {
   public:
     virtual void ModifyPage(const char* url, IHTMLDocument2* doc) = 0;
   };
 
-  void SetLinkConsumer(LinkConsumer* consumer);
   void SetPageRewriter(PageRewriter* rewriter);
   void SetFocusOnContent(void);
   void SetFocusFlag(bool focus);
@@ -64,12 +68,9 @@ protected:
 private:
   void HighlightFound(bool goToFound);
 
-  static CString m_registryPath;
-  LinkConsumer* m_consumer;
   PageRewriter* m_rewriter;
 
   bool m_setFocus;
-  bool m_notify;
 
   CStringW m_find;
   int m_findTimer;

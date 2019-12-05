@@ -179,22 +179,10 @@ private:
   std::string m_dataType;
 };
 
-// Factory for inform: handlers
-class I7SchemeHandlerFactory : public CefSchemeHandlerFactory
-{
-public:
-  virtual CefRefPtr<CefResourceHandler> Create(CefRefPtr<CefBrowser>,
-    CefRefPtr<CefFrame>, const CefString&, CefRefPtr<CefRequest>)
-  {
-    return new I7SchemeHandler();
-  }
-
-private:
-  IMPLEMENT_REFCOUNTING(I7SchemeHandlerFactory);
-};
-
 // Application level callbacks for all browser instances
-class I7CefApp : public CefApp, public CefBrowserProcessHandler
+class I7CefApp : public CefApp,
+  public CefBrowserProcessHandler,
+  public CefSchemeHandlerFactory
 {
 public:
   I7CefApp()
@@ -214,7 +202,13 @@ public:
 
   void OnContextInitialized()
   {
-    CefRegisterSchemeHandlerFactory("inform","",new I7SchemeHandlerFactory());
+    CefRegisterSchemeHandlerFactory("inform","",this);
+  }
+
+  CefRefPtr<CefResourceHandler> Create(CefRefPtr<CefBrowser>,
+    CefRefPtr<CefFrame>, const CefString&, CefRefPtr<CefRequest>)
+  {
+    return new I7SchemeHandler();
   }
 
 private:
@@ -222,20 +216,42 @@ private:
 };
 
 // Handler implementations for each browser instance
-class I7CefClient : public CefClient
+class I7CefClient : public CefClient, public CefRequestHandler
 {
 public:
   I7CefClient()
   {
   }
 
+  void SetObject(ReportHtml* obj)
+  {
+    m_object = obj;
+  }
+
+  CefRefPtr<CefRequestHandler> GetRequestHandler()
+  {
+    return this;
+  }
+
+  bool OnBeforeBrowse(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>,
+    CefRefPtr<CefRequest> request, bool user_gesture, bool)
+  {
+    if (m_object)
+      return m_object->OnBeforeBrowse(
+        request->GetURL().ToString().c_str(),user_gesture);
+    return false;
+  }
+
 private:
   IMPLEMENT_REFCOUNTING(I7CefClient);
+
+  ReportHtml* m_object;
 };
 
 // Private implementation data not exposed in the class header file
 struct ReportHtml::Private : public CefRefPtr<CefBrowser>
 {
+  CefRefPtr<I7CefClient> client;
   CefRefPtr<CefBrowser> browser;
 };
 
@@ -291,6 +307,8 @@ ReportHtml::ReportHtml()
 ReportHtml::~ReportHtml()
 {
   Detach();
+  if (m_private->client.get())
+    m_private->client->SetObject(NULL);
   delete m_private;
 }
 
@@ -302,12 +320,14 @@ BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
   windowInfo.style = style;
   windowInfo.menu = (HMENU)(UINT_PTR)id;
 
-  CefRefPtr<CefClient> client(new I7CefClient());
+  CefRefPtr<I7CefClient> client(new I7CefClient());
   CefRefPtr<CefBrowser> browser = CefBrowserHost::CreateBrowserSync(
     windowInfo,client,"",cefBrowserSettings,NULL,NULL);
   if (browser.get() == NULL)
     return FALSE;
 
+  m_private->client = client;
+  client->SetObject(this);
   m_private->browser = browser;
   Attach(browser->GetHost()->GetWindowHandle());
   return TRUE;
@@ -333,6 +353,60 @@ void ReportHtml::Refresh(void)
   m_private->browser->Reload();
 }
 
+bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
+{
+  if (m_consumer)
+  {
+    if (strncmp(url,"source:",7) == 0)
+    {
+      // Got a source: URL
+      m_consumer->SourceLink(url);
+      return true;
+    }
+    else if (strncmp(url,"library:",8) == 0)
+    {
+      // Got a library: URL
+      m_consumer->LibraryLink(url);
+      return true;
+    }
+    else if (strncmp(url,"skein:",6) == 0)
+    {
+      // Got a skin: URL
+      m_consumer->SkeinLink(url);
+      return true;
+    }
+    else if (strncmp(url,"inform:",7) == 0)
+    {
+      // Got an inform: documentation URL
+      if (m_consumer->DocLink(theApp.GetUrlProtocol().TranslateUrl(CStringW(lpszURL))))
+        return true;
+    }
+  }
+
+  // Open links to the Int-Fiction forum (from the Public Library) in a browser
+  if (strncmp(url,"http://www.intfiction.org/",26) == 0)
+  {
+    ::ShellExecute(0,NULL,url,NULL,NULL,SW_SHOWNORMAL);
+    return true;
+  }
+
+  // If this navigation is due to the user, tell the parent window that the URL has changed
+  if (user)
+  {
+    if (strncmp(url,"javascript:",11) != 0)
+    {
+      m_url = url;
+      GetParent()->PostMessage(WM_USERNAVIGATE);
+    }
+  }
+  return false;
+}
+
+void ReportHtml::SetLinkConsumer(LinkConsumer* consumer)
+{
+  m_consumer = consumer;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 BEGIN_MESSAGE_MAP(ReportHtml, CWnd)
@@ -345,64 +419,6 @@ BEGIN_MESSAGE_MAP(ReportHtml, CWnd)
 END_MESSAGE_MAP()
 
 /*
-void ReportHtml::OnBeforeNavigate2(LPCTSTR lpszURL, DWORD, LPCTSTR, CByteArray&, LPCTSTR, BOOL* pbCancel)
-{
-  *pbCancel = FALSE;
-  if (m_consumer)
-  {
-    if (strncmp(lpszURL,"source:",7) == 0)
-    {
-      // Got a source: URL
-      m_consumer->SourceLink(lpszURL);
-      *pbCancel = TRUE;
-    }
-    else if (strncmp(lpszURL,"library:",8) == 0)
-    {
-      // Got a library: URL
-      m_consumer->LibraryLink(lpszURL);
-      *pbCancel = TRUE;
-    }
-    else if (strncmp(lpszURL,"skein:",6) == 0)
-    {
-      // Got a skin: URL
-      m_consumer->SkeinLink(lpszURL);
-      *pbCancel = TRUE;
-    }
-    else if (strncmp(lpszURL,"inform:",7) == 0)
-    {
-      // Got an inform: documentation URL
-      if (m_consumer->DocLink(theApp.GetUrlProtocol().TranslateUrl(CStringW(lpszURL))))
-        *pbCancel = TRUE;
-    }
-  }
-
-  if (*pbCancel == FALSE)
-  {
-    // Open links to the Int-Fiction forum (from the Public Library) in a browser
-    if (strncmp(lpszURL,"http://www.intfiction.org/",26) == 0)
-    {
-      ::ShellExecute(0,NULL,lpszURL,NULL,NULL,SW_SHOWNORMAL);
-      *pbCancel = TRUE;
-    }
-  }
-
-  if (*pbCancel == FALSE)
-  {
-    // If notification is on, tell the parent window that the URL has changed
-    if (m_notify)
-    {
-      if (strncmp(lpszURL,"javascript:",11) != 0)
-      {
-        m_url = lpszURL;
-        GetParent()->PostMessage(WM_USERNAVIGATE);
-      }
-    }
-  }
-
-  // Reset the notification status to the default, i.e. enabled
-  m_notify = true;
-}
-
 void ReportHtml::OnNavigateError(LPCTSTR lpszURL, LPCTSTR, DWORD, BOOL* pbCancel)
 {
   *pbCancel = FALSE;
@@ -610,11 +626,6 @@ void ReportHtml::SetIEPreferences(const char* path)
   }
 }
 */
-void ReportHtml::SetLinkConsumer(LinkConsumer* consumer)
-{
-//  m_consumer = consumer;
-}
-
 void ReportHtml::SetPageRewriter(PageRewriter* rewriter)
 {
 //  m_rewriter = rewriter;
