@@ -288,7 +288,7 @@ void TabExtensions::UpdateActiveTab(void)
   }
   if (idx == No_ExtTab)
   {
-    if (url == "inform://Extensions/Extensions.html")
+    if (url.CompareNoCase("inform://Extensions/Extensions.html") == 0)
       idx = ExtTab_Home;
     else if (url.Find("pl404.html") > 0)
       idx = ExtTab_Library;
