@@ -83,7 +83,7 @@ public:
   {
   public:
     virtual void OnSourceLink(const char* url, TabInterface* from, COLORREF highlight) = 0;
-    virtual void OnDocLink(const wchar_t* url, TabInterface* from) = 0;
+    virtual void OnDocLink(const char* url, TabInterface* from) = 0;
     virtual void OnSkeinLink(const char* url, TabInterface* from) = 0;
   };
 };

@@ -4,6 +4,7 @@
 #include "Inform.h"
 #include "Panel.h"
 #include "Messages.h"
+#include "TextFormat.h"
 
 #include "include/cef_app.h"
 #include "include/cef_browser.h"
@@ -36,45 +37,37 @@ public:
     ASSERT(m_dataLen == 0);
 
     handle_request = true;
-
-    std::string url = request->GetURL();
-    if (url.substr(0,7) != "inform:")
-      return false;
-
-    static const char* dirs[] =
+    CString path = ConvertUrlToPath(request->GetURL().ToString().c_str());
+    if (!path.IsEmpty())
     {
-      "\\Documentation",
-      "\\Documentation\\doc_images",
-      "\\Documentation\\sections",
-      "\\Images"
-    };
+      CFileStatus status;
+      if (CFile::GetStatus(path,status))
+      {
+        CFile reqFile;
+        if (reqFile.Open(path,CFile::modeRead|CFile::typeBinary|CFile::shareDenyWrite))
+        {
+          m_dataLen = status.m_size;
+          m_data = new char[m_dataLen];
+          int64 read = reqFile.Read(m_data,m_dataLen);
+          ASSERT(read == m_dataLen);
+          reqFile.Close();
 
-    CString appDir = theApp.GetAppDir();
-    CString fileName = Unescape(url.c_str()+8);
-    for (int i = 0; i < sizeof dirs / sizeof dirs[0]; i++)
-    {
-      CString path;
-      path.Format("%s%s%s",appDir.GetString(),dirs[i],fileName.GetString());
-      if (UseFileForRequest(path))
-        return true;
+          CString ext = ::PathFindExtension(path);
+          ext.MakeLower();
+          if (ext == ".gif")
+            m_dataType = "image/gif";
+          else if ((ext == ".jpg") || (ext == ".jpeg"))
+            m_dataType = "image/jpeg";
+          else if (ext == ".png")
+            m_dataType = "image/png";
+          else if ((ext == ".tif") || (ext == ".tiff"))
+            m_dataType = "image/tiff";
+          else
+            m_dataType = "text/html";
+          return true;
+        }
+      }
     }
-
-    if (fileName.Left(11) == "/extensions")
-    {
-      fileName = fileName.Mid(11);
-
-      CString path;
-      path.Format("%s\\Inform\\Documentation%s",
-        theApp.GetHomeDir().GetString(),fileName.GetString());
-      if (UseFileForRequest(path))
-        return true;
-
-      path.Format("%s\\Documentation%s",appDir.GetString(),fileName.GetString());
-      if (UseFileForRequest(path))
-        return true;
-    }
-
-    ASSERT(FALSE);
     return false;
   }
 
@@ -107,10 +100,54 @@ public:
     return false;
   }
 
+  static CString ConvertUrlToPath(const char* url)
+  {
+    if (strncmp(url,"inform:",7) != 0)
+      return false;
+
+    CString appDir = theApp.GetAppDir();
+    CStringW fileName = TextFormat::UTF8ToUnicode(Unescape(url+8));
+    fileName.TrimRight(L"/");
+
+    static const char* dirs[] =
+    {
+      "\\Documentation",
+      "\\Documentation\\doc_images",
+      "\\Documentation\\sections",
+      "\\Images"
+    };
+
+    for (int i = 0; i < sizeof dirs / sizeof dirs[0]; i++)
+    {
+      CString path;
+      path.Format("%s%s%S",appDir.GetString(),dirs[i],fileName.GetString());
+      if (FileExists(path))
+        return path;
+    }
+
+    if (fileName.Left(11) == L"/extensions")
+    {
+      fileName = fileName.Mid(11);
+
+      CString path;
+      path.Format("%s\\Inform\\Documentation%S",
+        theApp.GetHomeDir().GetString(),fileName.GetString());
+      if (FileExists(path))
+        return path;
+
+      path.Format("%s\\Documentation%S",appDir.GetString(),fileName.GetString());
+      if (FileExists(path))
+        return path;
+    }
+
+    ASSERT(FALSE);
+    return "";
+  }
+
 private:
   IMPLEMENT_REFCOUNTING(I7SchemeHandler);
 
-  CString Unescape(const char* input)
+  static CString Unescape(const char* input)
   {
     int len = (int)strlen(input);
     CString output;
@@ -138,38 +175,9 @@ private:
     return output;
   }
 
-  bool UseFileForRequest(CString& path)
+  static bool FileExists(const char* path)
   {
-    path.TrimRight("/");
-
-    CFileStatus status;
-    if (CFile::GetStatus(path,status))
-    {
-      CFile reqFile;
-      if (reqFile.Open(path,CFile::modeRead|CFile::typeBinary|CFile::shareDenyWrite))
-      {
-        m_dataLen = status.m_size;
-        m_data = new char[m_dataLen];
-        int64 read = reqFile.Read(m_data,m_dataLen);
-        ASSERT(read == m_dataLen);
-        reqFile.Close();
-
-        CString ext = ::PathFindExtension(path);
-        ext.MakeLower();
-        if (ext == ".gif")
-          m_dataType = "image/gif";
-        else if ((ext == ".jpg") || (ext == ".jpeg"))
-          m_dataType = "image/jpeg";
-        else if (ext == ".png")
-          m_dataType = "image/png";
-        else if ((ext == ".tif") || (ext == ".tiff"))
-          m_dataType = "image/tiff";
-        else
-          m_dataType = "text/html";
-        return true;
-      }
-    }
-    return false;
+    return (::GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES);
   }
 
 private:
@@ -257,6 +265,14 @@ struct ReportHtml::Private : public CefRefPtr<CefBrowser>
 
 IMPLEMENT_DYNCREATE(ReportHtml, CWnd)
 
+static std::string GetUTF8Path(const char* root, const char* path)
+{
+  CString fullPath;
+  fullPath.Format("%s%s",root,path);
+  CString utf8Path = TextFormat::UnicodeToUTF8(CStringW(fullPath));
+  return utf8Path.GetString();
+}
+
 bool ReportHtml::InitWebBrowser(void)
 {
   // If this is a CEF sub-process, call CEF straight away
@@ -269,11 +285,11 @@ bool ReportHtml::InitWebBrowser(void)
   cefSettings.no_sandbox = true;
   cefSettings.command_line_args_disabled = true;
   CString dir = theApp.GetAppDir();
-  CefString(&cefSettings.resources_dir_path).FromASCII(dir+"\\Chrome");
-  CefString(&cefSettings.locales_dir_path).FromASCII(dir+"\\Chrome\\locales");
+  CefString(&cefSettings.resources_dir_path).FromString(GetUTF8Path(dir,"\\Chrome"));
+  CefString(&cefSettings.locales_dir_path).FromString(GetUTF8Path(dir,"\\Chrome\\locales"));
   dir = theApp.GetHomeDir() + "\\Inform\\ceflog.txt";
   ::DeleteFile(dir);
-  CefString(&cefSettings.log_file).FromASCII(dir);
+  CefString(&cefSettings.log_file).FromString(GetUTF8Path(dir,""));
 
   // Initialize CEF
   if (!CefInitialize(cefArgs,cefSettings,app.get(),NULL))
@@ -378,7 +394,8 @@ bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
     else if (strncmp(url,"inform:",7) == 0)
     {
       // Got an inform: documentation URL
-      if (m_consumer->DocLink(theApp.GetUrlProtocol().TranslateUrl(CStringW(lpszURL))))
+      CString path = I7SchemeHandler::ConvertUrlToPath(url);
+      if (m_consumer->DocLink(theApp.PathToUrl(path)))
         return true;
     }
   }

@@ -21,9 +21,9 @@ bool PropList::Load(LPCSTR path)
   xml.ReleaseBuffer(xmlSize);
 
   // Make sure that the DTD is loaded from the local file
-  CString file;
-  file.Format("file://%s\\Web\\",theApp.GetAppDir());
-  xml.Replace("http://",file);
+  CString webDir;
+  webDir.Format("%s\\Web\\",(LPCSTR)theApp.GetAppDir());
+  xml.Replace("http://",theApp.PathToUrl(webDir));
 
   // Create an XML document instance
   if (m_doc == NULL)

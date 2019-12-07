@@ -103,6 +103,7 @@ public:
   CString GetAppDir(void) const;
   CString GetLastProjectDir(void);
   CString GetHomeDir(void);
+  CString PathToUrl(const char* path);
   double GetIEVersion(void);
 
   void NewFrame(CFrameWnd* frame);

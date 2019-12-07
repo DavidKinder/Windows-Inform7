@@ -30,7 +30,7 @@ public:
   void SourceLink(const char* url);
   void LibraryLink(const char* url);
   void SkeinLink(const char* url);
-  bool DocLink(const wchar_t* url);
+  bool DocLink(const char* url);
   bool LinkError(const char* url);
 
   void SetLinkNotify(LinkNotify* notify);

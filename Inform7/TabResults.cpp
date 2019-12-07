@@ -311,7 +311,7 @@ void TabResults::SkeinLink(const char* url)
     m_notify->OnSkeinLink(url,this);
 }
 
-bool TabResults::DocLink(const wchar_t* url)
+bool TabResults::DocLink(const char* url)
 {
   if (m_notify)
     m_notify->OnDocLink(url,this);

@@ -2947,13 +2947,14 @@ void ProjectFrame::OnSourceLink(const char* url, TabInterface* from, COLORREF hi
     ::MessageBeep(MB_ICONASTERISK);
 }
 
-void ProjectFrame::OnDocLink(const wchar_t* url, TabInterface* from)
+void ProjectFrame::OnDocLink(const char* url, TabInterface* from)
 {
   // Select the tab to show the page in
   Panel::Tabs tab = Panel::Tab_Doc;
-  CStringW extUrlBase;
-  extUrlBase.Format(L"file://%S\\Inform\\Documentation",(LPCSTR)theApp.GetHomeDir());
-  if (wcsncmp(url,extUrlBase,extUrlBase.GetLength()) == 0)
+  CString docDir;
+  docDir.Format("%s\\Inform\\Documentation",(LPCSTR)theApp.GetHomeDir());
+  CString extUrlBase(theApp.PathToUrl(docDir));
+  if (strncmp(url,extUrlBase,extUrlBase.GetLength()) == 0)
     tab = Panel::Tab_Extensions;
 
   // Select the panel to show the page in

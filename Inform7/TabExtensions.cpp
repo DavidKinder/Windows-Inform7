@@ -138,12 +138,11 @@ void TabExtensions::SkeinLink(const char* url)
 {
 }
 
-bool TabExtensions::DocLink(const wchar_t* url)
+bool TabExtensions::DocLink(const char* url)
 {
   // Switch to the documentation tab if the URL points to a file in the application
-  CStringW appUrlBase;
-  appUrlBase.Format(L"file://%S",(LPCSTR)theApp.GetAppDir());
-  if (wcsncmp(url,appUrlBase,appUrlBase.GetLength()) == 0)
+  CString appUrl = theApp.PathToUrl(theApp.GetAppDir());
+  if (strncmp(url,appUrl,appUrl.GetLength()) == 0)
   {
     if (m_notify)
       m_notify->OnDocLink(url,this);

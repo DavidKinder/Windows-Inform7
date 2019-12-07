@@ -474,6 +474,22 @@ CString InformApp::GetHomeDir(void)
   return m_home;
 }
 
+CString InformApp::PathToUrl(const char* path)
+{
+  CString url;
+  DWORD urlBufLen = 32+3+2048; // INTERNET_MAX_URL_LENGTH
+  LPSTR urlBuf = url.GetBufferSetLength(urlBufLen);
+  HRESULT urlCreate = UrlCreateFromPath(path,urlBuf,&urlBufLen,0);
+  url.ReleaseBuffer();
+
+  if (FAILED(urlCreate))
+  {
+    url.Format("file:///%s",path);
+    url.Replace('\\','/');
+  }
+  return url;
+}
+
 void InformApp::NewFrame(CFrameWnd* frame)
 {
   if (m_pMainWnd == NULL)

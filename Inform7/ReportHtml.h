@@ -28,7 +28,7 @@ public:
     virtual void SourceLink(const char* url) = 0;
     virtual void LibraryLink(const char* url) = 0;
     virtual void SkeinLink(const char* url) = 0;
-    virtual bool DocLink(const wchar_t* url) = 0;
+    virtual bool DocLink(const char* url) = 0;
     virtual bool LinkError(const char* url) = 0;
   };
 

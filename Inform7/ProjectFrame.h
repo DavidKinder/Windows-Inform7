@@ -169,7 +169,7 @@ protected:
 
   // Implementation of TabInterface::LinkTabNotify
   void OnSourceLink(const char* url, TabInterface* from, COLORREF highlight);
-  void OnDocLink(const wchar_t* url, TabInterface* from);
+  void OnDocLink(const char* url, TabInterface* from);
   void OnSkeinLink(const char* url, TabInterface* from);
 
   static ProjectFrame* NewFrame(ProjectType projectType);
