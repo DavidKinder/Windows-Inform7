@@ -115,8 +115,9 @@ void TabExtensions::DownloadedExt(int id)
 {
   if (GetActiveTab() == ExtTab_Library)
   {
-    CComVariant vid(id);
-    m_html.Invoke(L"downloadSucceeded",&vid);
+    CString code;
+    code.Format("downloadSucceeded(%d);",id);
+    m_html.RunJavaScript(code);
   }
 }
 

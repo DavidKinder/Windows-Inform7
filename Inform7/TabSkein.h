@@ -57,6 +57,6 @@ protected:
   afx_msg void OnSaveTranscript();
   afx_msg void OnToggleHelp();
 
-  void SetHelpVisible(LPCWSTR node, bool visible);
+  void SetHelpVisible(const char* node, bool visible);
   void ShowHideHelp(bool show);
 };

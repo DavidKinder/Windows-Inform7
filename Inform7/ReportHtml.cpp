@@ -381,6 +381,11 @@ void ReportHtml::Refresh(void)
   m_private->browser->Reload();
 }
 
+void ReportHtml::RunJavaScript(const char* code)
+{
+  m_private->browser->GetMainFrame()->ExecuteJavaScript(code,"",0);
+}
+
 bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
 {
   if (m_consumer)
@@ -639,19 +644,6 @@ void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
     m_find.Empty();
 }
 */
-
-void ReportHtml::Invoke(LPCWSTR method, VARIANT* arg)
-{
-/*
-  IDispatch* disp = GetHtmlDocument();
-  CComQIPtr<IHTMLDocument> doc(disp);
-  disp->Release();
-
-  CComPtr<IDispatch> script;
-  doc->get_Script(&script);
-  script.Invoke1(method,arg);
-*/
-}
 
 /*
 void ReportHtml::HighlightFound(bool goToFound)

@@ -278,27 +278,28 @@ LRESULT TabSkein::OnUpdateHelp(WPARAM, LPARAM)
   if (active)
     m_skeinWindow->SkeinNodesShown(anyGrey,anyBlue,anyPurple,anyBadge,count);
 
-  SetHelpVisible(L"welcome",active && showWelcome);
-  SetHelpVisible(L"title",active);
-  SetHelpVisible(L"purple",anyPurple);
-  SetHelpVisible(L"grey",anyGrey || anyBlue);
-  SetHelpVisible(L"blue",anyGrey || anyBlue);
-  SetHelpVisible(L"report",false);
-  SetHelpVisible(L"tick",false);
-  SetHelpVisible(L"cross",false);
-  SetHelpVisible(L"badge",anyBadge);
-  SetHelpVisible(L"threads",count >= 2);
-  SetHelpVisible(L"knots",count == 1);
-  SetHelpVisible(L"moreknots",(count >= 2) && (count <= 10));
-  SetHelpVisible(L"menu",count >= 5);
-  SetHelpVisible(L"welcomead",active && !showWelcome);
+  SetHelpVisible("welcome",active && showWelcome);
+  SetHelpVisible("title",active);
+  SetHelpVisible("purple",anyPurple);
+  SetHelpVisible("grey",anyGrey || anyBlue);
+  SetHelpVisible("blue",anyGrey || anyBlue);
+  SetHelpVisible("report",false);
+  SetHelpVisible("tick",false);
+  SetHelpVisible("cross",false);
+  SetHelpVisible("badge",anyBadge);
+  SetHelpVisible("threads",count >= 2);
+  SetHelpVisible("knots",count == 1);
+  SetHelpVisible("moreknots",(count >= 2) && (count <= 10));
+  SetHelpVisible("menu",count >= 5);
+  SetHelpVisible("welcomead",active && !showWelcome);
   return 0;
 }
 
-void TabSkein::SetHelpVisible(LPCWSTR node, bool visible)
+void TabSkein::SetHelpVisible(const char* node, bool visible)
 {
-  CComVariant vnode(node);
-  m_helpWindow->Invoke(visible ? L"showBlock" : L"hideBlock",&vnode);
+  CString code;
+  code.Format("%s('%s');",visible ? "showBlock" : "hideBlock",node);
+  m_helpWindow->RunJavaScript(code);
 }
 
 void TabSkein::OnSkeinLabel()

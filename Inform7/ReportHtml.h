@@ -19,6 +19,7 @@ public:
   void Navigate(const char* url, bool focus, const wchar_t* find = NULL);
   CString GetURL(void);
   void Refresh(void);
+  void RunJavaScript(const char* code);
 
   bool OnBeforeBrowse(const char* url, bool user);
   void OnLoadError(const char* url);
@@ -50,7 +51,6 @@ private:
 public:
   void SetFocusOnContent(void);
   void SetFocusFlag(bool focus);
-  void Invoke(LPCWSTR method, VARIANT* arg);
 
 /*
 protected:
