@@ -27,8 +27,6 @@ const char* TabExtensions::m_files[TabExtensions::Number_ExtTabs] =
 
 TabExtensions::TabExtensions() : m_tab(true), m_initialised(false), m_notify(NULL)
 {
-  m_imagesUrl.Format(L"%S/Documentation/doc_images",theApp.GetAppDir());
-  m_imagesUrl.Replace('\\','/');
 }
 
 const char* TabExtensions::GetName(void)
@@ -57,7 +55,6 @@ void TabExtensions::CreateTab(CWnd* parent)
     TRACE("Failed to create HTML control\n");
   }
   m_html.SetLinkConsumer(this);
-  m_html.SetPageRewriter(this);
 }
 
 void TabExtensions::MoveTab(CRect& rect)
@@ -157,29 +154,6 @@ void TabExtensions::LinkError(const char* url)
   CString plUrl = GetUrlForTab(ExtTab_Library);
   if (strncmp(url,plUrl,plUrl.GetLength()) == 0)
     PostMessage(WM_PUBLIBERROR);
-}
-
-void TabExtensions::ModifyPage(const char* url, IHTMLDocument2* doc)
-{
-  CString plUrl = GetUrlForTab(ExtTab_Library);
-  if (strncmp(url,plUrl,plUrl.GetLength()) == 0)
-  {
-    CComPtr<IHTMLElement> body;
-    doc->get_body(&body);
-    if (body != NULL)
-    {
-      CComBSTR html;
-      if (SUCCEEDED(body->get_innerHTML(&html)))
-      {
-        bool update = false;
-        CStringW theHtml(html);
-        if (theHtml.Replace(L"inform:/doc_images",m_imagesUrl) > 0)
-          update = true;
-        if (update)
-          body->put_innerHTML(CComBSTR(theHtml));
-      }
-    }
-  }
 }
 
 void TabExtensions::SetLinkNotify(LinkNotify* notify)

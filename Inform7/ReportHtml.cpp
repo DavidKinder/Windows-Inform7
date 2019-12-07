@@ -462,19 +462,6 @@ void ReportHtml::OnDocumentComplete(LPCTSTR lpszURL)
   if (m_setFocus && (strcmp(lpszURL,"about:blank") != 0))
     SetFocusOnContent();
 
-  // Let the rewriter modify the page
-  if (m_rewriter)
-  {
-    IDispatch* disp = GetHtmlDocument();
-    if (disp != NULL)
-    {
-      CComQIPtr<IHTMLDocument2> doc(disp);
-      disp->Release();
-      if (doc != NULL)
-        m_rewriter->ModifyPage(lpszURL,doc);
-    }
-  }
-
   // Highlight found text
   if (strchr(lpszURL,'#') != NULL)
   {
@@ -651,10 +638,6 @@ void ReportHtml::SetIEPreferences(const char* path)
   }
 }
 */
-void ReportHtml::SetPageRewriter(PageRewriter* rewriter)
-{
-//  m_rewriter = rewriter;
-}
 
 void ReportHtml::SetFocusOnContent(void)
 {

@@ -4,8 +4,7 @@
 #include "ReportHtml.h"
 #include "FlatTab.h"
 
-class TabExtensions : public TabBase,
-  public ReportHtml::LinkConsumer, public ReportHtml::PageRewriter
+class TabExtensions : public TabBase, public ReportHtml::LinkConsumer
 {
   DECLARE_DYNAMIC(TabExtensions)
 
@@ -31,9 +30,6 @@ public:
   void SkeinLink(const char* url);
   bool DocLink(const char* url);
   void LinkError(const char* url);
-
-  // Implementation of ReportHtml::PageRewriter
-  void ModifyPage(const char* url, IHTMLDocument2* doc);
 
   void SetLinkNotify(LinkNotify* notify);
 
@@ -67,5 +63,4 @@ private:
   ReportHtml m_html;
   bool m_initialised;
   LinkNotify* m_notify;
-  CStringW m_imagesUrl;
 };

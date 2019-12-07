@@ -48,13 +48,6 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-  class PageRewriter
-  {
-  public:
-    virtual void ModifyPage(const char* url, IHTMLDocument2* doc) = 0;
-  };
-
-  void SetPageRewriter(PageRewriter* rewriter);
   void SetFocusOnContent(void);
   void SetFocusFlag(bool focus);
   void Invoke(LPCWSTR method, VARIANT* arg);
@@ -68,8 +61,6 @@ protected:
 
 private:
   void HighlightFound(bool goToFound);
-
-  PageRewriter* m_rewriter;
 
   bool m_setFocus;
 
