@@ -579,33 +579,6 @@ void ReportHtml::OnUpdateEditFind(CCmdUI* pCmdUI)
 
 void ReportHtml::SetIEPreferences(const char* path)
 {
-  if (path != NULL)
-    m_registryPath = path;
-
-  // Open the web browser registry key
-  CRegKey webKey;
-  DWORD disposition;
-  LONG result = webKey.Create(HKEY_CURRENT_USER,m_registryPath,
-    REG_NONE,REG_OPTION_NON_VOLATILE,KEY_READ|KEY_WRITE,NULL,&disposition);
-  if (result == ERROR_SUCCESS)
-  {
-    CRegKey webSettingsKey;
-    if (webSettingsKey.Create(webKey,"Settings") == ERROR_SUCCESS)
-    {
-      // Show all hyperlinks as blue
-      webSettingsKey.SetStringValue("Anchor Color","0,0,255");
-      webSettingsKey.SetStringValue("Anchor Color Visited","0,0,255");
-      webSettingsKey.SetStringValue("Background Color","255,255,255");
-      webSettingsKey.SetStringValue("Text Color","0,0,0");
-    }
-
-    CRegKey webMainKey;
-    if (webMainKey.Create(webKey,"Main") == ERROR_SUCCESS)
-    {
-      // Use Windows colours
-      webMainKey.SetStringValue("Use_DlgBox_Colors","no");
-    }
-
     CRegKey scriptsKey;
     if (scriptsKey.Create(webKey,"International\\Scripts\\3") == ERROR_SUCCESS)
     {
@@ -658,22 +631,12 @@ void ReportHtml::SetFocusFlag(bool focus)
 /*
 void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
 {
-  // Stop any current page loading
-  if (GetBusy())
-    Stop();
-
-  m_url = url;
   m_setFocus = focus;
 
   if (find != NULL)
     m_find = find;
   else
     m_find.Empty();
-
-  // Don't send a navigation notification for programmatic navigation
-  m_notify = false;
-  SetSilent(TRUE);
-  CHtmlView::Navigate(url);
 }
 */
 
