@@ -157,9 +157,8 @@ bool TabIndex::DocLink(const char* url)
   return true;
 }
 
-bool TabIndex::LinkError(const char* url)
+void TabIndex::LinkError(const char* url)
 {
-  return false;
 }
 
 BOOL TabIndex::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)

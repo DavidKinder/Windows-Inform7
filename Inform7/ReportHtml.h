@@ -21,6 +21,7 @@ public:
   void Refresh(void);
 
   bool OnBeforeBrowse(const char* url, bool user);
+  void OnLoadError(const char* url);
 
   class LinkConsumer
   {
@@ -29,7 +30,7 @@ public:
     virtual void LibraryLink(const char* url) = 0;
     virtual void SkeinLink(const char* url) = 0;
     virtual bool DocLink(const char* url) = 0;
-    virtual bool LinkError(const char* url) = 0;
+    virtual void LinkError(const char* url) = 0;
   };
 
   void SetLinkConsumer(LinkConsumer* consumer);

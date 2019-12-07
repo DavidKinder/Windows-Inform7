@@ -318,9 +318,8 @@ bool TabResults::DocLink(const char* url)
   return true;
 }
 
-bool TabResults::LinkError(const char* url)
+void TabResults::LinkError(const char* url)
 {
-  return false;
 }
 
 BOOL TabResults::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)

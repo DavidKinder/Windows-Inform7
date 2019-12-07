@@ -224,7 +224,7 @@ private:
 };
 
 // Handler implementations for each browser instance
-class I7CefClient : public CefClient, public CefRequestHandler
+class I7CefClient : public CefClient, public CefRequestHandler, public CefLoadHandler
 {
 public:
   I7CefClient()
@@ -248,6 +248,18 @@ public:
       return m_object->OnBeforeBrowse(
         request->GetURL().ToString().c_str(),user_gesture);
     return false;
+  }
+
+  CefRefPtr<CefLoadHandler> GetLoadHandler()
+  {
+    return this;
+  }
+
+  void OnLoadError(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, ErrorCode, const CefString&,
+    const CefString& failedUrl)
+  {
+    if (m_object)
+      return m_object->OnLoadError(failedUrl.ToString().c_str());
   }
 
 private:
@@ -419,6 +431,12 @@ bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
   return false;
 }
 
+void ReportHtml::OnLoadError(const char* url)
+{
+  if (m_consumer)
+    m_consumer->LinkError(url);
+}
+
 void ReportHtml::SetLinkConsumer(LinkConsumer* consumer)
 {
   m_consumer = consumer;
@@ -436,16 +454,6 @@ BEGIN_MESSAGE_MAP(ReportHtml, CWnd)
 END_MESSAGE_MAP()
 
 /*
-void ReportHtml::OnNavigateError(LPCTSTR lpszURL, LPCTSTR, DWORD, BOOL* pbCancel)
-{
-  *pbCancel = FALSE;
-  if (m_consumer)
-  {
-    if (m_consumer->LinkError(lpszURL))
-      *pbCancel = TRUE;
-  }
-}
-
 void ReportHtml::OnDocumentComplete(LPCTSTR lpszURL)
 {
   CHtmlView::OnDocumentComplete(lpszURL);

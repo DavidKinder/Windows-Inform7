@@ -152,15 +152,11 @@ bool TabExtensions::DocLink(const char* url)
     return false;
 }
 
-bool TabExtensions::LinkError(const char* url)
+void TabExtensions::LinkError(const char* url)
 {
   CString plUrl = GetUrlForTab(ExtTab_Library);
   if (strncmp(url,plUrl,plUrl.GetLength()) == 0)
-  {
     PostMessage(WM_PUBLIBERROR);
-    return true;
-  }
-  return false;
 }
 
 void TabExtensions::ModifyPage(const char* url, IHTMLDocument2* doc)

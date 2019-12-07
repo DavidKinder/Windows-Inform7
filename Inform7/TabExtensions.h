@@ -30,7 +30,7 @@ public:
   void LibraryLink(const char* url);
   void SkeinLink(const char* url);
   bool DocLink(const char* url);
-  bool LinkError(const char* url);
+  void LinkError(const char* url);
 
   // Implementation of ReportHtml::PageRewriter
   void ModifyPage(const char* url, IHTMLDocument2* doc);
