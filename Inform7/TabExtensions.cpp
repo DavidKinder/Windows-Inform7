@@ -150,6 +150,10 @@ bool TabExtensions::DocLink(const char* url)
     return false;
 }
 
+void TabExtensions::LinkDone(void)
+{
+}
+
 void TabExtensions::LinkError(const char* url)
 {
   CString plUrl = GetUrlForTab(ExtTab_Library);

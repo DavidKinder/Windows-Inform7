@@ -30,6 +30,7 @@ public:
   void SkeinLink(const char* url);
   bool DocLink(const char* url);
   void LinkError(const char* url);
+  void LinkDone(void);
 
   void SetLinkNotify(LinkNotify* notify);
 

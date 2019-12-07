@@ -318,6 +318,10 @@ bool TabResults::DocLink(const char* url)
   return true;
 }
 
+void TabResults::LinkDone(void)
+{
+}
+
 void TabResults::LinkError(const char* url)
 {
 }

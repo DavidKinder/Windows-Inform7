@@ -22,6 +22,7 @@ public:
   void RunJavaScript(const char* code);
 
   bool OnBeforeBrowse(const char* url, bool user);
+  void OnLoadEnd(void);
   void OnLoadError(const char* url);
 
   class LinkConsumer
@@ -32,6 +33,7 @@ public:
     virtual void SkeinLink(const char* url) = 0;
     virtual bool DocLink(const char* url) = 0;
     virtual void LinkError(const char* url) = 0;
+    virtual void LinkDone(void) = 0;
   };
 
   void SetLinkConsumer(LinkConsumer* consumer);

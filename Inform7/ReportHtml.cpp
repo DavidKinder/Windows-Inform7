@@ -18,7 +18,7 @@
 CefSettings cefSettings;
 CefBrowserSettings cefBrowserSettings;
 
-// Implementation of inform: handlers
+// Implementation of inform: handler
 class I7SchemeHandler : public CefResourceHandler
 {
 public:
@@ -187,9 +187,24 @@ private:
   std::string m_dataType;
 };
 
+// Implementation of handler for JavaScript calls
+class I7JavaScriptHandler : public CefV8Handler
+{
+public:
+  bool Execute(const CefString& name, CefRefPtr<CefV8Value>,
+    const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString&)
+  {
+    return true;
+  }
+
+private:
+  IMPLEMENT_REFCOUNTING(I7JavaScriptHandler);
+};
+
 // Application level callbacks for all browser instances
 class I7CefApp : public CefApp,
   public CefBrowserProcessHandler,
+  public CefRenderProcessHandler,
   public CefSchemeHandlerFactory
 {
 public:
@@ -213,6 +228,29 @@ public:
     CefRegisterSchemeHandlerFactory("inform","",this);
   }
 
+  CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler()
+  {
+    return this;
+  }
+
+  void OnContextCreated(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, CefRefPtr<CefV8Context> context)
+  {
+    // Create an object with our JavaScript methods
+    CefRefPtr<CefV8Value> obj = CefV8Value::CreateObject(NULL,NULL);
+    CefRefPtr<CefV8Handler> handler = new I7JavaScriptHandler();
+    AddMethod(obj,"selectView",handler);
+    AddMethod(obj,"pasteCode",handler);
+    AddMethod(obj,"createNewProject",handler);
+    AddMethod(obj,"openFile",handler);
+    AddMethod(obj,"openUrl",handler);
+    AddMethod(obj,"askInterfaceForLocalVersion",handler);
+    AddMethod(obj,"askInterfaceForLocalVersionText",handler);
+    AddMethod(obj,"downloadMultipleExtensions",handler);
+
+    // Add our object as 'window.Project'
+    context->GetGlobal()->SetValue("Project",obj,V8_PROPERTY_ATTRIBUTE_NONE);
+  }
+
   CefRefPtr<CefResourceHandler> Create(CefRefPtr<CefBrowser>,
     CefRefPtr<CefFrame>, const CefString&, CefRefPtr<CefRequest>)
   {
@@ -220,6 +258,11 @@ public:
   }
 
 private:
+  void AddMethod(CefRefPtr<CefV8Value> obj, const char* name, CefRefPtr<CefV8Handler> handler)
+  {
+    obj->SetValue(name,CefV8Value::CreateFunction(name,handler),V8_PROPERTY_ATTRIBUTE_NONE);
+  }
+
   IMPLEMENT_REFCOUNTING(I7CefApp);
 };
 
@@ -241,12 +284,12 @@ public:
     return this;
   }
 
-  bool OnBeforeBrowse(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>,
+  bool OnBeforeBrowse(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame,
     CefRefPtr<CefRequest> request, bool user_gesture, bool)
   {
     if (CefCurrentlyOn(TID_UI))
     {
-      if (m_object)
+      if (m_object && frame->IsMain())
         return m_object->OnBeforeBrowse(
           request->GetURL().ToString().c_str(),user_gesture);
     }
@@ -260,12 +303,23 @@ public:
     return this;
   }
 
-  void OnLoadError(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, ErrorCode, const CefString&,
-    const CefString& failedUrl)
+  void OnLoadEnd(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame, int)
   {
     if (CefCurrentlyOn(TID_UI))
     {
-      if (m_object)
+      if (m_object && frame->IsMain())
+        return m_object->OnLoadEnd();
+    }
+    else
+      ASSERT(FALSE);
+  }
+
+  void OnLoadError(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame,
+    ErrorCode, const CefString&, const CefString& failedUrl)
+  {
+    if (CefCurrentlyOn(TID_UI))
+    {
+      if (m_object && frame->IsMain())
         return m_object->OnLoadError(failedUrl.ToString().c_str());
     }
     else
@@ -337,7 +391,7 @@ void ReportHtml::UpdateWebBrowserPreferences(void)
 {
 }
 
-ReportHtml::ReportHtml()
+ReportHtml::ReportHtml() : m_consumer(NULL)
 {
   m_private = new Private();
 }
@@ -444,6 +498,12 @@ bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
     }
   }
   return false;
+}
+
+void ReportHtml::OnLoadEnd(void)
+{
+  if (m_consumer)
+    m_consumer->LinkDone();
 }
 
 void ReportHtml::OnLoadError(const char* url)

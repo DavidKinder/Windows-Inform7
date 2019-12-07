@@ -157,6 +157,10 @@ bool TabIndex::DocLink(const char* url)
   return true;
 }
 
+void TabIndex::LinkDone(void)
+{
+}
+
 void TabIndex::LinkError(const char* url)
 {
 }

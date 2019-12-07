@@ -7,7 +7,7 @@
 #include "FlatSplitter.h"
 #include "ReportHtml.h"
 
-class TabSkein : public TabBase
+class TabSkein : public TabBase, public ReportHtml::LinkConsumer
 {
   DECLARE_DYNAMIC(TabSkein)
 
@@ -28,6 +28,14 @@ public:
   void LoadSettings(CRegKey& key, bool primary);
   void SaveSettings(CRegKey& key, bool primary);
   void PrefsChanged(CRegKey& key);
+
+  // Implementation of ReportHtml::LinkConsumer
+  void SourceLink(const char* url);
+  void LibraryLink(const char* url);
+  void SkeinLink(const char* url);
+  bool DocLink(const char* url);
+  void LinkError(const char* url);
+  void LinkDone(void);
 
   void SetSkein(Skein* skein);
   void ShowNode(Skein::Node* node, Skein::Show why);

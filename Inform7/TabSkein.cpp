@@ -62,6 +62,7 @@ void TabSkein::CreateTab(CWnd* parent)
   m_splitter.CreateView(1,0,RUNTIME_CLASS(ReportHtml),CSize(0,0),NULL);
   m_skeinWindow = (SkeinWindow*)m_splitter.GetPane(0,0);
   m_helpWindow = (ReportHtml*)m_splitter.GetPane(1,0);
+  m_helpWindow->SetLinkConsumer(this);
   m_helpWindow->Navigate(theApp.GetAppDir()+"\\Documentation\\windows\\TestingTemplate.html",false);
 }
 
@@ -156,6 +157,32 @@ void TabSkein::PrefsChanged(CRegKey& key)
 {
   m_skeinWindow->PrefsChanged();
   m_helpWindow->Refresh();
+}
+
+void TabSkein::SourceLink(const char* url)
+{
+}
+
+void TabSkein::LibraryLink(const char* url)
+{
+}
+
+void TabSkein::SkeinLink(const char* url)
+{
+}
+
+bool TabSkein::DocLink(const char* url)
+{
+  return false;
+}
+
+void TabSkein::LinkDone(void)
+{
+  PostMessage(WM_UPDATEHELP);
+}
+
+void TabSkein::LinkError(const char* url)
+{
 }
 
 void TabSkein::SetSkein(Skein* skein)
