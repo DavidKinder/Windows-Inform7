@@ -249,6 +249,11 @@ public:
 
     // Add our object as 'window.Project'
     context->GetGlobal()->SetValue("Project",obj,V8_PROPERTY_ATTRIBUTE_NONE);
+
+    // For backward compatability, also add as 'window.external.Project'
+    CefRefPtr<CefV8Value> extObj = CefV8Value::CreateObject(NULL,NULL);
+    extObj->SetValue("Project",obj,V8_PROPERTY_ATTRIBUTE_NONE);
+    context->GetGlobal()->SetValue("external",extObj,V8_PROPERTY_ATTRIBUTE_NONE);
   }
 
   CefRefPtr<CefResourceHandler> Create(CefRefPtr<CefBrowser>,
