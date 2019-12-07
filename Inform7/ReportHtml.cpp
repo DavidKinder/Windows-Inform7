@@ -244,9 +244,14 @@ public:
   bool OnBeforeBrowse(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>,
     CefRefPtr<CefRequest> request, bool user_gesture, bool)
   {
-    if (m_object)
-      return m_object->OnBeforeBrowse(
-        request->GetURL().ToString().c_str(),user_gesture);
+    if (CefCurrentlyOn(TID_UI))
+    {
+      if (m_object)
+        return m_object->OnBeforeBrowse(
+          request->GetURL().ToString().c_str(),user_gesture);
+    }
+    else
+      ASSERT(FALSE);
     return false;
   }
 
@@ -258,8 +263,13 @@ public:
   void OnLoadError(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, ErrorCode, const CefString&,
     const CefString& failedUrl)
   {
-    if (m_object)
-      return m_object->OnLoadError(failedUrl.ToString().c_str());
+    if (CefCurrentlyOn(TID_UI))
+    {
+      if (m_object)
+        return m_object->OnLoadError(failedUrl.ToString().c_str());
+    }
+    else
+      ASSERT(FALSE);
   }
 
 private:
