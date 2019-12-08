@@ -199,28 +199,42 @@ public:
     const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString&)
   {
     if (name == "selectView")
+      SendMessage("I7.selectView",arguments);
+    else if (name == "pasteCode")
+      SendMessage("I7.pasteCode",arguments);
+    else if (name == "createNewProject")
+      SendMessage("I7.createNewProject",arguments);
+    else if (name == "openFile")
+      SendMessage("I7.openFile",arguments);
+    else if (name == "openUrl")
     {
-      // Create a message to go to the browser
-      CefRefPtr<CefProcessMessage> msg = CefProcessMessage::Create("I7.selectView");
-      CefRefPtr<CefListValue> args = msg->GetArgumentList();
-      args->SetString(0,GetStringArgument(arguments,0));
-
-      // Send the message
-      m_frame->SendProcessMessage(PID_BROWSER,msg);
+      // We don't need anything from the browser process for this,
+      // so just pass the URL to the shell.
+      if (arguments.size() == 1)
+      {
+        CefRefPtr<CefV8Value> argument = arguments[0];
+        if (argument->IsString())
+        {
+          std::string url = argument->GetStringValue().ToString();
+          ::ShellExecute(0,0,url.c_str(),NULL,NULL,SW_SHOWNORMAL);
+        }
+      }
     }
     return true;
   }
 
 private:
-  CefString GetStringArgument(const CefV8ValueList& arguments, int index)
+  void SendMessage(const char* name, const CefV8ValueList& arguments)
   {
-    if (arguments.size() > index)
+    CefRefPtr<CefProcessMessage> msg = CefProcessMessage::Create(name);
+    CefRefPtr<CefListValue> msgArgs = msg->GetArgumentList();
+    for (int i = 0; i < arguments.size(); i++)
     {
-      CefRefPtr<CefV8Value> argument = arguments[index];
+      CefRefPtr<CefV8Value> argument = arguments[i];
       if (argument->IsString())
-        return argument->GetStringValue();
+        msgArgs->SetString(i,argument->GetStringValue());
     }
-    return "";
+    m_frame->SendProcessMessage(PID_BROWSER,msg);
   }
 
   IMPLEMENT_REFCOUNTING(I7JavaScriptHandler);
@@ -269,7 +283,6 @@ public:
     AddMethod(obj,"selectView",handler);
     AddMethod(obj,"pasteCode",handler);
     AddMethod(obj,"createNewProject",handler);
-    AddMethod(obj,"openFile",handler);
     AddMethod(obj,"openUrl",handler);
     AddMethod(obj,"askInterfaceForLocalVersion",handler);
     AddMethod(obj,"askInterfaceForLocalVersionText",handler);
@@ -325,6 +338,53 @@ public:
           std::string view = GetStringArgument(message,0).ToString();
           m_object->GetParentFrame()->SendMessage(WM_SELECTVIEW,
             (WPARAM)view.c_str(),(LPARAM)m_object->GetSafeHwnd());
+        }
+        else if (name == "I7.pasteCode")
+        {
+          CStringW code = UnescapeUnicode(GetStringArgument(message,0).ToString().c_str());
+          m_object->GetParentFrame()->SendMessage(WM_PASTECODE,(WPARAM)code.GetString());
+        }
+        else if (name == "I7.createNewProject")
+        {
+          CStringW title = UnescapeUnicode(GetStringArgument(message,0).ToString().c_str());
+          CStringW code = UnescapeUnicode(GetStringArgument(message,1).ToString().c_str());
+          m_object->GetParentFrame()->SendMessage(WM_NEWPROJECT,
+            (WPARAM)(LPCWSTR)code,(LPARAM)(LPCWSTR)title);
+        }
+        else if (name == "I7.openFile")
+        {
+          std::string path = GetStringArgument(message,0).ToString();
+          DWORD attrs = ::GetFileAttributes(path.c_str());
+          if (attrs != INVALID_FILE_ATTRIBUTES)
+          {
+            if (attrs & FILE_ATTRIBUTE_DIRECTORY)
+            {
+              // For directories, open an Explorer window
+              ::ShellExecute(0,"explore",path.c_str(),NULL,NULL,SW_SHOWNORMAL);
+            }
+            else
+            {
+              // For files, open them with the default action
+              SHELLEXECUTEINFO exec;
+              ::ZeroMemory(&exec,sizeof exec);
+              exec.cbSize = sizeof exec;
+              exec.fMask = SEE_MASK_FLAG_NO_UI;
+              exec.hwnd = m_object->GetParentFrame()->GetSafeHwnd();
+              exec.lpVerb = "open";
+              exec.lpFile = path.c_str();
+              exec.nShow = SW_SHOWNORMAL;
+              if (!::ShellExecuteEx(&exec))
+              {
+                // If there is no default association, let the user choose
+                if (::GetLastError() == ERROR_NO_ASSOCIATION)
+                {
+                  exec.fMask &= ~SEE_MASK_FLAG_NO_UI;
+                  exec.lpVerb = "openas";
+                  ::ShellExecuteEx(&exec);
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -392,6 +452,29 @@ private:
         return arguments->GetString(index);
     }
     return "";
+  }
+
+  CStringW UnescapeUnicode(const char* input)
+  {
+    size_t len = strlen(input);
+    CStringW output;
+    output.Preallocate((int)len);
+    for (size_t i = 0; i < len; i++)
+    {
+      char c = input[i];
+      if (c == '[')
+      {
+        int unicode = 0;
+        if (sscanf(input+i,"[=0x%x=]",&unicode) == 1)
+        {
+          output.AppendChar((char)unicode);
+          i += 9;
+          continue;
+        }
+      }
+      output.AppendChar(c);
+    }
+    return output;
   }
 
   ReportHtml* m_object;
@@ -668,12 +751,6 @@ HRESULT ReportHtml::OnShowContextMenu(DWORD dwID,  LPPOINT ppt, LPUNKNOWN pcmdTa
   return S_OK;
 }
 
-HRESULT ReportHtml::OnGetExternal(LPDISPATCH *lppDispatch)
-{
-  *lppDispatch = m_scriptExternal.GetIDispatch(TRUE);
-  return S_OK;
-}
-
 HRESULT ReportHtml::OnTranslateAccelerator(LPMSG lpMsg, const GUID* pguidCmdGroup, DWORD nCmdID)
 {
   if ((lpMsg != NULL) && (lpMsg->message == WM_SYSKEYDOWN))
@@ -855,75 +932,10 @@ void ReportHtml::OnTimer(UINT_PTR nIDEvent)
 // COM object for the Javascript project object
 
 BEGIN_DISPATCH_MAP(ScriptProject,CCmdTarget)
-  DISP_FUNCTION(ScriptProject,"pasteCode",PasteCode,VT_EMPTY,VTS_WBSTR)
-  DISP_FUNCTION(ScriptProject,"createNewProject",CreateNewProject,VT_EMPTY,VTS_WBSTR VTS_WBSTR)
-  DISP_FUNCTION(ScriptProject,"openFile",OpenFile,VT_EMPTY,VTS_WBSTR)
-  DISP_FUNCTION(ScriptProject,"openUrl",OpenUrl,VT_EMPTY,VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"askInterfaceForLocalVersion",ExtCompareVersion,VT_BSTR,VTS_WBSTR VTS_WBSTR VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"askInterfaceForLocalVersionText",ExtGetVersion,VT_BSTR,VTS_WBSTR VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"downloadMultipleExtensions",ExtDownload,VT_EMPTY,VTS_VARIANT)
 END_DISPATCH_MAP()
-
-void ScriptProject::PasteCode(LPCWSTR code)
-{
-  CStringW theCode = UnescapeUnicode(code);
-  m_html->GetParentFrame()->SendMessage(WM_PASTECODE,(WPARAM)(LPCWSTR)theCode);
-}
-
-void ScriptProject::CreateNewProject(LPCWSTR title, LPCWSTR code)
-{
-  CStringW theTitle = UnescapeUnicode(title);
-  CStringW theCode = UnescapeUnicode(code);
-  m_html->GetParentFrame()->SendMessage(WM_NEWPROJECT,
-    (WPARAM)(LPCWSTR)theCode,(LPARAM)(LPCWSTR)theTitle);
-}
-
-void ScriptProject::OpenFile(LPCWSTR path)
-{
-  CString pathA(path);
-  DWORD attrs = ::GetFileAttributes(pathA);
-
-  // Older versions of Windows Explorer don't like forward slashes
-  pathA.Replace('/','\\');
-
-  if (attrs != INVALID_FILE_ATTRIBUTES)
-  {
-    if (attrs & FILE_ATTRIBUTE_DIRECTORY)
-    {
-      // For directories, open an Explorer window
-      ::ShellExecute(0,"explore",pathA,NULL,NULL,SW_SHOWNORMAL);
-    }
-    else
-    {
-      // For files, open them with the default action
-      SHELLEXECUTEINFO exec;
-      ::ZeroMemory(&exec,sizeof exec);
-      exec.cbSize = sizeof exec;
-      exec.fMask = SEE_MASK_FLAG_NO_UI;
-      exec.hwnd = m_html->GetParentFrame()->GetSafeHwnd();
-      exec.lpVerb = "open";
-      exec.lpFile = pathA;
-      exec.nShow = SW_SHOWNORMAL;
-      if (!::ShellExecuteEx(&exec))
-      {
-        // If there is no default association, let the user choose
-        if (::GetLastError() == ERROR_NO_ASSOCIATION)
-        {
-          exec.fMask &= ~SEE_MASK_FLAG_NO_UI;
-          exec.lpVerb = "openas";
-          ::ShellExecuteEx(&exec);
-        }
-      }
-    }
-  }
-}
-
-void ScriptProject::OpenUrl(LPCWSTR url)
-{
-  // Open an Explorer window
-  CString urlA(url);
-  ::ShellExecute(0,0,urlA,NULL,NULL,SW_SHOWNORMAL);
-}
 
 BSTR ScriptProject::ExtCompareVersion(LPCWSTR author, LPCWSTR title, LPCWSTR compare)
 {
@@ -1011,29 +1023,6 @@ void ScriptProject::ExtDownload(VARIANT& extArray)
     }
   }
   m_html->GetParentFrame()->PostMessage(WM_EXTDOWNLOAD,(WPARAM)libraryUrls);
-}
-
-CStringW ScriptProject::UnescapeUnicode(LPCWSTR input)
-{
-  size_t len = wcslen(input);
-  CStringW output;
-  output.Preallocate((int)len);
-  for (size_t i = 0; i < len; i++)
-  {
-    wchar_t c = input[i];
-    if (c == '[')
-    {
-      int unicode = 0;
-      if (swscanf(input+i,L"[=0x%x=]",&unicode) == 1)
-      {
-        output.AppendChar((wchar_t)unicode);
-        i += 9;
-        continue;
-      }
-    }
-    output.AppendChar(c);
-  }
-  return output;
 }
 
 LRESULT IEWnd::OnInitMenuPopup(WPARAM, LPARAM)
