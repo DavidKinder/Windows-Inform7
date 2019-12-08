@@ -18,6 +18,12 @@
 CefSettings cefSettings;
 CefBrowserSettings cefBrowserSettings;
 
+// Test whether the given file exists
+static bool FileExists(const char* path)
+{
+  return (::GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES);
+}
+
 // Implementation of inform: handler
 class I7SchemeHandler : public CefResourceHandler
 {
@@ -31,6 +37,8 @@ public:
     delete[] m_data;
   }
 
+  // Open an inform: request. If the file exists read it in and handle the request
+  // straight away.
   bool Open(CefRefPtr<CefRequest> request, bool& handle_request, CefRefPtr<CefCallback>)
   {
     ASSERT(m_data == NULL);
@@ -71,6 +79,7 @@ public:
     return false;
   }
 
+  // Show the resource as ready and set the appropriate MIME type
   void GetResponseHeaders(
     CefRefPtr<CefResponse> response, int64& response_length, CefString&)
   {
@@ -83,6 +92,7 @@ public:
   {
   }
 
+  // Copy out part of the file that we have read in Open()
   bool Read(void* data_out, int bytes_to_read, int& bytes_read, CefRefPtr<CefResourceReadCallback>)
   {
     if (m_dataOffset < m_dataLen)
@@ -100,6 +110,7 @@ public:
     return false;
   }
 
+  // Convert an inform: URL to a file path
   static CString ConvertUrlToPath(const char* url)
   {
     if (strncmp(url,"inform:",7) != 0)
@@ -147,6 +158,7 @@ public:
 private:
   IMPLEMENT_REFCOUNTING(I7SchemeHandler);
 
+  // Remove HTML-like escapes (e.g. "%20") from the input string
   static CString Unescape(const char* input)
   {
     int len = (int)strlen(input);
@@ -175,11 +187,6 @@ private:
     return output;
   }
 
-  static bool FileExists(const char* path)
-  {
-    return (::GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES);
-  }
-
 private:
   char* m_data;
   int64 m_dataLen;
@@ -191,10 +198,13 @@ private:
 class I7JavaScriptHandler : public CefV8Handler
 {
 public:
+  // The handler constructor takes a reference to the frame for sending process messages
   I7JavaScriptHandler(CefRefPtr<CefFrame> frame) : m_frame(frame)
   {
   }
 
+  // Handle executing one of our JavaScript callback functions. Those that cannot be implemented
+  // in the render process are passed to the browser process via a process message.
   bool Execute(const CefString& name, CefRefPtr<CefV8Value>,
     const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString&)
   {
@@ -210,20 +220,25 @@ public:
     {
       // We don't need anything from the browser process for this,
       // so just pass the URL to the shell.
-      if (arguments.size() == 1)
-      {
-        CefRefPtr<CefV8Value> argument = arguments[0];
-        if (argument->IsString())
-        {
-          std::string url = argument->GetStringValue().ToString();
-          ::ShellExecute(0,0,url.c_str(),NULL,NULL,SW_SHOWNORMAL);
-        }
-      }
+      std::string url = GetStringArgument(arguments,0).ToString();
+      ::ShellExecute(0,0,url.c_str(),NULL,NULL,SW_SHOWNORMAL);
+    }
+    else if (name == "askInterfaceForLocalVersion")
+    {
+      CefString author = GetStringArgument(arguments,0);
+      CefString title = GetStringArgument(arguments,1);
+      CefString compare = GetStringArgument(arguments,2);
+      CefString result = AskForLocalVersion(
+        author.ToString().c_str(),title.ToString().c_str(),compare.c_str());
+      retval = CefV8Value::CreateString(result);
     }
     return true;
   }
 
 private:
+  // Given a name and a list of JavaScript arguments, send a process message to the
+  // browser process containing those arguments. At present only string arguments are
+  // supported.
   void SendMessage(const char* name, const CefV8ValueList& arguments)
   {
     CefRefPtr<CefProcessMessage> msg = CefProcessMessage::Create(name);
@@ -235,6 +250,61 @@ private:
         msgArgs->SetString(i,argument->GetStringValue());
     }
     m_frame->SendProcessMessage(PID_BROWSER,msg);
+  }
+
+  // Return the string form of a JavaScript function call argument
+  CefString GetStringArgument(const CefV8ValueList& arguments, int index)
+  {
+    if (arguments.size() > index)
+    {
+      CefRefPtr<CefV8Value> argument = arguments[index];
+      if (argument->IsString())
+        return argument->GetStringValue();
+    }
+    return "";
+  }
+
+  // Find the installed extension, if present, and compare its version against
+  // the supplied version.
+  CefString AskForLocalVersion(const char* author, const char* title, LPCWSTR compare)
+  {
+    CString path;
+    path.Format("%s\\Internal\\Extensions\\%s\\%s.i7x",(LPCSTR)theApp.GetAppDir(),author,title);
+    if (FileExists(path))
+      return "!";
+
+    path.Format("%s\\Inform\\Extensions\\%s\\%s.i7x",(LPCSTR)theApp.GetHomeDir(),author,title);
+    if (FileExists(path))
+    {
+      CStringW extLine = ExtensionFrame::ReadExtensionFirstLine(path);
+      if (!extLine.IsEmpty())
+      {
+        CStringW extName, extAuthor, extVersion;
+        if (ExtensionFrame::IsValidExtension(extLine,extName,extAuthor,extVersion))
+        {
+          int extNumber, compareNumber;
+          if (swscanf(extVersion,L"Version %d",&extNumber) == 1)
+          {
+            if (swscanf(compare,L"Version %d",&compareNumber) == 1)
+            {
+              if (extNumber < compareNumber)
+                return "<";
+              else if (extNumber > compareNumber)
+                return ">";
+            }
+          }
+
+          int c = extVersion.Compare(compare);
+          if (c == 0)
+            return "=";
+          else if (c < 0)
+            return "<";
+          else
+            return ">";
+        }
+      }
+    }
+    return "";
   }
 
   IMPLEMENT_REFCOUNTING(I7JavaScriptHandler);
@@ -253,6 +323,7 @@ public:
   {
   }
 
+  // Register our custom inform: scheme
   void OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar)
   {
     registrar->AddCustomScheme(
@@ -264,6 +335,7 @@ public:
     return this;
   }
 
+  // Implement CefBrowserProcessHandler to register our custom inform: scheme
   void OnContextInitialized()
   {
     CefRegisterSchemeHandlerFactory("inform","",this);
@@ -274,6 +346,7 @@ public:
     return this;
   }
 
+  // Implement CefRenderProcessHandler to add JavaScript function callbacks
   void OnContextCreated(CefRefPtr<CefBrowser>,
     CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
   {
@@ -304,6 +377,7 @@ public:
   }
 
 private:
+  // Add the named function to the given JavaScript object
   void AddMethod(CefRefPtr<CefV8Value> obj, const char* name, CefRefPtr<CefV8Handler> handler)
   {
     obj->SetValue(name,CefV8Value::CreateFunction(name,handler),V8_PROPERTY_ATTRIBUTE_NONE);
@@ -320,11 +394,13 @@ public:
   {
   }
 
+  // Set the application callback object
   void SetObject(ReportHtml* obj)
   {
     m_object = obj;
   }
 
+  // Implement CefClient to handle process messages from the renderer process
   bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
     CefRefPtr<CefFrame>, CefProcessId, CefRefPtr<CefProcessMessage> message)
   {
@@ -332,6 +408,7 @@ public:
     {
       if (m_object)
       {
+        // Implement our JavaScript callback functions that affect the front-end
         CefString name = message->GetName();
         if (name == "I7.selectView")
         {
@@ -354,37 +431,7 @@ public:
         else if (name == "I7.openFile")
         {
           std::string path = GetStringArgument(message,0).ToString();
-          DWORD attrs = ::GetFileAttributes(path.c_str());
-          if (attrs != INVALID_FILE_ATTRIBUTES)
-          {
-            if (attrs & FILE_ATTRIBUTE_DIRECTORY)
-            {
-              // For directories, open an Explorer window
-              ::ShellExecute(0,"explore",path.c_str(),NULL,NULL,SW_SHOWNORMAL);
-            }
-            else
-            {
-              // For files, open them with the default action
-              SHELLEXECUTEINFO exec;
-              ::ZeroMemory(&exec,sizeof exec);
-              exec.cbSize = sizeof exec;
-              exec.fMask = SEE_MASK_FLAG_NO_UI;
-              exec.hwnd = m_object->GetParentFrame()->GetSafeHwnd();
-              exec.lpVerb = "open";
-              exec.lpFile = path.c_str();
-              exec.nShow = SW_SHOWNORMAL;
-              if (!::ShellExecuteEx(&exec))
-              {
-                // If there is no default association, let the user choose
-                if (::GetLastError() == ERROR_NO_ASSOCIATION)
-                {
-                  exec.fMask &= ~SEE_MASK_FLAG_NO_UI;
-                  exec.lpVerb = "openas";
-                  ::ShellExecuteEx(&exec);
-                }
-              }
-            }
-          }
+          OpenFile(path.c_str());
         }
       }
     }
@@ -398,6 +445,7 @@ public:
     return this;
   }
 
+  // Implement CefRequestHandler to generate notifications on the page changing
   bool OnBeforeBrowse(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame,
     CefRefPtr<CefRequest> request, bool user_gesture, bool)
   {
@@ -417,6 +465,7 @@ public:
     return this;
   }
 
+  // Implement CefLoadHandler to generate notifications on a page load completing
   void OnLoadEnd(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame, int)
   {
     if (CefCurrentlyOn(TID_UI))
@@ -428,6 +477,7 @@ public:
       ASSERT(FALSE);
   }
 
+  // Implement CefLoadHandler to generate notifications on a page load error
   void OnLoadError(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame,
     ErrorCode, const CefString&, const CefString& failedUrl)
   {
@@ -443,6 +493,7 @@ public:
 private:
   IMPLEMENT_REFCOUNTING(I7CefClient);
 
+  // Given a process message, extract a string argument from it
   CefString GetStringArgument(CefRefPtr<CefProcessMessage> message, int index)
   {
     CefRefPtr<CefListValue> arguments = message->GetArgumentList();
@@ -454,6 +505,7 @@ private:
     return "";
   }
 
+  // Remove NI-generated escapes (e.g. "[=0x20=]") from the input string
   CStringW UnescapeUnicode(const char* input)
   {
     size_t len = strlen(input);
@@ -477,6 +529,42 @@ private:
     return output;
   }
 
+  // Open the given file or directory in Windows Explorer
+  void OpenFile(const char* path)
+  {
+    DWORD attrs = ::GetFileAttributes(path);
+    if (attrs != INVALID_FILE_ATTRIBUTES)
+    {
+      if (attrs & FILE_ATTRIBUTE_DIRECTORY)
+      {
+        // For directories, open an Explorer window
+        ::ShellExecute(0,"explore",path,NULL,NULL,SW_SHOWNORMAL);
+      }
+      else
+      {
+        // For files, open them with the default action
+        SHELLEXECUTEINFO exec;
+        ::ZeroMemory(&exec,sizeof exec);
+        exec.cbSize = sizeof exec;
+        exec.fMask = SEE_MASK_FLAG_NO_UI;
+        exec.hwnd = m_object->GetParentFrame()->GetSafeHwnd();
+        exec.lpVerb = "open";
+        exec.lpFile = path;
+        exec.nShow = SW_SHOWNORMAL;
+        if (!::ShellExecuteEx(&exec))
+        {
+          // If there is no default association, let the user choose
+          if (::GetLastError() == ERROR_NO_ASSOCIATION)
+          {
+            exec.fMask &= ~SEE_MASK_FLAG_NO_UI;
+            exec.lpVerb = "openas";
+            ::ShellExecuteEx(&exec);
+          }
+        }
+      }
+    }
+  }
+
   ReportHtml* m_object;
 };
 
@@ -489,6 +577,7 @@ struct ReportHtml::Private : public CefRefPtr<CefBrowser>
 
 IMPLEMENT_DYNCREATE(ReportHtml, CWnd)
 
+// Given a root and a path, combine the two into a UTF-8 encoded string
 static std::string GetUTF8Path(const char* root, const char* path)
 {
   CString fullPath;
@@ -497,6 +586,7 @@ static std::string GetUTF8Path(const char* root, const char* path)
   return utf8Path.GetString();
 }
 
+// Initialize CEF
 bool ReportHtml::InitWebBrowser(void)
 {
   // If this is a CEF sub-process, call CEF straight away
@@ -524,17 +614,20 @@ bool ReportHtml::InitWebBrowser(void)
   return true;
 }
 
+// Shut down CEF
 void ReportHtml::ShutWebBrowser(void)
 {
   CefShutdown();
 }
 
+// Do an iteration of the CEF message loop
 void ReportHtml::DoWebBrowserWork(void)
 {
   for (int i = 0; i < 10; i++)
     CefDoMessageLoopWork();
 }
 
+// Notify all web browser instances that preferences have been changed
 void ReportHtml::UpdateWebBrowserPreferences(void)
 {
 }
@@ -552,6 +645,7 @@ ReportHtml::~ReportHtml()
   delete m_private;
 }
 
+// Create a CEF instance and attach it to this object
 BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
   const RECT& rect, CWnd* parentWnd, UINT id, CCreateContext*)
 {
@@ -573,6 +667,7 @@ BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
   return TRUE;
 }
 
+// Navigate to the given URL
 void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
 {
   // Stop any current page loading
@@ -583,21 +678,25 @@ void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
   m_private->browser->GetMainFrame()->LoadURL(url);
 }
 
+// Get the current URL for this control
 CString ReportHtml::GetURL(void)
 {
   return m_url;
 }
 
+// Refresh the currently loaded page
 void ReportHtml::Refresh(void)
 {
   m_private->browser->Reload();
 }
 
+// Execute the given JavaScript code
 void ReportHtml::RunJavaScript(const char* code)
 {
   m_private->browser->GetMainFrame()->ExecuteJavaScript(code,"",0);
 }
 
+// Notify any consumer of a navigation event
 bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
 {
   if (m_consumer)
@@ -651,18 +750,21 @@ bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
   return false;
 }
 
+// Notify any consumer of a load completion event
 void ReportHtml::OnLoadEnd(void)
 {
   if (m_consumer)
     m_consumer->LinkDone();
 }
 
+// Notify any consumer of a load error event
 void ReportHtml::OnLoadError(const char* url)
 {
   if (m_consumer)
     m_consumer->LinkError(url);
 }
 
+// Set the consumer of web link related events
 void ReportHtml::SetLinkConsumer(LinkConsumer* consumer)
 {
   m_consumer = consumer;
@@ -932,49 +1034,9 @@ void ReportHtml::OnTimer(UINT_PTR nIDEvent)
 // COM object for the Javascript project object
 
 BEGIN_DISPATCH_MAP(ScriptProject,CCmdTarget)
-  DISP_FUNCTION(ScriptProject,"askInterfaceForLocalVersion",ExtCompareVersion,VT_BSTR,VTS_WBSTR VTS_WBSTR VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"askInterfaceForLocalVersionText",ExtGetVersion,VT_BSTR,VTS_WBSTR VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"downloadMultipleExtensions",ExtDownload,VT_EMPTY,VTS_VARIANT)
 END_DISPATCH_MAP()
-
-BSTR ScriptProject::ExtCompareVersion(LPCWSTR author, LPCWSTR title, LPCWSTR compare)
-{
-  const InformApp::ExtLocation* ext = theApp.GetExtension(CString(author),CString(title));
-  if (ext != NULL)
-  {
-    if (ext->system)
-      return ::SysAllocString(L"!");
-
-    CStringW extLine = ExtensionFrame::ReadExtensionFirstLine(ext->path.c_str());
-    if (!extLine.IsEmpty())
-    {
-      CStringW extName, extAuthor, extVersion;
-      if (ExtensionFrame::IsValidExtension(extLine,extName,extAuthor,extVersion))
-      {
-        int extNumber, compareNumber;
-        if (swscanf(extVersion,L"Version %d",&extNumber) == 1)
-        {
-          if (swscanf(compare,L"Version %d",&compareNumber) == 1)
-          {
-            if (extNumber < compareNumber)
-              return ::SysAllocString(L"<");
-            else if (extNumber > compareNumber)
-              return ::SysAllocString(L">");
-          }
-        }
-
-        int c = extVersion.Compare(compare);
-        if (c == 0)
-          return ::SysAllocString(L"=");
-        else if (c < 0)
-          return ::SysAllocString(L"<");
-        else
-          return ::SysAllocString(L">");
-      }
-    }
-  }
-  return ::SysAllocString(L"");
-}
 
 BSTR ScriptProject::ExtGetVersion(LPCWSTR author, LPCWSTR title)
 {
