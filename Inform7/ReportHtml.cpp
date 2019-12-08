@@ -232,22 +232,50 @@ public:
         author.ToString().c_str(),title.ToString().c_str(),compare.c_str());
       retval = CefV8Value::CreateString(result);
     }
+    else if (name == "askInterfaceForLocalVersionText")
+    {
+      CefString author = GetStringArgument(arguments,0);
+      CefString title = GetStringArgument(arguments,1);
+      CefString result = AskForLocalVersionText(
+        author.ToString().c_str(),title.ToString().c_str());
+      retval = CefV8Value::CreateString(result);
+    }
+    else if (name == "downloadMultipleExtensions")
+    {
+      if (arguments.size() == 1)
+      {
+        CefRefPtr<CefV8Value> argument = arguments[0];
+        if (argument->IsArray())
+        {
+          CefRefPtr<CefProcessMessage> msg = CefProcessMessage::Create("I7.downloadExts");
+          CefRefPtr<CefListValue> msgArgs = msg->GetArgumentList();
+          int msgArgIdx = 0;
+          for (int i = 0; i < argument->GetArrayLength(); i += 3)
+          {
+            CefRefPtr<CefV8Value> element = argument->GetValue(i+1);
+            if (element.get() && element->IsString())
+              msgArgs->SetString(msgArgIdx++,element->GetStringValue());
+          }
+          m_frame->SendProcessMessage(PID_BROWSER,msg);
+        }
+      }
+    }
     return true;
   }
 
 private:
   // Given a name and a list of JavaScript arguments, send a process message to the
-  // browser process containing those arguments. At present only string arguments are
-  // supported.
+  // browser process containing those arguments. Only strings are currently supported.
   void SendMessage(const char* name, const CefV8ValueList& arguments)
   {
     CefRefPtr<CefProcessMessage> msg = CefProcessMessage::Create(name);
     CefRefPtr<CefListValue> msgArgs = msg->GetArgumentList();
+    int msgArgIdx = 0;
     for (int i = 0; i < arguments.size(); i++)
     {
       CefRefPtr<CefV8Value> argument = arguments[i];
       if (argument->IsString())
-        msgArgs->SetString(i,argument->GetStringValue());
+        msgArgs->SetString(msgArgIdx++,argument->GetStringValue());
     }
     m_frame->SendProcessMessage(PID_BROWSER,msg);
   }
@@ -303,6 +331,29 @@ private:
             return ">";
         }
       }
+    }
+    return "";
+  }
+
+  // Find the installed extension, if present, and return its version string.
+  CefString AskForLocalVersionText(const char* author, const char* title)
+  {
+    // Find the extension
+    CString path;
+    path.Format("%s\\Internal\\Extensions\\%s\\%s.i7x",(LPCSTR)theApp.GetAppDir(),author,title);
+    if (!FileExists(path))
+    {
+      path.Format("%s\\Inform\\Extensions\\%s\\%s.i7x",(LPCSTR)theApp.GetHomeDir(),author,title);
+      if (!FileExists(path))
+        return "";
+    }
+
+    CStringW extLine = ExtensionFrame::ReadExtensionFirstLine(path);
+    if (!extLine.IsEmpty())
+    {
+      CStringW extName, extAuthor, extVersion;
+      if (ExtensionFrame::IsValidExtension(extLine,extName,extAuthor,extVersion))
+        return (LPCWSTR)extVersion;
     }
     return "";
   }
@@ -432,6 +483,16 @@ public:
         {
           std::string path = GetStringArgument(message,0).ToString();
           OpenFile(path.c_str());
+        }
+        else if (name == "I7.downloadExts")
+        {
+          CStringArray* libraryUrls = new CStringArray();
+          for (int i = 0; i < message->GetArgumentList()->GetSize(); i++)
+          {
+            CString libraryUrl = GetStringArgument(message,i).ToString().c_str();
+            libraryUrls->Add(libraryUrl);
+          }
+          m_object->GetParentFrame()->PostMessage(WM_EXTDOWNLOAD,(WPARAM)libraryUrls);
         }
       }
     }
@@ -1029,62 +1090,6 @@ void ReportHtml::OnTimer(UINT_PTR nIDEvent)
       m_find.Empty();
     }
   }
-}
-
-// COM object for the Javascript project object
-
-BEGIN_DISPATCH_MAP(ScriptProject,CCmdTarget)
-  DISP_FUNCTION(ScriptProject,"askInterfaceForLocalVersionText",ExtGetVersion,VT_BSTR,VTS_WBSTR VTS_WBSTR)
-  DISP_FUNCTION(ScriptProject,"downloadMultipleExtensions",ExtDownload,VT_EMPTY,VTS_VARIANT)
-END_DISPATCH_MAP()
-
-BSTR ScriptProject::ExtGetVersion(LPCWSTR author, LPCWSTR title)
-{
-  const InformApp::ExtLocation* ext = theApp.GetExtension(CString(author),CString(title));
-  if (ext != NULL)
-  {
-    CStringW extLine = ExtensionFrame::ReadExtensionFirstLine(ext->path.c_str());
-    if (!extLine.IsEmpty())
-    {
-      CStringW extName, extAuthor, extVersion;
-      if (ExtensionFrame::IsValidExtension(extLine,extName,extAuthor,extVersion))
-        return extVersion.AllocSysString();
-    }
-  }
-  return ::SysAllocString(L"");
-}
-
-void ScriptProject::ExtDownload(VARIANT& extArray)
-{
-  if (extArray.vt != VT_DISPATCH)
-    return;
-
-  DISPID lengthId;
-  OLECHAR* lengthName = L"length";
-  if (FAILED(extArray.pdispVal->GetIDsOfNames(IID_NULL,&lengthName,1,LOCALE_SYSTEM_DEFAULT,&lengthId)))
-    return;
-
-  COleDispatchDriver driver(extArray.pdispVal,FALSE);
-  long length = 0;
-  driver.GetProperty(lengthId,VT_I4,&length);
-  if (length <= 0)
-    return;
-
-  CStringArray* libraryUrls = new CStringArray();
-  for (long i = 0; i < length; i += 3)
-  {
-    DISPID indexId;
-    CStringW indexName;
-    indexName.Format(L"%d",i+1);
-    LPCWSTR indexStr = indexName;
-    if (SUCCEEDED(extArray.pdispVal->GetIDsOfNames(IID_NULL,(LPOLESTR*)&indexStr,1,LOCALE_SYSTEM_DEFAULT,&indexId)))
-    {
-      CString libraryUrl;
-      driver.GetProperty(indexId,VT_BSTR,&libraryUrl);
-      libraryUrls->Add(libraryUrl);
-    }
-  }
-  m_html->GetParentFrame()->PostMessage(WM_EXTDOWNLOAD,(WPARAM)libraryUrls);
 }
 
 LRESULT IEWnd::OnInitMenuPopup(WPARAM, LPARAM)
