@@ -191,14 +191,41 @@ private:
 class I7JavaScriptHandler : public CefV8Handler
 {
 public:
+  I7JavaScriptHandler(CefRefPtr<CefFrame> frame) : m_frame(frame)
+  {
+  }
+
   bool Execute(const CefString& name, CefRefPtr<CefV8Value>,
     const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString&)
   {
+    if (name == "selectView")
+    {
+      // Create a message to go to the browser
+      CefRefPtr<CefProcessMessage> msg = CefProcessMessage::Create("I7.selectView");
+      CefRefPtr<CefListValue> args = msg->GetArgumentList();
+      args->SetString(0,GetStringArgument(arguments,0));
+
+      // Send the message
+      m_frame->SendProcessMessage(PID_BROWSER,msg);
+    }
     return true;
   }
 
 private:
+  CefString GetStringArgument(const CefV8ValueList& arguments, int index)
+  {
+    if (arguments.size() > index)
+    {
+      CefRefPtr<CefV8Value> argument = arguments[index];
+      if (argument->IsString())
+        return argument->GetStringValue();
+    }
+    return "";
+  }
+
   IMPLEMENT_REFCOUNTING(I7JavaScriptHandler);
+
+  CefRefPtr<CefFrame> m_frame;
 };
 
 // Application level callbacks for all browser instances
@@ -233,11 +260,12 @@ public:
     return this;
   }
 
-  void OnContextCreated(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, CefRefPtr<CefV8Context> context)
+  void OnContextCreated(CefRefPtr<CefBrowser>,
+    CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
   {
     // Create an object with our JavaScript methods
     CefRefPtr<CefV8Value> obj = CefV8Value::CreateObject(NULL,NULL);
-    CefRefPtr<CefV8Handler> handler = new I7JavaScriptHandler();
+    CefRefPtr<CefV8Handler> handler = new I7JavaScriptHandler(frame);
     AddMethod(obj,"selectView",handler);
     AddMethod(obj,"pasteCode",handler);
     AddMethod(obj,"createNewProject",handler);
@@ -282,6 +310,27 @@ public:
   void SetObject(ReportHtml* obj)
   {
     m_object = obj;
+  }
+
+  bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame>, CefProcessId, CefRefPtr<CefProcessMessage> message)
+  {
+    if (CefCurrentlyOn(TID_UI))
+    {
+      if (m_object)
+      {
+        CefString name = message->GetName();
+        if (name == "I7.selectView")
+        {
+          std::string view = GetStringArgument(message,0).ToString();
+          m_object->GetParentFrame()->SendMessage(WM_SELECTVIEW,
+            (WPARAM)view.c_str(),(LPARAM)m_object->GetSafeHwnd());
+        }
+      }
+    }
+    else
+      ASSERT(FALSE);
+    return false;
   }
 
   CefRefPtr<CefRequestHandler> GetRequestHandler()
@@ -333,6 +382,17 @@ public:
 
 private:
   IMPLEMENT_REFCOUNTING(I7CefClient);
+
+  CefString GetStringArgument(CefRefPtr<CefProcessMessage> message, int index)
+  {
+    CefRefPtr<CefListValue> arguments = message->GetArgumentList();
+    if (arguments->GetSize() > index)
+    {
+      if (arguments->GetType(index) == VTYPE_STRING)
+        return arguments->GetString(index);
+    }
+    return "";
+  }
 
   ReportHtml* m_object;
 };
@@ -486,11 +546,14 @@ bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
     }
   }
 
-  // Open links to the Int-Fiction forum (from the Public Library) in a browser
-  if (strncmp(url,"http://www.intfiction.org/",26) == 0)
+  if (strncmp(url,"http",4) == 0)
   {
-    ::ShellExecute(0,NULL,url,NULL,NULL,SW_SHOWNORMAL);
-    return true;
+    // Web links to anything other than the Public Library go to a separate browser
+    if (strncmp(url,"http://www.emshort.com/pl",25) != 0)
+    {
+      ::ShellExecute(0,NULL,url,NULL,NULL,SW_SHOWNORMAL);
+      return true;
+    }
   }
 
   // If this navigation is due to the user, tell the parent window that the URL has changed
@@ -792,7 +855,6 @@ void ReportHtml::OnTimer(UINT_PTR nIDEvent)
 // COM object for the Javascript project object
 
 BEGIN_DISPATCH_MAP(ScriptProject,CCmdTarget)
-  DISP_FUNCTION(ScriptProject,"selectView",SelectView,VT_EMPTY,VTS_BSTR)
   DISP_FUNCTION(ScriptProject,"pasteCode",PasteCode,VT_EMPTY,VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"createNewProject",CreateNewProject,VT_EMPTY,VTS_WBSTR VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"openFile",OpenFile,VT_EMPTY,VTS_WBSTR)
@@ -801,12 +863,6 @@ BEGIN_DISPATCH_MAP(ScriptProject,CCmdTarget)
   DISP_FUNCTION(ScriptProject,"askInterfaceForLocalVersionText",ExtGetVersion,VT_BSTR,VTS_WBSTR VTS_WBSTR)
   DISP_FUNCTION(ScriptProject,"downloadMultipleExtensions",ExtDownload,VT_EMPTY,VTS_VARIANT)
 END_DISPATCH_MAP()
-
-void ScriptProject::SelectView(LPCSTR view)
-{
-  m_html->GetParentFrame()->SendMessage(
-    WM_SELECTVIEW,(WPARAM)view,(LPARAM)m_html->GetSafeHwnd());
-}
 
 void ScriptProject::PasteCode(LPCWSTR code)
 {
