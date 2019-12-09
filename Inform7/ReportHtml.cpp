@@ -693,7 +693,7 @@ void ReportHtml::UpdateWebBrowserPreferences(void)
 {
 }
 
-ReportHtml::ReportHtml() : m_consumer(NULL)
+ReportHtml::ReportHtml() : m_setFocus(false), m_consumer(NULL)
 {
   m_private = new Private();
 }
@@ -736,6 +736,7 @@ void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
     m_private->browser->StopLoad();
 
   m_url = url;
+  m_setFocus = focus;
   m_private->browser->GetMainFrame()->LoadURL(url);
 }
 
@@ -816,6 +817,9 @@ void ReportHtml::OnLoadEnd(void)
 {
   if (m_consumer)
     m_consumer->LinkDone();
+
+  if (m_setFocus && (m_url != "about:blank"))
+    SetFocusOnContent();
 }
 
 // Notify any consumer of a load error event
@@ -829,6 +833,20 @@ void ReportHtml::OnLoadError(const char* url)
 void ReportHtml::SetLinkConsumer(LinkConsumer* consumer)
 {
   m_consumer = consumer;
+}
+
+void ReportHtml::SetFocusOnContent(void)
+{
+  CPoint point(0,0);
+  ClientToScreen(&point);
+  CWnd* wnd = WindowFromPoint(point);
+  if (wnd != NULL)
+    wnd->SetFocus();
+}
+
+void ReportHtml::SetFocusFlag(bool focus)
+{
+  m_setFocus = focus;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -994,22 +1012,6 @@ void ReportHtml::SetIEPreferences(const char* path)
   }
 }
 */
-
-void ReportHtml::SetFocusOnContent(void)
-{
-/*
-  CPoint point(0,0);
-  ClientToScreen(&point);
-  CWnd* wnd = WindowFromPoint(point);
-  if (wnd != NULL)
-    wnd->SetFocus();
-*/
-}
-
-void ReportHtml::SetFocusFlag(bool focus)
-{
-//  m_setFocus = focus;
-}
 
 /*
 void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)

@@ -46,6 +46,7 @@ private:
   Private* m_private;
 
   CString m_url;
+  bool m_setFocus;
   LinkConsumer* m_consumer;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -63,8 +64,6 @@ protected:
 
 private:
   void HighlightFound(bool goToFound);
-
-  bool m_setFocus;
 
   CStringW m_find;
   int m_findTimer;
