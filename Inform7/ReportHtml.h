@@ -21,6 +21,9 @@ public:
   void Refresh(void);
   void RunJavaScript(const char* code);
 
+  void SetFocusOnContent(void);
+  void SetFocusFlag(bool focus);
+
   bool OnBeforeBrowse(const char* url, bool user);
   void OnLoadEnd(void);
   void OnLoadError(const char* url);
@@ -41,6 +44,9 @@ public:
 protected:
   DECLARE_MESSAGE_MAP()
 
+  afx_msg void OnEditCopy();
+  afx_msg void OnEditSelectAll();
+
 private:
   struct Private;
   Private* m_private;
@@ -51,14 +57,8 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-public:
-  void SetFocusOnContent(void);
-  void SetFocusFlag(bool focus);
-
 /*
 protected:
-  afx_msg void OnEditSelectAll();
-  afx_msg void OnUpdateEditFind(CCmdUI* pCmdUI);
   afx_msg void OnEditFind();
   afx_msg void OnTimer(UINT_PTR nIDEvent);
 

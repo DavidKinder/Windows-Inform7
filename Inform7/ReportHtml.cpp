@@ -849,25 +849,25 @@ void ReportHtml::SetFocusFlag(bool focus)
   m_setFocus = focus;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
 BEGIN_MESSAGE_MAP(ReportHtml, CWnd)
-/*
+  ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
   ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
-  ON_UPDATE_COMMAND_UI(ID_EDIT_FIND, OnUpdateEditFind)
-  ON_COMMAND(ID_EDIT_FIND, OnEditFind)
-  ON_WM_TIMER()
-*/
 END_MESSAGE_MAP()
+
+void ReportHtml::OnEditCopy()
+{
+  m_private->browser->GetMainFrame()->Copy();
+}
+
+void ReportHtml::OnEditSelectAll()
+{
+  m_private->browser->GetMainFrame()->SelectAll();
+}
 
 /*
 void ReportHtml::OnDocumentComplete(LPCTSTR lpszURL)
 {
   CHtmlView::OnDocumentComplete(lpszURL);
-
-  // Make this the active window, except for blank URLs
-  if (m_setFocus && (strcmp(lpszURL,"about:blank") != 0))
-    SetFocusOnContent();
 
   // Highlight found text
   if (strchr(lpszURL,'#') != NULL)
@@ -949,11 +949,6 @@ HRESULT ReportHtml::OnTranslateAccelerator(LPMSG lpMsg, const GUID* pguidCmdGrou
   return S_FALSE;
 }
 
-void ReportHtml::OnEditSelectAll()
-{
-  ExecWB(OLECMDID_SELECTALL,OLECMDEXECOPT_DONTPROMPTUSER,NULL,NULL);
-}
-
 void ReportHtml::OnEditFind()
 {
   IDispatch* disp = GetHtmlDocument();
@@ -967,15 +962,6 @@ void ReportHtml::OnEditFind()
       { 0xED016940L,0xBD5B,0x11CF,{0xBA,0x4E,0x00,0xC0,0x4F,0xD7,0x08,0x16}};
     target->Exec(&CGID_IWebBrowser,1,0,NULL,NULL);
   }
-}
-
-void ReportHtml::OnUpdateEditFind(CCmdUI* pCmdUI)
-{
-  IDispatch* disp = GetHtmlDocument();
-  CComQIPtr<IOleCommandTarget> target(disp);
-  disp->Release();
-
-  pCmdUI->Enable(target != NULL);
 }
 
 void ReportHtml::SetIEPreferences(const char* path)
@@ -1016,8 +1002,6 @@ void ReportHtml::SetIEPreferences(const char* path)
 /*
 void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
 {
-  m_setFocus = focus;
-
   if (find != NULL)
     m_find = find;
   else
