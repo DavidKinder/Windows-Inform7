@@ -932,23 +932,6 @@ HRESULT ReportHtml::OnShowContextMenu(DWORD dwID,  LPPOINT ppt, LPUNKNOWN pcmdTa
   return S_OK;
 }
 
-HRESULT ReportHtml::OnTranslateAccelerator(LPMSG lpMsg, const GUID* pguidCmdGroup, DWORD nCmdID)
-{
-  if ((lpMsg != NULL) && (lpMsg->message == WM_SYSKEYDOWN))
-  {
-    switch (lpMsg->wParam)
-    {
-    case VK_LEFT:
-      GetParent()->PostMessage(WM_COMMAND,ID_NAVIGATE_BACK);
-      return S_OK;
-    case VK_RIGHT:
-      GetParent()->PostMessage(WM_COMMAND,ID_NAVIGATE_FORE);
-      return S_OK;
-    }
-  }
-  return S_FALSE;
-}
-
 void ReportHtml::OnEditFind()
 {
   IDispatch* disp = GetHtmlDocument();
