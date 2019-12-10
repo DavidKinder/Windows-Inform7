@@ -685,7 +685,17 @@ void ReportHtml::ShutWebBrowser(void)
 void ReportHtml::DoWebBrowserWork(void)
 {
   for (int i = 0; i < 10; i++)
+  {
+    // Do some work ...
     CefDoMessageLoopWork();
+
+    // If the main window has gone, stop!
+    if (AfxGetMainWnd() == NULL)
+    {
+      TRACE("Main window gone after CefDoMessageLoopWork(), shutting down\n");
+      ::ExitProcess(0);
+    }
+  }
 }
 
 // Notify all web browser instances that preferences have been changed
