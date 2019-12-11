@@ -910,13 +910,13 @@ void InformApp::CheckInstalledVersions(void)
     CString msg;
     msg.Format("Internet Explorer version 5.5 or higher must be installed.");
     AfxMessageBox(msg,MB_ICONSTOP|MB_OK);
-    exit(0);
+    ::ExitProcess(0);
   }
 
   if (theOS.GetDllVersion("comctl32.dll") < DLLVERSION(5,81))
   {
     AfxMessageBox("comctrl32 5.81 or higher is required.\n",MB_ICONSTOP|MB_OK);
-    exit(0);
+    ::ExitProcess(0);
   }
 
   CComPtr<IXMLDOMDocument> doc;
@@ -925,7 +925,7 @@ void InformApp::CheckInstalledVersions(void)
     AfxMessageBox(
       "Microsoft Data Access Components (MDAC) 2.6 or higher is required.\n"
       "MDAC can be downloaded from http://www.microsoft.com/downloads/",MB_ICONSTOP|MB_OK);
-    exit(0);
+    ::ExitProcess(0);
   }
 }
 
@@ -948,7 +948,7 @@ void InformApp::RunMessagePump(void)
     if (msg.message == WM_COMMAND)
       ::PeekMessage(&msg,NULL,0,0,PM_REMOVE);
     else if (PumpMessage() == FALSE)
-      exit(ExitInstance());
+      ::ExitProcess(0);
   }
 
   if (IsWaitCursor())
