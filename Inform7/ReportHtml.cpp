@@ -438,7 +438,10 @@ private:
 };
 
 // Handler implementations for each browser instance
-class I7CefClient : public CefClient, public CefRequestHandler, public CefLoadHandler
+class I7CefClient : public CefClient,
+  public CefRequestHandler,
+  public CefLoadHandler,
+  public CefContextMenuHandler
 {
 public:
   I7CefClient()
@@ -549,6 +552,18 @@ public:
     }
     else
       ASSERT(FALSE);
+  }
+
+  CefRefPtr<CefContextMenuHandler> GetContextMenuHandler()
+  {
+    return this;
+  }
+
+  // Implement CefContextMenuHandler to disable the context menu
+  void OnBeforeContextMenu(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>,
+    CefRefPtr<CefContextMenuParams>, CefRefPtr<CefMenuModel> model)
+  {
+    model->Clear();
   }
 
 private:
