@@ -739,7 +739,7 @@ BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
 }
 
 // Navigate to the given URL
-void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
+void ReportHtml::Navigate(const char* url, bool focus, LPCWSTR find)
 {
   // Stop any current page loading
   if (m_private->browser->IsLoading())
@@ -747,6 +747,11 @@ void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
 
   m_url = url;
   m_setFocus = focus;
+  if (find != NULL)
+    m_find = find;
+  else
+    m_find.Empty();
+
   m_private->browser->GetMainFrame()->LoadURL(url);
 }
 
@@ -830,6 +835,12 @@ void ReportHtml::OnLoadEnd(void)
 
   if (m_setFocus && (m_url != "about:blank"))
     SetFocusOnContent();
+
+  if (!m_find.IsEmpty())
+  {
+    m_private->browser->GetHost()->Find(0,m_find.GetString(),true,false,false);
+    m_find.Empty();
+  }
 }
 
 // Notify any consumer of a load error event
@@ -840,7 +851,7 @@ void ReportHtml::OnLoadError(const char* url)
 }
 
 // Set the consumer of web link related events
-void ReportHtml::SetLinkConsumer(LinkConsumer* consumer)
+void ReportHtml::SetLinkConsumer(ReportHtml::LinkConsumer* consumer)
 {
   m_consumer = consumer;
 }
@@ -875,24 +886,6 @@ void ReportHtml::OnEditSelectAll()
 }
 
 /*
-void ReportHtml::OnDocumentComplete(LPCTSTR lpszURL)
-{
-  CHtmlView::OnDocumentComplete(lpszURL);
-
-  // Highlight found text
-  if (strchr(lpszURL,'#') != NULL)
-  {
-    HighlightFound(false);
-    m_findTimer = 5;
-    SetTimer(1,200,NULL);
-  }
-  else
-  {
-    HighlightFound(true);
-    m_find.Empty();
-  }
-}
-
 HRESULT ReportHtml::OnShowContextMenu(DWORD dwID,  LPPOINT ppt, LPUNKNOWN pcmdTarget, LPDISPATCH)
 {
   // Get COM interfaces
@@ -988,86 +981,6 @@ void ReportHtml::SetIEPreferences(const char* path)
     DWORD_PTR result;
     SendMessageTimeout(HWND_BROADCAST,
       WM_SETTINGCHANGE,0x1F,(LPARAM)"Software\\Microsoft\\Internet Explorer",SMTO_BLOCK,1000,&result);
-  }
-}
-*/
-
-/*
-void ReportHtml::Navigate(const char* url, bool focus, const wchar_t* find)
-{
-  if (find != NULL)
-    m_find = find;
-  else
-    m_find.Empty();
-}
-*/
-
-/*
-void ReportHtml::HighlightFound(bool goToFound)
-{
-  if (m_find.IsEmpty())
-    return;
-
-  IDispatch* disp = GetHtmlDocument();
-  CComQIPtr<IHTMLDocument2> doc(disp);
-  disp->Release();
-  if (doc == NULL)
-    return;
-
-  CComPtr<IHTMLElement> element;
-  doc->get_body(&element);
-  if (element == NULL)
-    return;
-  CComQIPtr<IHTMLBodyElement> body(element);
-  if (body == NULL)
-    return;
-
-  CComPtr<IHTMLTxtRange> range;
-  body->createTextRange(&range);
-  if (range == NULL)
-    return;
-
-  bool first = goToFound;
-  VARIANT_BOOL found = VARIANT_TRUE;
-  while (found == VARIANT_TRUE)
-  {
-    range->findText(CComBSTR(m_find),0,0,&found);
-    if (found == VARIANT_TRUE)
-    {
-      COLORREF colour = theApp.GetColour(InformApp::ColourHighlight);
-      CString colourStr;
-      colourStr.Format("#%02X%02X%02X",GetRValue(colour),GetGValue(colour),GetBValue(colour));
-
-      VARIANT_BOOL result;
-      range->execCommand(CComBSTR("BackColor"),VARIANT_FALSE,CComVariant(colourStr),&result);
-
-      if (first)
-      {
-        range->scrollIntoView(VARIANT_TRUE);
-        first = false;
-      }
-
-      long moved;
-      range->collapse(VARIANT_FALSE);
-      range->moveEnd(CComBSTR("textedit"),1,&moved);
-    }
-  }
-}
-
-void ReportHtml::OnTimer(UINT_PTR nIDEvent)
-{
-  if (nIDEvent == 1)
-  {
-    HighlightFound(false);
-
-    if (m_findTimer > 0)
-      m_findTimer--;
-    if (m_findTimer <= 0)
-    {
-      // Don't highlight any more
-      KillTimer(1);
-      m_find.Empty();
-    }
   }
 }
 

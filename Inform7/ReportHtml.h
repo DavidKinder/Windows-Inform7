@@ -16,7 +16,7 @@ public:
   BOOL Create(LPCSTR, LPCSTR, DWORD style,
     const RECT& rect, CWnd* parentWnd, UINT id, CCreateContext* = NULL);
 
-  void Navigate(const char* url, bool focus, const wchar_t* find = NULL);
+  void Navigate(const char* url, bool focus, LPCWSTR find = NULL);
   CString GetURL(void);
   void Refresh(void);
   void RunJavaScript(const char* code);
@@ -53,19 +53,6 @@ private:
 
   CString m_url;
   bool m_setFocus;
-  LinkConsumer* m_consumer;
-
-///////////////////////////////////////////////////////////////////////////////
-
-/*
-protected:
-  afx_msg void OnEditFind();
-  afx_msg void OnTimer(UINT_PTR nIDEvent);
-
-private:
-  void HighlightFound(bool goToFound);
-
   CStringW m_find;
-  int m_findTimer;
-*/
+  LinkConsumer* m_consumer;
 };
