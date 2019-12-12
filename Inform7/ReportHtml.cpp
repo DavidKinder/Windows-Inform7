@@ -901,70 +901,6 @@ void ReportHtml::OnEditSelectAll()
 }
 
 /*
-HRESULT ReportHtml::OnShowContextMenu(DWORD dwID,  LPPOINT ppt, LPUNKNOWN pcmdTarget, LPDISPATCH)
-{
-  // Get COM interfaces
-  CComQIPtr<IOleWindow> oleWindow(pcmdTarget);
-  if (oleWindow == NULL)
-    return S_FALSE;
-
-  // Get the window to use as the menu's parent
-  HWND window;
-  if (FAILED(oleWindow->GetWindow(&window)))
-    return S_FALSE;
-
-  // Get the context menu
-  CMenu menu;
-  menu.LoadMenu(IDR_HTMLMENU);
-
-  // Subclass the IE window to catch menu messages
-  IEWnd ieWnd(this,menu);
-  ieWnd.SubclassWindow(window);
-
-  // Show the menu
-  int select = menu.GetSubMenu(0)->TrackPopupMenuEx(
-    TPM_LEFTALIGN|TPM_TOPALIGN|TPM_RETURNCMD,ppt->x,ppt->y,CWnd::FromHandle(window),NULL);
-  ieWnd.UnsubclassWindow();
-
-  switch (select)
-  {
-  case ID_NAVIGATE_BACK:
-    Panel::GetPanel(this)->TabNavigate(false);
-    break;
-  case ID_NAVIGATE_FORE:
-    Panel::GetPanel(this)->TabNavigate(true);
-    break;
-  case ID_EDIT_COPY:
-    ExecWB(OLECMDID_COPY,OLECMDEXECOPT_DONTPROMPTUSER,NULL,NULL);
-    break;
-  case ID_EDIT_SELECT_ALL:
-    ExecWB(OLECMDID_SELECTALL,OLECMDEXECOPT_DONTPROMPTUSER,NULL,NULL);
-    break;
-  case ID_FILE_PRINT:
-    ExecWB(OLECMDID_PRINT,OLECMDEXECOPT_PROMPTUSER,NULL,NULL); 
-    break;
-  case ID_MENU_PROPERTIES:
-    ExecWB(OLECMDID_PROPERTIES,OLECMDEXECOPT_DODEFAULT,NULL,NULL); 
-    break;
-  }
-  return S_OK;
-}
-
-void ReportHtml::OnEditFind()
-{
-  IDispatch* disp = GetHtmlDocument();
-  CComQIPtr<IOleCommandTarget> target(disp);
-  disp->Release();
-
-  if (target != NULL)
-  {
-    // From the Microsoft Knowledge Base, article Q175513
-    static const GUID CGID_IWebBrowser =
-      { 0xED016940L,0xBD5B,0x11CF,{0xBA,0x4E,0x00,0xC0,0x4F,0xD7,0x08,0x16}};
-    target->Exec(&CGID_IWebBrowser,1,0,NULL,NULL);
-  }
-}
-
 void ReportHtml::SetIEPreferences(const char* path)
 {
     CRegKey scriptsKey;
@@ -997,27 +933,5 @@ void ReportHtml::SetIEPreferences(const char* path)
     SendMessageTimeout(HWND_BROADCAST,
       WM_SETTINGCHANGE,0x1F,(LPARAM)"Software\\Microsoft\\Internet Explorer",SMTO_BLOCK,1000,&result);
   }
-}
-
-LRESULT IEWnd::OnInitMenuPopup(WPARAM, LPARAM)
-{
-  Panel* panel = Panel::GetPanel(this);
-  LRESULT result = Default();
-
-  ::EnableMenuItem(m_menu,ID_NAVIGATE_BACK,
-    (panel->CanTabNavigate(false) ? MF_ENABLED : MF_GRAYED)|MF_BYCOMMAND);
-  ::EnableMenuItem(m_menu,ID_NAVIGATE_FORE,
-    (panel->CanTabNavigate(true) ? MF_ENABLED : MF_GRAYED)|MF_BYCOMMAND);
-
-  OLECMDF cmdf = m_html->QueryStatusWB(OLECMDID_COPY);
-  ::EnableMenuItem(m_menu,ID_EDIT_COPY,
-    ((cmdf & OLECMDF_ENABLED) ? MF_ENABLED : MF_GRAYED)|MF_BYCOMMAND);
-  ::EnableMenuItem(m_menu,ID_EDIT_SELECT_ALL,MF_ENABLED|MF_BYCOMMAND);
-
-  ::EnableMenuItem(m_menu,ID_FILE_PRINT,MF_ENABLED|MF_BYCOMMAND);
-  ::EnableMenuItem(m_menu,ID_MENU_PROPERTIES,MF_ENABLED|MF_BYCOMMAND);
-
-  return result;
-  return 0;
 }
 */
