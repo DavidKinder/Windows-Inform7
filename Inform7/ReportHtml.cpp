@@ -665,6 +665,8 @@ static std::string GetUTF8Path(const char* root, const char* path)
 // Initialize CEF
 bool ReportHtml::InitWebBrowser(void)
 {
+  CefEnableHighDPISupport();
+
   // If this is a CEF sub-process, call CEF straight away
   CefMainArgs cefArgs(::GetModuleHandle(0));
   CefRefPtr<CefApp> app(new I7CefApp());
@@ -680,6 +682,15 @@ bool ReportHtml::InitWebBrowser(void)
   dir = theApp.GetHomeDir() + "\\Inform\\ceflog.txt";
   ::DeleteFile(dir);
   CefString(&cefSettings.log_file).FromString(GetUTF8Path(dir,""));
+
+  // Initialize browser display settings
+  CString fontName(theApp.GetFontName(InformApp::FontDisplay));
+  CefString(&cefBrowserSettings.standard_font_family).FromASCII(fontName);
+  CefString(&cefBrowserSettings.fixed_font_family).FromASCII(theApp.GetFontName(InformApp::FontFixedWidth));
+  CefString(&cefBrowserSettings.serif_font_family).FromASCII(fontName);
+  CefString(&cefBrowserSettings.sans_serif_font_family).FromASCII(fontName);
+  cefBrowserSettings.default_font_size = theApp.GetFontSize(InformApp::FontDisplay);
+  cefBrowserSettings.default_fixed_font_size = theApp.GetFontSize(InformApp::FontFixedWidth);
 
   // Initialize CEF
   if (!CefInitialize(cefArgs,cefSettings,app.get(),NULL))
@@ -899,39 +910,3 @@ void ReportHtml::OnEditSelectAll()
 {
   m_private->browser->GetMainFrame()->SelectAll();
 }
-
-/*
-void ReportHtml::SetIEPreferences(const char* path)
-{
-    CRegKey scriptsKey;
-    if (scriptsKey.Create(webKey,"International\\Scripts\\3") == ERROR_SUCCESS)
-    {
-      // Set the font names
-      scriptsKey.SetStringValue("IEPropFontName",theApp.GetFontName(InformApp::FontDisplay));
-      scriptsKey.SetStringValue("IEFixedFontName",theApp.GetFontName(InformApp::FontFixedWidth));
-
-      // Set the approximate font size
-      int ptSize = theApp.GetFontSize(InformApp::FontDisplay);
-      if (ptSize >= 14)
-        scriptsKey.SetDWORDValue("IEFontSize",4);
-      else if (ptSize >= 12)
-        scriptsKey.SetDWORDValue("IEFontSize",3);
-      else if (ptSize >= 10)
-        scriptsKey.SetDWORDValue("IEFontSize",2);
-      else if (ptSize >= 9)
-        scriptsKey.SetDWORDValue("IEFontSize",1);
-      else
-        scriptsKey.SetDWORDValue("IEFontSize",0);
-    }
-  }
-
-  // If the registry path hasn't been changed, this is a preferences update,
-  // so cause all Internet Explorer windows to update
-  if (path == NULL)
-  {
-    DWORD_PTR result;
-    SendMessageTimeout(HWND_BROADCAST,
-      WM_SETTINGCHANGE,0x1F,(LPARAM)"Software\\Microsoft\\Internet Explorer",SMTO_BLOCK,1000,&result);
-  }
-}
-*/
