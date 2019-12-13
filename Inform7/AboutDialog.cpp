@@ -144,6 +144,10 @@ BOOL AboutDialog::OnInitDialog()
     "\\b Scintilla written by\\b0\\par"
     "\\tab Neil Hodgson\\par"
     "\\par"
+    "\\b Chromium Embedded Framework written by\\b0\\par"
+    "\\tab Marshall A. Greenblatt, Google Inc.,\\par"
+    "\\tab and others\\par"
+    "\\par"
     "\\b Elastic tabstops invented by\\b0\\par"
     "\\tab Nick Gravgaard}";
 
