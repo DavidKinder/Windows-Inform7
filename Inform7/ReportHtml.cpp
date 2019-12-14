@@ -723,10 +723,12 @@ void ReportHtml::DoWebBrowserWork(void)
 // Update preferences that affect all web browser instances
 void ReportHtml::UpdateWebBrowserPreferences(void)
 {
-  // The default font size is expressed in pixels at 96 dpi
+  // The default font size is expressed in pixels at 96 dpi. The font size
+  // is scaled down by a further 20% (72/60) so that font size 2 matches the
+  // application font.
   if (!cefFontSize.get())
     cefFontSize = CefValue::Create();
-  cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),96,72));
+  cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),96,60));
 
   if (!cefFontName.get())
     cefFontName = CefValue::Create();
