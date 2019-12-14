@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<title>Notes on the Windows version of Inform 7</title>
+</head>
+<body><font><h3>Windows Inform 7</h3>
+<p>
+<p>This Windows version of Inform 7 was created by David Kinder, based on a design by Graham Nelson and Andrew Hunter.
+<p>
+<h4>Windows Defender</h4>
+If you are running Windows Defender (or Microsoft Security Essentials, as it was previously known) then you will find that
+Inform 7 can be very slow to compile and to search documentation. The problem is that Windows Defender insists on scanning
+every HTML file that applications open or create. The only solution to this is, if possible, to configure Windows Defender
+to ignore either all the executables in the Inform 7 installation directory, or to ignore all the directories containing
+Inform projects, as well as the "Inform" directory under "My Documents", and the Inform 7 installation directory.
+<p>
+<h4>Shortcuts</h4>
+The following keyboard shortcuts are available:
+<table border="0" cellpadding="4" cellspacing="0">
+  <tr>
+    <td nowrap valign=top><font size=2><strong>F1</strong></font></td>
+    <td><font size=2>Show the documentation index: this is the same as the "Inform Help" item on the "Help" menu.</font></td>
+  </tr>
+  <tr>
+    <td nowrap valign=top><font size=2><strong>F2</strong></td>
+    <td><font size=2>Switch the keyboard focus to the search source field on the toolbar.</font></td>
+  </tr>
+  <tr>
+    <td nowrap valign=top><font size=2><strong>F3</strong></td>
+    <td><font size=2>Switch the keyboard focus to the search documentation field on the toolbar.</font></td>
+  </tr>
+  <tr>
+    <td nowrap valign=top><font size=2><strong>F4</strong></td>
+    <td><font size=2>Show the whole of the source text in the Source tab. This is equivalent to bringing
+up the Contents view and clicking on the very top heading.</font></td>
+  </tr>
+  <tr>
+    <td nowrap valign=top><font size=2><strong>F5</strong></font></td>
+    <td ><font size=2>Build the game and run it: this is the same as the "Go" toolbar command.</font></td>
+  </tr>
+  <tr>
+    <td nowrap valign=top><font size=2><strong>F6</strong></font></td>
+    <td><font size=2>Switch the keyboard focus to the opposite pane.</font></td>
+  </tr>
+  <tr>
+    <td nowrap valign=top><font size=2><strong>F7</strong></font></td>
+    <td><font size=2>Build the game but do not run it: this is the same as the "Refresh Index" item on the
+"Play" menu.</font></td>
+  </tr>
+  <tr>
+    <td nowrap valign=top><font size=2><strong>F9</strong></font></td>
+    <td><font size=2>Build the game and replay to the current position in the skein: this is the same as the
+"Replay" toolbar command.</font></td>
+  </tr>
+</table>
+<br>
+When viewing the contents pane, shift-clicking on a section heading will show the entire source pane with the
+clicked section heading in view, rather than showing only that section.
+<p>
+<h4>Dictionaries</h4>
+<p>
+To install a new dictionary language for spell-checking, download the appropriate dictionary from 
+<a href="https://cgit.freedesktop.org/libreoffice/dictionaries/tree/">LibreOffice</a>.
+Copy the ".aff" and ".dic" files into the "Dictionaries" sub-directory of your Inform 7 installation. Re-start
+Inform 7 and open the spell-checker: your new dictionary should be included in the drop-down list of languages.
+<p>
+<h4>Home Directory</h4>
+<p>
+The directory that Inform uses to store extensions, documentation, etc. (which defaults to the user's "My Documents"
+folder) can be changed by creating a text file "home.txt" in the same directory as the Inform executable,
+containing the path to the required home directory.
+<p>
+<h4>Inform 6</h4>
+The bundled Inform 6 compiler is generally the latest release, though sometimes it proves necessary to use a version
+of Inform 6 with further patches beyond the latest release. There is an active
+<a href="https://github.com/DavidKinder/Inform6">GitHub Inform 6 project</a>
+which contains the revisions of the Inform 6 compiler used.
+</font></body></html>
+
