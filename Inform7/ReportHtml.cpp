@@ -723,16 +723,19 @@ void ReportHtml::DoWebBrowserWork(void)
 // Update preferences that affect all web browser instances
 void ReportHtml::UpdateWebBrowserPreferences(void)
 {
-  // Set font settings as preferences in the global context
+  // The default font size is expressed in pixels at 96 dpi
   if (!cefFontSize.get())
     cefFontSize = CefValue::Create();
-  cefFontSize->SetInt(theApp.GetFontSize(InformApp::FontDisplay));
+  cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),96,72));
+
   if (!cefFontName.get())
     cefFontName = CefValue::Create();
   cefFontName->SetString(theApp.GetFontName(InformApp::FontDisplay));
   if (!cefFixedFontName.get())
     cefFixedFontName = CefValue::Create();
   cefFixedFontName->SetString(theApp.GetFontName(InformApp::FontFixedWidth));
+
+  // Set font settings as preferences in the global context
   CefString err;
   CefRefPtr<CefRequestContext> context = CefRequestContext::GetGlobalContext();
   ASSERT(context->SetPreference("webkit.webprefs.default_font_size",cefFontSize,err));
@@ -882,6 +885,8 @@ void ReportHtml::OnLoadEnd(void)
     m_private->browser->GetHost()->Find(0,m_find.GetString(),true,false,false);
     m_find.Empty();
   }
+  else
+    m_private->browser->GetHost()->StopFinding(true);
 }
 
 // Notify any consumer of a load error event
