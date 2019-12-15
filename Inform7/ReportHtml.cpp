@@ -136,7 +136,7 @@ public:
         return path;
     }
 
-    if (fileName.Left(11) == L"/extensions")
+    while (fileName.Left(11).MakeLower() == L"/extensions")
     {
       fileName = fileName.Mid(11);
 
