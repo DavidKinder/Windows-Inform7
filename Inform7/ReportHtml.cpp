@@ -407,6 +407,7 @@ public:
     AddMethod(obj,"selectView",handler);
     AddMethod(obj,"pasteCode",handler);
     AddMethod(obj,"createNewProject",handler);
+    AddMethod(obj,"openFile",handler);
     AddMethod(obj,"openUrl",handler);
     AddMethod(obj,"askInterfaceForLocalVersion",handler);
     AddMethod(obj,"askInterfaceForLocalVersionText",handler);
