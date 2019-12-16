@@ -5,6 +5,7 @@
 #include "Panel.h"
 #include "Messages.h"
 #include "TextFormat.h"
+#include "DpiFunctions.h"
 
 #include "include/cef_app.h"
 #include "include/cef_browser.h"
@@ -16,7 +17,6 @@
 
 // Settings for all browser instances
 CefSettings cefSettings;
-CefRefPtr<CefValue> cefFontSize, cefFontName, cefFixedFontName;
 
 // Test whether the given file exists
 static bool FileExists(const char* path)
@@ -381,15 +381,22 @@ public:
       "inform",CEF_SCHEME_OPTION_STANDARD|CEF_SCHEME_OPTION_CORS_ENABLED);
   }
 
+  // Disable scaling of images by the Windows DPI setting
+  void OnBeforeCommandLineProcessing(const CefString&, CefRefPtr<CefCommandLine> cmdLine)
+  {
+    cmdLine->AppendSwitchWithValue("force-device-scale-factor","1");
+  }
+
   CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler()
   {
     return this;
   }
 
-  // Implement CefBrowserProcessHandler to register our custom inform: scheme
+  // Implement CefBrowserProcessHandler to register our custom scheme and preferences
   void OnContextInitialized()
   {
     CefRegisterSchemeHandlerFactory("inform","",this);
+    ReportHtml::UpdateWebBrowserPreferences();
   }
 
   CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler()
@@ -690,17 +697,12 @@ bool ReportHtml::InitWebBrowser(void)
     AfxMessageBox("Failed to initialize Chrome Extension Framework",MB_ICONSTOP|MB_OK);
     exit(0);
   }
-
-  UpdateWebBrowserPreferences();
   return true;
 }
 
 // Shut down CEF
 void ReportHtml::ShutWebBrowser(void)
 {
-  cefFontSize = NULL;
-  cefFontName = NULL;
-  cefFixedFontName = NULL;
   CefShutdown();
 }
 
@@ -724,29 +726,22 @@ void ReportHtml::DoWebBrowserWork(void)
 // Update preferences that affect all web browser instances
 void ReportHtml::UpdateWebBrowserPreferences(void)
 {
-  // The default font size is expressed in pixels at 96 dpi. The font size
-  // is scaled down by a further 20% (72/60) so that font size 2 matches the
-  // application font.
-  if (!cefFontSize.get())
-    cefFontSize = CefValue::Create();
-  cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),96,60));
-
-  if (!cefFontName.get())
-    cefFontName = CefValue::Create();
+  CefRefPtr<CefValue> cefFontSize = CefValue::Create();
+  cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),DPI::getSystemDPI(),64));
+  CefRefPtr<CefValue> cefFontName = CefValue::Create();
   cefFontName->SetString(theApp.GetFontName(InformApp::FontDisplay));
-  if (!cefFixedFontName.get())
-    cefFixedFontName = CefValue::Create();
+  CefRefPtr<CefValue> cefFixedFontName = CefValue::Create();
   cefFixedFontName->SetString(theApp.GetFontName(InformApp::FontFixedWidth));
 
   // Set font settings as preferences in the global context
   CefString err;
   CefRefPtr<CefRequestContext> context = CefRequestContext::GetGlobalContext();
-  ASSERT(context->SetPreference("webkit.webprefs.default_font_size",cefFontSize,err));
-  ASSERT(context->SetPreference("webkit.webprefs.default_fixed_font_size",cefFontSize,err));
-  ASSERT(context->SetPreference("webkit.webprefs.fonts.standard.Zyyy",cefFontName,err));
-  ASSERT(context->SetPreference("webkit.webprefs.fonts.fixed.Zyyy",cefFixedFontName,err));
-  ASSERT(context->SetPreference("webkit.webprefs.fonts.serif.Zyyy",cefFontName,err));
-  ASSERT(context->SetPreference("webkit.webprefs.fonts.sansserif.Zyyy",cefFontName,err));
+  VERIFY(context->SetPreference("webkit.webprefs.default_font_size",cefFontSize,err));
+  VERIFY(context->SetPreference("webkit.webprefs.default_fixed_font_size",cefFontSize,err));
+  VERIFY(context->SetPreference("webkit.webprefs.fonts.standard.Zyyy",cefFontName,err));
+  VERIFY(context->SetPreference("webkit.webprefs.fonts.fixed.Zyyy",cefFixedFontName,err));
+  VERIFY(context->SetPreference("webkit.webprefs.fonts.serif.Zyyy",cefFontName,err));
+  VERIFY(context->SetPreference("webkit.webprefs.fonts.sansserif.Zyyy",cefFontName,err));
 }
 
 ReportHtml::ReportHtml() : m_setFocus(false), m_consumer(NULL)
