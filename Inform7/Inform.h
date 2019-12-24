@@ -104,7 +104,6 @@ public:
   CString GetLastProjectDir(void);
   CString GetHomeDir(void);
   CString PathToUrl(const char* path);
-  double GetIEVersion(void);
 
   void NewFrame(CFrameWnd* frame);
   void FrameClosing(CFrameWnd* frame);
@@ -174,7 +173,6 @@ public:
 
 protected:
   void ClearScaledImages(void);
-  void CheckInstalledVersions(void);
   void SetMyDocuments(void);
   bool CreateHomeDirs(void);
   void SetFonts(void);

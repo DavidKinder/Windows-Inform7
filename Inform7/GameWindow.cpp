@@ -11,7 +11,6 @@
 #include "OSLayer.h"
 #include "DSoundEngine.h"
 #include "GlkSound.h"
-#include <set>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -10,9 +10,6 @@ OSLayer theOS;
 
 OSLayer::OSLayer()
 {
-  m_osVer.dwOSVersionInfoSize = sizeof m_osVer;
-  ::GetVersionEx(&m_osVer);
-
   m_kernelDll = 0;
   m_userDll = 0;
   m_folderDll = 0;
@@ -33,22 +30,6 @@ void OSLayer::Init(void)
   m_themeDll = ::LoadLibrary("uxtheme.dll");
   m_comCtlDll = ::LoadLibrary("comctl32.dll");
   m_dwmDll = ::LoadLibrary("dwmapi.dll");
-}
-
-bool OSLayer::IsWindows9X(void)
-{
-  return (m_osVer.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS);
-}
-
-bool OSLayer::IsWindows95(void)
-{
-  return IsWindows9X() &&
-   (m_osVer.dwMajorVersion == 4) && (m_osVer.dwMinorVersion == 0);
-}
-
-int OSLayer::GetWindowsVersion(void)
-{
-  return m_osVer.dwMajorVersion;
 }
 
 DWORD OSLayer::GetDllVersion(const char* dllName)
@@ -131,17 +112,7 @@ bool OSLayer::AssignProcessToJobObject(HANDLE job, HANDLE process)
 
 int OSLayer::DrawText(CDC* dc, LPCWSTR text, int count, CRect& rect, UINT format)
 {
-  if (m_osVer.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-  {
-    // Call ANSI function on Windows 9X
-    CString textA(text,count);
-    return ::DrawTextA(dc->GetSafeHdc(),(LPCSTR)textA,textA.GetLength(),rect,format);
-  }
-  else
-  {
-    // Call Unicode function on Windows NT
-    return ::DrawTextW(dc->GetSafeHdc(),text,count,rect,format);
-  }
+  return ::DrawTextW(dc->GetSafeHdc(),text,count,rect,format);
 }
 
 WCHAR OSLayer::ToUnicode(UINT virtKey, UINT scanCode, UINT flags)
@@ -149,37 +120,16 @@ WCHAR OSLayer::ToUnicode(UINT virtKey, UINT scanCode, UINT flags)
   BYTE state[256];
   if (::GetKeyboardState(state))
   {
-    if (m_osVer.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-    {
-      WORD buffer[16];
-      if (::ToAscii(virtKey,scanCode,state,buffer,flags) == 1)
-      {
-        CHAR charA = (CHAR)buffer[0];
-        WCHAR charW = 0;
-        if (::MultiByteToWideChar(CP_ACP,0,&charA,1,&charW,1) == 1)
-          return charW;
-      }
-    }
-    else
-    {
-      WCHAR buffer[16];
-      if (::ToUnicode(virtKey,scanCode,state,buffer,16,flags) == 1)
-        return buffer[0];
-    }
+    WCHAR buffer[16];
+    if (::ToUnicode(virtKey,scanCode,state,buffer,16,flags) == 1)
+      return buffer[0];
   }
   return 0;
 }
 
 int OSLayer::MessageBox(CWnd* wnd, LPCWSTR text, LPCWSTR caption, UINT type)
 {
-  if (m_osVer.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-  {
-    CString textA(text);
-    CString captionA(caption);
-    return ::MessageBoxA(wnd->GetSafeHwnd(),textA,captionA,type);
-  }
-  else
-    return ::MessageBoxW(wnd->GetSafeHwnd(),text,caption,type);
+  return ::MessageBoxW(wnd->GetSafeHwnd(),text,caption,type);
 }
 
 bool OSLayer::GetComboBoxInfo(CComboBox* box, COMBOBOXINFO* info)

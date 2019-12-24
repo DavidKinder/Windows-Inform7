@@ -1,7 +1,6 @@
 #pragma once
 
-class ProjectDirDialogXP;
-class ProjectDirDialogVista;
+class ProjectDirDialogImpl;
 
 class ProjectDirDialog
 {
@@ -13,6 +12,5 @@ public:
   CString GetProjectDir(void);
 
 private:
-  ProjectDirDialogXP* m_dialogXP;
-  ProjectDirDialogVista* m_dialogVista;
+  ProjectDirDialogImpl* m_impl;
 };

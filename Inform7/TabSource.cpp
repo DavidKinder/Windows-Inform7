@@ -5,7 +5,6 @@
 #include "Panel.h"
 #include "Inform.h"
 #include "Messages.h"
-#include "OSLayer.h"
 #include "SourceSettings.h"
 
 #ifdef _DEBUG

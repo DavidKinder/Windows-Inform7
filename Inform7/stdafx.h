@@ -7,16 +7,11 @@
 // Turn off deprecation warnings
 #pragma warning (disable: 4996)
 
-#if (_MSC_VER >= 1900) // Visual Studio 2015 onwards
+// Require at least Windows 7
 #define _WIN32_WINNT _WIN32_WINNT_WIN7
 
 // Specify the common controls version in the manifest
-#if defined _M_IX86
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
-#elif defined _M_X64
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
-#endif
-#endif // _MSC_VER
 
 #ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN    // Exclude rarely-used stuff from Windows headers
@@ -44,193 +39,10 @@
 #include <dlgs.h>
 #include <msxml2.h>
 #include <richole.h>
+#include <shlobj.h>
 #include <shobjidl.h>
 #include <textserv.h>
 #include <tom.h>
 #include <uxtheme.h>
-#include <wininet.h>
-
-#if (_MSC_VER >= 1400)
-#include <shlobj.h>
 #include <vssym32.h>
-#else
-#include <shfolder.h>
-#include <tmschema.h>
-#endif
-
-// Definitions for Windows Vista
-
-#ifndef __IModalWindow_INTERFACE_DEFINED__
-
-MIDL_INTERFACE("b4db1657-70d7-485e-8e3e-6fcb5a5c1802")
-IModalWindow : public IUnknown
-{
-public:
-  virtual HRESULT STDMETHODCALLTYPE Show(HWND) = 0;
-};
-
-#endif // __IModalWindow_INTERFACE_DEFINED__
-
-#ifndef __IShellItem_INTERFACE_DEFINED__
-
-typedef enum _SIGDN
-{
-  SIGDN_FILESYSPATH = 0x80058000
-}
-SIGDN;
-
-typedef DWORD SICHINTF;
-
-MIDL_INTERFACE("43826d1e-e718-42ee-bc55-a1e261c37bfe")
-IShellItem : public IUnknown
-{
-public:
-  virtual HRESULT STDMETHODCALLTYPE BindToHandler(IBindCtx*, REFGUID, REFIID, void**) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetParent(IShellItem**) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetDisplayName(SIGDN, LPOLESTR*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetAttributes(SFGAOF, SFGAOF*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE Compare(IShellItem*, SICHINTF, int*) = 0;
-};
-
-#endif // __IShellItem_INTERFACE_DEFINED__
-
-#ifndef __IFileDialog_INTERFACE_DEFINED__
-
-enum tagFILEOPENDIALOGOPTIONS
-{
-  FOS_PICKFOLDERS     = 0x0000020,
-  FOS_DONTADDTORECENT = 0x2000000
-};
-
-typedef struct _COMDLG_FILTERSPEC
-{
-  LPCWSTR pszName;
-  LPCWSTR pszSpec;
-}
-COMDLG_FILTERSPEC;
-
-typedef enum _FDAP {} FDAP;
-typedef enum _FDE_OVERWRITE_RESPONSE {} FDE_OVERWRITE_RESPONSE;
-typedef enum _FDE_SHAREVIOLATION_RESPONSE {} FDE_SHAREVIOLATION_RESPONSE;
-
-typedef DWORD CDCONTROLSTATEF;
-
-typedef interface IFileDialogEvents IFileDialogEvents;
-typedef interface IShellItemFilter IShellItemFilter;
-
-MIDL_INTERFACE("42f85136-db7e-439c-85f1-e4075d135fc8")
-IFileDialog : public IModalWindow
-{
-public:
-  virtual HRESULT STDMETHODCALLTYPE SetFileTypes(UINT, const COMDLG_FILTERSPEC*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SetFileTypeIndex(UINT) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetFileTypeIndex(UINT*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE Advise(IFileDialogEvents*, DWORD*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE Unadvise(DWORD) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SetOptions(DWORD) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetOptions(DWORD*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SetDefaultFolder(IShellItem*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SetFolder(IShellItem*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetFolder(IShellItem**) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetCurrentSelection(IShellItem**) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SetFileName(LPCWSTR) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetFileName(LPWSTR*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SetTitle(LPCWSTR) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SetOkButtonLabel(LPCWSTR) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SetFileNameLabel(LPCWSTR) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetResult(IShellItem**) = 0;
-  virtual HRESULT STDMETHODCALLTYPE AddPlace(IShellItem*, FDAP) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SetDefaultExtension(LPCWSTR) = 0;
-  virtual HRESULT STDMETHODCALLTYPE Close(HRESULT) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SetClientGuid(REFGUID) = 0;
-  virtual HRESULT STDMETHODCALLTYPE ClearClientData(void) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SetFilter(IShellItemFilter*) = 0;
-};
-
-MIDL_INTERFACE("973510db-7d7f-452b-8975-74a85828d354")
-IFileDialogEvents : public IUnknown
-{
-public:
-  virtual HRESULT STDMETHODCALLTYPE OnFileOk(IFileDialog*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE OnFolderChanging(IFileDialog*, IShellItem*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE OnFolderChange(IFileDialog*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE OnSelectionChange(IFileDialog*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE OnShareViolation(IFileDialog*, IShellItem*, FDE_SHAREVIOLATION_RESPONSE*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE OnTypeChange(IFileDialog*) = 0;
-  virtual HRESULT STDMETHODCALLTYPE OnOverwrite(IFileDialog*, IShellItem*, FDE_OVERWRITE_RESPONSE*) = 0;
-};
-
-class DECLSPEC_UUID("DC1C5A9C-E88A-4dde-A5A1-60F82A20AEF7") FileOpenDialog;
-class DECLSPEC_UUID("C0B4E2F3-BA21-4773-8DBA-335EC946EB8B") FileSaveDialog;
-
-#endif // __IFileDialog_INTERFACE_DEFINED__
-
-#if (_WIN32_WINNT < 0x0600)
-
-typedef enum _BP_BUFFERFORMAT
-{
-  BPBF_COMPATIBLEBITMAP,
-  BPBF_DIB,
-  BPBF_TOPDOWNDIB,
-  BPBF_TOPDOWNMONODIB
-}
-BP_BUFFERFORMAT;
-
-typedef enum _TASKDIALOG_COMMON_BUTTON_FLAGS
-{
-  TDCBF_OK_BUTTON =     0x0001,
-  TDCBF_YES_BUTTON =    0x0002,
-  TDCBF_NO_BUTTON =     0x0004,
-  TDCBF_CANCEL_BUTTON = 0x0008,
-  TDCBF_RETRY_BUTTON =  0x0016,
-  TDCBF_CLOSE_BUTTON =  0x0032,
-}
-TASKDIALOG_COMMON_BUTTON_FLAGS;
-
-#define TD_WARNING_ICON     MAKEINTRESOURCEW(-1)
-#define TD_INFORMATION_ICON MAKEINTRESOURCEW(-3)
-
-#pragma pack(1)
-typedef struct _TASKDIALOGCONFIG
-{
-  UINT        cbSize;
-  HWND        hwndParent;
-  HINSTANCE   hInstance;
-  int         dwFlags;
-  TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons;
-  PCWSTR      pszWindowTitle;
-  union
-  {
-    HICON   hMainIcon;
-    PCWSTR  pszMainIcon;
-  }
-  DUMMYUNIONNAME;
-  PCWSTR      pszMainInstruction;
-  PCWSTR      pszContent;
-  UINT        cButtons;
-  const VOID *pButtons;
-  int         nDefaultButton;
-  UINT        cRadioButtons;
-  const VOID *pRadioButtons;
-  int         nDefaultRadioButton;
-  PCWSTR      pszVerificationText;
-  PCWSTR      pszExpandedInformation;
-  PCWSTR      pszExpandedControlText;
-  PCWSTR      pszCollapsedControlText;
-  union
-  {
-    HICON   hFooterIcon;
-    PCWSTR  pszFooterIcon;
-  }
-  DUMMYUNIONNAME2;
-  PCWSTR      pszFooter;
-  LPVOID      pfCallback;
-  LONG_PTR    lpCallbackData;
-  UINT        cxWidth;
-}
-TASKDIALOGCONFIG;
-#pragma pack()
-
-#endif // _WIN32_WINNT < 0x0600
-
-#define DWMWA_EXTENDED_FRAME_BOUNDS 9
+#include <wininet.h>

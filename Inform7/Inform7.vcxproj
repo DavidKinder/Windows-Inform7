@@ -88,7 +88,11 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>xcopy /y ..\..\..\Libraries\libcef\bin64 $(OutDir)</Command>
+      <Command>xcopy /y ..\..\..\Libraries\libcef\bin64 $(OutDir)
+"C:/Program Files (x86)/Windows Kits/8.1/bin/x86/signtool.exe" sign /n "Fidelity National Information Services, Inc." /d "$(TargetFileName)" "$(TargetPath)"
+"C:/Program Files (x86)/Windows Kits/8.1/bin/x86/signtool.exe" sign /n "Fidelity National Information Services, Inc." /d "$(TargetFileName)" "$(OutDir)\libcef.dll"
+"C:/Program Files (x86)/Windows Kits/8.1/bin/x86/signtool.exe" sign /n "Fidelity National Information Services, Inc." /d "$(TargetFileName)" "$(OutDir)\chrome_elf.dll"
+</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying CEF files...</Message>

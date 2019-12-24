@@ -363,15 +363,6 @@ LRESULT SkeinWindow::HandleMButtonDown(WPARAM wParam, LPARAM lParam)
   }
 
   BOOL bSupport = FALSE;
-  if (theOS.IsWindows95())
-  {
-    UINT msgWheel;
-    UINT msg3DSupport;
-    UINT msgScrollLines;
-    INT nScrollLines;
-    HwndMSWheel(&msgWheel,&msg3DSupport,&msgScrollLines,&bSupport,&nScrollLines);
-  }
-
   if (!bSupport)
     bSupport = ::GetSystemMetrics(SM_MOUSEWHEELPRESENT);
 

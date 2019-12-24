@@ -8,9 +8,6 @@ public:
   OSLayer();
   void Init(void);
 
-  bool IsWindows9X(void);
-  bool IsWindows95(void);
-  int GetWindowsVersion(void);
   DWORD GetDllVersion(const char* dllName);
 
   bool IsDebuggerPresent(void);
@@ -59,7 +56,6 @@ public:
     DWORD attr, PVOID attrPtr, DWORD attrSize);
 
 private:
-  OSVERSIONINFO m_osVer;
   HMODULE m_kernelDll;
   HMODULE m_userDll;
   HMODULE m_folderDll;

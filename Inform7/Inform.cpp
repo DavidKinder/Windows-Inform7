@@ -49,8 +49,6 @@ BOOL InformApp::InitInstance()
   if (!Scintilla_RegisterClasses(AfxGetInstanceHandle()))
     return FALSE;
 
-  CheckInstalledVersions();
-
   // Set the HOME environment variable to the My Documents folder,
   // used by the Natural Inform compiler, and make sure directories
   // under My Documents exist.
@@ -880,55 +878,6 @@ void InformApp::ClearScaledImages(void)
   }
 }
 
-double InformApp::GetIEVersion(void)
-{
-  CRegKey ieKey;
-  if (ieKey.Open(HKEY_LOCAL_MACHINE,"SOFTWARE\\Microsoft\\Internet Explorer",KEY_READ) == ERROR_SUCCESS)
-  {
-    // Return the major and minor components of the version number
-    char version[256];
-    ULONG len = sizeof version;
-    if (ieKey.QueryStringValue("svcVersion",version,&len) == ERROR_SUCCESS)
-    {
-      if (len > 0)
-        return atof(version);
-    }
-    len = sizeof version;
-    if (ieKey.QueryStringValue("Version",version,&len) == ERROR_SUCCESS)
-    {
-      if (len > 0)
-        return atof(version);
-    }
-  }
-  return 0.0;
-}
-
-void InformApp::CheckInstalledVersions(void)
-{
-  if (GetIEVersion() < 5.5)
-  {
-    CString msg;
-    msg.Format("Internet Explorer version 5.5 or higher must be installed.");
-    AfxMessageBox(msg,MB_ICONSTOP|MB_OK);
-    ::ExitProcess(0);
-  }
-
-  if (theOS.GetDllVersion("comctl32.dll") < DLLVERSION(5,81))
-  {
-    AfxMessageBox("comctrl32 5.81 or higher is required.\n",MB_ICONSTOP|MB_OK);
-    ::ExitProcess(0);
-  }
-
-  CComPtr<IXMLDOMDocument> doc;
-  if (FAILED(doc.CoCreateInstance(CLSID_DOMDocument)))
-  {
-    AfxMessageBox(
-      "Microsoft Data Access Components (MDAC) 2.6 or higher is required.\n"
-      "MDAC can be downloaded from http://www.microsoft.com/downloads/",MB_ICONSTOP|MB_OK);
-    ::ExitProcess(0);
-  }
-}
-
 int InformApp::GetColourDepth(void)
 {
   HDC dc = ::GetDC(NULL);
@@ -1030,8 +979,7 @@ int InformApp::RunCommand(const char* dir, CString& command, const char* exeFile
   HANDLE pipeRead, pipeWrite;
   ::CreatePipe(&pipeRead,&pipeWrite,&security,0);
 
-  // Use the pipe for standard I/O and, for Windows 9X, make sure that the
-  // console window is hidden
+  // Use the pipe for standard I/O
   STARTUPINFO start;
   ::ZeroMemory(&start,sizeof start);
   start.cb = sizeof start;
@@ -1127,12 +1075,6 @@ bool InformApp::IsWaitCursor(void)
 
 CStringW InformApp::GetProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR defaultValue)
 {
-  if (theOS.IsWindows9X())
-  {
-    CString entryA(entry), defaultValueA(defaultValue);
-    return CStringW(CWinApp::GetProfileString(section,entryA,defaultValueA));
-  }
-
   if (m_pszRegistryKey == NULL)
     return defaultValue;
   HKEY secKey = GetSectionKey(section);
@@ -1156,12 +1098,6 @@ CStringW InformApp::GetProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR defa
 
 BOOL InformApp::WriteProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR value)
 {
-  if (theOS.IsWindows9X())
-  {
-    CString entryA(entry), valueA(value);
-    return CWinApp::WriteProfileString(section,entryA,valueA);
-  }
-
   if (m_pszRegistryKey == NULL)
     return FALSE;
   HKEY secKey = GetSectionKey(section);
@@ -1409,7 +1345,7 @@ void InformApp::SetFonts(void)
   ncm.cbSize = sizeof ncm;
   ::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof ncm,&ncm,0);
   int fontSize = abs(MulDiv(ncm.lfMessageFont.lfHeight,72,dc->GetDeviceCaps(LOGPIXELSY)));
-  fontSize = max(fontSize,(theOS.GetWindowsVersion() < 6) ? 8 : 9);
+  fontSize = max(fontSize,9);
   for (int i = 0; i < 3; i++)
   {
     if (m_fontNames[i].IsEmpty())

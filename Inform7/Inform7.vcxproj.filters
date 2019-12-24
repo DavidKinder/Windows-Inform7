@@ -181,9 +181,6 @@
     <ClInclude Include="SplashScreen.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="EditFind.h">
-      <Filter>Text</Filter>
-    </ClInclude>
     <ClInclude Include="PropList.h">
       <Filter>Text</Filter>
     </ClInclude>
@@ -322,6 +319,9 @@
     <ClInclude Include="..\..\..\Libraries\mfc\ImagePNG.h">
       <Filter>Bitmaps</Filter>
     </ClInclude>
+    <ClInclude Include="EditFind.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -407,9 +407,6 @@
     </ClCompile>
     <ClCompile Include="SplashScreen.cpp">
       <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EditFind.cpp">
-      <Filter>Text</Filter>
     </ClCompile>
     <ClCompile Include="PropList.cpp">
       <Filter>Text</Filter>
@@ -1409,6 +1406,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\wrapper\libcef_dll_wrapper2.cc">
       <Filter>Libraries\libcef\wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="EditFind.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

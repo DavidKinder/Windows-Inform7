@@ -50,148 +50,11 @@ BEGIN_MESSAGE_MAP(FixedTextButton, CWnd)
   ON_MESSAGE(WM_SETTEXT, OnSetText)
 END_MESSAGE_MAP()
 
-// Project directory dialog for Windows XP and earlier
-
-class ProjectDirDialogXP : public CFileDialog
+// Implementation of the project directory dialog
+class ProjectDirDialogImpl
 {
 public:
-  ProjectDirDialogXP(bool open, const char* dir, const char* title, const char* saveExt, CWnd* parentWnd)
-    : CFileDialog(open ? TRUE : FALSE,NULL,NULL,OFN_HIDEREADONLY|OFN_ENABLESIZING|OFN_DONTADDTORECENT,
-      "Inform 7 projects|:||",parentWnd,0)
-  {
-    m_saveExt = saveExt;
-    m_ofn.lpstrTitle = title;
-
-    // Find the parent directory of the default project directory
-    m_initialDir = dir;
-    int i = m_initialDir.ReverseFind('\\');
-    if (i != -1)
-      m_initialDir.Truncate(i);
-    else
-      m_initialDir.Empty();
-    m_ofn.lpstrInitialDir = m_initialDir;
-  }
-
-  ~ProjectDirDialogXP()
-  {
-    // Since the OK button belongs to the file dialog,
-    // don't try to destroy it here
-    m_okButton.Detach();
-  }
-
-  virtual INT_PTR DoModal()
-  {
-    INT_PTR result = CFileDialog::DoModal();
-
-    // If the return code is cancel but the project directory is set,
-    // the user successfully picked a directory.
-    if ((result == IDCANCEL) && !m_projectDir.IsEmpty())
-      result = IDOK;
-    return result;
-  }
-
-protected:
-  virtual void OnFolderChange()
-  {
-    m_projectDir.Empty();
-    CString dir = GetFolderPath();
-
-    // Is the window up yet?
-    if (!IsWindowVisible())
-      return;
-
-    // Is the new folder an Inform project?
-    if (IsProjectDir(dir) == IsProject)
-    {
-      // Got an Inform project
-      m_projectDir = dir;
-
-      // If the project already exists, check with the user
-      CheckOverwrite();
-
-      // Close the dialog. Cancel is used to make sure that
-      // the dialog is closed without any validation.
-      GetParent()->PostMessage(WM_COMMAND,IDCANCEL,0);
-    }
-    CFileDialog::OnFolderChange();
-  }
-
-  virtual BOOL OnFileNameOK()
-  {
-    if (m_bOpenFileDialog)
-    {
-      // Prevent file selection, only directory selection is wanted
-      return 1;
-    }
-    else
-    {
-      // For the save dialog, the user can enter a name
-      m_projectDir.Empty();
-      CString dir = GetPathName();
-
-      // Is the name an Inform project?
-      switch (IsProjectDir(dir))
-      {
-      case IsProject:
-        m_projectDir = dir;
-        return CheckOverwrite() ? 0 : 1;
-      case NoExtension:
-        // Add the standard extension
-        m_projectDir = dir + m_saveExt;
-        return CheckOverwrite() ? 0 : 1;
-      }
-    }
-    return 1;
-  }
-
-  virtual void OnInitDone()
-  {
-    // Subclass the OK button to prevent its text changing
-    // to "Open" when a directory is selected.
-    m_okButton.SubclassDlgItem(IDOK,GetParent());
-
-    // Change the control labels
-    SetControlText(stc3,"Project &name:");
-    SetControlText(stc2,"Project &type:");
-
-    CFileDialog::OnInitDone();
-  }
-
-private:
-  bool CheckOverwrite(void)
-  {
-    // Only do anything if this is a save dialog
-    if (m_bOpenFileDialog)
-      return true;
-
-    // If the directory doesn't exist, don't ask the user
-    if (::GetFileAttributes(m_projectDir) == INVALID_FILE_ATTRIBUTES)
-      return true;
-
-    // Ask the user
-    CString message;
-    message.Format("%s already exists.\nDo you want to replace it?",(LPCSTR)m_projectDir);
-    if (MessageBox(message,m_ofn.lpstrTitle,MB_YESNO|MB_DEFBUTTON2|MB_ICONWARNING) == IDYES)
-      return true;
-
-    m_projectDir.Empty();
-    return false;
-  }
-
-  FixedTextButton m_okButton;
-  CString m_initialDir;
-  CString m_projectDir;
-  CString m_saveExt;
-
-  friend class ProjectDirDialog;
-};
-
-// Project directory dialog for Windows Vista and later
-
-class ProjectDirDialogVista
-{
-public:
-  ProjectDirDialogVista(bool open, const char* dir, const char* title, const char* saveExt, CWnd* parentWnd) : m_events(this)
+  ProjectDirDialogImpl(bool open, const char* dir, const char* title, const char* saveExt, CWnd* parentWnd) : m_events(this)
   {
     m_open = open;
     m_title = title;
@@ -235,7 +98,7 @@ public:
     }
   }
 
-  ~ProjectDirDialogVista()
+  ~ProjectDirDialogImpl()
   {
     // Stop listening to events
     if (m_dialog != NULL)
@@ -402,7 +265,7 @@ private:
   class DialogEvents : public CCmdTarget, public IFileDialogEvents
   {
   public:
-    DialogEvents(ProjectDirDialogVista* dialog) : m_dialog(dialog)
+    DialogEvents(ProjectDirDialogImpl* dialog) : m_dialog(dialog)
     {
     }
 
@@ -458,7 +321,7 @@ private:
     }
 
   private:
-    ProjectDirDialogVista* m_dialog;
+    ProjectDirDialogImpl* m_dialog;
   };
 
   DialogEvents m_events;
@@ -476,45 +339,34 @@ private:
   }
 
   static HHOOK m_hook;
-  static ProjectDirDialogVista* m_instance;
+  static ProjectDirDialogImpl* m_instance;
 };
 
-HHOOK ProjectDirDialogVista::m_hook = 0;
-ProjectDirDialogVista* ProjectDirDialogVista::m_instance = NULL;
+HHOOK ProjectDirDialogImpl::m_hook = 0;
+ProjectDirDialogImpl* ProjectDirDialogImpl::m_instance = NULL;
 
 // Implementation of facade class
 
 ProjectDirDialog::ProjectDirDialog(bool open, const char* dir, const char* title, const char* saveExt, CWnd* parentWnd)
 {
-  m_dialogXP = NULL;
-  m_dialogVista = NULL;
-
-  if ((theOS.GetWindowsVersion() >= 6) && theOS.IsAppThemed())
-    m_dialogVista = new ProjectDirDialogVista(open,dir,title,saveExt,parentWnd);
-  else
-    m_dialogXP = new ProjectDirDialogXP(open,dir,title,saveExt,parentWnd);
+  m_impl = new ProjectDirDialogImpl(open,dir,title,saveExt,parentWnd);
 }
 
 ProjectDirDialog::~ProjectDirDialog()
 {
-  delete m_dialogXP;
-  delete m_dialogVista;
+  delete m_impl;
 }
 
 INT_PTR ProjectDirDialog::ShowDialog(void)
 {
-  if (m_dialogXP != NULL)
-    return m_dialogXP->DoModal();
-  else if (m_dialogVista != NULL)
-    return m_dialogVista->ShowDialog();
+  if (m_impl != NULL)
+    return m_impl->ShowDialog();
   return IDCANCEL;
 }
 
 CString ProjectDirDialog::GetProjectDir(void)
 {
-  if (m_dialogXP != NULL)
-    return m_dialogXP->m_projectDir;
-  if (m_dialogVista != NULL)
-    return m_dialogVista->m_projectDir;
+  if (m_impl != NULL)
+    return m_impl->m_projectDir;
   return "";
 }

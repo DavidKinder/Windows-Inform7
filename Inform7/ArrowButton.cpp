@@ -20,19 +20,11 @@ ArrowButton::ArrowButton(ArrowStyle style) : m_style(style), m_mouseOver(false)
 
 BOOL ArrowButton::PreCreateWindow(CREATESTRUCT& cs)
 {
-  // Use custom draw if possible, as with custom draw Windows can be used to
-  // perform the erase, allowing Vista to use its "glow" effect
-  bool customDraw = (theOS.GetDllVersion("comctl32.dll") >= DLLVERSION(6,0));
-  cs.style |= customDraw ? BS_PUSHBUTTON : BS_PUSHBUTTON|BS_OWNERDRAW;
+  cs.style |= BS_PUSHBUTTON;
   return CButton::PreCreateWindow(cs);
 }
 
-void ArrowButton::DrawItem(LPDRAWITEMSTRUCT dis)
-{
-  DrawControl(CDC::FromHandle(dis->hDC),dis->rcItem,dis->itemState,true);
-}
-
-void ArrowButton::DrawControl(CDC* dc, CRect rect, UINT ownerDrawState, bool back)
+void ArrowButton::DrawControl(CDC* dc, CRect rect, UINT ownerDrawState)
 {
   int offset = 0;
 
@@ -41,10 +33,6 @@ void ArrowButton::DrawControl(CDC* dc, CRect rect, UINT ownerDrawState, bool bac
   GetWindowText(text);
   TEXTMETRIC metrics;
   dc->GetTextMetrics(&metrics);
-
-  // Clear the device context
-  if (back)
-    dc->FillSolidRect(rect,::GetSysColor(COLOR_BTNFACE));
 
   if (theOS.IsAppThemed())
   {
@@ -62,10 +50,6 @@ void ArrowButton::DrawControl(CDC* dc, CRect rect, UINT ownerDrawState, bool bac
         state = PBS_HOT;
       else
         state = PBS_NORMAL;
-
-      // Draw the themed control frame
-      if (back)
-        theOS.DrawThemeBackground(theme,dc,BP_PUSHBUTTON,state,rect);
 
       // Get the background size
       theOS.GetThemeBackgroundContentRect(theme,dc,BP_PUSHBUTTON,state,rect);
@@ -223,7 +207,7 @@ void ArrowButton::OnCustomDraw(NMHDR* nmhdr, LRESULT* result)
         state |= ODS_NOFOCUSRECT;
 
       // Draw the control without drawing the background
-      DrawControl(CDC::FromHandle(nmcd->hdc),nmcd->rc,state,false);
+      DrawControl(CDC::FromHandle(nmcd->hdc),nmcd->rc,state);
       *result = CDRF_SKIPDEFAULT;
     }
     break;

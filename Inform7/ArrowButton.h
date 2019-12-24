@@ -8,9 +8,8 @@ protected:
   DECLARE_MESSAGE_MAP()
 
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-  virtual void DrawItem(LPDRAWITEMSTRUCT dis);
 
-  void DrawControl(CDC* dc, CRect rect, UINT ownerDrawState, bool back);
+  void DrawControl(CDC* dc, CRect rect, UINT ownerDrawState);
   void DrawArrow(CDC* dc, int x, int y, COLORREF colour, COLORREF highlight);
 
 public:

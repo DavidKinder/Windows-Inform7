@@ -19,7 +19,6 @@ typedef BOOL(__stdcall *SYMGETSYMFROMADDR64)(HANDLE, DWORD64, PDWORD64, PIMAGEHL
 typedef BOOL(__stdcall *SYMINITIALIZE)(HANDLE, LPCSTR, BOOL);
 typedef BOOL(__stdcall *SYMCLEANUP)(HANDLE);
 typedef DWORD(__stdcall *SYMSETOPTIONS)(DWORD);
-typedef DWORD(__stdcall *SYMLOADMODULE64)(HANDLE, HANDLE, LPCSTR, LPCSTR, DWORD64, DWORD);
 
 HMODULE debugDll = 0;
 STACKWALK64 stackWalk64 = NULL;
@@ -31,7 +30,6 @@ SYMGETSYMFROMADDR64 symGetSymFromAddr64 = NULL;
 SYMINITIALIZE symInitialize = NULL;
 SYMCLEANUP symCleanup = NULL;
 SYMSETOPTIONS symSetOptions = NULL;
-SYMLOADMODULE64 symLoadModule64 = NULL;
 
 bool GotFunctions(void)
 {
@@ -53,8 +51,6 @@ bool GotFunctions(void)
     return false;
   if (symSetOptions == NULL)
     return false;
-  if (symLoadModule64 == NULL)
-    return false;
   return true;
 }
 
@@ -74,7 +70,6 @@ void PrintStackTrace(HANDLE process, HANDLE thread, const CString& imageFile, LP
     symInitialize = (SYMINITIALIZE)::GetProcAddress(debugDll,"SymInitialize");
     symCleanup = (SYMCLEANUP)::GetProcAddress(debugDll,"SymCleanup");
     symSetOptions = (SYMSETOPTIONS)::GetProcAddress(debugDll,"SymSetOptions");
-    symLoadModule64 = (SYMLOADMODULE64)::GetProcAddress(debugDll,"SymLoadModule64");
   }
   if (!GotFunctions())
     return;
@@ -84,19 +79,8 @@ void PrintStackTrace(HANDLE process, HANDLE thread, const CString& imageFile, LP
 
   // Load any symbols
   CString symPath = theApp.GetAppDir()+"\\Symbols";
-  if (theOS.GetWindowsVersion() >= 5) // Windows 2000 onwards
-  {
-    if ((*symInitialize)(process,symPath,TRUE) == 0)
-      return;
-  }
-  else
-  {
-    // See Microsoft Knowledge Base article Q256092
-    if ((*symInitialize)(process,symPath,FALSE) == 0)
-      return;
-    if (!imageFile.IsEmpty())
-      (*symLoadModule64)(process,0,imageFile,0,(DWORD64)imageBase,imageSize);
-  }
+  if ((*symInitialize)(process,symPath,TRUE) == 0)
+    return;
 
   // Set up the initial stack frame
   STACKFRAME64 frame = { 0 };

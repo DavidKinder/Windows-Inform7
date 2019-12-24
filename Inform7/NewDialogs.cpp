@@ -100,77 +100,41 @@ int CALLBACK AbstractNewDialog::BrowseDirCB(HWND hwnd, UINT uMsg, LPARAM lParam,
 
 void AbstractNewDialog::OnClickedDirPopup()
 {
+  CComPtr<IFileDialog> dialog;
+  if (FAILED(dialog.CoCreateInstance(__uuidof(FileOpenDialog))))
+    return;
+
   CString title;
   title.Format("Choose the directory to create the new %s in",GetType());
+  dialog->SetTitle(CStringW(title));
 
-  // Use the the new "pick folders" file dialog mode in Vista,
-  // and the earlier folder browser for XP and ealier.
-  if ((theOS.GetWindowsVersion() >= 6) && theOS.IsAppThemed())
+  DWORD options = 0;
+  dialog->GetOptions(&options);
+  dialog->SetOptions(options|FOS_PICKFOLDERS);
+
+  CComPtr<IShellItem> si;
+  if (SUCCEEDED(theOS.SHCreateItemFromParsingName(
+    CStringW(m_dir),NULL,__uuidof(IShellItem),(void**)&si)))
   {
-    CComPtr<IFileDialog> dialog;
-    if (FAILED(dialog.CoCreateInstance(__uuidof(FileOpenDialog))))
-      return;
-    dialog->SetTitle(CStringW(title));
-    DWORD options = 0;
-    dialog->GetOptions(&options);
-    dialog->SetOptions(options|FOS_PICKFOLDERS);
-
-    CComPtr<IShellItem> si;
-    if (SUCCEEDED(theOS.SHCreateItemFromParsingName(
-      CStringW(m_dir),NULL,__uuidof(IShellItem),(void**)&si)))
-    {
-      dialog->SetFolder(si);
-    }
-    si.Release();
-
-    if (FAILED(dialog->Show(GetSafeHwnd())))
-      return;
-    if (FAILED(dialog->GetResult(&si)))
-      return;
-    LPOLESTR path = NULL;
-    if (FAILED(si->GetDisplayName(SIGDN_FILESYSPATH,&path)))
-      return;
-
-    UpdateData(TRUE);
-    m_dir = CString(path);
-    ::CoTaskMemFree(path);
-    UpdateData(FALSE);
-
-    // Update the create button state
-    OnChangedEdit();
+    dialog->SetFolder(si);
   }
-  else
-  {
-    title.AppendChar('.');
+  si.Release();
 
-    char dir[MAX_PATH];
-    BROWSEINFO browse;
-    ::ZeroMemory(&browse,sizeof browse);
-    browse.hwndOwner = GetSafeHwnd();
-    browse.pszDisplayName = dir;
-    browse.lpszTitle = title;
-    browse.ulFlags = BIF_USENEWUI|BIF_RETURNONLYFSDIRS;
-    browse.lpfn = BrowseDirCB;
-    browse.lParam = (LPARAM)this;
+  if (FAILED(dialog->Show(GetSafeHwnd())))
+    return;
+  if (FAILED(dialog->GetResult(&si)))
+    return;
+  LPOLESTR path = NULL;
+  if (FAILED(si->GetDisplayName(SIGDN_FILESYSPATH,&path)))
+    return;
 
-    LPITEMIDLIST item = ::SHBrowseForFolder(&browse);
-    if (item == NULL)
-      return;
+  UpdateData(TRUE);
+  m_dir = CString(path);
+  ::CoTaskMemFree(path);
+  UpdateData(FALSE);
 
-    if (::SHGetPathFromIDList(item,dir))
-    {
-      UpdateData(TRUE);
-      m_dir = dir;
-      UpdateData(FALSE);
-
-      // Update the create button state
-      OnChangedEdit();
-    }
-
-    CComPtr<IMalloc> malloc;
-    ::SHGetMalloc(&malloc);
-    malloc->Free(item);
-  }
+  // Update the create button state
+  OnChangedEdit();
 }
 
 void AbstractNewDialog::OnChangedEdit()
