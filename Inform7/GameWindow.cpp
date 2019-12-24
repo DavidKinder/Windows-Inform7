@@ -130,8 +130,7 @@ void GameWindow::RunInterpreter(const char* dir, const char* file, bool glulx)
   HANDLE outputRead, outputWrite;
   ::CreatePipe(&outputRead,&outputWrite,&security,0);
 
-  // Use the pipe for standard I/O and, for Windows 9X, make sure that the
-  // console window is hidden
+  // Use the pipe for standard I/O
   STARTUPINFO start;
   ::ZeroMemory(&start,sizeof start);
   start.cb = sizeof start;

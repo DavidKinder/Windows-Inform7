@@ -48,8 +48,8 @@ BOOL CALLBACK SpellCheck::HandleLocale(LPTSTR localeText)
       }
     }
 
-    // Get the ISO 3166 country and ISO 639 language names. If these are not available
-    // (as on Windows 95), guess from the abbreviated name.
+    // Get the ISO 3166 country and ISO 639 language names. If these are not available,
+    // guess from the abbreviated name.
     char iso3166[8], iso639[8];
     if (::GetLocaleInfo(locale,LOCALE_SISO3166CTRYNAME,iso3166,sizeof iso3166) == 0)
     {
