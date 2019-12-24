@@ -59,7 +59,7 @@ public:
   }
 
   FindReplaceDialogImpl(BOOL findOnly, LPCWSTR findWhat,
-    BOOL searchDown, BOOL matchCase, BOOL matchWholeWord, CWnd* parentWnd)
+    BOOL searchDown, BOOL matchCase, const BOOL* matchWholeWord, CWnd* parentWnd)
   {
     memset(&m_fr,0,sizeof(m_fr));
     m_findWhat[0] = L'\0';
@@ -70,8 +70,10 @@ public:
       m_fr.Flags |= FR_DOWN;
     if (matchCase)
       m_fr.Flags |= FR_MATCHCASE;
-    if (matchWholeWord)
+    if (matchWholeWord && *matchWholeWord)
       m_fr.Flags |= FR_WHOLEWORD;
+    else if (!matchWholeWord)
+      m_fr.Flags |= FR_HIDEWHOLEWORD;
 
     m_fr.lpfnHook = (COMMDLGPROC)_AfxCommDlgProc;
     m_fr.lStructSize = sizeof m_fr;
@@ -104,7 +106,7 @@ IMPLEMENT_DYNAMIC(FindReplaceDialog, CDialog)
 IMPLEMENT_DYNAMIC(FindReplaceDialogImpl, FindReplaceDialog)
 
 FindReplaceDialog* FindReplaceDialog::Create(BOOL findOnly, LPCWSTR findWhat,
-  BOOL searchDown, BOOL matchCase, BOOL matchWholeWord, CWnd* parentWnd)
+  BOOL searchDown, BOOL matchCase, const BOOL* matchWholeWord, CWnd* parentWnd)
 {
   return new FindReplaceDialogImpl(findOnly,findWhat,searchDown,matchCase,matchWholeWord,parentWnd);
 }

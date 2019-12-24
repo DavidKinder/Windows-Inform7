@@ -7,9 +7,7 @@
 #define new DEBUG_NEW
 #endif
 
-UINT EditFind::FINDMSG = ::RegisterWindowMessage(FINDMSGSTRING);
-
-EditFind::EditFind() : m_dialog(NULL)
+EditFind::EditFind() : m_dialog(NULL), m_edit(NULL)
 {
   m_findOnly = true;
   m_searchDown = TRUE;
@@ -41,7 +39,7 @@ void EditFind::Create(SourceEdit* edit, bool findOnly)
     findText = m_lastFind;
 
   m_dialog = FindReplaceDialog::Create(findOnly ? TRUE : FALSE,findText,
-    m_searchDown,m_matchCase,m_matchWholeWord,edit);
+    m_searchDown,m_matchCase,&m_matchWholeWord,edit);
   m_dialog->SetActiveWindow();
   m_dialog->ShowWindow(SW_SHOW);
 }

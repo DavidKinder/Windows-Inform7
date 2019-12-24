@@ -17,6 +17,7 @@ IMPLEMENT_DYNAMIC(TabResults, TabBase)
 
 BEGIN_MESSAGE_MAP(TabResults, TabBase)
   ON_WM_SIZE()
+  ON_REGISTERED_MESSAGE(FINDMSG, OnFindReplaceCmd)
 END_MESSAGE_MAP()
 
 TabResults::TabResults() : m_tab(true), m_notify(NULL), m_inform6(NoError)
@@ -376,6 +377,11 @@ void TabResults::OnSize(UINT nType, int cx, int cy)
   // Resize the tab page controls
   m_report.MoveWindow(client,TRUE);
   m_console.MoveWindow(client,TRUE);
+}
+
+LRESULT TabResults::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
+{
+  return m_report.OnFindReplaceCmd(wParam,lParam);
 }
 
 TabResults::ResultTabs TabResults::GetActiveTab(void)

@@ -22,6 +22,7 @@ BEGIN_MESSAGE_MAP(TabSkein, TabBase)
   ON_COMMAND(ID_SKEIN_TOGGLE_HELP, OnToggleHelp)
   ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
   ON_MESSAGE(WM_UPDATEHELP, OnUpdateHelp)
+  ON_REGISTERED_MESSAGE(FINDMSG, OnFindReplaceCmd)
 END_MESSAGE_MAP()
 
 TabSkein::TabSkein() : m_splitter(false),
@@ -82,6 +83,11 @@ BOOL TabSkein::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* p
 {
   if (m_splitter.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
     return TRUE;
+  if (m_helpWindow->IsWindowVisible())
+  {
+    if (m_helpWindow->OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
+      return TRUE;
+  }
   return CWnd::OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
 
@@ -319,6 +325,11 @@ LRESULT TabSkein::OnUpdateHelp(WPARAM, LPARAM)
   SetHelpVisible("menu",count >= 5);
   SetHelpVisible("welcomead",active && !showWelcome);
   return 0;
+}
+
+LRESULT TabSkein::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
+{
+  return m_helpWindow->OnFindReplaceCmd(wParam,lParam);
 }
 
 void TabSkein::SetHelpVisible(const char* node, bool visible)

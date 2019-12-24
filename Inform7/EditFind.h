@@ -12,8 +12,6 @@ public:
   void Destroy(void);
   LRESULT FindReplaceCmd(WPARAM wParam, LPARAM lParam);
 
-  static UINT EditFind::FINDMSG;
-
 private:
   bool FindNext(bool fromSelect);
   bool Replace(void);

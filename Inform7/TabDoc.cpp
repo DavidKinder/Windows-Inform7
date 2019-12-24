@@ -18,6 +18,7 @@ IMPLEMENT_DYNAMIC(TabDoc, TabBase)
 BEGIN_MESSAGE_MAP(TabDoc, TabBase)
   ON_WM_SIZE()
   ON_MESSAGE(WM_USERNAVIGATE, OnUserNavigate)
+  ON_REGISTERED_MESSAGE(FINDMSG, OnFindReplaceCmd)
 END_MESSAGE_MAP()
 
 const char* TabDoc::m_files[TabDoc::Number_DocTabs] =
@@ -290,6 +291,11 @@ LRESULT TabDoc::OnUserNavigate(WPARAM, LPARAM)
     Panel::GetPanel(this)->AddToTabHistory(state);
   }
   return 0;
+}
+
+LRESULT TabDoc::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
+{
+  return m_html.OnFindReplaceCmd(wParam,lParam);
 }
 
 TabDoc::DocTabs TabDoc::GetActiveTab(void)

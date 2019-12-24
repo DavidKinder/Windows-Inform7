@@ -59,6 +59,7 @@ protected:
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM, LPARAM);
   afx_msg LRESULT OnUpdateHelp(WPARAM, LPARAM);
+  afx_msg LRESULT OnFindReplaceCmd(WPARAM, LPARAM);
 
   afx_msg void OnSkeinLabel();
   afx_msg void OnSkeinPlay();

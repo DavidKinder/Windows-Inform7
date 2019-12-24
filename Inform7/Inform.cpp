@@ -1406,6 +1406,9 @@ void InformApp::CreatedProcess::close()
   }
 }
 
+// Registered Windows message for find and replace dialogs
+UINT FINDMSG = ::RegisterWindowMessage(FINDMSGSTRING);
+
 #ifdef _WIN64
 namespace {
 #include "2PassScale.h"

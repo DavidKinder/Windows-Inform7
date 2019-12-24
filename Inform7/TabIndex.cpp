@@ -27,6 +27,7 @@ IMPLEMENT_DYNAMIC(TabIndex, TabBase)
 BEGIN_MESSAGE_MAP(TabIndex, TabBase)
   ON_WM_SIZE()
   ON_MESSAGE(WM_USERNAVIGATE, OnUserNavigate)
+  ON_REGISTERED_MESSAGE(FINDMSG, OnFindReplaceCmd)
 END_MESSAGE_MAP()
 
 TabIndex::TabIndex() : m_tab(true), m_notify(NULL)
@@ -238,6 +239,11 @@ LRESULT TabIndex::OnUserNavigate(WPARAM, LPARAM)
     Panel::GetPanel(this)->AddToTabHistory(state);
   }
   return 0;
+}
+
+LRESULT TabIndex::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
+{
+  return m_index.OnFindReplaceCmd(wParam,lParam);
 }
 
 TabIndex::IndexTabs TabIndex::GetActiveTab(void)

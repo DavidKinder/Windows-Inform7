@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ReportHtml.h"
 #include "ExtensionFrame.h"
+#include "FindReplaceDialog.h"
+#include "FlatSplitter.h"
 #include "Inform.h"
 #include "Panel.h"
 #include "Messages.h"
@@ -652,11 +654,124 @@ private:
   ReportHtml* m_object;
 };
 
+// Find dialog implementation
+class I7CefFind
+{
+public:
+  I7CefFind() : m_dialog(NULL), m_object(NULL)
+  {
+    m_searchDown = true;
+    m_matchCase = false;
+    m_findNext = false;
+  }
+
+  ~I7CefFind()
+  {
+    if ((m_dialog != NULL) && ::IsWindow(m_dialog->m_hWnd))
+      m_dialog->PostMessage(WM_CLOSE);
+  }
+
+  void Create(ReportHtml* object)
+  {
+    if (m_dialog != NULL)
+    {
+      m_dialog->SetActiveWindow();
+      m_dialog->ShowWindow(SW_SHOW);
+      return;
+    }
+
+    m_object = object;
+
+    // Find the parent window to use as the owner of the find dialog
+    CWnd* parent = object->GetParent();
+    if (parent && parent->IsKindOf(RUNTIME_CLASS(FlatSplitter)))
+      parent = parent->GetParent();
+
+    m_dialog = FindReplaceDialog::Create(
+      TRUE,m_lastFind,m_searchDown,m_matchCase,NULL,parent);
+    m_dialog->SetActiveWindow();
+    m_dialog->ShowWindow(SW_SHOW);
+  }
+
+  void OnLoadEnd(void)
+  {
+    m_findNext = false;
+  }
+
+  LRESULT FindReplaceCmd(WPARAM wParam, LPARAM lParam)
+  {
+    FindReplaceDialog* dialog = FindReplaceDialog::GetNotifier(lParam);
+    ASSERT(dialog == m_dialog);
+    if (dialog != m_dialog)
+      return 0;
+
+    bool found = true;
+
+    if (dialog->IsTerminating())
+    {
+      m_object->StopFind();
+      m_lastFind = dialog->GetFindString();
+      m_searchDown = dialog->SearchDown();
+      m_matchCase = dialog->MatchCase();
+      m_findNext = false;
+      m_dialog = NULL;
+    }
+    else if (dialog->FindNext())
+    {
+      found = FindNext();
+      if (!found && m_findNext)
+      {
+        m_findNext = false;
+        found = FindNext();
+      }
+    }
+
+    if (!found)
+      ::MessageBeep(MB_ICONEXCLAMATION);
+    return 0;
+  }
+
+private:
+  bool FindNext(void)
+  {
+    ASSERT(m_object != NULL);
+
+    // Has the search changed?
+    if ((m_lastFind != m_dialog->GetFindString()) ||
+        (m_matchCase != (m_dialog->MatchCase() != 0)))
+    {
+      // Reset the search
+      m_object->StopFind();
+      m_findNext = false;
+    }
+
+    // Record this search
+    m_lastFind = m_dialog->GetFindString();
+    m_matchCase = m_dialog->MatchCase();
+
+    // Search for the text
+    m_object->Find(m_dialog->GetFindString(),m_findNext,
+      (m_dialog->SearchDown() != 0),(m_dialog->MatchCase() != 0));
+    m_findNext = true;
+    return true;
+  }
+
+  FindReplaceDialog* m_dialog;
+
+  CStringW m_lastFind;
+  bool m_searchDown;
+  bool m_matchCase;
+  bool m_findNext;
+
+  ReportHtml* m_object;
+};
+
 // Private implementation data not exposed in the class header file
 struct ReportHtml::Private : public CefRefPtr<CefBrowser>
 {
   CefRefPtr<I7CefClient> client;
   CefRefPtr<CefBrowser> browser;
+  I7CefFind find;
 };
 
 IMPLEMENT_DYNCREATE(ReportHtml, CWnd)
@@ -815,6 +930,22 @@ void ReportHtml::RunJavaScript(const char* code)
   m_private->browser->GetMainFrame()->ExecuteJavaScript(code,"",0);
 }
 
+// Find the given text in the current page
+void ReportHtml::Find(LPCWSTR findText, bool findNext, bool forward, bool matchCase)
+{
+  m_private->browser->GetHost()->Find(0,findText,forward,matchCase,findNext);
+}
+
+void ReportHtml::StopFind(void)
+{
+  m_private->browser->GetHost()->StopFinding(true);
+}
+
+LRESULT ReportHtml::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
+{
+  return m_private->find.FindReplaceCmd(wParam,lParam);
+}
+
 // Notify any consumer of a navigation event
 bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
 {
@@ -885,6 +1016,7 @@ void ReportHtml::OnLoadEnd(void)
   }
   else
     m_private->browser->GetHost()->StopFinding(true);
+  m_private->find.OnLoadEnd();
 }
 
 // Notify any consumer of a load error event
@@ -917,6 +1049,7 @@ void ReportHtml::SetFocusFlag(bool focus)
 BEGIN_MESSAGE_MAP(ReportHtml, CWnd)
   ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
   ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
+  ON_COMMAND(ID_EDIT_FIND, OnEditFind)
 END_MESSAGE_MAP()
 
 void ReportHtml::OnEditCopy()
@@ -927,4 +1060,9 @@ void ReportHtml::OnEditCopy()
 void ReportHtml::OnEditSelectAll()
 {
   m_private->browser->GetMainFrame()->SelectAll();
+}
+
+void ReportHtml::OnEditFind()
+{
+  m_private->find.Create(this);
 }

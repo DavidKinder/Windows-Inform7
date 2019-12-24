@@ -207,6 +207,9 @@ protected:
 
 extern InformApp theApp;
 
+// Registered Windows message for find and replace dialogs
+extern UINT FINDMSG;
+
 #ifdef _WIN64
 void ScaleGfx(COLORREF*, UINT, UINT, COLORREF*, UINT, UINT);
 #else

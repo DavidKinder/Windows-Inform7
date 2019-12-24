@@ -16,6 +16,7 @@ BEGIN_MESSAGE_MAP(TabExtensions, TabBase)
   ON_WM_SIZE()
   ON_MESSAGE(WM_PUBLIBERROR, OnPubLibError)
   ON_MESSAGE(WM_USERNAVIGATE, OnUserNavigate)
+  ON_REGISTERED_MESSAGE(FINDMSG, OnFindReplaceCmd)
 END_MESSAGE_MAP()
 
 const char* TabExtensions::m_files[TabExtensions::Number_ExtTabs] =
@@ -241,6 +242,11 @@ LRESULT TabExtensions::OnUserNavigate(WPARAM, LPARAM)
     Panel::GetPanel(this)->AddToTabHistory(state);
   }
   return 0;
+}
+
+LRESULT TabExtensions::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
+{
+  return m_html.OnFindReplaceCmd(wParam,lParam);
 }
 
 TabExtensions::ExtTabs TabExtensions::GetActiveTab(void)

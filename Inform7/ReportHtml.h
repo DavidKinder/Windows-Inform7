@@ -24,6 +24,10 @@ public:
   void SetFocusOnContent(void);
   void SetFocusFlag(bool focus);
 
+  void Find(LPCWSTR findText, bool findNext, bool forward, bool matchCase);
+  void StopFind(void);
+  LRESULT OnFindReplaceCmd(WPARAM wParam, LPARAM lParam);
+
   bool OnBeforeBrowse(const char* url, bool user);
   void OnLoadEnd(void);
   void OnLoadError(const char* url);
@@ -46,6 +50,7 @@ protected:
 
   afx_msg void OnEditCopy();
   afx_msg void OnEditSelectAll();
+  afx_msg void OnEditFind();
 
 private:
   struct Private;

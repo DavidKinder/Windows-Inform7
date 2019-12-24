@@ -6,7 +6,7 @@ class FindReplaceDialog : public CCommonDialog
 
 public:
   static FindReplaceDialog* Create(BOOL findOnly, LPCWSTR findWhat,
-    BOOL searchDown, BOOL matchCase, BOOL matchWholeWord, CWnd* parentWnd);
+    BOOL searchDown, BOOL matchCase, const BOOL* matchWholeWord, CWnd* parentWnd);
   static FindReplaceDialog* PASCAL GetNotifier(LPARAM lparam);
 
   virtual CStringW GetReplaceString(void) const = 0;

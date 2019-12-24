@@ -58,7 +58,7 @@ BEGIN_MESSAGE_MAP(SourceEdit, CWnd)
   ON_NOTIFY_REFLECT(SCNX_CONVERTPASTE, OnConvertPaste)
   ON_NOTIFY_REFLECT(SCNX_CONVERTCOPYTOCLIP, OnConvertCopyToClip)
 
-  ON_REGISTERED_MESSAGE(EditFind::FINDMSG, OnFindReplaceCmd)
+  ON_REGISTERED_MESSAGE(FINDMSG, OnFindReplaceCmd)
 END_MESSAGE_MAP()
 
 SourceEdit::SourceEdit() : m_fileTime(CTime::GetCurrentTime()), m_spell(this)

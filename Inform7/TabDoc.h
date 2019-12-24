@@ -40,6 +40,7 @@ protected:
 
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg LRESULT OnUserNavigate(WPARAM, LPARAM);
+  afx_msg LRESULT OnFindReplaceCmd(WPARAM, LPARAM);
 
 private:
   enum DocTabs
