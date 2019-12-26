@@ -83,6 +83,11 @@ CString TextFormat::UnicodeToUTF8(const CStringW& in)
   return utfText;
 }
 
+CString TextFormat::AnsiToUTF8(const CString& in)
+{
+  return UnicodeToUTF8(CStringW(in));
+}
+
 CString TextFormat::ToXML_UTF8(const CStringW& in)
 {
   // First escape any characters that will cause problems in the XML

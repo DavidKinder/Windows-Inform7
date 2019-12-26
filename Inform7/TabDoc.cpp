@@ -72,7 +72,7 @@ void TabDoc::MakeActive(TabState& state)
   if (!m_initialised)
   {
     // Show the index page
-    Show(theApp.GetAppDir()+m_files[DocTab_Home]);
+    ShowFile(DocTab_Home);
   }
 
   // Make the window visible
@@ -211,7 +211,7 @@ void TabDoc::Highlight(const SearchWindow::Result& result)
 {
   std::wstring search = result.context.substr(
     result.inContext.cpMin,result.inContext.cpMax-result.inContext.cpMin);
-  m_html.Navigate(result.sourceFile.c_str(),false,search.c_str());
+  m_html.Navigate(TextFormat::AnsiToUTF8(result.sourceFile.c_str()),false,search.c_str());
   m_initialised = true;
   UpdateActiveTab();
   Panel::GetPanel(this)->SetActiveTab(Panel::Tab_Doc);
@@ -230,7 +230,7 @@ BOOL TabDoc::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
     DocTabs tab = GetActiveTab();
     if (tab != No_DocTab)
     {
-      Show(theApp.GetAppDir()+m_files[tab]);
+      ShowFile(tab);
 
       TabState state;
       GetTabState(state);
@@ -324,6 +324,11 @@ void TabDoc::GetTabState(TabState& state)
 {
   state.tab = Panel::Tab_Doc;
   state.url = m_html.GetURL();
+}
+
+void TabDoc::ShowFile(DocTabs tab)
+{
+  Show(TextFormat::AnsiToUTF8(theApp.GetAppDir() + m_files[tab]));
 }
 
 struct Tag

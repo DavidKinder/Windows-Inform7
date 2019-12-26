@@ -488,6 +488,11 @@ public:
         else if (name == "I7.createNewProject")
         {
           CStringW title = UnescapeUnicode(GetStringArgument(message,0).ToString().c_str());
+
+          static const WCHAR* invalid = L"\\/:*?\"<>|";
+          for (int i = 0; i < wcslen(invalid); i++)
+            title.Remove(invalid[i]);
+
           CStringW code = UnescapeUnicode(GetStringArgument(message,1).ToString().c_str());
           m_object->GetParentFrame()->SendMessage(WM_NEWPROJECT,
             (WPARAM)(LPCWSTR)code,(LPARAM)(LPCWSTR)title);
@@ -495,7 +500,7 @@ public:
         else if (name == "I7.openFile")
         {
           std::string path = GetStringArgument(message,0).ToString();
-          OpenFile(path.c_str());
+          OpenFile(TextFormat::UTF8ToUnicode(path.c_str()));
         }
         else if (name == "I7.downloadExts")
         {
@@ -616,35 +621,35 @@ private:
   }
 
   // Open the given file or directory in Windows Explorer
-  void OpenFile(const char* path)
+  void OpenFile(LPCWSTR path)
   {
-    DWORD attrs = ::GetFileAttributes(path);
+    DWORD attrs = ::GetFileAttributesW(path);
     if (attrs != INVALID_FILE_ATTRIBUTES)
     {
       if (attrs & FILE_ATTRIBUTE_DIRECTORY)
       {
         // For directories, open an Explorer window
-        ::ShellExecute(0,"explore",path,NULL,NULL,SW_SHOWNORMAL);
+        ::ShellExecuteW(0,L"explore",path,NULL,NULL,SW_SHOWNORMAL);
       }
       else
       {
         // For files, open them with the default action
-        SHELLEXECUTEINFO exec;
+        SHELLEXECUTEINFOW exec;
         ::ZeroMemory(&exec,sizeof exec);
         exec.cbSize = sizeof exec;
         exec.fMask = SEE_MASK_FLAG_NO_UI;
         exec.hwnd = m_object->GetParentFrame()->GetSafeHwnd();
-        exec.lpVerb = "open";
+        exec.lpVerb = L"open";
         exec.lpFile = path;
         exec.nShow = SW_SHOWNORMAL;
-        if (!::ShellExecuteEx(&exec))
+        if (!::ShellExecuteExW(&exec))
         {
           // If there is no default association, let the user choose
           if (::GetLastError() == ERROR_NO_ASSOCIATION)
           {
             exec.fMask &= ~SEE_MASK_FLAG_NO_UI;
-            exec.lpVerb = "openas";
-            ::ShellExecuteEx(&exec);
+            exec.lpVerb = L"openas";
+            ::ShellExecuteExW(&exec);
           }
         }
       }
@@ -781,7 +786,7 @@ static std::string GetUTF8Path(const char* root, const char* path)
 {
   CString fullPath;
   fullPath.Format("%s%s",root,path);
-  CString utf8Path = TextFormat::UnicodeToUTF8(CStringW(fullPath));
+  CString utf8Path = TextFormat::AnsiToUTF8(fullPath);
   return utf8Path.GetString();
 }
 

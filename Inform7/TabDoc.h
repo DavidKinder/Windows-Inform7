@@ -57,6 +57,7 @@ private:
   DocTabs GetActiveTab(void);
   void UpdateActiveTab(void);
   void GetTabState(TabState& state);
+  void ShowFile(DocTabs tab);
 
   FlatTab m_tab;
   ReportHtml m_html;

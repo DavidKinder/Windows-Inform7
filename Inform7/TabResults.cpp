@@ -5,6 +5,7 @@
 #include "Inform.h"
 #include "Panel.h"
 #include "Messages.h"
+#include "TextFormat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -127,23 +128,24 @@ void TabResults::CompileProject(CompileStage stage, int code)
     {
     case 0:
     case 1:
-      m_report.Navigate(m_projectDir+PROBLEMS_FILE,false);
+      m_report.Navigate(TextFormat::AnsiToUTF8(
+        m_projectDir+PROBLEMS_FILE),false);
       break;
     case 2:
-      m_report.Navigate(theApp.GetAppDir()+
-        "\\Documentation\\sections\\Error2.html",false);
+      m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
+        "\\Documentation\\sections\\Error2.html"),false);
       break;
     case 10:
-      m_report.Navigate(theApp.GetAppDir()+
-        "\\Documentation\\sections\\Error10.html",false);
+      m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
+        "\\Documentation\\sections\\Error10.html"),false);
       break;
     case 11:
-      m_report.Navigate(theApp.GetAppDir()+
-        "\\Documentation\\sections\\Error11.html",false);
+      m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
+        "\\Documentation\\sections\\Error11.html"),false);
       break;
     default:
-      m_report.Navigate(theApp.GetAppDir()+
-        "\\Documentation\\sections\\Error0.html",false);
+      m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
+        "\\Documentation\\sections\\Error0.html"),false);
       break;
     }
 
@@ -158,20 +160,20 @@ void TabResults::CompileProject(CompileStage stage, int code)
       switch (m_inform6)
       {
       case MemorySetting:
-        m_report.Navigate(theApp.GetAppDir()+
-          "\\Documentation\\sections\\ErrorI6MemorySetting.html",false);
+        m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
+          "\\Documentation\\sections\\ErrorI6MemorySetting.html"),false);
         break;
       case ReadableMemory:
-        m_report.Navigate(theApp.GetAppDir()+
-          "\\Documentation\\sections\\ErrorI6Readable.html",false);
+        m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
+          "\\Documentation\\sections\\ErrorI6Readable.html"),false);
         break;
       case StoryFileLimit:
-        m_report.Navigate(theApp.GetAppDir()+
-          "\\Documentation\\sections\\ErrorI6TooBig.html",false);
+        m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
+          "\\Documentation\\sections\\ErrorI6TooBig.html"),false);
         break;
       default:
-        m_report.Navigate(theApp.GetAppDir()+
-          "\\Documentation\\sections\\ErrorI6.html",false);
+        m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
+          "\\Documentation\\sections\\ErrorI6.html"),false);
         break;
       }
       SetActiveTab(ResTab_Report,false);
@@ -184,13 +186,13 @@ void TabResults::CompileProject(CompileStage stage, int code)
     case 0:
     case 1:
       // Show the cBlorb status report
-      m_report.Navigate(m_projectDir+CBLORB_FILE,false);
+      m_report.Navigate(TextFormat::AnsiToUTF8(m_projectDir+CBLORB_FILE),false);
       SetActiveTab(ResTab_Report,false);
       break;
     default:
       // Show the generic cBlorb error page
-      m_report.Navigate(theApp.GetAppDir()+
-        "\\Documentation\\sections\\ErrorCblorb.html",false);
+      m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
+        "\\Documentation\\sections\\ErrorCblorb.html"),false);
       SetActiveTab(ResTab_Report,false);
       break;
     }
@@ -207,10 +209,10 @@ void TabResults::CompileProject(CompileStage stage, int code)
     {
       CString reportPath;
       reportPath.Format("%s\\Build\\Inform-Report-%d.html",(LPCSTR)m_projectDir,code);
-      m_report.Navigate(reportPath,false);
+      m_report.Navigate(TextFormat::AnsiToUTF8(reportPath),false);
     }
     else
-      m_report.Navigate(m_projectDir+PROBLEMS_FILE,false);
+      m_report.Navigate(TextFormat::AnsiToUTF8(m_projectDir+PROBLEMS_FILE),false);
     SetActiveTab(ResTab_Report,false);
     break;
   }
@@ -284,7 +286,7 @@ void TabResults::ShowRuntimeProblem(int problem)
 {
   CString runtime;
   runtime.Format("%s\\Documentation\\sections\\RTP_P%d.html",theApp.GetAppDir(),problem);
-  m_report.Navigate(runtime,false);
+  m_report.Navigate(TextFormat::AnsiToUTF8(runtime),false);
   SetActiveTab(ResTab_Report,false);
 }
 
@@ -292,7 +294,7 @@ void TabResults::ShowTerpFailed(void)
 {
   CString failed;
   failed.Format("%s\\Documentation\\windows\\ErrorTerp.html",theApp.GetAppDir());
-  m_report.Navigate(failed,false);
+  m_report.Navigate(TextFormat::AnsiToUTF8(failed),false);
   SetActiveTab(ResTab_Report,false);
 }
 

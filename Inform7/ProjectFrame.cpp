@@ -3,6 +3,7 @@
 #include "ExtensionFrame.h"
 #include "OSLayer.h"
 #include "Messages.h"
+#include "TextFormat.h"
 #include "ProjectDirDialog.h"
 #include "NewDialogs.h"
 #include "Dialogs.h"
@@ -1909,33 +1910,33 @@ void ProjectFrame::OnWindowList(UINT nID)
 
 void ProjectFrame::OnHelpIndex()
 {
+  CString path = theApp.GetAppDir()+"\\Documentation\\index.html";
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
-  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(
-    theApp.GetAppDir()+"\\Documentation\\index.html");
+  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(TextFormat::AnsiToUTF8(path));
   panel->SetActiveTab(Panel::Tab_Doc);
 }
 
 void ProjectFrame::OnHelpLicence()
 {
+  CString path = theApp.GetAppDir()+"\\Documentation\\licences\\licence.html";
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
-  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(
-    theApp.GetAppDir()+"\\Documentation\\licences\\licence.html");
+  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(TextFormat::AnsiToUTF8(path));
   panel->SetActiveTab(Panel::Tab_Doc);
 }
 
 void ProjectFrame::OnHelpWindows()
 {
+  CString path = theApp.GetAppDir()+"\\Documentation\\windows\\Windows.html";
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
-  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(
-    theApp.GetAppDir()+"\\Documentation\\windows\\Windows.html");
+  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(TextFormat::AnsiToUTF8(path));
   panel->SetActiveTab(Panel::Tab_Doc);
 }
 
 void ProjectFrame::OnHelpExtensions()
 {
+  CString path = theApp.GetHomeDir()+"\\Inform\\Documentation\\Extensions.html";
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Extensions));
-  ((TabExtensions*)panel->GetTab(Panel::Tab_Extensions))->Show(
-    theApp.GetHomeDir()+"\\Inform\\Documentation\\Extensions.html");
+  ((TabExtensions*)panel->GetTab(Panel::Tab_Extensions))->Show(TextFormat::AnsiToUTF8(path));
   panel->SetActiveTab(Panel::Tab_Extensions);
 }
 
@@ -1946,7 +1947,7 @@ void ProjectFrame::OnHelpRecipes()
     recipePath = theApp.GetAppDir()+"\\Documentation\\Rdoc1.html";
 
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
-  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(recipePath);
+  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(TextFormat::AnsiToUTF8(recipePath));
   panel->SetActiveTab(Panel::Tab_Doc);
 }
 

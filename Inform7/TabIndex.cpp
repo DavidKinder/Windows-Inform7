@@ -5,6 +5,7 @@
 #include "Inform.h"
 #include "Panel.h"
 #include "Messages.h"
+#include "TextFormat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -265,7 +266,7 @@ void TabIndex::SetActiveTab(IndexTabs tab, bool focus)
 
     // If the index file exists, show it
     if (::GetFileAttributes(htmlFile) != INVALID_FILE_ATTRIBUTES)
-      m_index.Navigate(htmlFile,focus);
+      m_index.Navigate(TextFormat::AnsiToUTF8(htmlFile),focus);
     else
       m_index.Navigate("about:blank",false);
 

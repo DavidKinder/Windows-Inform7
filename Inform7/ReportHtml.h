@@ -16,8 +16,12 @@ public:
   BOOL Create(LPCSTR, LPCSTR, DWORD style,
     const RECT& rect, CWnd* parentWnd, UINT id, CCreateContext* = NULL);
 
+  // Navigate to the given URL, encoded as UTF-8
   void Navigate(const char* url, bool focus, LPCWSTR find = NULL);
+
+  // Get the current URL, encoded as UTF-8
   CString GetURL(void);
+
   void Refresh(void);
   void RunJavaScript(const char* code);
 

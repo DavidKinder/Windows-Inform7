@@ -4,6 +4,7 @@
 #include "TabSkein.h"
 #include "Inform.h"
 #include "Panel.h"
+#include "TextFormat.h"
 #include "Dialogs.h"
 #include "Messages.h"
 #include "Resource.h"
@@ -63,7 +64,8 @@ void TabSkein::CreateTab(CWnd* parent)
   m_skeinWindow = (SkeinWindow*)m_splitter.GetPane(0,0);
   m_helpWindow = (ReportHtml*)m_splitter.GetPane(1,0);
   m_helpWindow->SetLinkConsumer(this);
-  m_helpWindow->Navigate(theApp.GetAppDir()+"\\Documentation\\windows\\TestingTemplate.html",false);
+  m_helpWindow->Navigate(TextFormat::AnsiToUTF8(
+    theApp.GetAppDir()+"\\Documentation\\windows\\TestingTemplate.html"),false);
 }
 
 void TabSkein::MoveTab(CRect& rect)

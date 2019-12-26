@@ -5,6 +5,7 @@
 #include "Inform.h"
 #include "Panel.h"
 #include "Messages.h"
+#include "TextFormat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -227,7 +228,7 @@ void TabExtensions::OnSize(UINT nType, int cx, int cy)
 
 LRESULT TabExtensions::OnPubLibError(WPARAM, LPARAM)
 {
-  Show(theApp.GetAppDir()+"\\Documentation\\sections\\pl404.html");
+  Show(TextFormat::AnsiToUTF8(theApp.GetAppDir()+"\\Documentation\\sections\\pl404.html"));
   return 0;
 }
 
@@ -288,5 +289,5 @@ CString TabExtensions::GetUrlForTab(ExtTabs tab)
 {
   if (tab == ExtTab_Library)
     return m_files[tab];
-  return theApp.GetHomeDir()+m_files[tab];
+  return TextFormat::AnsiToUTF8(theApp.GetHomeDir()+m_files[tab]);
 }
