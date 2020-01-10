@@ -50,18 +50,6 @@ BOOL FlatTab::OnEraseBkgnd(CDC* pDC)
   return TRUE;
 }
 
-// Get a rough estimate of the greyscale intensity of a given colour
-static double grey(COLORREF colour)
-{
-  return 0.3*GetRValue(colour) + 0.6*GetGValue(colour) + 0.1*GetBValue(colour);
-}
-
-// Slightly darken a given colour. This will usually be a grey, so reduce all channels by the same factor.
-static COLORREF darken(COLORREF colour)
-{
-  return RGB((int)(0.9*GetRValue(colour)),(int)(0.9*GetGValue(colour)),(int)(0.9*GetBValue(colour)));
-}
-
 void FlatTab::OnPaint()
 {
   CRect client;
@@ -80,18 +68,27 @@ void FlatTab::OnPaint()
     return;
   CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&bitmap);
 
-  // Determine a suitable "shadow" colour for the lines of tabs
-  COLORREF shadowColour = ::GetSysColor(COLOR_BTNSHADOW);
-  if (grey(shadowColour) < grey(::GetSysColor(COLOR_BTNFACE)))
+  // Get the colour for the lines around tabs: use the theme, if possible
+  COLORREF lineColour = ::GetSysColor(COLOR_BTNSHADOW);
+  if (!m_buttons)
   {
-    COLORREF darkColour = darken(::GetSysColor(COLOR_BTNFACE));
-    if (grey(darkColour) >= grey(shadowColour))
-      shadowColour = darkColour;
+    HTHEME theme = 0;
+    if (theOS.IsAppThemed())
+    {
+      HTHEME theme = theOS.OpenThemeData(this,L"TAB");
+      if (theme != 0)
+      {
+        COLORREF themeColour = theOS.GetThemeColor(theme,TABP_TABITEM,TIBES_NORMAL,TMT_EDGEFILLCOLOR);
+        theOS.CloseThemeData(theme);
+        if (themeColour != 0)
+          lineColour = themeColour;
+      }
+    }
   }
-  CPen shadowPen(PS_SOLID,0,shadowColour);
+  CPen linePen(PS_SOLID,0,lineColour);
 
   CFont* oldFont = dc.SelectObject(GetFont());
-  CPen* oldPen = dc.SelectObject(&shadowPen);
+  CPen* oldPen = dc.SelectObject(&linePen);
   dc.SetBkMode(TRANSPARENT);
 
   int sel = GetCurSel();
@@ -139,14 +136,12 @@ void FlatTab::OnPaint()
       {
         if (i == 0)
         {
-          dc.SelectObject(shadowPen);
           int gap = itemRect.Height()/6;
           dc.MoveTo(itemRect.left,itemRect.top+gap);
           dc.LineTo(itemRect.left,itemRect.bottom-gap);
         }
         if ((i != sel-1) && (i != GetItemCount()-1))
         {
-          dc.SelectObject(shadowPen);
           int gap = itemRect.Height()/6;
           dc.MoveTo(itemRect.right,itemRect.top+gap);
           dc.LineTo(itemRect.right,itemRect.bottom-gap);
@@ -172,7 +167,6 @@ void FlatTab::OnPaint()
   {
     int base = client.bottom-1;
     dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourTabBack));
-    dc.SelectObject(&shadowPen);
     dc.MoveTo(0,base);
     dc.LineTo(client.right,base);
 
@@ -196,7 +190,6 @@ void FlatTab::OnPaint()
       {
         dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNFACE));
 
-        dc.SelectObject(&shadowPen);
         dc.MoveTo(itemRect.right,itemRect.bottom-1);
         dc.LineTo(itemRect.right,itemRect.top);
         dc.LineTo(itemRect.left,itemRect.top);

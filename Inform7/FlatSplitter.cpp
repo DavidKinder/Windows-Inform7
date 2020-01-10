@@ -44,7 +44,10 @@ void FlatSplitter::OnDrawSplitter(CDC* pDC, ESplitType nType, const CRect& rect)
   if ((pDC != NULL) && (nType == splitBorder))
   {
     if (m_cxBorder > 0)
-      pDC->Draw3dRect(rect,::GetSysColor(COLOR_BTNSHADOW),::GetSysColor(COLOR_BTNHIGHLIGHT));
+    {
+      COLORREF face = ::GetSysColor(COLOR_BTNFACE);
+      pDC->Draw3dRect(rect,face,face);
+    }
   }
   else
     CSplitterWnd::OnDrawSplitter(pDC,nType,rect);
