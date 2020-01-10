@@ -78,11 +78,6 @@ bool TabBase::IsEnabled(void)
   return true;
 }
 
-COLORREF TabBase::GetTabColour(void)
-{
-  return ::GetSysColor(COLOR_BTNFACE);
-}
-
 CWnd* TabBase::GetWindow(void)
 {
   return this;

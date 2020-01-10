@@ -23,7 +23,6 @@ public:
   {
   public:
     virtual bool IsTabEnabled(int tab) = 0;
-    virtual COLORREF GetTabColour(int tab) = 0;
   };
 
   void SetTabController(TabController* controller);

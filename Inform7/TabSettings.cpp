@@ -122,11 +122,6 @@ bool TabSettings::IsEnabled(void)
   return true;
 }
 
-COLORREF TabSettings::GetTabColour(void)
-{
-  return ::GetSysColor(COLOR_BTNFACE);
-}
-
 CWnd* TabSettings::GetWindow(void)
 {
   return this;

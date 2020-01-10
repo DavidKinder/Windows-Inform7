@@ -44,8 +44,6 @@ public:
   virtual void MakeInactive(void) = 0;
   // Check if the tab is enabled
   virtual bool IsEnabled(void) = 0;
-  // Get the colour for the tab highlight
-  virtual COLORREF GetTabColour(void) = 0;
   // Get the window for this tab
   virtual CWnd* GetWindow(void) = 0;
 

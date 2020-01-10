@@ -10,7 +10,6 @@ class TabBase : public CWnd, public TabInterface
 public:
   void MakeInactive(void);
   bool IsEnabled(void);
-  COLORREF GetTabColour(void);
   CWnd* GetWindow(void);
 
   void OpenProject(const char* path, bool primary);

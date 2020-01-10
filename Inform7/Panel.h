@@ -57,7 +57,6 @@ public:
   void PrefsChanged(CRegKey& key);
 
   virtual bool IsTabEnabled(int tab);
-  virtual COLORREF GetTabColour(int tab);
 
   bool CanTabNavigate(bool forward);
   const char* TabNavigateName(bool forward);

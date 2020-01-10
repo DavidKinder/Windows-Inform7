@@ -50,6 +50,18 @@ BOOL FlatTab::OnEraseBkgnd(CDC* pDC)
   return TRUE;
 }
 
+// Get a rough estimate of the greyscale intensity of a given colour
+static double grey(COLORREF colour)
+{
+  return 0.3*GetRValue(colour) + 0.6*GetGValue(colour) + 0.1*GetBValue(colour);
+}
+
+// Slightly darken a given colour. This will usually be a grey, so reduce all channels by the same factor.
+static COLORREF darken(COLORREF colour)
+{
+  return RGB((int)(0.9*GetRValue(colour)),(int)(0.9*GetGValue(colour)),(int)(0.9*GetBValue(colour)));
+}
+
 void FlatTab::OnPaint()
 {
   CRect client;
@@ -68,18 +80,24 @@ void FlatTab::OnPaint()
     return;
   CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&bitmap);
 
-  CPen darkPen(PS_SOLID,0,::GetSysColor(COLOR_BTNTEXT));
-  CPen shadowPen(PS_SOLID,0,::GetSysColor(COLOR_BTNSHADOW));
+  // Determine a suitable "shadow" colour for the lines of tabs
+  COLORREF shadowColour = ::GetSysColor(COLOR_BTNSHADOW);
+  if (grey(shadowColour) < grey(::GetSysColor(COLOR_BTNFACE)))
+  {
+    COLORREF darkColour = darken(::GetSysColor(COLOR_BTNFACE));
+    if (grey(darkColour) >= grey(shadowColour))
+      shadowColour = darkColour;
+  }
+  CPen shadowPen(PS_SOLID,0,shadowColour);
 
   CFont* oldFont = dc.SelectObject(GetFont());
-  CPen* oldPen = dc.SelectObject(&darkPen);
+  CPen* oldPen = dc.SelectObject(&shadowPen);
   dc.SetBkMode(TRANSPARENT);
 
   int sel = GetCurSel();
 
   if (m_buttons)
   {
-    CPen highPen(PS_SOLID,0,::GetSysColor(COLOR_BTNHILIGHT));
     dc.FillSolidRect(client,::GetSysColor(COLOR_BTNFACE));
 
     for (int i = 0; i < GetItemCount(); i++)
@@ -117,8 +135,7 @@ void FlatTab::OnPaint()
           &selectDC,0,0,bitmapInfo.bmWidth,bitmapInfo.bmHeight,SRCCOPY);
         selectDC.SelectObject(oldBitmap);
       }
-
-      if (i != sel)
+      else
       {
         if (i == 0)
         {
@@ -153,17 +170,9 @@ void FlatTab::OnPaint()
   }
   else
   {
-    COLORREF highColour = ::GetSysColor(COLOR_BTNHILIGHT);
-    if (m_controller != NULL)
-    {
-      if (highColour == m_controller->GetTabColour(sel))
-        highColour = ::GetSysColor(COLOR_BTNFACE);
-    }
-    CPen highPen(PS_SOLID,0,highColour);
-
     int base = client.bottom-1;
     dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourTabBack));
-    dc.SelectObject(&highPen);
+    dc.SelectObject(&shadowPen);
     dc.MoveTo(0,base);
     dc.LineTo(client.right,base);
 
@@ -185,15 +194,11 @@ void FlatTab::OnPaint()
 
       if (i == sel)
       {
-        COLORREF high = ::GetSysColor(COLOR_BTNFACE);
-        if (m_controller != NULL)
-          high = m_controller->GetTabColour(i);
-        dc.FillSolidRect(itemRect,high);
+        dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNFACE));
 
-        dc.SelectObject(&darkPen);
+        dc.SelectObject(&shadowPen);
         dc.MoveTo(itemRect.right,itemRect.bottom-1);
         dc.LineTo(itemRect.right,itemRect.top);
-        dc.SelectObject(&highPen);
         dc.LineTo(itemRect.left,itemRect.top);
         dc.LineTo(itemRect.left,itemRect.bottom);
       }

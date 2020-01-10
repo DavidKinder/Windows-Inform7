@@ -244,11 +244,6 @@ bool Panel::IsTabEnabled(int tab)
   return m_tabs[tab]->IsEnabled();
 }
 
-COLORREF Panel::GetTabColour(int tab)
-{
-  return m_tabs[tab]->GetTabColour();
-}
-
 bool Panel::CanTabNavigate(bool forward)
 {
   TabState state = GetTabNavigate(forward);

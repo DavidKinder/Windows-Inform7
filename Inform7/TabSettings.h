@@ -16,7 +16,6 @@ public:
   void MakeActive(TabState& state);
   void MakeInactive(void);
   bool IsEnabled(void);
-  COLORREF GetTabColour(void);
   CWnd* GetWindow(void);
 
   BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
