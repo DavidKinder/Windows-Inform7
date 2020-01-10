@@ -7,8 +7,8 @@
 // Turn off deprecation warnings
 #pragma warning (disable: 4996)
 
-// Require at least Windows 7
-#define _WIN32_WINNT _WIN32_WINNT_WIN7
+// Require Windows 10
+#define _WIN32_WINNT _WIN32_WINNT_WIN10
 
 // Specify the common controls version in the manifest
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
