@@ -13,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.K.) resources
+// English (United Kingdom) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -62,7 +60,7 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU 
+IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -180,7 +178,6 @@ BEGIN
             MENUITEM "&Transcript\tCtrl+F5",        ID_WINDOW_TAB_TRANSCRIPT
             MENUITEM "St&ory\tCtrl+F6",             ID_WINDOW_TAB_STORY
             MENUITEM "&Documentation\tCtrl+F7",     ID_WINDOW_TAB_DOCUMENTATION
-
             MENUITEM "&Extensions\tCtrl+F8",        ID_WINDOW_TAB_EXTENSIONS
             MENUITEM "Sett&ings\tCtrl+F9",          ID_WINDOW_TAB_SETTINGS
             MENUITEM SEPARATOR
@@ -216,7 +213,7 @@ BEGIN
     END
 END
 
-IDR_HTMLMENU MENU 
+IDR_HTMLMENU MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -231,7 +228,7 @@ BEGIN
     END
 END
 
-IDR_SKEIN MENU 
+IDR_SKEIN MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -256,7 +253,7 @@ BEGIN
     END
 END
 
-IDR_EXTFRAME MENU 
+IDR_EXTFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -304,7 +301,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS 
+IDR_MAINFRAME ACCELERATORS
 BEGIN
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -356,7 +353,7 @@ BEGIN
     "2",            ID_WINDOW_RIGHTPANE,    VIRTKEY, CONTROL, NOINVERT
 END
 
-IDR_EXTFRAME ACCELERATORS 
+IDR_EXTFRAME ACCELERATORS
 BEGIN
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -385,18 +382,14 @@ END
 //
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 206, 203
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
-    WS_THICKFRAME
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Inform 7 for Windows"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_CREDITS,"RichEdit20A",ES_MULTILINE | ES_READONLY | 
-                    WS_VSCROLL | WS_TABSTOP,1,53,203,120,WS_EX_STATICEDGE
-    CTEXT           "Copyright 2006-2019 David Kinder (front end), Graham Nelson et al (compiler).",
-                    IDC_COPYRIGHT,25,182,156,17
+    CONTROL         "",IDC_CREDITS,"RichEdit20A",ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_TABSTOP,4,53,202,120
+    CTEXT           "Copyright 2006-2020 David Kinder (front end), Graham Nelson et al (compiler).",IDC_COPYRIGHT,25,182,156,17
     CTEXT           "Inform",IDC_TITLE,23,22,159,15,SS_CENTERIMAGE
-    CONTROL         "",IDC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,79,1,48,
-                    18
+    CONTROL         "",IDC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,79,1,48,18
     CTEXT           "Inform 7 for Windows (%s; %s)",IDC_VERSION,1,42,203,9
 END
 
@@ -405,28 +398,23 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Story File Format",IDC_STORY_BOX,7,7,247,111
-    CONTROL         "Z-Code version 8 (medium-sized textual projects: most portable)",
-                    IDC_OUTPUT_Z8,"Button",BS_AUTORADIOBUTTON,15,45,229,10
-    CONTROL         "Glulx (large and multimedia projects: most capable)",
-                    IDC_OUTPUT_GLULX,"Button",BS_AUTORADIOBUTTON,15,55,197,
-                    10
-    CONTROL         "Bind up into a Blorb file on release",IDC_BLORB,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,101,131,8
+    CONTROL         "Z-Code version 8 (medium-sized textual projects: most portable)",IDC_OUTPUT_Z8,
+                    "Button",BS_AUTORADIOBUTTON,15,45,229,10
+    CONTROL         "Glulx (large and multimedia projects: most capable)",IDC_OUTPUT_GLULX,
+                    "Button",BS_AUTORADIOBUTTON,15,55,197,10
+    CONTROL         "Bind up into a Blorb file on release",IDC_BLORB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,101,131,8
     GROUPBOX        "Randomness",IDC_RANDOM_BOX,7,123,247,78
-    CONTROL         "Make random outcomes predictable when testing",
-                    IDC_PREDICTABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
-                    185,184,8
+    CONTROL         "Make random outcomes predictable when testing",IDC_PREDICTABLE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,185,184,8
 END
 
 IDD_SPLASH DIALOGEX 0, 0, 370, 222
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Welcome to Inform 7"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     PUSHBUTTON      "Start a &new project...",IDC_NEW_PROJECT,253,163,112,14
-    DEFPUSHBUTTON   "&Open an existing project...",IDC_OPEN_PROJECT,253,182,
-                    112,14
+    DEFPUSHBUTTON   "&Open an existing project...",IDC_OPEN_PROJECT,253,182,112,14
     PUSHBUTTON      "&Reopen last project",IDC_REOPEN_LAST,253,201,112,14
     LTEXT           "",IDC_INTRO,15,14,128,160
 END
@@ -435,15 +423,12 @@ IDD_SEARCH DIALOGEX 0, 0, 174, 18
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_SEARCH_SOURCE,3,3,81,11,ES_MULTILINE | 
-                    ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
-    EDITTEXT        IDC_SEARCH_DOCS,91,3,81,11,ES_MULTILINE | ES_AUTOHSCROLL | 
-                    NOT WS_BORDER,WS_EX_STATICEDGE
+    EDITTEXT        IDC_SEARCH_SOURCE,3,3,81,11,ES_MULTILINE | ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
+    EDITTEXT        IDC_SEARCH_DOCS,91,3,81,11,ES_MULTILINE | ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
 END
 
 IDD_NEWPROJECT DIALOGEX 0, 0, 291, 123
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Start a new %s"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -453,26 +438,22 @@ BEGIN
     EDITTEXT        IDC_AUTHOR,7,75,277,12,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "Start",IDOK,177,101,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,234,101,50,14
-    LTEXT           "The &directory in which the new %s will be created",
-                    IDC_DIR_TEXT,7,7,265,8
+    LTEXT           "The &directory in which the new %s will be created",IDC_DIR_TEXT,7,7,265,8
     EDITTEXT        IDC_DIR,7,17,265,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_DIRPOPUP,272,17,12,12
 END
 
 IDD_SPELLING DIALOGEX 0, 0, 299, 139
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Check spelling"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "&Not in the dictionary",IDC_STATIC,7,7,66,8
     EDITTEXT        IDC_BADWORD,7,19,200,12,ES_AUTOHSCROLL
     LTEXT           "&Suggestions",IDC_STATIC,7,36,40,8
-    LISTBOX         IDC_SUGGESTIONS,7,47,200,67,LBS_SORT | 
-                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_SUGGESTIONS,7,47,200,67,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "&Dictionary language",IDC_STATIC,7,122,72,8
-    COMBOBOX        IDC_LANGUAGE,80,120,127,87,CBS_DROPDOWNLIST | CBS_SORT | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_LANGUAGE,80,120,127,87,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Ignore word",IDC_IGNORE,216,19,76,14
     PUSHBUTTON      "&Replace word",IDC_REPLACE,216,38,76,14
     PUSHBUTTON      "&Add to dictionary",IDC_ADD_DICTIONARY,216,57,76,14
@@ -480,18 +461,15 @@ BEGIN
 END
 
 IDD_PREFS_EDIT DIALOGEX 0, 0, 251, 328
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 CAPTION "Editing"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Text",IDC_STATIC,6,14,239,50
     RTEXT           "&Font family",IDC_STATIC,14,25,40,8
-    COMBOBOX        IDC_FONT,60,23,149,200,CBS_DROPDOWNLIST | CBS_SORT | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONT,60,23,149,200,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Font &size",IDC_STATIC,16,38,37,8
-    COMBOBOX        IDC_FONTSIZE,60,36,32,182,CBS_DROPDOWN | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE,60,36,32,182,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     LTEXT           "points",IDC_STATIC,95,38,26,8
     RTEXT           "Paper colour",IDC_STATIC,9,50,44,8
     LTEXT           "Source",IDC_STATIC,59,50,23,8
@@ -499,115 +477,82 @@ BEGIN
     LTEXT           "Extensions",IDC_STATIC,127,50,35,8
     PUSHBUTTON      "",IDC_COLOUR_EXT,165,49,30,11
     GROUPBOX        "Syntax highlighting",IDC_STATIC,6,65,239,91
-    CONTROL         "Enable",IDC_ENABLE_HIGHLIGHT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,76,35,10
+    CONTROL         "Enable",IDC_ENABLE_HIGHLIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,76,35,10
     LTEXT           "Colour",IDC_STATIC,58,78,22,8
     LTEXT           "Font style",IDC_STATIC,95,78,32,8
     LTEXT           "Underline",IDC_STATIC,142,78,32,8
     LTEXT           "Font size",IDC_STATIC,191,78,30,8
     RTEXT           "Headings",IDC_HEAD_LABEL,15,90,38,8
     PUSHBUTTON      "",IDC_HEAD_COLOUR,58,88,22,11
-    COMBOBOX        IDC_HEAD_STYLE,88,88,46,76,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    CONTROL         "",IDC_HEAD_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    151,89,10,10
-    COMBOBOX        IDC_HEAD_SIZE,183,88,46,69,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_HEAD_STYLE,88,88,46,76,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_HEAD_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,151,89,10,10
+    COMBOBOX        IDC_HEAD_SIZE,183,88,46,69,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Main text",IDC_MAIN_LABEL,13,103,40,8
     PUSHBUTTON      "",IDC_MAIN_COLOUR,58,101,22,11
-    COMBOBOX        IDC_MAIN_STYLE,88,101,46,82,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_MAIN_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    151,102,10,10
-    COMBOBOX        IDC_MAIN_SIZE,183,101,46,73,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MAIN_STYLE,88,101,46,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_MAIN_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,151,102,10,10
+    COMBOBOX        IDC_MAIN_SIZE,183,101,46,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Comments",IDC_COMMENT_LABEL,13,116,40,8
     PUSHBUTTON      "",IDC_COMMENT_COLOUR,58,114,22,11
-    COMBOBOX        IDC_COMMENT_STYLE,88,114,46,79,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_COMMENT_UNDER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,151,115,10,10
-    COMBOBOX        IDC_COMMENT_SIZE,183,114,46,96,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMMENT_STYLE,88,114,46,79,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_COMMENT_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,151,115,10,10
+    COMBOBOX        IDC_COMMENT_SIZE,183,114,46,96,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Quoted text",IDC_QUOTE_LABEL,8,129,45,8
     PUSHBUTTON      "",IDC_QUOTE_COLOUR,58,127,22,11
-    COMBOBOX        IDC_QUOTE_STYLE,88,127,46,66,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_QUOTE_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    151,128,10,10
-    COMBOBOX        IDC_QUOTE_SIZE,183,127,46,81,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_QUOTE_STYLE,88,127,46,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_QUOTE_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,151,128,10,10
+    COMBOBOX        IDC_QUOTE_SIZE,183,127,46,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Substitutions",IDC_SUBST_LABEL,8,142,45,8
     PUSHBUTTON      "",IDC_SUBST_COLOUR,58,140,22,11
-    COMBOBOX        IDC_SUBST_STYLE,88,140,46,80,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_SUBST_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    151,141,10,10
-    COMBOBOX        IDC_SUBST_SIZE,183,140,46,61,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SUBST_STYLE,88,140,46,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_SUBST_UNDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,151,141,10,10
+    COMBOBOX        IDC_SUBST_SIZE,183,140,46,61,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Tab width",IDC_STATIC,6,157,239,44
-    CONTROL         "",IDC_TABSIZE,"msctls_trackbar32",TBS_AUTOTICKS | 
-                    WS_TABSTOP,18,165,215,17
-    EDITTEXT        IDC_TABPREVIEW,18,184,215,12,ES_AUTOHSCROLL | NOT 
-                    WS_VISIBLE
+    CONTROL         "",IDC_TABSIZE,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,18,165,215,17
+    EDITTEXT        IDC_TABPREVIEW,18,184,215,12,ES_AUTOHSCROLL | NOT WS_VISIBLE
     GROUPBOX        "Indenting",IDC_STATIC,6,202,120,40
-    CONTROL         "&Indent wrapped lines",IDC_INDENT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,211,82,10
-    CONTROL         "A&uto-indent after newline",IDC_AUTO_INDENT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,220,96,10
-    CONTROL         "Auto-space ta&ble columns",IDC_ELASTIC_TABS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,229,97,10
+    CONTROL         "&Indent wrapped lines",IDC_INDENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,211,82,10
+    CONTROL         "A&uto-indent after newline",IDC_AUTO_INDENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,220,96,10
+    CONTROL         "Auto-space ta&ble columns",IDC_ELASTIC_TABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,229,97,10
     GROUPBOX        "Numbering",IDC_STATIC,134,202,111,40
-    CONTROL         "Auto-&number sections",IDC_AUTO_NUMBER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,139,211,84,10
+    CONTROL         "Auto-&number sections",IDC_AUTO_NUMBER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,139,211,84,10
     PUSHBUTTON      "Restore default settings",IDC_RESTORE,155,3,90,12
     EDITTEXT        IDC_PREVIEW,6,247,239,77,ES_AUTOHSCROLL | NOT WS_VISIBLE
 END
 
 IDD_PREFS_TEXT DIALOGEX 0, 0, 250, 81
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 CAPTION "Text"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     RTEXT           "Application &font",IDC_STATIC,17,10,55,8
-    COMBOBOX        IDC_FONT,80,8,143,200,CBS_DROPDOWNLIST | CBS_SORT | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONT,80,8,143,200,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Fixed &width font",IDC_STATIC,15,27,57,8
-    COMBOBOX        IDC_FIXEDFONT,80,25,143,200,CBS_DROPDOWNLIST | CBS_SORT | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FIXEDFONT,80,25,143,200,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Font &size",IDC_STATIC,35,47,37,8
-    COMBOBOX        IDC_FONTSIZE,80,45,32,182,CBS_DROPDOWN | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE,80,45,32,182,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     LTEXT           "points",IDC_STATIC,115,47,26,8
-    CTEXT           "Source text is controlled separately from the Editing tab.",
-                    IDC_STATIC,33,68,185,8
+    CTEXT           "Source text is controlled separately from the Editing tab.",IDC_STATIC,33,68,185,8
 END
 
 IDD_PREFS_ADVANCED DIALOGEX 0, 0, 250, 145
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 CAPTION "Advanced"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Cleaning",IDC_STATIC,5,3,187,40
-    CONTROL         "&Clean build files from projects before closing",
-                    IDC_CLEANFILES,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | 
-                    WS_TABSTOP,13,15,163,10
-    CONTROL         "&Also clean out index files",IDC_CLEANINDEX,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,27,126,10
+    CONTROL         "&Clean build files from projects before closing",IDC_CLEANFILES,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,13,15,163,10
+    CONTROL         "&Also clean out index files",IDC_CLEANINDEX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,27,126,10
     GROUPBOX        "Interpreters",IDC_STATIC,5,45,187,31
     LTEXT           "Glul&x interpreter",IDC_STATIC,14,59,56,8
-    COMBOBOX        IDC_GLULX,74,57,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_GLULX,74,57,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Starting",IDC_STATIC,5,78,187,30
-    CONTROL         "&Start by loading the last opened project",
-                    IDC_STARTLAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,
-                    90,149,10
+    CONTROL         "&Start by loading the last opened project",IDC_STARTLAST,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,90,149,10
     GROUPBOX        "Compiler",IDC_STATIC,5,110,187,30
-    CONTROL         "Generate Inform &6 debugging information",
-                    IDC_I6DEBUGGING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,
-                    122,158,10
+    CONTROL         "Generate Inform &6 debugging information",IDC_I6DEBUGGING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,122,158,10
 END
 
 
@@ -637,7 +582,7 @@ BEGIN
             VALUE "FileDescription", "Inform 7 for Windows"
             VALUE "FileVersion", "7.0"
             VALUE "InternalName", "Inform7"
-            VALUE "LegalCopyright", "(c) 2006-2019 David Kinder"
+            VALUE "LegalCopyright", "(c) 2006-2020 David Kinder"
             VALUE "OriginalFilename", "Inform7.exe"
             VALUE "ProductName", "Inform"
             VALUE "ProductVersion", "7.0"
@@ -656,13 +601,13 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
-        LEFTMARGIN, 1
-        RIGHTMARGIN, 204
-        TOPMARGIN, 1
+        LEFTMARGIN, 0
+        RIGHTMARGIN, 206
+        TOPMARGIN, 0
     END
 
     IDD_SETTINGS, DIALOG
@@ -722,8 +667,11 @@ IDR_ICON                ICON                    "res\\Inform7.ico"
 //
 
 IDR_TOOLBAR             BITMAP                  "res\\Toolbar.bmp"
+
 IDR_TOOLBAR_DISABLED    BITMAP                  "res\\ToolbarDisable.bmp"
+
 IDR_FLAT_SELECT         BITMAP                  "res\\TabSelect.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -864,16 +812,27 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "Inform"
     IDR_EXTFRAME            "Inform"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_INSTALL_EXT     "Install an extension for use in Inform projects"
     ID_FILE_INSTALL_FOLDER  "Open an Explorer window in the installed extensions folder"
@@ -885,7 +844,7 @@ BEGIN
     ID_EDIT_DELETE          "Delete the selected text"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_SPELLING        "Spell check the source"
     ID_EDIT_SCROLL          "Scroll to the currently selected text"
@@ -900,7 +859,7 @@ BEGIN
     ID_PLAY_TEST_EXAMPLES   "Translate and test the examples\nTest"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_PLAY_REFRESH         "Translate the story and refresh the index\nRefresh"
     ID_PLAY_LOAD            "Load and play a story"
@@ -916,7 +875,7 @@ BEGIN
                             "Show the next command in the whole skein for which the transcript and blessed text do not match"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_RELEASE_GAME         "Translate the story ready for release (with all debugging features turned off) and save the result\nRelease"
     ID_RELEASE_TEST         "Translate the story in debug mode and save the result"
@@ -924,7 +883,7 @@ BEGIN
     ID_RELEASE_IFICTION     "Export the iFiction record for this story"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_WINDOW_SWITCH        "Switch the input cursor to the pane on the other side"
     ID_WINDOW_LEFTPANE      "Switch the input cursor to the left hand pane"
@@ -933,7 +892,7 @@ BEGIN
     ID_HELP_WINDOWS         "Show notes specific to this Windows version of Inform"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_HELP_EXTENSIONS      "Show the page listing installed extensions"
     ID_HELP_RECIPES         "Show the recipe book page, listing all the examples"
@@ -948,18 +907,18 @@ BEGIN
     ID_HEAD_NEXT            "Show the next section in the source"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_APP_TITLE       "Inform"
     AFX_IDS_IDLEMESSAGE     "Windows Inform 7 build %s"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCRESTORE       "Restore the window to normal size"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
@@ -968,13 +927,13 @@ BEGIN
     AFX_IDS_SCCLOSE         "Close the window"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_CAPS       "CAP"
     ID_INDICATOR_NUM        "NUM"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "Start a new project"
     ID_FILE_OPEN            "Open an existing project"
@@ -983,14 +942,14 @@ BEGIN
     ID_FILE_SAVE_AS         "Save this project under a new name"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "Show the about dialog"
     ID_APP_EXIT             "Close all windows and exit"
     ID_HELP_INDEX           "Show the contents page of the documentation\nHelp"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_COPY            "Copy the selected text to the clipboard"
     ID_EDIT_CUT             "Cut the selected text to the clipboard"
@@ -1002,13 +961,13 @@ BEGIN
     ID_EDIT_REDO            "Redo the last undone change"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDC_SEARCH_SOURCE       "Search the source code"
     IDC_SEARCH_DOCS         "Search the documentation"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_SKEIN_LABEL          "Show a menu of the labelled commands: selecting a command will go to it"
     ID_SKEIN_PLAY           "Play the story to this command in the skein, restarting if necessary"
@@ -1027,14 +986,14 @@ BEGIN
     ID_SKEIN_PLAY_ALL       "Play all threads in the skein"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_SKEIN_LOCK           "Lock this command and all those that lead to it"
     ID_SKEIN_UNLOCK         "Unlock this command and all those that come after it"
     ID_SKEIN_TRIM           "Remove unlocked commands, starting from this command"
 END
 
-#endif    // English (U.K.) resources
+#endif    // English (United Kingdom) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
