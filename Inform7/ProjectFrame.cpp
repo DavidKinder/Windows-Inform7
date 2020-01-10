@@ -517,27 +517,27 @@ void ProjectFrame::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
         CDC* dc = theOS.BeginBufferedPaint(di->hDC,&(di->rcItem),BPBF_COMPATIBLEBITMAP,&pb);
 
         // Draw the menu background
-        theOS.DrawThemeBackground(theme,dc,9/*MENU_POPUPBACKGROUND*/,0,&rc);
+        theOS.DrawThemeBackground(theme,dc,MENU_POPUPBACKGROUND,0,&rc);
 
         // Draw the menu gutter
         rc.right = di->rcItem.left+m_menuGutter;
-        theOS.DrawThemeBackground(theme,dc,13/*MENU_POPUPGUTTER*/,0,&rc);
+        theOS.DrawThemeBackground(theme,dc,MENU_POPUPGUTTER,0,&rc);
 
         // Draw the menu item
-        int state = (di->itemState & ODS_SELECTED) ? 2/*MPI_HOT*/ : 1/*MPI_NORMAL*/;
+        int state = (di->itemState & ODS_SELECTED) ? MPI_HOT : MPI_NORMAL;
         rc.left = di->rcItem.left;
         rc.right = di->rcItem.right;
-        theOS.DrawThemeBackground(theme,dc,14/*MENU_POPUPITEM*/,state,&rc);
+        theOS.DrawThemeBackground(theme,dc,MENU_POPUPITEM,state,&rc);
 
         // Select a colour for the menu text, based on the theme's colours
         if (ext->system)
         {
           dc->SetTextColor(theApp.BlendedColour(
-            theOS.GetThemeColor(theme,14,state,TMT_TEXTCOLOR),4,
-            theOS.GetThemeColor(theme,9,0,TMT_FILLCOLORHINT),1));
+            theOS.GetThemeColor(theme,MENU_POPUPITEM,state,TMT_TEXTCOLOR),4,
+            theOS.GetThemeColor(theme,MENU_POPUPBACKGROUND,0,TMT_FILLCOLORHINT),1));
         }
         else
-          dc->SetTextColor(theOS.GetThemeColor(theme,14,state,TMT_TEXTCOLOR));
+          dc->SetTextColor(theOS.GetThemeColor(theme,MENU_POPUPITEM,state,TMT_TEXTCOLOR));
 
         // Draw the menu text
         rc.left = di->rcItem.left+m_menuGutter+m_menuTextGap.cx;
@@ -2505,13 +2505,13 @@ void ProjectFrame::UpdateMenuParams(void)
     CDC* dc = GetDC();
 
     CSize szC(0,0);
-    theOS.GetThemePartSize(theme,dc,11/*MENU_POPUPCHECK*/,0,TS_TRUE,&szC);
+    theOS.GetThemePartSize(theme,dc,MENU_POPUPCHECK,0,TS_TRUE,&szC);
     MARGINS mrgC = {0}, mrgCb = {0};
-    theOS.GetThemeMargins(theme,dc,11/*MENU_POPUPCHECK*/,0,TMT_CONTENTMARGINS,&mrgC);
-    theOS.GetThemeMargins(theme,dc,12/*MENU_POPUPCHECKBACKGROUND*/,0,TMT_CONTENTMARGINS,&mrgCb);
+    theOS.GetThemeMargins(theme,dc,MENU_POPUPCHECK,0,TMT_CONTENTMARGINS,&mrgC);
+    theOS.GetThemeMargins(theme,dc,MENU_POPUPCHECKBACKGROUND,0,TMT_CONTENTMARGINS,&mrgCb);
     m_menuGutter = szC.cx+mrgC.cxLeftWidth+mrgC.cxRightWidth+mrgCb.cxLeftWidth+mrgCb.cxRightWidth;
 
-    m_menuTextGap.cx = theOS.GetThemeInt(theme,9/*MENU_POPUPBACKGROUND*/,0,TMT_BORDERSIZE);
+    m_menuTextGap.cx = theOS.GetThemeInt(theme,MENU_POPUPBACKGROUND,0,TMT_BORDERSIZE);
     CSize sz = dc->GetTextExtent("Test");
     m_menuTextGap.cy =
       szC.cy+mrgC.cyTopHeight+mrgC.cyBottomHeight+mrgCb.cyTopHeight+mrgCb.cyBottomHeight-sz.cy;
