@@ -60,7 +60,11 @@ void SourceWindow::Create(CWnd* parent, ProjectType projectType, WindowType wind
   }
 
   m_windowType = windowType;
-  CWnd::Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VSCROLL,CRect(0,0,0,0),parent,0);
+
+  DWORD style = WS_CHILD|WS_CLIPCHILDREN|WS_VSCROLL;
+  if (windowType != NoBorder)
+    style |= WS_BORDER;
+  CWnd::Create(NULL,NULL,style,CRect(0,0,0,0),parent,0);
 
   // Create the edit control and make this window in charge of the scroll bar
   m_edit.Create(this,1,m_back,(projectType == Project_I7XP));
@@ -246,8 +250,6 @@ void SourceWindow::Resize(void)
     client.bottom -= fontSize.cy/8;
   else
     client.bottom -= fontSize.cy/4;
-  if (m_windowType != NoBorder)
-    client.left += 1;
 
   if (m_windowType != SingleLine)
   {
@@ -291,9 +293,6 @@ void SourceWindow::Draw(CDC& dc)
   ScreenToClient(editRect);
   if (y > editRect.bottom)
     dc.FillSolidRect(0,editRect.bottom,client.Width(),y-editRect.bottom,m_back);
-
-  if (m_windowType != NoBorder)
-    dc.Draw3dRect(client,::GetSysColor(COLOR_BTNSHADOW),::GetSysColor(COLOR_BTNFACE));
 }
 
 CRect SourceWindow::PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bool top)
