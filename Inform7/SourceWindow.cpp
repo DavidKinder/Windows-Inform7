@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SourceWindow.h"
 #include "Inform.h"
+#include "OSLayer.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -62,7 +63,7 @@ void SourceWindow::Create(CWnd* parent, ProjectType projectType, WindowType wind
   m_windowType = windowType;
 
   DWORD style = WS_CHILD|WS_CLIPCHILDREN|WS_VSCROLL;
-  if (windowType != NoBorder)
+  if (m_windowType == SingleLine)
     style |= WS_BORDER;
   CWnd::Create(NULL,NULL,style,CRect(0,0,0,0),parent,0);
 
@@ -251,7 +252,9 @@ void SourceWindow::Resize(void)
   else
     client.bottom -= fontSize.cy/4;
 
-  if (m_windowType != SingleLine)
+  if (m_windowType == Border)
+    client.left += 1;
+  else if (m_windowType != SingleLine)
   {
     // Make sure that an integral number of lines are visible
     int lineHeight = m_edit.GetLineHeight();
@@ -293,6 +296,31 @@ void SourceWindow::Draw(CDC& dc)
   ScreenToClient(editRect);
   if (y > editRect.bottom)
     dc.FillSolidRect(0,editRect.bottom,client.Width(),y-editRect.bottom,m_back);
+
+  if (m_windowType == Border)
+  {
+    // Get the colour for the lines around groups
+    COLORREF lineColour = ::GetSysColor(COLOR_BTNSHADOW);
+    HTHEME theme = 0;
+    if (theOS.IsAppThemed())
+    {
+      HTHEME theme = theOS.OpenThemeData(this,L"BUTTON");
+      if (theme != 0)
+      {
+        COLORREF themeColour = theOS.GetThemeColor(theme,BP_GROUPBOX,GBS_NORMAL,TMT_EDGEFILLCOLOR);
+        theOS.CloseThemeData(theme);
+        if (themeColour != 0)
+          lineColour = themeColour;
+      }
+    }
+
+    CPen linePen(PS_SOLID,0,lineColour);
+    dc.SelectObject(linePen);
+    dc.MoveTo(client.Width()-1,0);
+    dc.LineTo(0,0);
+    dc.LineTo(0,client.Height()-1);
+    dc.LineTo(client.Width()-1,client.Height()-1);
+  }
 }
 
 CRect SourceWindow::PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bool top)
