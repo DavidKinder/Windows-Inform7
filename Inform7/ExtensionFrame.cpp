@@ -58,7 +58,6 @@ int ExtensionFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     TRACE("Failed to create source edit control\n");
     return -1;
   }
-  m_edit.ModifyStyleEx(0,WS_EX_CLIENTEDGE);
   m_edit.SetFocus();
 
   // Create the status bar
