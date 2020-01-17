@@ -20,7 +20,7 @@ ProgressWnd::ProgressWnd() : m_longStep(0), m_longStepTotal(0), m_wantStop(false
 
 BOOL ProgressWnd::Create(CWnd* parentWnd, DWORD style)
 {
-  if (!CWnd::Create(NULL,"",WS_CHILD|WS_CLIPCHILDREN|style,CRect(0,0,0,0),parentWnd,0))
+  if (!CWnd::Create(NULL,"",WS_CHILD|WS_CLIPCHILDREN|WS_BORDER|style,CRect(0,0,0,0),parentWnd,0))
     return FALSE;
   if (!m_text.Create("",WS_CHILD|WS_VISIBLE|SS_CENTER,CRect(0,0,0,0),this))
     return FALSE;
@@ -36,7 +36,6 @@ BOOL ProgressWnd::OnEraseBkgnd(CDC* dc)
 {
   CRect r;
   GetClientRect(r);
-  dc->DrawEdge(r,EDGE_RAISED,BF_ADJUST|BF_RECT);
   dc->FillSolidRect(r,::GetSysColor(COLOR_BTNFACE));
   return TRUE;
 }
