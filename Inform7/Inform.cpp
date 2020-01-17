@@ -26,6 +26,7 @@ BEGIN_MESSAGE_MAP(InformApp, CWinApp)
   ON_COMMAND(ID_APP_PREFS, OnAppPrefs)
   ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
   ON_COMMAND(ID_APP_WEBPAGE, OnAppWebPage)
+  ON_UPDATE_COMMAND_UI(ID_EDIT_USE_SEL, OnUpdateEditUseSel)
 END_MESSAGE_MAP()
 
 // The one and only InformApp object
@@ -292,6 +293,12 @@ void InformApp::OnAppAbout()
 void InformApp::OnAppWebPage()
 {
   ::ShellExecute(0,NULL,"http://inform7.com/",NULL,NULL,SW_SHOWNORMAL);
+}
+
+void InformApp::OnUpdateEditUseSel(CCmdUI *pCmdUI)
+{
+  pCmdUI->SetCheck(GetProfileInt("Window","Find Uses Selection",0) != 0);
+  pCmdUI->Enable(FALSE);
 }
 
 CFont* InformApp::GetFont(Fonts font)

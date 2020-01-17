@@ -2,6 +2,7 @@
 #include "EditFind.h"
 #include "FindReplaceDialog.h"
 #include "SourceEdit.h"
+#include "Inform.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -31,10 +32,14 @@ void EditFind::Create(SourceEdit* edit, bool findOnly)
   m_edit = edit;
   m_findOnly = findOnly;
 
-  // Use the current selection or, if empty, the previous search text to
+  // Use the current selection or the previous search text to
   // populate the find dialog.
-  CHARRANGE sel = edit->GetSelect();
-  CStringW findText = edit->GetTextRange(sel.cpMin,sel.cpMax);
+  CStringW findText;
+  if (theApp.GetProfileInt("Window","Find Uses Selection",0) != 0)
+  {
+    CHARRANGE sel = edit->GetSelect();
+    findText = edit->GetTextRange(sel.cpMin,sel.cpMax);
+  }
   if (findText.IsEmpty())
     findText = m_lastFind;
 

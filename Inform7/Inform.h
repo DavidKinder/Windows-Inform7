@@ -49,6 +49,7 @@ protected:
   afx_msg void OnAppPrefs();
   afx_msg void OnAppAbout();
   afx_msg void OnAppWebPage();
+  afx_msg void OnUpdateEditUseSel(CCmdUI *pCmdUI);
 
 public:
   enum Colours

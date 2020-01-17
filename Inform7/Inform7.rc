@@ -107,6 +107,7 @@ BEGIN
         BEGIN
             MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
             MENUITEM "&Replace...\tCtrl+H",         ID_EDIT_REPLACE
+            MENUITEM "&Use Selection for Find",     ID_EDIT_USE_SEL
             MENUITEM "&Scroll to Selection",        ID_EDIT_SCROLL
         END
         MENUITEM "Check &Spelling...\tCtrl+G",  ID_EDIT_SPELLING
@@ -954,6 +955,7 @@ BEGIN
     ID_EDIT_COPY            "Copy the selected text to the clipboard"
     ID_EDIT_CUT             "Cut the selected text to the clipboard"
     ID_EDIT_FIND            "Open the find dialog"
+    ID_EDIT_USE_SEL         "If checked, use the currently selected text to populate the find dialog"
     ID_EDIT_PASTE           "Paste text from the clipboard"
     ID_EDIT_REPLACE         "Open the replace dialog"
     ID_EDIT_SELECT_ALL      "Select all text in the current panel"

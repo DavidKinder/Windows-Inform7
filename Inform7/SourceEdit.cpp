@@ -42,6 +42,8 @@ BEGIN_MESSAGE_MAP(SourceEdit, CWnd)
   ON_UPDATE_COMMAND_UI(ID_EDIT_REPLACE, OnUpdateNeedText)
   ON_COMMAND(ID_EDIT_REPLACE, OnEditReplace)
   ON_UPDATE_COMMAND_UI(ID_EDIT_SPELLING, OnUpdateNeedText)
+  ON_UPDATE_COMMAND_UI(ID_EDIT_USE_SEL, OnUpdateEditUseSel)
+  ON_COMMAND(ID_EDIT_USE_SEL, OnEditUseSel)
   ON_COMMAND(ID_EDIT_SCROLL, OnEditScroll)
   ON_COMMAND(ID_EDIT_SPELLING, OnEditSpelling)
   ON_UPDATE_COMMAND_UI(ID_EDIT_DELETE, OnUpdateNeedSel)
@@ -297,6 +299,17 @@ void SourceEdit::OnEditReplace()
 LRESULT SourceEdit::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
 {
   return m_find.FindReplaceCmd(wParam,lParam);
+}
+
+void SourceEdit::OnUpdateEditUseSel(CCmdUI *pCmdUI)
+{
+  pCmdUI->SetCheck(theApp.GetProfileInt("Window","Find Uses Selection",0) != 0);
+}
+
+void SourceEdit::OnEditUseSel()
+{
+  bool use = theApp.GetProfileInt("Window","Find Uses Selection",0) != 0;
+  theApp.WriteProfileInt("Window","Find Uses Selection",use ? 0 : 1);
 }
 
 void SourceEdit::OnEditScroll()

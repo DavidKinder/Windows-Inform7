@@ -30,11 +30,12 @@
 #define ID_EDIT_DELETE                  207
 #define ID_EDIT_SPELLING                208
 #define ID_EDIT_SCROLL                  209
-#define ID_FORMAT_SHIFT_RIGHT           210
-#define ID_FORMAT_SHIFT_LEFT            211
-#define ID_FORMAT_COMMENT               212
-#define ID_FORMAT_UNCOMMENT             213
-#define ID_FORMAT_RENUMBER              214
+#define ID_EDIT_USE_SEL                 210
+#define ID_FORMAT_SHIFT_RIGHT           211
+#define ID_FORMAT_SHIFT_LEFT            212
+#define ID_FORMAT_COMMENT               213
+#define ID_FORMAT_UNCOMMENT             214
+#define ID_FORMAT_RENUMBER              215
 #define ID_PLAY_GO                      220
 #define ID_PLAY_STOP                    221
 #define ID_PLAY_TEST                    222
