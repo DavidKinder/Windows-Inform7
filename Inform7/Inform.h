@@ -156,6 +156,24 @@ public:
   CStringW GetProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR defaultValue);
   BOOL WriteProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR value);
 
+  struct CompilerVersion
+  {
+    CString id;
+    CString label;
+    CString description;
+
+    CompilerVersion()
+    {
+    }
+
+    CompilerVersion(const char* i, const char* l, const char* d) : id(i), label(l), description(d)
+    {
+    }
+  };
+
+  void FindCompilerVersions(void);
+  const std::vector<CompilerVersion>& GetCompilerVersions(void);
+
   struct ExtLocation
   {
     std::string author;
@@ -201,6 +219,8 @@ protected:
   };
   std::map<DWORD,DebugProcess> m_debugging;
   std::map<DWORD,CString> m_traces;
+
+  std::vector<CompilerVersion> m_versions;
 
   CString m_home;
   HANDLE m_job;

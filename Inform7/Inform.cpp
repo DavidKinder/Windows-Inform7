@@ -75,6 +75,9 @@ BOOL InformApp::InitInstance()
   // Discard any log file from a previous run
   /*::DeleteFile(m_home+LOG_FILE);*/
 
+  // Find compiler versions
+  FindCompilerVersions();
+
   // Find and create documentation for extensions
   FindExtensions();
   CreatedProcess ni = RunCensus();
@@ -1115,6 +1118,31 @@ BOOL InformApp::WriteProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR value)
     (LPBYTE)value,(lstrlenW(value)+1)*sizeof(WCHAR));
   ::RegCloseKey(secKey);
   return (result == ERROR_SUCCESS);
+}
+
+void InformApp::FindCompilerVersions(void)
+{
+  CStdioFile retroFile;
+  if (retroFile.Open(GetAppDir()+"\\Compilers\\retrospective.txt",CFile::modeRead|CFile::typeText))
+  {
+    CString retroLine;
+    while (retroFile.ReadString(retroLine))
+    {
+      retroLine.Trim();
+      if (retroLine.GetLength() > 0)
+      {
+        char id[8], label[64], desc[256];
+        if (sscanf(retroLine,"'%[^']','%[^']','%[^']'",id,label,desc) == 3)
+          m_versions.push_back(CompilerVersion(id,label,desc));
+      }
+    }
+    retroFile.Close();
+  }
+}
+
+const std::vector<InformApp::CompilerVersion>& InformApp::GetCompilerVersions(void)
+{
+  return m_versions;
 }
 
 void InformApp::FindExtensions(void)

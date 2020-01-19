@@ -394,19 +394,22 @@ BEGIN
     CTEXT           "Inform 7 for Windows (%s; %s)",IDC_VERSION,1,42,203,9
 END
 
-IDD_SETTINGS DIALOGEX 0, 0, 261, 216
+IDD_SETTINGS DIALOGEX 0, 0, 300, 286
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Story File Format",IDC_STORY_BOX,7,7,247,111
+    GROUPBOX        "Story File Format",IDC_STORY_BOX,7,7,286,111
     CONTROL         "Z-Code version 8 (medium-sized textual projects: most portable)",IDC_OUTPUT_Z8,
                     "Button",BS_AUTORADIOBUTTON,15,45,229,10
     CONTROL         "Glulx (large and multimedia projects: most capable)",IDC_OUTPUT_GLULX,
                     "Button",BS_AUTORADIOBUTTON,15,55,197,10
     CONTROL         "Bind up into a Blorb file on release",IDC_BLORB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,101,131,8
-    GROUPBOX        "Randomness",IDC_RANDOM_BOX,7,123,247,78
+    GROUPBOX        "Randomness",IDC_RANDOM_BOX,7,123,286,78
     CONTROL         "Make random outcomes predictable when testing",IDC_PREDICTABLE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,185,184,8
+    GROUPBOX        "Language Version",IDC_VERSION_BOX,7,206,286,58
+    COMBOBOX        IDC_VERSION_COMBO,51,223,222,12,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Version:",IDC_VERSION_LABEL,15,225,32,8
 END
 
 IDD_SPLASH DIALOGEX 0, 0, 370, 222
@@ -424,8 +427,8 @@ IDD_SEARCH DIALOGEX 0, 0, 174, 18
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_SEARCH_SOURCE,3,3,81,11,ES_MULTILINE | ES_AUTOHSCROLL | WS_BORDER
-    EDITTEXT        IDC_SEARCH_DOCS,91,3,81,11,ES_MULTILINE | ES_AUTOHSCROLL | WS_BORDER
+    EDITTEXT        IDC_SEARCH_SOURCE,3,3,81,11,ES_MULTILINE | ES_AUTOHSCROLL
+    EDITTEXT        IDC_SEARCH_DOCS,91,3,81,11,ES_MULTILINE | ES_AUTOHSCROLL
 END
 
 IDD_NEWPROJECT DIALOGEX 0, 0, 291, 123
@@ -606,16 +609,14 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
-        LEFTMARGIN, 0
-        RIGHTMARGIN, 206
-        TOPMARGIN, 0
     END
 
     IDD_SETTINGS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 254
+        RIGHTMARGIN, 293
         TOPMARGIN, 7
+        BOTTOMMARGIN, 272
     END
 
     IDD_SPLASH, DIALOG
@@ -821,6 +822,11 @@ BEGIN
     0
 END
 
+IDD_SETTINGS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -849,6 +855,7 @@ STRINGTABLE
 BEGIN
     ID_EDIT_SPELLING        "Spell check the source"
     ID_EDIT_SCROLL          "Scroll to the currently selected text"
+    ID_EDIT_USE_SEL         "If checked, use the currently selected text to populate the find dialog"
     ID_FORMAT_SHIFT_RIGHT   "Shift the selected lines one tab to the right"
     ID_FORMAT_SHIFT_LEFT    "Shift the selected lines one tab to the left"
     ID_FORMAT_COMMENT       "Comment out the selected lines"
@@ -955,7 +962,6 @@ BEGIN
     ID_EDIT_COPY            "Copy the selected text to the clipboard"
     ID_EDIT_CUT             "Cut the selected text to the clipboard"
     ID_EDIT_FIND            "Open the find dialog"
-    ID_EDIT_USE_SEL         "If checked, use the currently selected text to populate the find dialog"
     ID_EDIT_PASTE           "Paste text from the clipboard"
     ID_EDIT_REPLACE         "Open the replace dialog"
     ID_EDIT_SELECT_ALL      "Select all text in the current panel"

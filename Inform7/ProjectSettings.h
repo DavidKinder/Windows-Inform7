@@ -13,6 +13,7 @@ public:
 
   CString GetInformSwitches(bool release, bool debugFile);
   CString GetOutputFormat(void);
+  CString GetCompilerVersion(void);
 
   enum Output
   {
@@ -23,6 +24,7 @@ public:
   Output m_output;
   bool m_blorb;
   bool m_predictable;
+  CString m_compilerVersion;
 
   bool m_changed;
 

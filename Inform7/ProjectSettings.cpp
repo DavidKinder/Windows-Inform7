@@ -2,6 +2,7 @@
 #include "ProjectSettings.h"
 #include "PropList.h"
 #include "Inform.h"
+#include "Build.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -43,6 +44,7 @@ void ProjectSettings::Load(const char* path)
     m_output = OutputGlulx;
     break;
   }
+  m_compilerVersion = propList.GetString(L"IFOutputSettings",L"IFSettingCompilerVersion");
 
   // Cope with old settings files
   if (propList.Exists(L"IFCompilerOptions",L"IFSettingNobbleRng"))
@@ -96,10 +98,13 @@ bool ProjectSettings::Save(const char* path)
     "\t\t<%s/>\n"
     "\t\t<key>IFSettingZCodeVersion</key>\n"
     "\t\t<integer>%d</integer>\n"
+    "\t\t<key>IFSettingCompilerVersion</key>\n"
+    "\t\t<string>%s</string>\n"
     "\t</dict>\n",
     m_blorb ? "true" : "false",
     m_predictable ? "true" : "false",
-    (int)m_output);
+    (int)m_output,
+    (LPCSTR)m_compilerVersion);
 
   fprintf(settingsFile,
     "\t<key>IFRandomSettings</key>\n"
@@ -150,6 +155,13 @@ CString ProjectSettings::GetOutputFormat(void)
     return "ulx";
   }
   return "";
+}
+
+CString ProjectSettings::GetCompilerVersion(void)
+{
+  if (m_compilerVersion.IsEmpty() || (m_compilerVersion == "****"))
+    return NI_BUILD;
+  return m_compilerVersion;
 }
 
 void ProjectSettings::SetDefaults(void)

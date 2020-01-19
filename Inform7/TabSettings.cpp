@@ -11,21 +11,40 @@
 
 IMPLEMENT_DYNAMIC(TabSettings, CFormView)
 
-CString TabSettings::m_labelTexts[3] =
+BEGIN_MESSAGE_MAP(TabSettings, CFormView)
+  ON_CBN_SELCHANGE(IDC_VERSION_COMBO, OnChangedVersion)
+END_MESSAGE_MAP()
+
+CString TabSettings::m_labelTexts[4] =
 {
   "Inform translates the source text into a story file which can be in either of two standard "
-    "formats. You can change your mind about the format at any time.",
+    "formats. You can change your mind about the format at any time, but some language features "
+    "require Glulx to be used.",
   "When released, the story file is normally bound up into a Blorb file along with bibliographic "
     "data, cover art and any other resources it needs. If you need the raw story file, "
     "uncheck this option.",
   "If the story involves randomised outcomes or events, it may be harder to check with the "
     "Replay options or with TEST commands, because the same input may produce different results "
     "every time. This option makes testing more predictable. (It has no effect on the final "
-    "Release version, which will still be randomised.)"
+    "Release version, which will still be randomised.)",
+  ""
 };
 
 TabSettings::TabSettings() : CFormView(IDD_SETTINGS), m_settings(NULL), m_notify(NULL)
 {
+}
+
+void TabSettings::OnChangedVersion()
+{
+  const auto& versions = theApp.GetCompilerVersions();
+
+  int select = m_version.GetCurSel();
+  if ((select >= 0) && (select < versions.size()))
+    m_labelTexts[3] = versions.at(select).description;
+  else
+    m_labelTexts[3] = "";
+
+  Invalidate();
 }
 
 void TabSettings::PostNcDestroy()
@@ -51,6 +70,14 @@ void TabSettings::UpdateSettings(void)
   else if (m_outputGlulx.GetCheck() == BST_CHECKED)
     m_settings->m_output = ProjectSettings::OutputGlulx;
 
+  // Compiler version
+  const auto& versions = theApp.GetCompilerVersions();
+  int i = m_version.GetCurSel();
+  if ((i >= 0) && (i < versions.size()))
+    m_settings->m_compilerVersion = versions[i].id;
+  else
+    m_settings->m_compilerVersion = "****"; // Current version
+
   m_settings->m_changed = true;
   if (m_notify)
     m_notify->OnSettingsChange(this);
@@ -75,6 +102,17 @@ void TabSettings::UpdateFromSettings(void)
     m_outputGlulx.SetCheck(BST_CHECKED);
     break;
   }
+
+  // Compiler version
+  int versionIdx = 0, i = 0;
+  const auto& versions = theApp.GetCompilerVersions();
+  for (auto it = versions.begin(); it != versions.end(); ++it, ++i)
+  {
+    if (it->id == m_settings->m_compilerVersion)
+      versionIdx = i;
+  }
+  m_version.SetCurSel(versionIdx);
+  OnChangedVersion();
 }
 
 void TabSettings::SetNotify(SettingsTabNotify* notify)
@@ -97,6 +135,7 @@ void TabSettings::CreateTab(CWnd* parent)
   m_blorb.SubclassDlgItem(IDC_BLORB,this);
   m_outputZ8.SubclassDlgItem(IDC_OUTPUT_Z8,this);
   m_outputGlulx.SubclassDlgItem(IDC_OUTPUT_GLULX,this);
+  m_version.SubclassDlgItem(IDC_VERSION_COMBO,this);
 }
 
 void TabSettings::MoveTab(CRect& rect)
@@ -208,7 +247,7 @@ void TabSettings::OnInitialUpdate()
   CRect outputZ8 = getRect(this,IDC_OUTPUT_Z8);
   CRect outputG = getRect(this,IDC_OUTPUT_GLULX);
   CRect check = getRect(this,IDC_BLORB);
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 4; i++)
   {
     m_labelRects[i].left = outputZ8.left;
     m_labelRects[i].right = story.right-(2*(outputZ8.left-story.left));
@@ -232,10 +271,32 @@ void TabSettings::OnInitialUpdate()
 
   sizeText(dc,m_labelTexts[2],m_labelRects[2],sb+(fh*5/2));
   moveWnd(this,IDC_PREDICTABLE,outputZ8.left,m_labelRects[2].bottom+fh);
-  moveWnd(this,IDC_RANDOM_BOX,story.left,sb+(fh/2),story.Width(),m_labelRects[2].bottom+(fh*3/2)+check.Height()-sb);
+  int rh = m_labelRects[2].bottom+(fh*3/2)+check.Height()-sb;
+  moveWnd(this,IDC_RANDOM_BOX,story.left,sb+(fh/2),story.Width(),rh);
+
+  CRect labelRect = getRect(this,IDC_VERSION_LABEL);
+  CRect comboRect = getRect(this,IDC_VERSION_COMBO);
+  moveWnd(this,IDC_VERSION_LABEL,labelRect.left,sb+rh+(fh*7/2)+(labelRect.top-comboRect.top));
+  moveWnd(this,IDC_VERSION_COMBO,comboRect.left,sb+rh+(fh*7/2));
+
+  // Find the longest compiler description
+  comboRect = getRect(this,IDC_VERSION_COMBO);
+  const auto& versions = theApp.GetCompilerVersions();
+  for (auto it = versions.begin(); it != versions.end(); ++it)
+  {
+    CRect descRect = m_labelRects[3];
+    sizeText(dc,it->description,descRect,comboRect.bottom+fh);
+    if (descRect.bottom > m_labelRects[3].bottom)
+      m_labelRects[3] = descRect;
+  }
+  moveWnd(this,IDC_VERSION_BOX,
+    story.left,sb+rh+fh,story.Width(),comboRect.Height()+m_labelRects[3].Height()+(fh*9/2));
 
   dc->SelectObject(oldFont);
   ReleaseDC(dc);
+
+  for (auto it = versions.begin(); it != versions.end(); ++it)
+    m_version.AddString(it->label);
 }
 
 BOOL TabSettings::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -246,6 +307,7 @@ BOOL TabSettings::OnCommand(WPARAM wParam, LPARAM lParam)
   case IDC_BLORB:
   case IDC_OUTPUT_Z8:
   case IDC_OUTPUT_GLULX:
+  case IDC_VERSION_COMBO:
     UpdateSettings();
     break;
   }
@@ -259,7 +321,7 @@ void TabSettings::OnDraw(CDC* pDC)
   pDC->SetTextColor(::GetSysColor(COLOR_BTNTEXT));
   pDC->SetBkMode(TRANSPARENT);
   CFont* oldFont = pDC->SelectObject(&m_labelFont);
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 4; i++)
     pDC->DrawText(m_labelTexts[i],m_labelRects[i],DT_WORDBREAK);
   pDC->SelectObject(oldFont);
 }

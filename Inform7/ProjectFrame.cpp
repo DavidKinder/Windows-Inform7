@@ -2565,14 +2565,26 @@ CString ProjectFrame::NaturalCommandLine(bool release)
 {
   CString dir = theApp.GetAppDir();
   CString format = m_settings.GetOutputFormat();
+  CString version = m_settings.GetCompilerVersion();
 
-  CString executable, arguments;
-  executable.Format("%s\\Compilers\\ni",(LPCSTR)dir);
+  CString executable, internal;
+  if (version == NI_BUILD)
+  {
+    executable.Format("%s\\Compilers\\ni",(LPCSTR)dir);
+    internal = "Internal";
+  }
+  else
+  {
+    executable.Format("%s\\Compilers\\%sni",(LPCSTR)dir,(LPCSTR)version);
+    internal.Format("retrospective%s",(LPCSTR)version);
+  }
+
+  CString arguments;
   arguments.Format(
-    "%s%s-internal \"%s\\Internal\" -project \"%s\" -format=%s",
+    "%s%s-internal \"%s\\%s\" -project \"%s\" -format=%s",
     (release ? "-release " : ""),
     ((m_settings.m_predictable && !release)) ? "-rng " : "",
-    (LPCSTR)dir,(LPCSTR)m_projectDir,(LPCSTR)format);
+    (LPCSTR)dir,(LPCSTR)internal,(LPCSTR)m_projectDir,(LPCSTR)format);
 
   CString output;
   output.Format("%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);

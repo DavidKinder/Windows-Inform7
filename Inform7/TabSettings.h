@@ -42,6 +42,10 @@ public:
   void SetNotify(SettingsTabNotify* notify);
 
 protected:
+  DECLARE_MESSAGE_MAP()
+
+  afx_msg void OnChangedVersion();
+
   virtual void PostNcDestroy();
   virtual void OnInitialUpdate();
   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
@@ -54,11 +58,12 @@ protected:
 private:
   CButton m_outputZ8, m_outputGlulx;
   CButton m_blorb, m_predictable;
+  CComboBox m_version;
   CFont m_labelFont;
 
   ProjectSettings* m_settings;
   SettingsTabNotify* m_notify;
 
-  static CString m_labelTexts[3];
-  CRect m_labelRects[3];
+  static CString m_labelTexts[4];
+  CRect m_labelRects[4];
 };
