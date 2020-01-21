@@ -12,8 +12,12 @@ public:
   void Destroy(void);
   LRESULT FindReplaceCmd(WPARAM wParam, LPARAM lParam);
 
+  const CStringW& GetLastFind(void);
+  void RepeatFind(bool forward);
+
 private:
   bool FindNext(bool fromSelect);
+  bool Select(const CHARRANGE& range);
   bool Replace(void);
   bool ReplaceAll(void);
 

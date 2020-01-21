@@ -88,6 +88,21 @@ LRESULT EditFind::FindReplaceCmd(WPARAM, LPARAM lParam)
   return 0;
 }
 
+const CStringW& EditFind::GetLastFind(void)
+{
+  return m_lastFind;
+}
+
+void EditFind::RepeatFind(bool forward)
+{
+  // Search for the text
+  CHARRANGE found = m_edit->FindText(m_lastFind,true,forward,m_matchCase,m_matchWholeWord);
+
+  // Was there a match?
+  if (found.cpMin >= 0)
+    Select(found);
+}
+
 bool EditFind::FindNext(bool fromSelect)
 {
   ASSERT(m_edit != NULL);
@@ -99,15 +114,24 @@ bool EditFind::FindNext(bool fromSelect)
   // Was there a match?
   if (found.cpMin >= 0)
   {
-    // Is the match visible?
-    CHARRANGE lines = m_edit->GetRangeLines(found);
-    if (m_edit->IsLineShown(lines.cpMin) && m_edit->IsLineShown(lines.cpMax))
+    if (Select(found))
     {
-      // Select the newly found text
-      m_edit->SetSelect(found);
       m_edit->MoveShowSelect(m_dialog);
       return true;
     }
+  }
+  return false;
+}
+
+bool EditFind::Select(const CHARRANGE& range)
+{
+  // Is the range visible?
+  CHARRANGE lines = m_edit->GetRangeLines(range);
+  if (m_edit->IsLineShown(lines.cpMin) && m_edit->IsLineShown(lines.cpMax))
+  {
+    // Select the text in the range
+    m_edit->SetSelect(range);
+    return true;
   }
   return false;
 }

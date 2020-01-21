@@ -107,6 +107,8 @@ BEGIN
         BEGIN
             MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
             MENUITEM "&Replace...\tCtrl+H",         ID_EDIT_REPLACE
+            MENUITEM "Find &Next\tF8",              ID_EDIT_FIND_NEXT
+            MENUITEM "Find &Previous",              ID_EDIT_FIND_PREV
             MENUITEM "&Use Selection for Find",     ID_EDIT_USE_SEL
             MENUITEM "&Scroll to Selection",        ID_EDIT_SCROLL
         END
@@ -279,6 +281,9 @@ BEGIN
         BEGIN
             MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
             MENUITEM "&Replace...\tCtrl+H",         ID_EDIT_REPLACE
+            MENUITEM "Find &Next\tF8",              ID_EDIT_FIND_NEXT
+            MENUITEM "Find &Previous",              ID_EDIT_FIND_PREV
+            MENUITEM "&Use Selection for Find",     ID_EDIT_USE_SEL
             MENUITEM "&Scroll to Selection",        ID_EDIT_SCROLL
         END
         MENUITEM "Check &Spelling...\tCtrl+G",  ID_EDIT_SPELLING
@@ -309,6 +314,7 @@ BEGIN
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
     "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
     "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    VK_F8,          ID_EDIT_FIND_NEXT,      VIRTKEY, NOINVERT
     "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
     VK_BACK,        ID_EDIT_REDO,           VIRTKEY, SHIFT, ALT, NOINVERT
@@ -361,6 +367,7 @@ BEGIN
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
     "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
     "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    VK_F8,          ID_EDIT_FIND_NEXT,      VIRTKEY, NOINVERT
     "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
     VK_BACK,        ID_EDIT_REDO,           VIRTKEY, SHIFT, ALT, NOINVERT
@@ -962,6 +969,8 @@ BEGIN
     ID_EDIT_COPY            "Copy the selected text to the clipboard"
     ID_EDIT_CUT             "Cut the selected text to the clipboard"
     ID_EDIT_FIND            "Open the find dialog"
+    ID_EDIT_FIND_NEXT       "Find the next match for the last find action"
+    ID_EDIT_FIND_PREV       "Find the previous match for the last find action"
     ID_EDIT_PASTE           "Paste text from the clipboard"
     ID_EDIT_REPLACE         "Open the replace dialog"
     ID_EDIT_SELECT_ALL      "Select all text in the current panel"

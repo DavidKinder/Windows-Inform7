@@ -39,6 +39,9 @@ protected:
   afx_msg void OnUpdateNeedText(CCmdUI* pCmdUI);
   afx_msg void OnEditFind();
   afx_msg void OnEditReplace();
+  afx_msg void OnUpdateNeedFindText(CCmdUI* pCmdUI);
+  afx_msg void OnEditFindNext();
+  afx_msg void OnEditFindPrev();
   afx_msg void OnEditScroll();
   afx_msg void OnUpdateEditUseSel(CCmdUI *pCmdUI);
   afx_msg void OnEditUseSel();

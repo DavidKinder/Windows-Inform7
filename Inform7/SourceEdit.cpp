@@ -41,6 +41,10 @@ BEGIN_MESSAGE_MAP(SourceEdit, CWnd)
   ON_COMMAND(ID_EDIT_FIND, OnEditFind)
   ON_UPDATE_COMMAND_UI(ID_EDIT_REPLACE, OnUpdateNeedText)
   ON_COMMAND(ID_EDIT_REPLACE, OnEditReplace)
+  ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_NEXT, OnUpdateNeedFindText)
+  ON_COMMAND(ID_EDIT_FIND_NEXT, OnEditFindNext)
+  ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_PREV, OnUpdateNeedFindText)
+  ON_COMMAND(ID_EDIT_FIND_PREV, OnEditFindPrev)
   ON_UPDATE_COMMAND_UI(ID_EDIT_SPELLING, OnUpdateNeedText)
   ON_UPDATE_COMMAND_UI(ID_EDIT_USE_SEL, OnUpdateEditUseSel)
   ON_COMMAND(ID_EDIT_USE_SEL, OnEditUseSel)
@@ -299,6 +303,21 @@ void SourceEdit::OnEditReplace()
 LRESULT SourceEdit::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
 {
   return m_find.FindReplaceCmd(wParam,lParam);
+}
+
+void SourceEdit::OnUpdateNeedFindText(CCmdUI* pCmdUI)
+{
+  pCmdUI->Enable(!m_find.GetLastFind().IsEmpty());
+}
+
+void SourceEdit::OnEditFindNext()
+{
+  m_find.RepeatFind(true);
+}
+
+void SourceEdit::OnEditFindPrev()
+{
+  m_find.RepeatFind(false);
 }
 
 void SourceEdit::OnUpdateEditUseSel(CCmdUI *pCmdUI)
