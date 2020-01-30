@@ -22,12 +22,13 @@ InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory"
 !define MUI_HEADERIMAGE_RIGHT
 !define MUI_HEADERIMAGE_BITMAP "Back.bmp"
 !define MUI_HEADERIMAGE_BITMAP_NOSTRETCH
-!define MUI_WELCOMEFINISHPAGE_BITMAP "Side.bmp"
 
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW SetWelcomeBitmap
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW SetFinishBitmap
 !define MUI_FINISHPAGE_RUN $INSTDIR\Inform7.exe
 !insertmacro MUI_PAGE_FINISH
 
@@ -35,6 +36,24 @@ InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory"
 !insertmacro MUI_UNPAGE_INSTFILES
 
 !insertmacro MUI_LANGUAGE "English"
+
+Function ".onInit"
+  InitPluginsDir
+  System::Call USER32::GetDpiForSystem()i.r0
+  ${If} $0 > 96
+    File "/oname=$PLUGINSDIR\Side.bmp" "Side120.bmp"
+  ${Else}
+    File "/oname=$PLUGINSDIR\Side.bmp" "Side96.bmp"
+  ${EndIf}
+FunctionEnd
+
+Function "SetWelcomeBitmap"
+  ${NSD_SetImage} $mui.WelcomePage.Image "$PLUGINSDIR\Side.bmp" $mui.WelcomePage.Image.Bitmap
+FunctionEnd
+
+Function "SetFinishBitmap"
+  ${NSD_SetImage} $mui.FinishPage.Image "$PLUGINSDIR\Side.bmp" $mui.FinishPage.Image.Bitmap
+FunctionEnd
 
 Section "DoInstall"
 
@@ -73,7 +92,7 @@ Section "Uninstall"
   Delete "$INSTDIR\Uninstall.exe"
   Delete "$INSTDIR\chrome_elf.dll"
   Delete "$INSTDIR\libcef.dll"
-  Delete "$INSTDIR\icudt.dat"
+  Delete "$INSTDIR\icudtl.dat"
   Delete "$INSTDIR\natives_blob.bin"
   Delete "$INSTDIR\snapshot_blob.bin"
   Delete "$INSTDIR\v8_context_snapshot.bin"
