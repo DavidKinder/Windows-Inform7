@@ -60,14 +60,6 @@ int ExtensionFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   }
   m_edit.SetFocus();
 
-  // Create the status bar
-  if (!m_statusBar.Create(this) ||
-      !m_statusBar.SetIndicators(indicators,sizeof(indicators)/sizeof(UINT)))
-  {
-    TRACE("Failed to create status bar\n");
-    return -1;
-  }
-
   // Set the application icon
   theApp.SetIcon(this);
 

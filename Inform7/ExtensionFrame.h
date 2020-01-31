@@ -21,8 +21,6 @@ public:
   virtual void GetMessageString(UINT nID, CString& rMessage) const;
 
 protected:
-  CStatusBar m_statusBar;
-
   DECLARE_MESSAGE_MAP()
 
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

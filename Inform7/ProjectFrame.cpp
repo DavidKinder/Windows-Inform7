@@ -300,14 +300,6 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
   }
 
-  // Create the status bar
-  if (!m_statusBar.Create(this) ||
-      !m_statusBar.SetIndicators(indicators,sizeof(indicators)/sizeof(UINT)))
-  {
-    TRACE("Failed to create status bar\n");
-    return -1;
-  }
-
   // Create a progress window
   if (!m_progress.Create(this,WS_CLIPSIBLINGS))
   {

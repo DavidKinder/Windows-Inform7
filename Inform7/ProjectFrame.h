@@ -36,7 +36,6 @@ protected:
   CToolBar m_toolBar;
   SearchBar m_searchBar;
   CComboBox m_exampleList;
-  CStatusBar m_statusBar;
   ProgressWnd m_progress;
   FlatSplitter m_splitter;
 
