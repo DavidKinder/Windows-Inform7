@@ -44,7 +44,7 @@ void TabSettings::OnChangedVersion()
   else
     m_labelTexts[3] = "";
 
-  Invalidate();
+  InvalidateRect(m_labelRects[3]);
 }
 
 void TabSettings::PostNcDestroy()
