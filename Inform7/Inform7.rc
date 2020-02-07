@@ -216,21 +216,6 @@ BEGIN
     END
 END
 
-IDR_HTMLMENU MENU
-BEGIN
-    POPUP ""
-    BEGIN
-        MENUITEM "&Back",                       ID_NAVIGATE_BACK
-        MENUITEM "F&orward",                    ID_NAVIGATE_FORE
-        MENUITEM SEPARATOR
-        MENUITEM "&Copy",                       ID_EDIT_COPY
-        MENUITEM "Select &All",                 ID_EDIT_SELECT_ALL
-        MENUITEM SEPARATOR
-        MENUITEM "Pr&int",                      ID_FILE_PRINT
-        MENUITEM "&Properties",                 ID_MENU_PROPERTIES
-    END
-END
-
 IDR_SKEIN MENU
 BEGIN
     POPUP ""
@@ -676,10 +661,6 @@ IDR_ICON                ICON                    "res\\Inform7.ico"
 //
 // Bitmap
 //
-
-IDR_TOOLBAR             BITMAP                  "res\\Toolbar.bmp"
-
-IDR_TOOLBAR_DISABLED    BITMAP                  "res\\ToolbarDisable.bmp"
 
 IDR_FLAT_SELECT         BITMAP                  "res\\TabSelect.bmp"
 

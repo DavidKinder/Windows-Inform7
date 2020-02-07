@@ -1412,22 +1412,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\BigLogo.ico">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="res\SmallLogo.ico">
-      <Filter>Resources</Filter>
-    </Image>
     <Image Include="res\TabSelect.bmp">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="res\Toolbar.bmp">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="res\ToolbarDisable.bmp">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="res\ToolbarGrey.bmp">
       <Filter>Resources</Filter>
     </Image>
     <Image Include="res\Inform7.ico">

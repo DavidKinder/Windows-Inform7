@@ -3042,32 +3042,13 @@ bool ProjectFrame::LoadToolBar(void)
   m_toolBar.SetSizes(CSize(w+8,h+7),CSize(w,h));
 
   // Load the images
-  DWORD commonVer = theOS.GetDllVersion("comctl32.dll");
-  if ((commonVer >= DLLVERSION(6,0)) && (theApp.GetColourDepth() >= 32))
-  {
-    // Use true colour images
-    HIMAGELIST imgList = ::ImageList_Create(32,32,ILC_COLOR32,0,5);
-    ::ImageList_Add(imgList,theApp.GetCachedImage("Toolbar")->GetSafeHandle(),0);
-    ctrl.SetImageList(CImageList::FromHandle(imgList));
+  HIMAGELIST imgList = ::ImageList_Create(32,32,ILC_COLOR32,0,5);
+  ::ImageList_Add(imgList,theApp.GetCachedImage("Toolbar")->GetSafeHandle(),0);
+  ctrl.SetImageList(CImageList::FromHandle(imgList));
 
-    imgList = ::ImageList_Create(32,32,ILC_COLOR32,0,5);
-    ::ImageList_Add(imgList,theApp.GetCachedImage("Toolbar-disabled")->GetSafeHandle(),0);
-    ctrl.SetDisabledImageList(CImageList::FromHandle(imgList));
-  }
-  else
-  {
-    HIMAGELIST imgList = ::ImageList_Create(32,32,ILC_COLOR24,0,5);
-    HBITMAP imgBitmap = (HBITMAP)::LoadImage(AfxGetResourceHandle(),
-      MAKEINTRESOURCE(IDR_TOOLBAR),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS|LR_LOADTRANSPARENT);
-    ::ImageList_Add(imgList,imgBitmap,0);
-    ctrl.SetImageList(CImageList::FromHandle(imgList));
-
-    imgList = ::ImageList_Create(32,32,ILC_COLOR24,0,5);
-    imgBitmap = (HBITMAP)::LoadImage(AfxGetResourceHandle(),
-      MAKEINTRESOURCE(IDR_TOOLBAR_DISABLED),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS|LR_LOADTRANSPARENT);
-    ::ImageList_Add(imgList,imgBitmap,0);
-    ctrl.SetDisabledImageList(CImageList::FromHandle(imgList));
-  }
+  imgList = ::ImageList_Create(32,32,ILC_COLOR32,0,5);
+  ::ImageList_Add(imgList,theApp.GetCachedImage("Toolbar-disabled")->GetSafeHandle(),0);
+  ctrl.SetDisabledImageList(CImageList::FromHandle(imgList));
 
   // Add selective text for buttons
   ctrl.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);

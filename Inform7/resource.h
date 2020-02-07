@@ -4,13 +4,10 @@
 //
 #define IDR_MANIFEST                    1
 #define IDR_MAINFRAME                   100
-#define IDR_HTMLMENU                    101
-#define IDR_TOOLBAR                     102
-#define IDR_TOOLBAR_DISABLED            103
-#define IDR_SKEIN                       104
-#define IDR_EXTFRAME                    105
-#define IDR_FLAT_SELECT                 106
-#define IDR_ICON                        107
+#define IDR_SKEIN                       101
+#define IDR_EXTFRAME                    102
+#define IDR_FLAT_SELECT                 103
+#define IDR_ICON                        104
 #define IDD_ABOUTBOX                    150
 #define IDD_SETTINGS                    151
 #define IDD_SPLASH                      152

@@ -8,8 +8,6 @@ public:
   OSLayer();
   void Init(void);
 
-  DWORD GetDllVersion(const char* dllName);
-
   bool IsDebuggerPresent(void);
   HANDLE CreateJobObject(LPSECURITY_ATTRIBUTES jobAttrs, LPCSTR name);
   bool SetInformationJobObject(HANDLE job,
