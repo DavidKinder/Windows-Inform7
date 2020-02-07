@@ -32,28 +32,6 @@ void OSLayer::Init(void)
   m_dwmDll = ::LoadLibrary("dwmapi.dll");
 }
 
-DWORD OSLayer::GetDllVersion(const char* dllName)
-{
-  DWORD version = 0;
-
-  HINSTANCE dll = ::LoadLibrary(dllName);
-  if (dll != 0)
-  {
-    DLLGETVERSIONPROC dllGetVersion = (DLLGETVERSIONPROC)::GetProcAddress(dll,"DllGetVersion");
-    if (dllGetVersion != NULL)
-    {
-      DLLVERSIONINFO dvi;
-      ::ZeroMemory(&dvi,sizeof dvi);
-      dvi.cbSize = sizeof dvi;
-
-      if (SUCCEEDED((*dllGetVersion)(&dvi)))
-        version = DLLVERSION(dvi.dwMajorVersion,dvi.dwMinorVersion);
-    }
-    ::FreeLibrary(dll);
-  }
-  return version;
-}
-
 bool OSLayer::IsDebuggerPresent(void)
 {
   if (m_kernelDll)

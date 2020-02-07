@@ -2286,13 +2286,8 @@
     <ClCompile Include="UnicodeEdit.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\BigLogo.ico" />
     <Image Include="res\Inform7.ico" />
-    <Image Include="res\SmallLogo.ico" />
     <Image Include="res\TabSelect.bmp" />
-    <Image Include="res\Toolbar.bmp" />
-    <Image Include="res\ToolbarDisable.bmp" />
-    <Image Include="res\ToolbarGrey.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Inform7.rc">
