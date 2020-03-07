@@ -111,6 +111,8 @@ BEGIN
             MENUITEM "Find &Previous\tShift+F8",    ID_EDIT_FIND_PREV
             MENUITEM "&Use Selection for Find",     ID_EDIT_USE_SEL
             MENUITEM "&Scroll to Selection",        ID_EDIT_SCROLL
+            MENUITEM SEPARATOR
+            MENUITEM "Find &in FIles\tCtrl+I",      ID_EDIT_FIND_IN_FILES
         END
         MENUITEM "Check &Spelling...\tCtrl+G",  ID_EDIT_SPELLING
         MENUITEM SEPARATOR
@@ -299,6 +301,7 @@ BEGIN
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
     "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
     "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_EDIT_FIND_IN_FILES,  VIRTKEY, CONTROL, NOINVERT
     VK_F8,          ID_EDIT_FIND_NEXT,      VIRTKEY, NOINVERT
     VK_F8,          ID_EDIT_FIND_PREV,      VIRTKEY, SHIFT, NOINVERT
     "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
@@ -558,20 +561,20 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFR
 CAPTION "Find in Files"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_FIND,29,7,236,12,ES_AUTOHSCROLL
-    LTEXT           "Find:",IDC_STATIC,7,9,18,8
-    PUSHBUTTON      "Find All",IDC_FIND_ALL,272,7,65,13
-    GROUPBOX        "Where to look",IDC_STATIC,7,23,145,80
-    CONTROL         "Source",IDC_LOOK_SOURCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,35,39,10
-    CONTROL         "Installed Extensions",IDC_LOOK_EXTENSIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,47,80,10
-    LTEXT           "Documentation:",IDC_STATIC,14,62,52,8
-    CONTROL         "Main Text",IDC_LOOK_DOC_MAIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,86,48,10
-    CONTROL         "Source Examples",IDC_LOOK_DOC_EXAMPLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,86,70,10
-    CONTROL         "Phrase Definitions",IDC_LOOK_DOC_PHRASES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,73,74,10
-    GROUPBOX        "How to search",IDC_STATIC,158,23,107,49
-    CONTROL         "Ignore Case",IDC_IGNORE_CASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,167,35,55,10
-    COMBOBOX        IDC_FIND_RULE,167,50,88,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "No matches were found",IDC_FOUND,7,108,79,8
+    LTEXT           "&Find:",IDC_STATIC,7,7,18,8
+    EDITTEXT        IDC_FIND,29,5,236,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Find &All",IDC_FIND_ALL,272,5,65,12
+    GROUPBOX        "Where to look",IDC_STATIC,7,20,145,69
+    CONTROL         "&Source",IDC_LOOK_SOURCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,30,39,10
+    CONTROL         "Installed E&xtensions",IDC_LOOK_EXTENSIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,41,80,10
+    LTEXT           "Documentation:",IDC_STATIC,14,53,61,8
+    CONTROL         "&Phrase Definitions",IDC_LOOK_DOC_PHRASES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,63,74,10
+    CONTROL         "&Main Text",IDC_LOOK_DOC_MAIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,74,48,10
+    CONTROL         "S&ource Examples",IDC_LOOK_DOC_EXAMPLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,74,70,10
+    GROUPBOX        "How to search",IDC_STATIC,158,20,107,41
+    CONTROL         "Ignore &Case",IDC_IGNORE_CASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,167,30,55,10
+    COMBOBOX        IDC_FIND_RULE,167,43,88,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "No matches were found",IDC_FOUND,7,92,79,8
 END
 
 

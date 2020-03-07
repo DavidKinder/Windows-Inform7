@@ -99,6 +99,8 @@ protected:
   afx_msg void OnFileImportSkein();
   afx_msg void OnFileExportExtProject();
 
+  afx_msg void OnEditFindInFiles();
+
   afx_msg void OnUpdateIfNotBusy(CCmdUI *pCmdUI);
   afx_msg void OnUpdateCompile(CCmdUI *pCmdUI);
   afx_msg void OnPlayGo();

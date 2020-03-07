@@ -31,11 +31,12 @@
 #define ID_EDIT_FIND_PREV               210
 #define ID_EDIT_SCROLL                  211
 #define ID_EDIT_USE_SEL                 212
-#define ID_FORMAT_SHIFT_RIGHT           213
-#define ID_FORMAT_SHIFT_LEFT            214
-#define ID_FORMAT_COMMENT               215
-#define ID_FORMAT_UNCOMMENT             216
-#define ID_FORMAT_RENUMBER              217
+#define ID_EDIT_FIND_IN_FILES           213
+#define ID_FORMAT_SHIFT_RIGHT           214
+#define ID_FORMAT_SHIFT_LEFT            215
+#define ID_FORMAT_COMMENT               216
+#define ID_FORMAT_UNCOMMENT             217
+#define ID_FORMAT_RENUMBER              218
 #define ID_PLAY_GO                      220
 #define ID_PLAY_STOP                    221
 #define ID_PLAY_TEST                    222

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ProjectFrame.h"
 #include "ExtensionFrame.h"
+#include "FindInFiles.h"
 #include "OSLayer.h"
 #include "Messages.h"
 #include "TextFormat.h"
@@ -92,6 +93,8 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
   ON_COMMAND(ID_FILE_IMPORT_SKEIN, OnFileImportSkein)
   ON_COMMAND(ID_FILE_EXPORT_EXT, OnFileExportExtProject)
+
+  ON_COMMAND(ID_EDIT_FIND_IN_FILES, OnEditFindInFiles)
 
   ON_UPDATE_COMMAND_UI(ID_PLAY_GO, OnUpdateCompile)
   ON_COMMAND(ID_PLAY_GO, OnPlayGo)
@@ -425,6 +428,7 @@ void ProjectFrame::OnClose()
     }
   }
 
+  theFinder.Hide(this);
   m_game.StopInterpreter(false);
   CleanProject();
 
@@ -1358,6 +1362,11 @@ void ProjectFrame::OnFileExportExtProject()
   dialog.m_ofn.lpstrTitle = "Export this extension";
   if (dialog.DoModal() == IDOK)
     ::CopyFile(sourcePath,dialog.GetPathName(),FALSE);
+}
+
+void ProjectFrame::OnEditFindInFiles()
+{
+  theFinder.Show(this);
 }
 
 void ProjectFrame::OnUpdateIfNotBusy(CCmdUI *pCmdUI)

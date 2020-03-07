@@ -9,6 +9,7 @@
 #include "ExtensionFrame.h"
 #include "SpellCheck.h"
 #include "TabDoc.h"
+#include "FindInFiles.h"
 
 #include "png.h"
 extern "C" {
@@ -110,6 +111,7 @@ int InformApp::ExitInstance()
   for (it = m_bitmaps.begin(); it != m_bitmaps.end(); ++it)
     delete it->second;
 
+  theFinder.Destroy();
   GameWindow::ExitInstance();
   TabDoc::ExitInstance();
   SpellCheck::Finalize();
@@ -123,11 +125,16 @@ BOOL InformApp::PreTranslateMessage(MSG* pMsg)
 {
   if ((pMsg->hwnd == NULL) && DispatchThreadMessageEx(pMsg))
     return TRUE;
+  CWnd* wnd = CWnd::FromHandle(pMsg->hwnd);
+
+  if (theFinder.GetSafeHwnd() != 0)
+  {
+    if ((&theFinder == wnd) || theFinder.IsChild(wnd))
+      return theFinder.PreTranslateMessage(pMsg);
+  }
 
   CArray<CFrameWnd*> frames;
   GetWindowFrames(frames);
-
-  CWnd* wnd = CWnd::FromHandle(pMsg->hwnd);
   for (int i = 0; i < frames.GetSize(); i++)
   {
     CFrameWnd* frame = frames[i];
