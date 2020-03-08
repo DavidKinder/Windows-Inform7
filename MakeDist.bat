@@ -1,7 +1,6 @@
 @echo off
 
 del Build\Inform7.pdb
-rmdir /s /q Build\GPUCache
 
 pushd \Programs
 "%ProgramFiles(x86)%\Zip\zip" -j \Temp\Windows_UI_source.zip Adv\Inform7\Inform7\COPYING
