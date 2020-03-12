@@ -53,12 +53,17 @@ BOOL InformApp::InitInstance()
   // Set the HOME environment variable to the My Documents folder,
   // used by the Natural Inform compiler, and make sure directories
   // under My Documents exist.
-  SetMyDocuments();
+  SetMyDocuments(false);
 
   SetRegistryKey("David Kinder");
   SetFonts();
   if (!ReportHtml::InitWebBrowser())
     return FALSE;
+
+  // Repeat this call, but now allow dialogs to indicate problems,
+  // as by this point only the main Inform 7 application is here, not
+  // any of the CEF worker processes.
+  SetMyDocuments(true);
 
   // If possible, create a job to assign child processes to. Since the
   // job will be closed when this process exits, this ensures that any
@@ -1239,8 +1244,10 @@ static char hex(int digit)
   return 'a'+digit-10;
 }
 
-void InformApp::SetMyDocuments(void)
+void InformApp::SetMyDocuments(bool showMsgs)
 {
+  m_home.Empty();
+
   CString homeName;
   homeName.Format("%s\\home.txt",(LPCSTR)GetAppDir());
   FILE* homeFile = fopen(homeName,"rt");
@@ -1261,11 +1268,14 @@ void InformApp::SetMyDocuments(void)
        ((attrs & FILE_ATTRIBUTE_DIRECTORY) == 0) || ((attrs & FILE_ATTRIBUTE_READONLY) != 0) ||
        !CreateHomeDirs())
     {
-      CString msg;
-      msg.Format(
-        "Found a \"home.txt\" file redirecting the home directory to\n\n    %s\n\n"
-        "but this is not accessible, so the default will be used instead.",(LPCSTR)m_home);
-      AfxMessageBox(msg,MB_ICONWARNING|MB_OK);
+      if (showMsgs)
+      {
+        CString msg;
+        msg.Format(
+          "Found a \"home.txt\" file redirecting the home directory to\n\n    %s\n\n"
+          "but this is not accessible, so the default will be used instead.",(LPCSTR)m_home);
+        AfxMessageBox(msg,MB_ICONWARNING|MB_OK);
+      }
       m_home.Empty();
     }
   }

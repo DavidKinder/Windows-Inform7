@@ -192,7 +192,7 @@ public:
 
 protected:
   void ClearScaledImages(void);
-  void SetMyDocuments(void);
+  void SetMyDocuments(bool showMsgs);
   bool CreateHomeDirs(void);
   void SetFonts(void);
 
