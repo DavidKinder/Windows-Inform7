@@ -387,6 +387,7 @@ public:
   void OnBeforeCommandLineProcessing(const CefString&, CefRefPtr<CefCommandLine> cmdLine)
   {
     cmdLine->AppendSwitchWithValue("force-device-scale-factor","1");
+    cmdLine->AppendSwitch("disable-gpu-shader-disk-cache");
   }
 
   CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler()

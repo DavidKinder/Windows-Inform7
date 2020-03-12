@@ -13,14 +13,14 @@ INDOCOPTS = windows_app
 INRTPSOPTS = -nofont
 INTESTOPTS = -threads=2 -no-colours
 
-GCC = i686-w64-mingw32-gcc
-GCCOPTS = -DPLATFORM_WINDOWS -I.
-GCCWARNINGS = -Wno-pointer-arith -Wno-unused-macros -Wno-shadow -Wno-cast-align -Wno-variadic-macros -Wno-missing-noreturn -Wno-missing-prototypes -Wno-unused-parameter -Wno-padded -Wno-missing-variable-declarations -Wno-unreachable-code-break -Wno-class-varargs -Wno-format-nonliteral -Wno-cast-qual
+GCC = x86_64-w64-mingw32-gcc
+GCCOPTS = -DPLATFORM_WINDOWS -DCPU_WORDSIZE_MULTIPLIER=2 -I.
+GCCWARNINGS = -Wno-pointer-arith -Wno-unused-macros -Wno-shadow -Wno-cast-align -Wno-variadic-macros -Wno-missing-noreturn -Wno-missing-prototypes -Wno-unused-parameter -Wno-padded -Wno-format-nonliteral -Wno-cast-qual
 CBLORBWARNINGS = -Wno-format-nonliteral
 LINK = $(GCC) $(GCCOPTS) -g
-LINKEROPTS = -Wl,--large-address-aware
+LINKEROPTS =
 ARTOOL = ar -r
 
-GLULXEOS = OS_WIN32
+GLULXEOS = WIN32
 INFORM6OS = PC_WIN32
 
