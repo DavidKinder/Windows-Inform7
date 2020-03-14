@@ -1,15 +1,17 @@
 #include "stdafx.h"
 #include "Inform.h"
 #include "OSLayer.h"
-#include "ReportHtml.h"
-#include "AboutDialog.h"
-#include "PrefsDialog.h"
-#include "SplashScreen.h"
+
 #include "ProjectFrame.h"
 #include "ExtensionFrame.h"
-#include "SpellCheck.h"
 #include "TabDoc.h"
+
+#include "AboutDialog.h"
+#include "PrefsDialog.h"
 #include "FindInFiles.h"
+#include "ReportHtml.h"
+#include "SpellCheck.h"
+#include "SplashScreen.h"
 
 #include "png.h"
 extern "C" {
@@ -89,6 +91,7 @@ BOOL InformApp::InitInstance()
   CreatedProcess ni = RunCensus();
 
   // Start decoding the documentation for searching
+  theFinder.InitInstance();
   TabDoc::InitInstance();
 
   // Show the splash screen
@@ -116,7 +119,7 @@ int InformApp::ExitInstance()
   for (it = m_bitmaps.begin(); it != m_bitmaps.end(); ++it)
     delete it->second;
 
-  theFinder.Destroy();
+  theFinder.ExitInstance();
   GameWindow::ExitInstance();
   TabDoc::ExitInstance();
   SpellCheck::Finalize();

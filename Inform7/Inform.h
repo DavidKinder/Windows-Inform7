@@ -16,8 +16,7 @@
 #define INFORM_TITLE "Inform"
 #define L_INFORM_TITLE L"Inform"
 
-// Registry locations
-#define REGISTRY_PATH_BROWSER "Software\\David Kinder\\Inform\\WebBrowser"
+// Registry location
 #define REGISTRY_PATH_WINDOW  "Software\\David Kinder\\Inform\\Window"
 
 // Size to grow text arrays by
