@@ -7,6 +7,8 @@
 #include "OSLayer.h"
 #include "DpiFunctions.h"
 
+#include "Platform.h"
+#include "Scintilla.h"
 #include "SciLexer.h"
 
 #ifdef _DEBUG
@@ -933,8 +935,6 @@ const CTime& SourceEdit::GetFileTime(void)
 
 void SourceEdit::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results, const char* sourceFile)
 {
-  CWaitCursor wc;
-
   int len = (int)CallEdit(SCI_GETLENGTH);
   TextToFind find;
   find.chrg.cpMin = 0;
@@ -1344,6 +1344,11 @@ CHARRANGE SourceEdit::GetRangeLines(CHARRANGE range)
   lines.cpMin = (int)CallEdit(SCI_LINEFROMPOSITION,range.cpMin);
   lines.cpMax = (int)CallEdit(SCI_LINEFROMPOSITION,range.cpMax);
   return lines;
+}
+
+LONG_PTR SourceEdit::GetEditPtr(void)
+{
+  return m_editPtr;
 }
 
 extern "C" sptr_t __stdcall Scintilla_DirectFunction(sptr_t, UINT, uptr_t, sptr_t);

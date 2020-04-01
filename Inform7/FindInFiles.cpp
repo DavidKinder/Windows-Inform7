@@ -1,8 +1,12 @@
 #include "stdafx.h"
 #include "FindInFiles.h"
 #include "ProjectFrame.h"
+#include "TextFormat.h"
 #include "Inform.h"
 #include "resource.h"
+
+#include "Platform.h"
+#include "Scintilla.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -15,10 +19,6 @@ class FindEnumString : public CCmdTarget
 {
 public:
   FindEnumString(FindInFiles* parent) : m_parent(parent), m_iter(0)
-  {
-  }
-
-  ~FindEnumString()
   {
   }
 
@@ -151,6 +151,36 @@ void FindInFiles::Hide(ProjectFrame* project)
   }
 }
 
+void FindInFiles::FindInSource(LPCWSTR text)
+{
+  UpdateData(TRUE);
+  m_lookSource = TRUE;
+  m_lookExts = FALSE;
+  m_lookDocPhrases = FALSE;
+  m_lookDocMain = FALSE;
+  m_lookDocExamples = FALSE;
+  m_ignoreCase = TRUE;
+  m_findRule = 0;
+  m_findText = text;
+  UpdateData(FALSE);
+  PostMessage(WM_COMMAND,IDC_FIND_ALL);
+}
+
+void FindInFiles::FindInDocs(LPCWSTR text)
+{
+  UpdateData(TRUE);
+  m_lookSource = FALSE;
+  m_lookExts = FALSE;
+  m_lookDocPhrases = TRUE;
+  m_lookDocMain = TRUE;
+  m_lookDocExamples = TRUE;
+  m_ignoreCase = TRUE;
+  m_findRule = 0;
+  m_findText = text;
+  UpdateData(FALSE);
+  PostMessage(WM_COMMAND,IDC_FIND_ALL);
+}
+
 void FindInFiles::InitInstance(void)
 {
   try
@@ -173,7 +203,7 @@ void FindInFiles::InitInstance(void)
           {
             CStringW historyItem;
             historyArchive >> historyItem;
-            m_findComplete.AddTail(historyItem);
+            m_findHistory.AddTail(historyItem);
           }
         }
       }
@@ -193,22 +223,22 @@ void FindInFiles::ExitInstance(void)
 
   try
   {
-    if (m_findComplete.GetCount() > 0)
+    if (m_findHistory.GetCount() > 0)
     {
       // Write the list of the auto complete history to a memory file
       CMemFile historyFile;
       CArchive historyArchive(&historyFile,CArchive::store);
-      historyArchive << m_findComplete.GetCount();
-      POSITION pos = m_findComplete.GetHeadPosition();
-      for (INT_PTR i = 0; i < m_findComplete.GetCount(); i++)
-        historyArchive << m_findComplete.GetNext(pos);
+      historyArchive << m_findHistory.GetCount();
+      POSITION pos = m_findHistory.GetHeadPosition();
+      for (INT_PTR i = 0; i < m_findHistory.GetCount(); i++)
+        historyArchive << m_findHistory.GetNext(pos);
       historyArchive.Close();
  
       // Write the above buffer to the registry
       CRegKey registryKey;
       if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
       {
-        ULONG historyLen = historyFile.GetLength();
+        ULONG historyLen = (ULONG)historyFile.GetLength();
         void* historyPtr = historyFile.Detach();
         registryKey.SetBinaryValue("Find in Files History",historyPtr,historyLen);
         free(historyPtr);
@@ -223,11 +253,11 @@ void FindInFiles::ExitInstance(void)
 
 LPCWSTR FindInFiles::GetAutoComplete(int index)
 {
-  if (index < m_findComplete.GetSize())
+  if (index < m_findHistory.GetSize())
   {
-    POSITION pos = m_findComplete.FindIndex(index);
+    POSITION pos = m_findHistory.FindIndex(index);
     if (pos != NULL)
-      return m_findComplete.GetAt(pos).GetString();
+      return m_findHistory.GetAt(pos).GetString();
   }
   return NULL;
 }
@@ -251,12 +281,12 @@ BOOL FindInFiles::OnInitDialog()
   if (I7BaseDialog::OnInitDialog())
   {
     // Initialize auto-completion for the find string
-    if (FAILED(m_auto.CoCreateInstance(CLSID_AutoComplete)))
+    if (FAILED(m_findAutoComplete.CoCreateInstance(CLSID_AutoComplete)))
       return FALSE;
     FindEnumString* fes = new FindEnumString(this);
     CComQIPtr<IEnumString> ies(fes->GetInterface(&IID_IEnumString));
-    m_auto->Init(m_find.GetSafeHwnd(),ies,NULL,NULL);
-    m_auto->SetOptions(ACO_AUTOSUGGEST);
+    m_findAutoComplete->Init(m_find.GetSafeHwnd(),ies,NULL,NULL);
+    m_findAutoComplete->SetOptions(ACO_AUTOSUGGEST);
     fes->ExternalRelease();
     return TRUE;
   }
@@ -280,20 +310,105 @@ void FindInFiles::OnClose()
 
 void FindInFiles::OnFindAll()
 {
+  ASSERT(m_project);
+  if (m_project == NULL)
+    return;
+
+  CWaitCursor wc;
   UpdateData(TRUE);
 
-  POSITION pos = m_findComplete.Find(m_findText);
+  // Update the find history
+  POSITION pos = m_findHistory.Find(m_findText);
   if (pos == NULL)
-    m_findComplete.AddTail(m_findText);
-  else if (pos != m_findComplete.GetTailPosition())
+    m_findHistory.AddTail(m_findText);
+  else if (pos != m_findHistory.GetTailPosition())
   {
-    m_findComplete.RemoveAt(pos);
-    m_findComplete.AddTail(m_findText);
+    m_findHistory.RemoveAt(pos);
+    m_findHistory.AddTail(m_findText);
   }
-  while (m_findComplete.GetSize() > FIND_HISTORY_LENGTH)
-    m_findComplete.RemoveHead();
+  while (m_findHistory.GetSize() > FIND_HISTORY_LENGTH)
+    m_findHistory.RemoveHead();
 
-  CComQIPtr<IAutoCompleteDropDown> acdd(m_auto);
-  if (acdd)
-    acdd->ResetEnumerator(); 
+  // Update the find history dropdown
+  CComQIPtr<IAutoCompleteDropDown> dropdown(m_findAutoComplete);
+  if (dropdown)
+    dropdown->ResetEnumerator();
+
+  // Search for the text
+  results.clear();
+  if (m_lookSource)
+    Find(m_project->SendMessage(WM_SOURCEEDITPTR));
+}
+
+void FindInFiles::Find(LONG_PTR editPtr)
+{
+  int len = (int)CallEdit(editPtr,SCI_GETLENGTH);
+  TextToFind find;
+  find.chrg.cpMin = 0;
+  find.chrg.cpMax = len;
+  CString textUtf = TextFormat::UnicodeToUTF8(m_findText);
+  find.lpstrText = (char*)(LPCSTR)textUtf;
+
+  while (true)
+  {
+    // Search for the text
+    if (CallEdit(editPtr,SCI_FINDTEXT,0,(sptr_t)&find) == -1)
+      return;
+
+    // Get the surrounding text as context
+    CStringW leading = GetTextRange(editPtr,find.chrgText.cpMin-4,find.chrgText.cpMin,len);
+    CStringW match = GetTextRange(editPtr,find.chrgText.cpMin,find.chrgText.cpMax,len);
+    CStringW trailing = GetTextRange(editPtr,find.chrgText.cpMax,find.chrgText.cpMax+32,len);
+    CStringW context = leading + match + trailing;
+    context.Replace(L'\n',L' ');
+    context.Replace(L'\r',L' ');
+    context.Replace(L'\t',L' ');
+
+    // Store the found result
+    FindResult result;
+    result.context = context;
+    result.inContext.cpMin = leading.GetLength();
+    result.inContext.cpMax = leading.GetLength() + match.GetLength();
+    result.sourceLocation = "Source";
+    result.inSource.cpMin = find.chrgText.cpMin;
+    result.inSource.cpMax = find.chrgText.cpMax;
+    results.push_back(result);
+
+    // Look for the next match
+    find.chrg.cpMin = find.chrgText.cpMax;
+  }
+}
+
+extern "C" sptr_t __stdcall Scintilla_DirectFunction(sptr_t, UINT, uptr_t, sptr_t);
+
+LONG_PTR FindInFiles::CallEdit(LONG_PTR editPtr, UINT msg, DWORD wp, LONG_PTR lp)
+{
+  return Scintilla_DirectFunction(editPtr,msg,wp,lp);
+}
+
+CStringW FindInFiles::GetTextRange(LONG_PTR editPtr, int cpMin, int cpMax, int len)
+{
+  if (cpMin < 0)
+    cpMin = 0;
+  if ((len >= 0) && (cpMax > len))
+    cpMax = len;
+
+  TextRange range;
+  range.chrg.cpMin = cpMin;
+  range.chrg.cpMax = cpMax;
+
+  CString utfText;
+  range.lpstrText = utfText.GetBufferSetLength(cpMax-cpMin+1);
+  CallEdit(editPtr,SCI_GETTEXTRANGE,0,(sptr_t)&range);
+  utfText.ReleaseBuffer();
+  return TextFormat::UTF8ToUnicode(utfText);
+}
+
+FindInFiles::FindResult::FindResult()
+{
+  inContext.cpMin = 0;
+  inContext.cpMax = 0;
+  inSource.cpMin = 0;
+  inSource.cpMax = 0;
+  colourScheme = 0;
 }

@@ -83,6 +83,7 @@ protected:
   afx_msg LRESULT OnWantStop(WPARAM, LPARAM);
   afx_msg LRESULT OnRunCensus(WPARAM, LPARAM);
   afx_msg LRESULT OnStoryName(WPARAM, LPARAM);
+  afx_msg LRESULT OnSourceEditPtr(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();
@@ -218,7 +219,6 @@ protected:
   int ChoosePanel(Panel::Tabs newTab);
 
   bool LoadToolBar(void);
-  CRect GetInitialSearchRect(Panel::Tabs searchTab);
 
   enum SkeinAction
   {

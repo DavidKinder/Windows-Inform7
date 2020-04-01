@@ -13,6 +13,9 @@
 #include "SpellCheck.h"
 #include "SplashScreen.h"
 
+#include "Platform.h"
+#include "Scintilla.h"
+
 #include "png.h"
 extern "C" {
 #include "jpeglib.h"
@@ -281,7 +284,7 @@ void InformApp::OnAppExit()
   // will cause the window to be removed from the frames array.
   while (m_frames.GetSize() > 0)
   {
-    int count = m_frames.GetSize();
+    INT_PTR count = m_frames.GetSize();
     m_frames[0]->SendMessage(WM_CLOSE);
 
     // If the window does not close, stop

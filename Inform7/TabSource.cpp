@@ -559,6 +559,11 @@ void TabSource::UpdateSpellCheck(void)
   m_source.GetEdit().UpdateSpellCheck();
 }
 
+LONG_PTR TabSource::GetEditPtr(void)
+{
+  return m_source.GetEdit().GetEditPtr();
+}
+
 bool TabSource::CheckNeedReopen(const char* path)
 {
   // Only re-open if the source has not been edited

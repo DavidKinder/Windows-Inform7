@@ -191,3 +191,7 @@ public:
 // Sent to a preferences dialog sheet to indicate that the preview
 // is to be updated.
 #define WM_UPDATEPREVIEW  WM_APP+42
+
+// Sent to the window frame to get a pointer to the interface
+// to the source editing component.
+#define WM_SOURCEEDITPTR  WM_APP+43

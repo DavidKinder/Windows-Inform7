@@ -74,6 +74,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_WANTSTOP, OnWantStop)
   ON_MESSAGE(WM_RUNCENSUS, OnRunCensus)
   ON_MESSAGE(WM_STORYNAME, OnStoryName)
+  ON_MESSAGE(WM_SOURCEEDITPTR, OnSourceEditPtr)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -832,17 +833,15 @@ LRESULT ProjectFrame::OnRuntimeProblem(WPARAM problem, LPARAM)
 
 LRESULT ProjectFrame::OnSearchSource(WPARAM text, LPARAM)
 {
-  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Source));
-  panel->SetActiveTab(Panel::Tab_Source);
-  m_search.Search((TabSource*)panel->GetTab(Panel::Tab_Source),(LPCWSTR)text,GetInitialSearchRect(Panel::Tab_Source));
+  theFinder.Show(this);
+  theFinder.FindInSource((LPCWSTR)text);
   return 0;
 }
 
 LRESULT ProjectFrame::OnSearchDoc(WPARAM text, LPARAM)
 {
-  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
-  panel->SetActiveTab(Panel::Tab_Doc);
-  m_search.Search((TabDoc*)panel->GetTab(Panel::Tab_Doc),(LPCWSTR)text,GetInitialSearchRect(Panel::Tab_Doc));
+  theFinder.Show(this);
+  theFinder.FindInDocs((LPCWSTR)text);
   return 0;
 }
 
@@ -1169,6 +1168,11 @@ LRESULT ProjectFrame::OnStoryName(WPARAM wparam, LPARAM lparam)
   }
 
   return 0;
+}
+
+LRESULT ProjectFrame::OnSourceEditPtr(WPARAM, LPARAM)
+{
+  return ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->GetEditPtr();
 }
 
 CString ProjectFrame::GetDisplayName(bool fullName)
@@ -2918,7 +2922,7 @@ void ProjectFrame::OnSourceLink(const char* url, TabInterface* from, COLORREF hi
     if (replace)
     {
       // Replace link to source code, if needed
-      for (int i = m_exLineOffsets.GetSize()-1; (i >= 0) && replace_url.IsEmpty(); i--)
+      for (INT_PTR i = m_exLineOffsets.GetSize()-1; (i >= 0) && replace_url.IsEmpty(); i--)
       {
         const ExLineOffset& elo = m_exLineOffsets.GetAt(i);
         if ((exId == elo.id) && (line >= elo.from))
@@ -3128,20 +3132,6 @@ bool ProjectFrame::LoadToolBar(void)
     break;
   }
   return true;
-}
-
-CRect ProjectFrame::GetInitialSearchRect(Panel::Tabs searchTab)
-{
-  CRect panelRect;
-  int panelIndex = (GetPanel(1)->GetActiveTab() == searchTab) ? 0 : 1;
-  GetPanel(panelIndex)->GetWindowRect(panelRect);
-
-  CRect searchRect(0,0,panelRect.Width()*3/4,panelRect.Height()*2/3);
-  if (panelIndex == 0)
-    searchRect.MoveToXY(panelRect.right-searchRect.Width(),panelRect.top);
-  else
-    searchRect.MoveToXY(panelRect.TopLeft());
-  return searchRect;
 }
 
 bool ProjectFrame::UpdateExampleList(void)

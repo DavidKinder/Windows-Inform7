@@ -6,9 +6,6 @@
 #include "SourceLexer.h"
 #include "SourceSettings.h"
 
-#include "Platform.h"
-#include "Scintilla.h"
-
 class SourceEdit : public CWnd
 {
   DECLARE_DYNAMIC(SourceEdit)
@@ -107,7 +104,7 @@ public:
   int GetLineHeight(void);
   CHARRANGE GetRangeLines(CHARRANGE range);
 
-  void ConvertPasteText(LPDATAOBJECT obj, wchar_t* uptr, unsigned int ulen, char*& ptr, unsigned int& len);
+  LONG_PTR GetEditPtr(void);
 
 private:
   LONG_PTR CallEdit(UINT msg, DWORD wp = 0, LONG_PTR lp = 0);
@@ -119,7 +116,7 @@ private:
   void SetSourceStyle(int style, int boldItalic, bool underline, int size);
 
 private:
-  sptr_t m_editPtr;
+  LONG_PTR m_editPtr;
   CTime m_fileTime;
 
   int m_marker;

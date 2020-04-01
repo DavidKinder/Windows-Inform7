@@ -3,6 +3,9 @@
 #include "SourceEdit.h"
 #include "TextFormat.h"
 
+#include "Platform.h"
+#include "Scintilla.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif

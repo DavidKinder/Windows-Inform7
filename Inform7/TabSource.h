@@ -36,6 +36,7 @@ public:
   bool CheckNeedReopen(const char* path);
   CTime GetFileTimestamp(const char* path);
   void UpdateElasticTabStops(void);
+  LONG_PTR GetEditPtr(void);
 
   // Implementation of SearchWindow::Source
   void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results);

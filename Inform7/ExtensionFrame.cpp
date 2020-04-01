@@ -601,7 +601,7 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
     CWaitCursor wc;
 
     CStringW lastExt;
-    int installed = 0, total = urls->GetSize();
+    int installed = 0, total = (int)urls->GetSize();
     for (int i = 0; i < total; i++)
     {
       SetDownloadProgress(parent,total,i,installed);

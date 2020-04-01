@@ -3,6 +3,8 @@
 #include "BaseDialog.h"
 #include "UnicodeEdit.h"
 
+#include <vector>
+
 class ProjectFrame;
 
 class FindInFiles : public I7BaseDialog
@@ -12,6 +14,9 @@ public:
 
   void Show(ProjectFrame* project);
   void Hide(ProjectFrame* project);
+
+  void FindInSource(LPCWSTR text);
+  void FindInDocs(LPCWSTR text);
 
   void InitInstance(void);
   void ExitInstance(void);
@@ -28,12 +33,30 @@ protected:
   afx_msg void OnClose();
   afx_msg void OnFindAll();
 
-  ProjectFrame* m_project;
+  void Find(LONG_PTR editPtr);
 
-  UnicodeEdit m_find;
+  LONG_PTR CallEdit(LONG_PTR editPtr, UINT msg, DWORD wp = 0, LONG_PTR lp = 0);
+  CStringW GetTextRange(LONG_PTR editPtr, int cpMin, int cpMax, int len = -1);
+
+  struct FindResult
+  {
+    FindResult();
+
+    CStringW context;
+    CHARRANGE inContext;
+
+    CString sourceSort;
+    CString sourceLocation;
+    CString sourceFile;
+    CHARRANGE inSource;
+
+    int colourScheme;
+  };
+
+  ProjectFrame* m_project;
+  std::vector<FindResult> results;
+
   CStringW m_findText;
-  CComPtr<IAutoComplete2> m_auto;
-  CList<CStringW> m_findComplete;
 
   int m_lookSource;
   int m_lookExts;
@@ -43,6 +66,10 @@ protected:
 
   int m_ignoreCase;
   int m_findRule;
+
+  UnicodeEdit m_find;
+  CComPtr<IAutoComplete2> m_findAutoComplete;
+  CList<CStringW> m_findHistory;
 };
 
 extern FindInFiles theFinder;
