@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Inform.h"
 #include "BaseDialog.h"
 #include "UnicodeEdit.h"
 
@@ -32,11 +33,15 @@ protected:
 
   afx_msg void OnClose();
   afx_msg void OnFindAll();
+  afx_msg void OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result);
 
   void Find(LONG_PTR editPtr);
 
   LONG_PTR CallEdit(LONG_PTR editPtr, UINT msg, DWORD wp = 0, LONG_PTR lp = 0);
   CStringW GetTextRange(LONG_PTR editPtr, int cpMin, int cpMax, int len = -1);
+
+  void DrawText(CDC* dc, LPCWSTR text, int length, CRect& rect, UINT format);
+  COLORREF Darken(COLORREF colour);
 
   struct FindResult
   {
@@ -50,11 +55,10 @@ protected:
     CString sourceFile;
     CHARRANGE inSource;
 
-    int colourScheme;
+    InformApp::Colours colour;
   };
 
   ProjectFrame* m_project;
-  std::vector<FindResult> results;
 
   CStringW m_findText;
 
@@ -70,6 +74,9 @@ protected:
   UnicodeEdit m_find;
   CComPtr<IAutoComplete2> m_findAutoComplete;
   CList<CStringW> m_findHistory;
+
+  std::vector<FindResult> m_results;
+  CListCtrl m_resultsList;
 };
 
 extern FindInFiles theFinder;

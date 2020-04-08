@@ -2,7 +2,7 @@
 #include "FindInFiles.h"
 #include "ProjectFrame.h"
 #include "TextFormat.h"
-#include "Inform.h"
+#include "OSLayer.h"
 #include "resource.h"
 
 #include "Platform.h"
@@ -110,6 +110,7 @@ FindInFiles theFinder;
 BEGIN_MESSAGE_MAP(FindInFiles, I7BaseDialog)
   ON_WM_CLOSE()
   ON_BN_CLICKED(IDC_FIND_ALL, OnFindAll)
+  ON_NOTIFY(NM_CUSTOMDRAW, IDC_RESULTS, OnResultsDraw)
 END_MESSAGE_MAP()
 
 FindInFiles::FindInFiles() : I7BaseDialog(IDD_FIND_FILES)
@@ -274,6 +275,7 @@ void FindInFiles::DoDataExchange(CDataExchange* pDX)
   DDX_Check(pDX,IDC_LOOK_DOC_EXAMPLES,m_lookDocExamples);
   DDX_Check(pDX,IDC_IGNORE_CASE,m_ignoreCase);
   DDX_CBIndex(pDX,IDC_FIND_RULE,m_findRule);
+  DDX_Control(pDX, IDC_RESULTS, m_resultsList);
 }
 
 BOOL FindInFiles::OnInitDialog()
@@ -288,6 +290,10 @@ BOOL FindInFiles::OnInitDialog()
     m_findAutoComplete->Init(m_find.GetSafeHwnd(),ies,NULL,NULL);
     m_findAutoComplete->SetOptions(ACO_AUTOSUGGEST);
     fes->ExternalRelease();
+
+    m_resultsList.SetExtendedStyle(LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
+    m_resultsList.InsertColumn(0,"Result");
+    m_resultsList.InsertColumn(1,"Document");
     return TRUE;
   }
   return FALSE;
@@ -335,9 +341,112 @@ void FindInFiles::OnFindAll()
     dropdown->ResetEnumerator();
 
   // Search for the text
-  results.clear();
+  m_results.clear();
   if (m_lookSource)
     Find(m_project->SendMessage(WM_SOURCEEDITPTR));
+
+  // Update the results
+  m_resultsList.DeleteAllItems();
+  for (int i = 0; i < (int)m_results.size(); i++)
+  {
+    m_resultsList.InsertItem(i,"");
+    m_resultsList.SetItemData(i,(DWORD_PTR)(LPCWSTR)m_results[i].context);
+    m_resultsList.SetItemText(i,1,m_results[i].sourceLocation);
+  }
+
+  // Resize the results columns
+  CRect listRect;
+  m_resultsList.GetWindowRect(listRect);
+  m_resultsList.SetColumnWidth(0,(int)(0.8 * listRect.Width()));
+  m_resultsList.SetColumnWidth(1,LVSCW_AUTOSIZE_USEHEADER);
+}
+
+void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
+{
+  // Default to letting Windows draw the control
+  *result = CDRF_DODEFAULT;
+
+  // Work out where we are in the drawing process
+  NMLVCUSTOMDRAW* custom = (NMLVCUSTOMDRAW*)pNotifyStruct;
+  switch (custom->nmcd.dwDrawStage)
+  {
+  case CDDS_PREPAINT:
+    // Tell us when an item is drawn
+    *result = CDRF_NOTIFYITEMDRAW;
+    break;
+  case CDDS_ITEMPREPAINT:
+    // Tell us when a sub-item is drawn
+    *result = CDRF_NOTIFYSUBITEMDRAW;
+    break;
+  case CDDS_ITEMPREPAINT|CDDS_SUBITEM:
+  {
+    // Work out the background colour
+    int item = (int)custom->nmcd.dwItemSpec;
+    COLORREF backColour = theApp.GetColour(m_results[item].colour);
+    if ((item % 2) != 0)
+      backColour = Darken(backColour);
+
+    // Get if the item is selected
+    bool selected = false;
+    if (GetFocus() == &m_resultsList)
+    {
+      if (item == m_resultsList.GetNextItem(-1,LVNI_SELECTED))
+        selected = true;
+    }
+
+    // Get the bounding rectangle for drawing the text
+    CRect rect;
+    m_resultsList.GetSubItemRect(item,custom->iSubItem,LVIR_LABEL,rect);
+    CRect textRect = rect;
+    textRect.DeflateRect(2,0);
+
+    // Set up the device context
+    HANDLE pb = 0;
+    CDC* dc = theOS.BeginBufferedPaint(custom->nmcd.hdc,rect,BPBF_COMPATIBLEBITMAP,&pb);
+    dc->SetTextColor(::GetSysColor(selected ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
+    dc->SetBkMode(TRANSPARENT);
+    CFont* oldFont = dc->SelectObject(m_resultsList.GetFont());
+
+    // Draw the background
+    dc->FillSolidRect(rect,selected ? ::GetSysColor(COLOR_HIGHLIGHT) : backColour);
+
+    // Special case painting of the first column
+    if (custom->iSubItem == 0)
+    {
+      // Get the item text
+      CStringW text = (LPCWSTR)m_resultsList.GetItemData(item);
+
+      // Create a bold font
+      LOGFONT logFont;
+      m_resultsList.GetFont()->GetLogFont(&logFont);
+      logFont.lfWeight = FW_BOLD;
+      CFont boldFont;
+      boldFont.CreateFontIndirect(&logFont);
+
+      // Get position information on the text
+      int high1 = m_results[item].inContext.cpMin;
+      int high2 = m_results[item].inContext.cpMax;
+
+      // Draw the text
+      DrawText(dc,text.GetString(),high1,textRect,DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
+      dc->SelectObject(&boldFont);
+      DrawText(dc,text.GetString()+high1,high2-high1,textRect,DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
+      dc->SelectObject(m_resultsList.GetFont());
+      DrawText(dc,text.GetString()+high2,text.GetLength()-high2,textRect,
+        DT_VCENTER|DT_SINGLELINE|DT_WORD_ELLIPSIS|DT_NOPREFIX);
+    }
+    else
+    {
+      CString text = m_resultsList.GetItemText(item,custom->iSubItem);
+      dc->DrawText(text,textRect,DT_VCENTER|DT_SINGLELINE|DT_WORD_ELLIPSIS|DT_NOPREFIX);
+    }
+
+    dc->SelectObject(oldFont);
+    theOS.EndBufferedPaint(pb,TRUE);
+    *result = CDRF_SKIPDEFAULT;
+  }
+  break;
+  }
 }
 
 void FindInFiles::Find(LONG_PTR editPtr)
@@ -372,7 +481,7 @@ void FindInFiles::Find(LONG_PTR editPtr)
     result.sourceLocation = "Source";
     result.inSource.cpMin = find.chrgText.cpMin;
     result.inSource.cpMax = find.chrgText.cpMax;
-    results.push_back(result);
+    m_results.push_back(result);
 
     // Look for the next match
     find.chrg.cpMin = find.chrgText.cpMax;
@@ -404,11 +513,34 @@ CStringW FindInFiles::GetTextRange(LONG_PTR editPtr, int cpMin, int cpMax, int l
   return TextFormat::UTF8ToUnicode(utfText);
 }
 
+void FindInFiles::DrawText(CDC* dc, LPCWSTR text, int length, CRect& rect, UINT format)
+{
+  if (length > 0)
+  {
+    theOS.DrawText(dc,text,length,rect,format|DT_SINGLELINE);
+
+    CRect measure(rect);
+    theOS.DrawText(dc,text,length,measure,format|DT_SINGLELINE|DT_CALCRECT);
+    rect.left += measure.Width();
+  }
+}
+
+COLORREF FindInFiles::Darken(COLORREF colour)
+{
+  BYTE r = GetRValue(colour);
+  BYTE g = GetGValue(colour);
+  BYTE b = GetBValue(colour);
+  r = (BYTE)(r * 0.9333);
+  g = (BYTE)(g * 0.9333);
+  b = (BYTE)(b * 0.9333);
+  return RGB(r,g,b);
+}
+
 FindInFiles::FindResult::FindResult()
 {
   inContext.cpMin = 0;
   inContext.cpMax = 0;
   inSource.cpMin = 0;
   inSource.cpMax = 0;
-  colourScheme = 0;
+  colour = InformApp::ColourBack;
 }
