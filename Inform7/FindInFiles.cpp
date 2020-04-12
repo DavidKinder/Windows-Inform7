@@ -109,6 +109,8 @@ FindInFiles theFinder;
 
 BEGIN_MESSAGE_MAP(FindInFiles, I7BaseDialog)
   ON_WM_CLOSE()
+  ON_WM_GETMINMAXINFO()
+  ON_WM_SIZE()
   ON_BN_CLICKED(IDC_FIND_ALL, OnFindAll)
   ON_NOTIFY(NM_CUSTOMDRAW, IDC_RESULTS, OnResultsDraw)
 END_MESSAGE_MAP()
@@ -132,9 +134,23 @@ void FindInFiles::Show(ProjectFrame* project)
   if (GetSafeHwnd() == 0)
   {
     Create(m_lpszTemplateName,CWnd::GetDesktopWindow());
-    CenterWindow(project);
     theApp.SetIcon(this);
+
+    bool placementSet = false;
+    CRegKey registryKey;
+    if (registryKey.Create(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW) == ERROR_SUCCESS)
+    {
+      // Restore the window state
+      WINDOWPLACEMENT place;
+      ULONG len = sizeof WINDOWPLACEMENT;
+      if (registryKey.QueryBinaryValue("Find in Files Placement",&place,&len) == ERROR_SUCCESS)
+        SetWindowPlacement(&place);
+      placementSet = true;
+    }
+    if (!placementSet)
+      CenterWindow(project);
   }
+
   if (GetSafeHwnd() != 0)
   {
     m_project = project;
@@ -218,38 +234,49 @@ void FindInFiles::InitInstance(void)
 
 void FindInFiles::ExitInstance(void)
 {
-  if (GetSafeHwnd() != 0)
-    DestroyWindow();
-  m_project = NULL;
-
-  try
+  CRegKey registryKey;
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
   {
-    if (m_findHistory.GetCount() > 0)
+    // Save the window state
+    if (GetSafeHwnd() != 0)
     {
-      // Write the list of the auto complete history to a memory file
-      CMemFile historyFile;
-      CArchive historyArchive(&historyFile,CArchive::store);
-      historyArchive << m_findHistory.GetCount();
-      POSITION pos = m_findHistory.GetHeadPosition();
-      for (INT_PTR i = 0; i < m_findHistory.GetCount(); i++)
-        historyArchive << m_findHistory.GetNext(pos);
-      historyArchive.Close();
- 
-      // Write the above buffer to the registry
-      CRegKey registryKey;
-      if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
+      WINDOWPLACEMENT place;
+      place.length = sizeof place;
+      GetWindowPlacement(&place);
+      registryKey.SetBinaryValue("Find in Files Placement",&place,sizeof WINDOWPLACEMENT);
+    }
+
+    // Save the auto complete history
+    try
+    {
+      if (m_findHistory.GetCount() > 0)
       {
+        // Write the list of the auto complete history to a memory file
+        CMemFile historyFile;
+        CArchive historyArchive(&historyFile,CArchive::store);
+        historyArchive << m_findHistory.GetCount();
+        POSITION pos = m_findHistory.GetHeadPosition();
+        for (INT_PTR i = 0; i < m_findHistory.GetCount(); i++)
+          historyArchive << m_findHistory.GetNext(pos);
+        historyArchive.Close();
+ 
+        // Write the above buffer to the registry
         ULONG historyLen = (ULONG)historyFile.GetLength();
         void* historyPtr = historyFile.Detach();
         registryKey.SetBinaryValue("Find in Files History",historyPtr,historyLen);
         free(historyPtr);
       }
     }
+    catch (CException* ex)
+    {
+      ex->Delete();
+    }
   }
-  catch (CException* ex)
-  {
-    ex->Delete();
-  }
+
+  // Close the window
+  if (GetSafeHwnd() != 0)
+    DestroyWindow();
+  m_project = NULL;
 }
 
 LPCWSTR FindInFiles::GetAutoComplete(int index)
@@ -294,6 +321,14 @@ BOOL FindInFiles::OnInitDialog()
     m_resultsList.SetExtendedStyle(LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
     m_resultsList.InsertColumn(0,"Result");
     m_resultsList.InsertColumn(1,"Document");
+    m_resultsList.InsertColumn(2,"Type");
+
+    CRect windowRect, resultsRect;
+    GetWindowRect(windowRect);
+    m_minSize = windowRect.Size();
+    m_resultsList.GetWindowRect(resultsRect);
+    m_resultsBottomRight = windowRect.BottomRight() - resultsRect.BottomRight();
+    SetResultsWidths();
     return TRUE;
   }
   return FALSE;
@@ -314,6 +349,30 @@ void FindInFiles::OnClose()
   }
 }
 
+void FindInFiles::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+  I7BaseDialog::OnGetMinMaxInfo(lpMMI);
+  lpMMI->ptMinTrackSize.x = m_minSize.cx;
+  lpMMI->ptMinTrackSize.y = m_minSize.cy;
+}
+
+void FindInFiles::OnSize(UINT nType, int cx, int cy)
+{
+  I7BaseDialog::OnSize(nType,cx,cy);
+
+  if (m_resultsList.GetSafeHwnd() != 0)
+  {
+    CRect windowRect, resultsRect;
+    GetWindowRect(windowRect);
+    m_resultsList.GetWindowRect(resultsRect);
+    resultsRect.right = windowRect.right - m_resultsBottomRight.cx;
+    resultsRect.bottom = windowRect.bottom - m_resultsBottomRight.cy;
+    ScreenToClient(resultsRect);
+    m_resultsList.MoveWindow(resultsRect);
+    SetResultsWidths();
+  }
+}
+
 void FindInFiles::OnFindAll()
 {
   ASSERT(m_project);
@@ -322,6 +381,8 @@ void FindInFiles::OnFindAll()
 
   CWaitCursor wc;
   UpdateData(TRUE);
+  if (m_findText.IsEmpty())
+    return;
 
   // Update the find history
   POSITION pos = m_findHistory.Find(m_findText);
@@ -351,14 +412,10 @@ void FindInFiles::OnFindAll()
   {
     m_resultsList.InsertItem(i,"");
     m_resultsList.SetItemData(i,(DWORD_PTR)(LPCWSTR)m_results[i].context);
-    m_resultsList.SetItemText(i,1,m_results[i].sourceLocation);
+    m_resultsList.SetItemText(i,1,m_results[i].sourceDocument);
+    m_resultsList.SetItemText(i,2,m_results[i].sourceType);
   }
-
-  // Resize the results columns
-  CRect listRect;
-  m_resultsList.GetWindowRect(listRect);
-  m_resultsList.SetColumnWidth(0,(int)(0.8 * listRect.Width()));
-  m_resultsList.SetColumnWidth(1,LVSCW_AUTOSIZE_USEHEADER);
+  SetResultsWidths();
 }
 
 void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
@@ -478,7 +535,8 @@ void FindInFiles::Find(LONG_PTR editPtr)
     result.context = context;
     result.inContext.cpMin = leading.GetLength();
     result.inContext.cpMax = leading.GetLength() + match.GetLength();
-    result.sourceLocation = "Source";
+    result.sourceDocument = m_project->GetDisplayName(false);
+    result.sourceType = "Source";
     result.inSource.cpMin = find.chrgText.cpMin;
     result.inSource.cpMax = find.chrgText.cpMax;
     m_results.push_back(result);
@@ -534,6 +592,15 @@ COLORREF FindInFiles::Darken(COLORREF colour)
   g = (BYTE)(g * 0.9333);
   b = (BYTE)(b * 0.9333);
   return RGB(r,g,b);
+}
+
+void FindInFiles::SetResultsWidths(void)
+{
+  CRect resultsRect;
+  m_resultsList.GetWindowRect(resultsRect);
+  m_resultsList.SetColumnWidth(0,(int)(0.65 * resultsRect.Width()));
+  m_resultsList.SetColumnWidth(1,(int)(0.2 * resultsRect.Width()));
+  m_resultsList.SetColumnWidth(2,LVSCW_AUTOSIZE_USEHEADER);
 }
 
 FindInFiles::FindResult::FindResult()

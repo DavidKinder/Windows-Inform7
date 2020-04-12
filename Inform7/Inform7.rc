@@ -112,7 +112,7 @@ BEGIN
             MENUITEM "&Use Selection for Find",     ID_EDIT_USE_SEL
             MENUITEM "&Scroll to Selection",        ID_EDIT_SCROLL
             MENUITEM SEPARATOR
-            MENUITEM "Find &in FIles\tCtrl+I",      ID_EDIT_FIND_IN_FILES
+            MENUITEM "Find &in Files\tCtrl+I",      ID_EDIT_FIND_IN_FILES
         END
         MENUITEM "Check &Spelling...\tCtrl+G",  ID_EDIT_SPELLING
         MENUITEM SEPARATOR

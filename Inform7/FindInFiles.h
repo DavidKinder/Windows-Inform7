@@ -32,6 +32,8 @@ protected:
   DECLARE_MESSAGE_MAP()
 
   afx_msg void OnClose();
+  afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+  afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg void OnFindAll();
   afx_msg void OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result);
 
@@ -42,6 +44,7 @@ protected:
 
   void DrawText(CDC* dc, LPCWSTR text, int length, CRect& rect, UINT format);
   COLORREF Darken(COLORREF colour);
+  void SetResultsWidths(void);
 
   struct FindResult
   {
@@ -51,14 +54,15 @@ protected:
     CHARRANGE inContext;
 
     CString sourceSort;
-    CString sourceLocation;
-    CString sourceFile;
+    CString sourceDocument;
+    CString sourceType;
     CHARRANGE inSource;
 
     InformApp::Colours colour;
   };
 
   ProjectFrame* m_project;
+  CSize m_minSize;
 
   CStringW m_findText;
 
@@ -77,6 +81,7 @@ protected:
 
   std::vector<FindResult> m_results;
   CListCtrl m_resultsList;
+  CSize m_resultsBottomRight;
 };
 
 extern FindInFiles theFinder;
