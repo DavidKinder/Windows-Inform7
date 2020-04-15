@@ -104,15 +104,35 @@ HRESULT FindEnumString::XEnumString::Clone(IEnumString**)
   return E_FAIL;
 }
 
+FindResultsCtrl::FindResultsCtrl()
+{
+}
+
+BEGIN_MESSAGE_MAP(FindResultsCtrl, CListCtrl)
+  ON_NOTIFY(HDN_DIVIDERDBLCLICKA, 0, OnHeaderDividerDblClick)
+  ON_NOTIFY(HDN_DIVIDERDBLCLICKW, 0, OnHeaderDividerDblClick)
+END_MESSAGE_MAP()
+
+void FindResultsCtrl::OnHeaderDividerDblClick(NMHDR* pNotifyStruct, LRESULT* result)
+{
+  NMHEADER* hdr = (NMHEADER*)pNotifyStruct;
+  if (hdr->iItem == 0)
+    GetParent()->SendMessage(WM_RESIZERESULTS);
+  else
+    Default();
+}
+
 // The one and only FindInFiles object
 FindInFiles theFinder;
 
 BEGIN_MESSAGE_MAP(FindInFiles, I7BaseDialog)
   ON_WM_CLOSE()
+  ON_WM_ERASEBKGND()
   ON_WM_GETMINMAXINFO()
   ON_WM_SIZE()
   ON_BN_CLICKED(IDC_FIND_ALL, OnFindAll)
   ON_NOTIFY(NM_CUSTOMDRAW, IDC_RESULTS, OnResultsDraw)
+  ON_MESSAGE(WM_RESIZERESULTS, OnResultsResize)
 END_MESSAGE_MAP()
 
 FindInFiles::FindInFiles() : I7BaseDialog(IDD_FIND_FILES)
@@ -329,6 +349,7 @@ BOOL FindInFiles::OnInitDialog()
     m_resultsList.GetWindowRect(resultsRect);
     m_resultsBottomRight = windowRect.BottomRight() - resultsRect.BottomRight();
     SetResultsWidths();
+    SetFoundStatus();
     return TRUE;
   }
   return FALSE;
@@ -347,6 +368,12 @@ void FindInFiles::OnClose()
     m_project->SetActiveWindow();
     m_project = NULL;
   }
+}
+
+BOOL FindInFiles::OnEraseBkgnd(CDC* dc)
+{
+  EraseWithGripper(dc);
+  return TRUE;
 }
 
 void FindInFiles::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
@@ -371,6 +398,9 @@ void FindInFiles::OnSize(UINT nType, int cx, int cy)
     m_resultsList.MoveWindow(resultsRect);
     SetResultsWidths();
   }
+
+  // Make sure that the sizing gripper is redrawn
+  Invalidate();
 }
 
 void FindInFiles::OnFindAll()
@@ -416,6 +446,7 @@ void FindInFiles::OnFindAll()
     m_resultsList.SetItemText(i,2,m_results[i].sourceType);
   }
   SetResultsWidths();
+  SetFoundStatus();
 }
 
 void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
@@ -470,9 +501,6 @@ void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
     // Special case painting of the first column
     if (custom->iSubItem == 0)
     {
-      // Get the item text
-      CStringW text = (LPCWSTR)m_resultsList.GetItemData(item);
-
       // Create a bold font
       LOGFONT logFont;
       m_resultsList.GetFont()->GetLogFont(&logFont);
@@ -480,17 +508,18 @@ void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
       CFont boldFont;
       boldFont.CreateFontIndirect(&logFont);
 
-      // Get position information on the text
+      // Get the text
+      CStringW text = (LPCWSTR)m_resultsList.GetItemData(item);
       int high1 = m_results[item].inContext.cpMin;
       int high2 = m_results[item].inContext.cpMax;
 
       // Draw the text
-      DrawText(dc,text.GetString(),high1,textRect,DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
+      DrawText(dc,text.GetString(),high1,textRect,DT_VCENTER|DT_NOPREFIX);
       dc->SelectObject(&boldFont);
-      DrawText(dc,text.GetString()+high1,high2-high1,textRect,DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
+      DrawText(dc,text.GetString()+high1,high2-high1,textRect,DT_VCENTER|DT_NOPREFIX);
       dc->SelectObject(m_resultsList.GetFont());
       DrawText(dc,text.GetString()+high2,text.GetLength()-high2,textRect,
-        DT_VCENTER|DT_SINGLELINE|DT_WORD_ELLIPSIS|DT_NOPREFIX);
+        DT_VCENTER|DT_WORD_ELLIPSIS|DT_NOPREFIX);
     }
     else
     {
@@ -504,6 +533,47 @@ void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
   }
   break;
   }
+}
+
+LRESULT FindInFiles::OnResultsResize(WPARAM, LPARAM)
+{
+  // Set up a device context
+  CDC* dc = m_resultsList.GetDC();
+  CFont* oldFont = dc->SelectObject(m_resultsList.GetFont());
+
+  // Create a bold font
+  LOGFONT logFont;
+  m_resultsList.GetFont()->GetLogFont(&logFont);
+  logFont.lfWeight = FW_BOLD;
+  CFont boldFont;
+  boldFont.CreateFontIndirect(&logFont);
+
+  int colWidth = 0;
+  for (int i = 0; i < (int)m_results.size(); i++)
+  {
+    // Get the text
+    CStringW text = (LPCWSTR)m_resultsList.GetItemData(i);
+    int high1 = m_results[i].inContext.cpMin;
+    int high2 = m_results[i].inContext.cpMax;
+
+    // Measure the text
+    dc->SelectObject(m_resultsList.GetFont());
+    int width = MeasureText(dc,text.GetString(),high1);
+    dc->SelectObject(&boldFont);
+    width += MeasureText(dc,text.GetString()+high1,high2-high1);
+    dc->SelectObject(m_resultsList.GetFont());
+    width += MeasureText(dc,text.GetString()+high2,text.GetLength()-high2);
+
+    if (width > colWidth)
+      colWidth = width;
+  }
+
+  // Free the device context
+  dc->SelectObject(oldFont);
+  m_resultsList.ReleaseDC(dc);
+
+  m_resultsList.SetColumnWidth(0,colWidth+8);
+  return 0;
 }
 
 void FindInFiles::Find(LONG_PTR editPtr)
@@ -522,10 +592,11 @@ void FindInFiles::Find(LONG_PTR editPtr)
       return;
 
     // Get the surrounding text as context
-    CStringW leading = GetTextRange(editPtr,find.chrgText.cpMin-4,find.chrgText.cpMin,len);
-    CStringW match = GetTextRange(editPtr,find.chrgText.cpMin,find.chrgText.cpMax,len);
-    CStringW trailing = GetTextRange(editPtr,find.chrgText.cpMax,find.chrgText.cpMax+32,len);
-    CStringW context = leading + match + trailing;
+    int lineStart = CallEdit(editPtr,SCI_LINEFROMPOSITION,find.chrgText.cpMin);
+    int posStart = CallEdit(editPtr,SCI_POSITIONFROMLINE,lineStart);
+    int lineEnd = CallEdit(editPtr,SCI_LINEFROMPOSITION,find.chrgText.cpMax);
+    int posEnd = CallEdit(editPtr,SCI_GETLINEENDPOSITION,lineEnd);
+    CStringW context = GetTextRange(editPtr,posStart,posEnd,len);
     context.Replace(L'\n',L' ');
     context.Replace(L'\r',L' ');
     context.Replace(L'\t',L' ');
@@ -533,8 +604,8 @@ void FindInFiles::Find(LONG_PTR editPtr)
     // Store the found result
     FindResult result;
     result.context = context;
-    result.inContext.cpMin = leading.GetLength();
-    result.inContext.cpMax = leading.GetLength() + match.GetLength();
+    result.inContext.cpMin = find.chrgText.cpMin - posStart;
+    result.inContext.cpMax = find.chrgText.cpMax - posStart;
     result.sourceDocument = m_project->GetDisplayName(false);
     result.sourceType = "Source";
     result.inSource.cpMin = find.chrgText.cpMin;
@@ -583,6 +654,17 @@ void FindInFiles::DrawText(CDC* dc, LPCWSTR text, int length, CRect& rect, UINT 
   }
 }
 
+int FindInFiles::MeasureText(CDC* dc, LPCWSTR text, int length)
+{
+  if (length > 0)
+  {
+    SIZE textSize;
+    ::GetTextExtentPoint32W(dc->GetSafeHdc(),text,length,&textSize);
+    return textSize.cx;
+  }
+  return 0;
+}
+
 COLORREF FindInFiles::Darken(COLORREF colour)
 {
   BYTE r = GetRValue(colour);
@@ -601,6 +683,29 @@ void FindInFiles::SetResultsWidths(void)
   m_resultsList.SetColumnWidth(0,(int)(0.65 * resultsRect.Width()));
   m_resultsList.SetColumnWidth(1,(int)(0.2 * resultsRect.Width()));
   m_resultsList.SetColumnWidth(2,LVSCW_AUTOSIZE_USEHEADER);
+}
+
+void FindInFiles::SetFoundStatus(void)
+{
+  // Update the found status message and what is visible
+  CString foundMsg;
+  switch (m_results.size())
+  {
+  case 0:
+    foundMsg = "No matches were found";
+    m_resultsList.ModifyStyle(WS_VISIBLE,0);
+    break;
+  case 1:
+    foundMsg = "Found 1 result:";
+    m_resultsList.ModifyStyle(0,WS_VISIBLE);
+    break;
+  default:
+    foundMsg.Format("Found %d results:",m_results.size());
+    m_resultsList.ModifyStyle(0,WS_VISIBLE);
+    break;
+  }
+  GetDlgItem(IDC_FOUND)->SetWindowText(foundMsg);
+  Invalidate();
 }
 
 FindInFiles::FindResult::FindResult()

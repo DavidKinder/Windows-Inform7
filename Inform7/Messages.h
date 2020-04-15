@@ -195,3 +195,6 @@ public:
 // Sent to the window frame to get a pointer to the interface
 // to the source editing component.
 #define WM_SOURCEEDITPTR  WM_APP+43
+
+// Sent to the Find in Files dialog to resize the results column
+#define WM_RESIZERESULTS  WM_APP+44

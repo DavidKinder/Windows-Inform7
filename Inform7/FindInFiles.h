@@ -8,6 +8,17 @@
 
 class ProjectFrame;
 
+class FindResultsCtrl : public CListCtrl
+{
+public:
+  FindResultsCtrl();
+
+protected:
+  DECLARE_MESSAGE_MAP()
+
+  afx_msg void OnHeaderDividerDblClick(NMHDR* pNotifyStruct, LRESULT* result);
+};
+
 class FindInFiles : public I7BaseDialog
 {
 public:
@@ -32,10 +43,12 @@ protected:
   DECLARE_MESSAGE_MAP()
 
   afx_msg void OnClose();
+  afx_msg BOOL OnEraseBkgnd(CDC* pDC);
   afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg void OnFindAll();
   afx_msg void OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result);
+  afx_msg LRESULT OnResultsResize(WPARAM, LPARAM);
 
   void Find(LONG_PTR editPtr);
 
@@ -43,8 +56,11 @@ protected:
   CStringW GetTextRange(LONG_PTR editPtr, int cpMin, int cpMax, int len = -1);
 
   void DrawText(CDC* dc, LPCWSTR text, int length, CRect& rect, UINT format);
+  int MeasureText(CDC* dc, LPCWSTR text, int length);
+
   COLORREF Darken(COLORREF colour);
   void SetResultsWidths(void);
+  void SetFoundStatus(void);
 
   struct FindResult
   {
@@ -80,7 +96,7 @@ protected:
   CList<CStringW> m_findHistory;
 
   std::vector<FindResult> m_results;
-  CListCtrl m_resultsList;
+  FindResultsCtrl m_resultsList;
   CSize m_resultsBottomRight;
 };
 
