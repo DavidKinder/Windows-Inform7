@@ -895,18 +895,11 @@ void SourceEdit::OpenFile(CFile* file)
 
 bool SourceEdit::SaveFile(CFile* file)
 {
-  // Get the contents of the document as UTF-8
-  CallEdit(SCI_CONVERTEOLS,SC_EOL_LF);
-  int len = (int)CallEdit(SCI_GETLENGTH);
-  CString utfText;
-  LPSTR utfPtr = utfText.GetBufferSetLength(len+1);
-  CallEdit(SCI_GETTEXT,len+1,(sptr_t)utfPtr);
-  utfText.ReleaseBuffer();
-
   // Write out the document contents
   bool success = true;
   try
   {
+    CString utfText = GetSource();
     file->Write(utfText,utfText.GetLength());
     CallEdit(SCI_SETSAVEPOINT);
   }
@@ -1346,9 +1339,16 @@ CHARRANGE SourceEdit::GetRangeLines(CHARRANGE range)
   return lines;
 }
 
-LONG_PTR SourceEdit::GetEditPtr(void)
+CString SourceEdit::GetSource(void)
 {
-  return m_editPtr;
+  // Get the contents of the document as UTF-8
+  CallEdit(SCI_CONVERTEOLS,SC_EOL_LF);
+  int len = (int)CallEdit(SCI_GETLENGTH);
+  CString utfText;
+  LPSTR utfPtr = utfText.GetBufferSetLength(len+1);
+  CallEdit(SCI_GETTEXT,len+1,(sptr_t)utfPtr);
+  utfText.ReleaseBuffer();
+  return utfText;
 }
 
 extern "C" sptr_t __stdcall Scintilla_DirectFunction(sptr_t, UINT, uptr_t, sptr_t);

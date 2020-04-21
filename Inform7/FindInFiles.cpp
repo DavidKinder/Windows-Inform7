@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "FindInFiles.h"
 #include "ProjectFrame.h"
-#include "TextFormat.h"
 #include "OSLayer.h"
+#include "RichEdit.h"
+#include "TextFormat.h"
 #include "resource.h"
 
-#include "Platform.h"
-#include "Scintilla.h"
+#include <regex>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -127,10 +127,12 @@ FindInFiles theFinder;
 
 BEGIN_MESSAGE_MAP(FindInFiles, I7BaseDialog)
   ON_WM_CLOSE()
+  ON_WM_DRAWITEM()
   ON_WM_ERASEBKGND()
   ON_WM_GETMINMAXINFO()
   ON_WM_SIZE()
   ON_BN_CLICKED(IDC_FIND_ALL, OnFindAll)
+  ON_CBN_SELCHANGE(IDC_FIND_RULE, OnChangeFindRule)
   ON_NOTIFY(NM_CUSTOMDRAW, IDC_RESULTS, OnResultsDraw)
   ON_MESSAGE(WM_RESIZERESULTS, OnResultsResize)
 END_MESSAGE_MAP()
@@ -153,6 +155,7 @@ void FindInFiles::Show(ProjectFrame* project)
 {
   if (GetSafeHwnd() == 0)
   {
+    m_richText = new RichDrawText();
     Create(m_lpszTemplateName,CWnd::GetDesktopWindow());
     theApp.SetIcon(this);
 
@@ -296,6 +299,8 @@ void FindInFiles::ExitInstance(void)
   // Close the window
   if (GetSafeHwnd() != 0)
     DestroyWindow();
+  delete m_richText;
+  m_richText = NULL;
   m_project = NULL;
 }
 
@@ -314,6 +319,7 @@ void FindInFiles::DoDataExchange(CDataExchange* pDX)
 {
   I7BaseDialog::DoDataExchange(pDX);
   DDX_Control(pDX, IDC_FIND, m_find);
+  DDX_Control(pDX, IDC_REGEX_HELP, m_regexHelp);
   DDX_TextW(pDX, IDC_FIND, m_findText);
   DDX_Check(pDX,IDC_LOOK_SOURCE,m_lookSource);
   DDX_Check(pDX,IDC_LOOK_EXTENSIONS,m_lookExts);
@@ -348,8 +354,9 @@ BOOL FindInFiles::OnInitDialog()
     m_minSize = windowRect.Size();
     m_resultsList.GetWindowRect(resultsRect);
     m_resultsBottomRight = windowRect.BottomRight() - resultsRect.BottomRight();
-    SetResultsWidths();
-    SetFoundStatus();
+
+    ScreenToClient(resultsRect);
+    m_regexHelp.MoveWindow(resultsRect);
     return TRUE;
   }
   return FALSE;
@@ -368,6 +375,71 @@ void FindInFiles::OnClose()
     m_project->SetActiveWindow();
     m_project = NULL;
   }
+}
+
+void FindInFiles::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
+{
+  if (nIDCtl == IDC_REGEX_HELP)
+  {
+    CRect helpRect(di->rcItem);
+    HANDLE pb = 0;
+    CDC* dc = theOS.BeginBufferedPaint(di->hDC,helpRect,BPBF_COMPATIBLEBITMAP,&pb);
+    dc->FillSolidRect(helpRect,::GetSysColor(COLOR_BTNFACE));
+
+    const char* text1 =
+      "\\b Characters\\b0\\par\\par"
+      " .\\tab Any character\\par"
+      " \\\\b\\tab Word boundary\\par"
+      " \\\\d\\tab Any digit\\par"
+      " \\\\n\\tab Newline\\par"
+      " \\\\s\\tab Whitespace\\par"
+      " \\\\S\\tab Non-whitespace\\par"
+      " \\\\t\\tab Tab\\par"
+      " [A-Z]\\tab Character ranges\\par";
+    CString rtfText;
+    rtfText.Format("{\\rtf1\\ansi{\\fs%d%s}}",
+      theApp.GetFontSize(InformApp::FontSystem)*2,text1);
+    m_richText->SetTextRTF(rtfText);
+    m_richText->DrawText(*dc,helpRect);
+
+    const char* text2 =
+      "\\b Patterns\\b0\\par\\par"
+      " x?\\tab 0 or 1 of 'x'\\par"
+      " x*\\tab 0 or more of 'x'\\par"
+      " x+\\tab 1 or more of 'x'\\par"
+      " x\\{2\\}\\tab Exactly 2 of 'x'\\par"
+      " x\\{2,\\}\\tab 2 or more of 'x'\\par"
+      " x\\{,2\\}\\tab 0-2 of 'x'\\par"
+      " x\\{2,4\\}\\tab 2-4 of 'x'\\par";
+    rtfText.Format("{\\rtf1\\ansi{\\fs%d%s}}",
+      theApp.GetFontSize(InformApp::FontSystem)*2,text2);
+    m_richText->SetTextRTF(rtfText);
+    CRect textRect;
+    textRect.SetRectEmpty();
+    textRect.right = helpRect.Width();
+    m_richText->SizeText(*dc,textRect);
+    textRect.MoveToX((helpRect.right - textRect.Width())/2);
+    m_richText->DrawText(*dc,textRect);
+
+    const char* text3 =
+      "\\b Expressions\\b0\\par\\par"
+      " (x)\\tab Group expression\\par"
+      " x|y\\tab x or y\\par"
+      " ^\\tab Start of the line\\par"
+      " $\\tab End of the line\\par";
+    rtfText.Format("{\\rtf1\\ansi{\\fs%d%s}}",
+      theApp.GetFontSize(InformApp::FontSystem)*2,text3);
+    m_richText->SetTextRTF(rtfText);
+    textRect.SetRectEmpty();
+    textRect.right = helpRect.Width();
+    m_richText->SizeText(*dc,textRect);
+    textRect.MoveToX(helpRect.right - textRect.Width());
+    m_richText->DrawText(*dc,textRect);
+
+    theOS.EndBufferedPaint(pb,TRUE);
+  }
+  else
+    CWnd::OnDrawItem(nIDCtl,di);
 }
 
 BOOL FindInFiles::OnEraseBkgnd(CDC* dc)
@@ -409,7 +481,6 @@ void FindInFiles::OnFindAll()
   if (m_project == NULL)
     return;
 
-  CWaitCursor wc;
   UpdateData(TRUE);
   if (m_findText.IsEmpty())
     return;
@@ -432,21 +503,63 @@ void FindInFiles::OnFindAll()
     dropdown->ResetEnumerator();
 
   // Search for the text
+  CWaitCursor wc;
   m_results.clear();
   if (m_lookSource)
-    Find(m_project->SendMessage(WM_SOURCEEDITPTR));
+    Find(m_project->GetSource(),m_project->GetDisplayName(false),"Source");
 
   // Update the results
   m_resultsList.DeleteAllItems();
   for (int i = 0; i < (int)m_results.size(); i++)
   {
     m_resultsList.InsertItem(i,"");
-    m_resultsList.SetItemData(i,(DWORD_PTR)(LPCWSTR)m_results[i].context);
     m_resultsList.SetItemText(i,1,m_results[i].sourceDocument);
     m_resultsList.SetItemText(i,2,m_results[i].sourceType);
   }
   SetResultsWidths();
-  SetFoundStatus();
+
+  // Update the found status message and what is visible
+  CString foundMsg;
+  switch (m_results.size())
+  {
+  case 0:
+    foundMsg = "No matches were found";
+    m_resultsList.ModifyStyle(WS_VISIBLE,0);
+    break;
+  case 1:
+    foundMsg = "Found 1 result:";
+    m_resultsList.ModifyStyle(0,WS_VISIBLE);
+    m_resultsList.SetFocus();
+    break;
+  default:
+    foundMsg.Format("Found %d results:",m_results.size());
+    m_resultsList.ModifyStyle(0,WS_VISIBLE);
+    m_resultsList.SetFocus();
+    break;
+  }
+  GetDlgItem(IDC_FOUND)->SetWindowText(foundMsg);
+  m_regexHelp.ModifyStyle(WS_VISIBLE,0);
+  Invalidate();
+}
+
+void FindInFiles::OnChangeFindRule()
+{
+  UpdateData(TRUE);
+  if (m_findRule == 3)
+  {
+    m_resultsList.ModifyStyle(WS_VISIBLE,0);
+    m_regexHelp.ModifyStyle(0,WS_VISIBLE);
+    GetDlgItem(IDC_FOUND)->SetWindowText("");
+    Invalidate();
+  }
+  else
+  {
+    if (m_regexHelp.IsWindowVisible())
+    {
+      m_regexHelp.ModifyStyle(WS_VISIBLE,0);
+      Invalidate();
+    }
+  }
 }
 
 void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
@@ -509,7 +622,7 @@ void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
       boldFont.CreateFontIndirect(&logFont);
 
       // Get the text
-      CStringW text = (LPCWSTR)m_resultsList.GetItemData(item);
+      const CStringW& text = m_results[item].context;
       int high1 = m_results[item].inContext.cpMin;
       int high2 = m_results[item].inContext.cpMax;
 
@@ -552,7 +665,7 @@ LRESULT FindInFiles::OnResultsResize(WPARAM, LPARAM)
   for (int i = 0; i < (int)m_results.size(); i++)
   {
     // Get the text
-    CStringW text = (LPCWSTR)m_resultsList.GetItemData(i);
+    const CStringW& text = m_results[i].context;
     int high1 = m_results[i].inContext.cpMin;
     int high2 = m_results[i].inContext.cpMax;
 
@@ -576,70 +689,138 @@ LRESULT FindInFiles::OnResultsResize(WPARAM, LPARAM)
   return 0;
 }
 
-void FindInFiles::Find(LONG_PTR editPtr)
+void FindInFiles::Find(const CString& text, const CString& doc, const char* type)
 {
-  int len = (int)CallEdit(editPtr,SCI_GETLENGTH);
-  TextToFind find;
-  find.chrg.cpMin = 0;
-  find.chrg.cpMax = len;
-  CString textUtf = TextFormat::UnicodeToUTF8(m_findText);
-  find.lpstrText = (char*)(LPCSTR)textUtf;
-
-  while (true)
+  try
   {
+    // Set up a regular expression
+    CString findUtf = TextFormat::UnicodeToUTF8(m_findText);
+    std::regex::flag_type flags = std::regex::ECMAScript;
+    if (m_ignoreCase)
+      flags |= std::regex::icase;
+    std::regex regexp;
+    regexp.assign(findUtf,flags);
+
     // Search for the text
-    if (CallEdit(editPtr,SCI_FINDTEXT,0,(sptr_t)&find) == -1)
-      return;
+    auto regexBegin = std::cregex_iterator(text.GetString(),text.GetString()+text.GetLength(),regexp);
+    for (auto it = regexBegin; it != std::cregex_iterator(); ++it)
+    {
+      if (it->length() <= 0)
+        return;
 
-    // Get the surrounding text as context
-    int lineStart = CallEdit(editPtr,SCI_LINEFROMPOSITION,find.chrgText.cpMin);
-    int posStart = CallEdit(editPtr,SCI_POSITIONFROMLINE,lineStart);
-    int lineEnd = CallEdit(editPtr,SCI_LINEFROMPOSITION,find.chrgText.cpMax);
-    int posEnd = CallEdit(editPtr,SCI_GETLINEENDPOSITION,lineEnd);
-    CStringW context = GetTextRange(editPtr,posStart,posEnd,len);
-    context.Replace(L'\n',L' ');
-    context.Replace(L'\r',L' ');
-    context.Replace(L'\t',L' ');
+      int matchStart = (int)it->position();
+      int matchEnd = (int)(it->position() + it->length());
 
-    // Store the found result
-    FindResult result;
-    result.context = context;
-    result.inContext.cpMin = find.chrgText.cpMin - posStart;
-    result.inContext.cpMax = find.chrgText.cpMax - posStart;
-    result.sourceDocument = m_project->GetDisplayName(false);
-    result.sourceType = "Source";
-    result.inSource.cpMin = find.chrgText.cpMin;
-    result.inSource.cpMax = find.chrgText.cpMax;
-    m_results.push_back(result);
+      // Get the surrounding text as context. Note that we get the leading, matching and
+      // trailing texts separately so that we can count the number of Unicode characters in each.
+      int lineStart = FindLineStart(text,matchStart);
+      int lineEnd = FindLineEnd(text,matchEnd);
+      CStringW leading = GetMatchRange(text,lineStart,matchStart);
+      CStringW match = GetMatchRange(text,matchStart,matchEnd);
+      CStringW trailing = GetMatchRange(text,matchEnd,lineEnd);
+      CStringW context = leading + match + trailing;
+      context.Replace(L'\n',L' ');
+      context.Replace(L'\r',L' ');
+      context.Replace(L'\t',L' ');
 
-    // Look for the next match
-    find.chrg.cpMin = find.chrgText.cpMax;
+      // Store the found result
+      FindResult result;
+      result.context = context;
+      result.inContext.cpMin = leading.GetLength();
+      result.inContext.cpMax = leading.GetLength() + match.GetLength();
+      result.sourceDocument = doc;
+      result.sourceType = type;
+      result.inSource.cpMin = matchStart;
+      result.inSource.cpMax = matchEnd;
+      m_results.push_back(result);
+    }
+  }
+  catch (std::regex_error& ex)
+  {
+    const char* msg = NULL;
+    switch (ex.code())
+    {
+    case std::regex_constants::error_collate:
+      msg = "The find expression contained an invalid collating element name.";
+      break;
+    case std::regex_constants::error_ctype:
+      msg = "The find expression contained an invalid character class name.";
+      break;
+    case std::regex_constants::error_escape:
+      msg = "The find expression contained an invalid escaped character, or a trailing escape.";
+      break;
+    case std::regex_constants::error_backref:
+      msg = "The find expression contained an invalid back reference.";
+      break;
+    case std::regex_constants::error_brack:
+      msg = "The find expression contained mismatched [ and ].";
+      break;
+    case std::regex_constants::error_paren:
+      msg = "The find expression contained mismatched ( and ).";
+      break;
+    case std::regex_constants::error_brace:
+      msg = "The find expression contained mismatched { and }.";
+      break;
+    case std::regex_constants::error_badbrace:
+      msg = "The find expression contained an invalid range in a { expression }.";
+      break;
+    case std::regex_constants::error_range:
+      msg = "The find expression contained an invalid character range, such as [b-a].";
+      break;
+    case std::regex_constants::error_space:
+      msg = "Insufficient memory to process the find expression.";
+      break;
+    case std::regex_constants::error_badrepeat:
+      msg = "One of *?+{ was not preceded by a valid regular expression.";
+      break;
+    case std::regex_constants::error_complexity:
+      msg = "The complexity of an attempted match against a regular expression was too much.";
+      break;
+    case std::regex_constants::error_stack:
+      msg = "There was insufficient memory to determine whether the regular expression could match the specified character sequence.";
+      break;
+    case std::regex_constants::error_parse:
+      msg = "Failed to parse find expression.";
+      break;
+    case std::regex_constants::error_syntax:
+      msg = "Syntax error in find expression.";
+      break;
+    default:
+      msg = "Error in find expression.";
+      break;
+    }
+    MessageBox(msg,INFORM_TITLE,MB_ICONERROR|MB_OK);
   }
 }
 
-extern "C" sptr_t __stdcall Scintilla_DirectFunction(sptr_t, UINT, uptr_t, sptr_t);
-
-LONG_PTR FindInFiles::CallEdit(LONG_PTR editPtr, UINT msg, DWORD wp, LONG_PTR lp)
+int FindInFiles::FindLineStart(const CString& text, int pos)
 {
-  return Scintilla_DirectFunction(editPtr,msg,wp,lp);
+  while (pos > 0)
+  {
+    char c = text.GetAt(pos-1);
+    if ((c == '\n') || (c == '\r'))
+      return pos;
+    pos--;
+  }
+  return pos;
 }
 
-CStringW FindInFiles::GetTextRange(LONG_PTR editPtr, int cpMin, int cpMax, int len)
+int FindInFiles::FindLineEnd(const CString& text, int pos)
 {
-  if (cpMin < 0)
-    cpMin = 0;
-  if ((len >= 0) && (cpMax > len))
-    cpMax = len;
+  int len = text.GetLength();
+  while (pos < len)
+  {
+    char c = text.GetAt(pos);
+    if ((c == '\n') || (c == '\r'))
+      return pos;
+    pos++;
+  }
+  return pos;
+}
 
-  TextRange range;
-  range.chrg.cpMin = cpMin;
-  range.chrg.cpMax = cpMax;
-
-  CString utfText;
-  range.lpstrText = utfText.GetBufferSetLength(cpMax-cpMin+1);
-  CallEdit(editPtr,SCI_GETTEXTRANGE,0,(sptr_t)&range);
-  utfText.ReleaseBuffer();
-  return TextFormat::UTF8ToUnicode(utfText);
+CStringW FindInFiles::GetMatchRange(const CString& text, int start, int end)
+{
+  return TextFormat::UTF8ToUnicode(text.Mid(start,end-start));
 }
 
 void FindInFiles::DrawText(CDC* dc, LPCWSTR text, int length, CRect& rect, UINT format)
@@ -683,29 +864,6 @@ void FindInFiles::SetResultsWidths(void)
   m_resultsList.SetColumnWidth(0,(int)(0.65 * resultsRect.Width()));
   m_resultsList.SetColumnWidth(1,(int)(0.2 * resultsRect.Width()));
   m_resultsList.SetColumnWidth(2,LVSCW_AUTOSIZE_USEHEADER);
-}
-
-void FindInFiles::SetFoundStatus(void)
-{
-  // Update the found status message and what is visible
-  CString foundMsg;
-  switch (m_results.size())
-  {
-  case 0:
-    foundMsg = "No matches were found";
-    m_resultsList.ModifyStyle(WS_VISIBLE,0);
-    break;
-  case 1:
-    foundMsg = "Found 1 result:";
-    m_resultsList.ModifyStyle(0,WS_VISIBLE);
-    break;
-  default:
-    foundMsg.Format("Found %d results:",m_results.size());
-    m_resultsList.ModifyStyle(0,WS_VISIBLE);
-    break;
-  }
-  GetDlgItem(IDC_FOUND)->SetWindowText(foundMsg);
-  Invalidate();
 }
 
 FindInFiles::FindResult::FindResult()

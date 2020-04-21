@@ -74,8 +74,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_WANTSTOP, OnWantStop)
   ON_MESSAGE(WM_RUNCENSUS, OnRunCensus)
   ON_MESSAGE(WM_STORYNAME, OnStoryName)
-  ON_MESSAGE(WM_SOURCEEDITPTR, OnSourceEditPtr)
-
+  
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
   ON_COMMAND(ID_FILE_INSTALL_EXT, OnFileInstallExt)
@@ -1170,9 +1169,9 @@ LRESULT ProjectFrame::OnStoryName(WPARAM wparam, LPARAM lparam)
   return 0;
 }
 
-LRESULT ProjectFrame::OnSourceEditPtr(WPARAM, LPARAM)
+CString ProjectFrame::GetSource(void)
 {
-  return ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->GetEditPtr();
+  return ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->GetSource();
 }
 
 CString ProjectFrame::GetDisplayName(bool fullName)

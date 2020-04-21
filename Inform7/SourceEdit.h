@@ -104,7 +104,7 @@ public:
   int GetLineHeight(void);
   CHARRANGE GetRangeLines(CHARRANGE range);
 
-  LONG_PTR GetEditPtr(void);
+  CString GetSource(void);
 
 private:
   LONG_PTR CallEdit(UINT msg, DWORD wp = 0, LONG_PTR lp = 0);

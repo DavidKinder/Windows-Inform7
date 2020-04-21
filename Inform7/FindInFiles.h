@@ -7,6 +7,7 @@
 #include <vector>
 
 class ProjectFrame;
+class RichDrawText;
 
 class FindResultsCtrl : public CListCtrl
 {
@@ -43,24 +44,26 @@ protected:
   DECLARE_MESSAGE_MAP()
 
   afx_msg void OnClose();
+  afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di);
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
   afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg void OnFindAll();
+  afx_msg void OnChangeFindRule();
   afx_msg void OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result);
   afx_msg LRESULT OnResultsResize(WPARAM, LPARAM);
 
-  void Find(LONG_PTR editPtr);
+  void Find(const CString& text, const CString& doc, const char* type);
 
-  LONG_PTR CallEdit(LONG_PTR editPtr, UINT msg, DWORD wp = 0, LONG_PTR lp = 0);
-  CStringW GetTextRange(LONG_PTR editPtr, int cpMin, int cpMax, int len = -1);
+  int FindLineStart(const CString& text, int pos);
+  int FindLineEnd(const CString& text, int pos);
+  CStringW GetMatchRange(const CString& text, int start, int end);
 
   void DrawText(CDC* dc, LPCWSTR text, int length, CRect& rect, UINT format);
   int MeasureText(CDC* dc, LPCWSTR text, int length);
-
   COLORREF Darken(COLORREF colour);
+
   void SetResultsWidths(void);
-  void SetFoundStatus(void);
 
   struct FindResult
   {
@@ -98,6 +101,9 @@ protected:
   std::vector<FindResult> m_results;
   FindResultsCtrl m_resultsList;
   CSize m_resultsBottomRight;
+
+  CStatic m_regexHelp;
+  RichDrawText* m_richText;
 };
 
 extern FindInFiles theFinder;

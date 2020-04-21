@@ -147,20 +147,13 @@ BOOL AboutDialog::OnInitDialog()
     "\\tab and others\\par"
     "\\par"
     "\\b Elastic tabstops invented by\\b0\\par"
-    "\\tab Nick Gravgaard}";
+    "\\tab Nick Gravgaard";
 
   // Start with only as much text as should be visible
-  {
-    CString creditsRTF;
-    creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s",
-      (theApp.GetFontSize(InformApp::FontSystem)*2)+2,text1);
-    CMemFile creditsFile((BYTE*)(LPCSTR)creditsRTF,creditsRTF.GetLength());
-    EDITSTREAM stream;
-    stream.dwCookie = (DWORD_PTR)&creditsFile;
-    stream.dwError = 0;
-    stream.pfnCallback = FileReadCallback;
-    m_credits.StreamIn(SF_RTF,stream);
-  }
+  CString creditsRTF;
+  creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s}}",
+    (theApp.GetFontSize(InformApp::FontSystem)*2)+2,text1);
+  m_credits.SetTextRTF(creditsRTF);
 
   // Ask the control how big the credits text is
   LayoutControls();
@@ -179,17 +172,9 @@ BOOL AboutDialog::OnInitDialog()
   MoveWindow(dlgRect);
 
   // Show all the credits text
-  {
-    CString creditsRTF;
-    creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s%s",
-      (theApp.GetFontSize(InformApp::FontSystem)*2)+2,text1,text2);
-    CMemFile creditsFile((BYTE*)(LPCSTR)creditsRTF,creditsRTF.GetLength());
-    EDITSTREAM stream;
-    stream.dwCookie = (DWORD_PTR)&creditsFile;
-    stream.dwError = 0;
-    stream.pfnCallback = FileReadCallback;
-    m_credits.StreamIn(SF_RTF,stream);
-  }
+  creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s%s}}",
+    (theApp.GetFontSize(InformApp::FontSystem)*2)+2,text1,text2);
+  m_credits.SetTextRTF(creditsRTF);
 
   m_initialSize = dlgRect.Size();
   return TRUE;

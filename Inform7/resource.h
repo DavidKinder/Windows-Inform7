@@ -206,6 +206,7 @@
 #define IDC_FIND_RULE                   1101
 #define IDC_FOUND                       1102
 #define IDC_RESULTS                     1103
+#define IDC_REGEX_HELP                  1104
 #define ID_OPEN_EXTENSIONS_LIST         2000
 #define ID_NEW_EXTENSIONS_LIST          3000
 
@@ -215,7 +216,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        288
 #define _APS_NEXT_COMMAND_VALUE         283
-#define _APS_NEXT_CONTROL_VALUE         1104
+#define _APS_NEXT_CONTROL_VALUE         1105
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif

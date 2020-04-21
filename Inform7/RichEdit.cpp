@@ -131,9 +131,22 @@ void RichEdit::EmptyUndoBuffer(void)
   SendMessage(EM_EMPTYUNDOBUFFER);
 }
 
-long RichEdit::StreamIn(int format, EDITSTREAM& es)
+static DWORD CALLBACK FileReadCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
 {
-  return (long)SendMessage(EM_STREAMIN,format,(LPARAM)&es);
+  CFile* file = (CFile*)dwCookie;
+  *pcb = file->Read(pbBuff,cb);
+  return 0;
+}
+
+void RichEdit::SetTextRTF(const char* rtf)
+{
+  CMemFile memFile((BYTE*)rtf,(UINT)strlen(rtf));
+  EDITSTREAM stream;
+  stream.dwCookie = (DWORD_PTR)&memFile;
+  stream.dwError = 0;
+  stream.pfnCallback = FileReadCallback;
+  LRESULT res = 0;
+  SendMessage(EM_STREAMIN,SF_RTF,(LPARAM)&stream);
 }
 
 void RichEdit::GetSel(CHARRANGE& cr) const
@@ -370,6 +383,17 @@ void RichDrawText::SetText(LPCWSTR text)
   range->SetText(CComBSTR(text));
 }
 
+void RichDrawText::SetTextRTF(const char* rtf)
+{
+  CMemFile memFile((BYTE*)rtf,(UINT)strlen(rtf));
+  EDITSTREAM stream;
+  stream.dwCookie = (DWORD_PTR)&memFile;
+  stream.dwError = 0;
+  stream.pfnCallback = FileReadCallback;
+  LRESULT res = 0;
+  m_textServ->TxSendMessage(EM_STREAMIN,SF_RTF,(LPARAM)&stream,&res);
+}
+
 void RichDrawText::Range(long cpFirst, long cpLim, ITextRange** ppRange)
 {
   m_textDoc->Range(cpFirst,cpLim,ppRange);
@@ -385,9 +409,13 @@ void RichDrawText::SizeText(CDC& dc, CRect& rect)
     dc.GetSafeHdc(),0,NULL,TXTNS_FITTOCONTENT,&extent,&w,&h);
   ASSERT(SUCCEEDED(hr));
   if (FAILED(hr))
+  {
+    w = 0;
     h = 0;
+  }
 
-  rect.bottom = rect.top+h;
+  rect.right = rect.left + w;
+  rect.bottom = rect.top + h;
 }
 
 void RichDrawText::DrawText(CDC& dc, const CRect& rect)

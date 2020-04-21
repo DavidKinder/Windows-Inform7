@@ -83,7 +83,6 @@ protected:
   afx_msg LRESULT OnWantStop(WPARAM, LPARAM);
   afx_msg LRESULT OnRunCensus(WPARAM, LPARAM);
   afx_msg LRESULT OnStoryName(WPARAM, LPARAM);
-  afx_msg LRESULT OnSourceEditPtr(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();
@@ -151,6 +150,7 @@ public:
   static bool StartExistingProject(const char* dir, CWnd* parent);
   static bool StartLastProject(void);
 
+  CString GetSource(void);
   CString GetDisplayName(bool fullName);
   void SendChanged(InformApp::Changed changed, int value);
 

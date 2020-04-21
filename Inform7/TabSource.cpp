@@ -559,9 +559,9 @@ void TabSource::UpdateSpellCheck(void)
   m_source.GetEdit().UpdateSpellCheck();
 }
 
-LONG_PTR TabSource::GetEditPtr(void)
+CString TabSource::GetSource(void)
 {
-  return m_source.GetEdit().GetEditPtr();
+  return m_source.GetEdit().GetSource();
 }
 
 bool TabSource::CheckNeedReopen(const char* path)
