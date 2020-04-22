@@ -63,8 +63,6 @@ protected:
   int MeasureText(CDC* dc, LPCWSTR text, int length);
   COLORREF Darken(COLORREF colour);
 
-  void SetResultsWidths(void);
-
   struct FindResult
   {
     FindResult();

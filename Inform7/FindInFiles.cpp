@@ -468,7 +468,6 @@ void FindInFiles::OnSize(UINT nType, int cx, int cy)
     resultsRect.bottom = windowRect.bottom - m_resultsBottomRight.cy;
     ScreenToClient(resultsRect);
     m_resultsList.MoveWindow(resultsRect);
-    SetResultsWidths();
   }
 
   // Make sure that the sizing gripper is redrawn
@@ -516,7 +515,13 @@ void FindInFiles::OnFindAll()
     m_resultsList.SetItemText(i,1,m_results[i].sourceDocument);
     m_resultsList.SetItemText(i,2,m_results[i].sourceType);
   }
-  SetResultsWidths();
+
+  // Resize the results columns
+  CRect resultsRect;
+  m_resultsList.GetWindowRect(resultsRect);
+  m_resultsList.SetColumnWidth(0,(int)(0.65 * resultsRect.Width()));
+  m_resultsList.SetColumnWidth(1,(int)(0.2 * resultsRect.Width()));
+  m_resultsList.SetColumnWidth(2,LVSCW_AUTOSIZE_USEHEADER);
 
   // Update the found status message and what is visible
   CString foundMsg;
@@ -698,6 +703,28 @@ void FindInFiles::Find(const CString& text, const CString& doc, const char* type
     std::regex::flag_type flags = std::regex::ECMAScript;
     if (m_ignoreCase)
       flags |= std::regex::icase;
+    if (m_findRule != 3) // Not "Regular expression"
+    {
+      // Escape any characters with a special meaning in regular expressions
+      for (int i = 0; i < findUtf.GetLength(); i++)
+      {
+        if (strchr(".^$|()[]{}*+?\\",findUtf.GetAt(i)))
+        {
+          findUtf.Insert(i,'\\');
+          i++;
+        }
+      }      
+    }
+    switch (m_findRule)
+    {
+    case 1: // "Starts with"
+      findUtf.Insert(0,"\\b");
+      break;
+    case 2: // "Full word"
+      findUtf.Insert(0,"\\b");
+      findUtf.Append("\\b");
+      break;
+    }
     std::regex regexp;
     regexp.assign(findUtf,flags);
 
@@ -855,15 +882,6 @@ COLORREF FindInFiles::Darken(COLORREF colour)
   g = (BYTE)(g * 0.9333);
   b = (BYTE)(b * 0.9333);
   return RGB(r,g,b);
-}
-
-void FindInFiles::SetResultsWidths(void)
-{
-  CRect resultsRect;
-  m_resultsList.GetWindowRect(resultsRect);
-  m_resultsList.SetColumnWidth(0,(int)(0.65 * resultsRect.Width()));
-  m_resultsList.SetColumnWidth(1,(int)(0.2 * resultsRect.Width()));
-  m_resultsList.SetColumnWidth(2,LVSCW_AUTOSIZE_USEHEADER);
 }
 
 FindInFiles::FindResult::FindResult()
