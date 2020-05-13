@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "ProjectFrame.h"
 #include "ExtensionFrame.h"
-#include "FindInFiles.h"
 #include "OSLayer.h"
 #include "Messages.h"
 #include "TextFormat.h"
@@ -203,7 +202,7 @@ private:
 
 ProjectFrame::ProjectFrame(ProjectType projectType)
   : m_projectType(projectType), m_needCompile(true), m_last5StartTime(0),
-    m_busy(false), m_I6debug(false), m_game(m_skein), m_focus(0),
+    m_busy(false), m_I6debug(false), m_game(m_skein), m_finder(this), m_focus(0),
     m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0), m_splitter(true)
 {
   if (m_projectType == Project_I7XP)
@@ -307,13 +306,6 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   if (!m_progress.Create(this,WS_CLIPSIBLINGS))
   {
     TRACE("Failed to create progress window\n");
-    return -1;
-  }
-
-  // Create the search results window
-  if (!m_search.Create(this))
-  {
-    TRACE("Failed to create search results window\n");
     return -1;
   }
 
@@ -428,7 +420,7 @@ void ProjectFrame::OnClose()
     }
   }
 
-  theFinder.Hide(this);
+  m_finder.Hide();
   m_game.StopInterpreter(false);
   CleanProject();
 
@@ -832,15 +824,15 @@ LRESULT ProjectFrame::OnRuntimeProblem(WPARAM problem, LPARAM)
 
 LRESULT ProjectFrame::OnSearchSource(WPARAM text, LPARAM)
 {
-  theFinder.Show(this);
-  theFinder.FindInSource((LPCWSTR)text);
+  m_finder.Show();
+  m_finder.FindInSource((LPCWSTR)text);
   return 0;
 }
 
 LRESULT ProjectFrame::OnSearchDoc(WPARAM text, LPARAM)
 {
-  theFinder.Show(this);
-  theFinder.FindInDocs((LPCWSTR)text);
+  m_finder.Show();
+  m_finder.FindInDocs((LPCWSTR)text);
   return 0;
 }
 
@@ -1169,11 +1161,6 @@ LRESULT ProjectFrame::OnStoryName(WPARAM wparam, LPARAM lparam)
   return 0;
 }
 
-CString ProjectFrame::GetSource(void)
-{
-  return ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->GetSource();
-}
-
 CString ProjectFrame::GetDisplayName(bool fullName)
 {
   CString name;
@@ -1223,6 +1210,18 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
       ((TabExtensions*)GetPanel(i)->GetTab(Panel::Tab_Extensions))->DownloadedExt(value);
     break;
   }
+}
+
+CString ProjectFrame::GetSource(void)
+{
+  return ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->GetSource();
+}
+
+void ProjectFrame::HighlightSource(const CHARRANGE& range)
+{
+  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Source));
+  ((TabSource*)panel->GetTab(Panel::Tab_Source))->Highlight(range);
+  panel->SetActiveTab(Panel::Tab_Source);
 }
 
 void ProjectFrame::OnFileNew()
@@ -1369,7 +1368,7 @@ void ProjectFrame::OnFileExportExtProject()
 
 void ProjectFrame::OnEditFindInFiles()
 {
-  theFinder.Show(this);
+  m_finder.Show();
 }
 
 void ProjectFrame::OnUpdateIfNotBusy(CCmdUI *pCmdUI)

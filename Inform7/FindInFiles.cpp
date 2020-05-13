@@ -18,7 +18,7 @@
 class FindEnumString : public CCmdTarget
 {
 public:
-  FindEnumString(FindInFiles* parent) : m_parent(parent), m_iter(0)
+  FindEnumString() : m_iter(0)
   {
   }
 
@@ -32,7 +32,6 @@ public:
   END_INTERFACE_PART(EnumString)
 
 private:
-  FindInFiles* m_parent;
   int m_iter;
 };
 
@@ -68,7 +67,7 @@ HRESULT FindEnumString::XEnumString::Next(ULONG count, LPOLESTR* strs, ULONG* pD
 
   for (ULONG i = 0; i < count; i++)
   {
-    LPCWSTR str = pThis->m_parent->GetAutoComplete(pThis->m_iter);
+    LPCWSTR str = FindInFiles::GetAutoComplete(pThis->m_iter);
     if (str)
     {
       strs[done] = (LPOLESTR)::CoTaskMemAlloc(sizeof(WCHAR) * (wcslen(str)+1));
@@ -122,9 +121,6 @@ void FindResultsCtrl::OnHeaderDividerDblClick(NMHDR* pNotifyStruct, LRESULT* res
     Default();
 }
 
-// The one and only FindInFiles object
-FindInFiles theFinder;
-
 BEGIN_MESSAGE_MAP(FindInFiles, I7BaseDialog)
   ON_WM_CLOSE()
   ON_WM_DRAWITEM()
@@ -134,13 +130,16 @@ BEGIN_MESSAGE_MAP(FindInFiles, I7BaseDialog)
   ON_BN_CLICKED(IDC_FIND_ALL, OnFindAll)
   ON_CBN_SELCHANGE(IDC_FIND_RULE, OnChangeFindRule)
   ON_NOTIFY(NM_CUSTOMDRAW, IDC_RESULTS, OnResultsDraw)
+  ON_NOTIFY(NM_DBLCLK, IDC_RESULTS, OnResultsSelect)
+  ON_NOTIFY(NM_RETURN, IDC_RESULTS, OnResultsSelect)
   ON_MESSAGE(WM_RESIZERESULTS, OnResultsResize)
 END_MESSAGE_MAP()
 
-FindInFiles::FindInFiles() : I7BaseDialog(IDD_FIND_FILES)
-{
-  m_project = NULL;
+CList<CStringW> FindInFiles::m_findHistory;
 
+FindInFiles::FindInFiles(ProjectFrame* project)
+  : I7BaseDialog(IDD_FIND_FILES), m_project(project)
+{
   m_lookSource = TRUE;
   m_lookExts = TRUE;
   m_lookDocPhrases = TRUE;
@@ -149,14 +148,34 @@ FindInFiles::FindInFiles() : I7BaseDialog(IDD_FIND_FILES)
 
   m_ignoreCase = TRUE;
   m_findRule = 0;
+  m_richText = NULL;
 }
 
-void FindInFiles::Show(ProjectFrame* project)
+FindInFiles::~FindInFiles()
+{
+  // Save the window state
+  if (GetSafeHwnd() != 0)
+  {
+    CRegKey registryKey;
+    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
+    {
+      WINDOWPLACEMENT place;
+      place.length = sizeof place;
+      GetWindowPlacement(&place);
+      registryKey.SetBinaryValue("Find in Files Placement",&place,sizeof WINDOWPLACEMENT);
+    }
+  }
+
+  delete m_richText;
+}
+
+void FindInFiles::Show(void)
 {
   if (GetSafeHwnd() == 0)
   {
-    m_richText = new RichDrawText();
-    Create(m_lpszTemplateName,CWnd::GetDesktopWindow());
+    if (m_richText == NULL)
+      m_richText = new RichDrawText();
+    Create(m_lpszTemplateName,m_project);
     theApp.SetIcon(this);
 
     bool placementSet = false;
@@ -167,28 +186,26 @@ void FindInFiles::Show(ProjectFrame* project)
       WINDOWPLACEMENT place;
       ULONG len = sizeof WINDOWPLACEMENT;
       if (registryKey.QueryBinaryValue("Find in Files Placement",&place,&len) == ERROR_SUCCESS)
+      {
         SetWindowPlacement(&place);
-      placementSet = true;
+        placementSet = true;
+      }
     }
     if (!placementSet)
-      CenterWindow(project);
+      CenterWindow(m_project);
   }
 
   if (GetSafeHwnd() != 0)
   {
-    m_project = project;
     ShowWindow(SW_SHOW);
     GetDlgItem(IDC_FIND)->SetFocus();
   }
 }
 
-void FindInFiles::Hide(ProjectFrame* project)
+void FindInFiles::Hide(void)
 {
-  if (m_project == project)
-  {
+  if (GetSafeHwnd() != 0)
     ShowWindow(SW_HIDE);
-    m_project = NULL;
-  }
 }
 
 void FindInFiles::FindInSource(LPCWSTR text)
@@ -246,6 +263,7 @@ void FindInFiles::InitInstance(void)
             m_findHistory.AddTail(historyItem);
           }
         }
+        delete[] historyPtr;
       }
     }
   }
@@ -257,20 +275,11 @@ void FindInFiles::InitInstance(void)
 
 void FindInFiles::ExitInstance(void)
 {
-  CRegKey registryKey;
-  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
+  // Save the auto complete history
+  try
   {
-    // Save the window state
-    if (GetSafeHwnd() != 0)
-    {
-      WINDOWPLACEMENT place;
-      place.length = sizeof place;
-      GetWindowPlacement(&place);
-      registryKey.SetBinaryValue("Find in Files Placement",&place,sizeof WINDOWPLACEMENT);
-    }
-
-    // Save the auto complete history
-    try
+    CRegKey registryKey;
+    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
     {
       if (m_findHistory.GetCount() > 0)
       {
@@ -290,18 +299,11 @@ void FindInFiles::ExitInstance(void)
         free(historyPtr);
       }
     }
-    catch (CException* ex)
-    {
-      ex->Delete();
-    }
   }
-
-  // Close the window
-  if (GetSafeHwnd() != 0)
-    DestroyWindow();
-  delete m_richText;
-  m_richText = NULL;
-  m_project = NULL;
+  catch (CException* ex)
+  {
+    ex->Delete();
+  }
 }
 
 LPCWSTR FindInFiles::GetAutoComplete(int index)
@@ -338,7 +340,7 @@ BOOL FindInFiles::OnInitDialog()
     // Initialize auto-completion for the find string
     if (FAILED(m_findAutoComplete.CoCreateInstance(CLSID_AutoComplete)))
       return FALSE;
-    FindEnumString* fes = new FindEnumString(this);
+    FindEnumString* fes = new FindEnumString();
     CComQIPtr<IEnumString> ies(fes->GetInterface(&IID_IEnumString));
     m_findAutoComplete->Init(m_find.GetSafeHwnd(),ies,NULL,NULL);
     m_findAutoComplete->SetOptions(ACO_AUTOSUGGEST);
@@ -370,11 +372,7 @@ void FindInFiles::OnCancel()
 void FindInFiles::OnClose()
 {
   ShowWindow(SW_HIDE);
-  if (m_project)
-  {
-    m_project->SetActiveWindow();
-    m_project = NULL;
-  }
+  m_project->SetActiveWindow();
 }
 
 void FindInFiles::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
@@ -476,9 +474,14 @@ void FindInFiles::OnSize(UINT nType, int cx, int cy)
 
 void FindInFiles::OnFindAll()
 {
-  ASSERT(m_project);
-  if (m_project == NULL)
+  // Handle the return key being pressed on the results list as a select action
+  if ((GetFocus() == &m_resultsList) && (GetKeyState(VK_RETURN) != 0))
+  {
+    int item = m_resultsList.GetNextItem(-1,LVNI_SELECTED);
+    if ((item >= 0) && (item < (int)m_results.size()))
+      m_project->HighlightSource(m_results[item].inSource);
     return;
+  }
 
   UpdateData(TRUE);
   if (m_findText.IsEmpty())
@@ -651,6 +654,14 @@ void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
   }
   break;
   }
+}
+
+void FindInFiles::OnResultsSelect(NMHDR*, LRESULT* result)
+{
+  int item = m_resultsList.GetNextItem(-1,LVNI_SELECTED);
+  if ((item >= 0) && (item < (int)m_results.size()))
+    m_project->HighlightSource(m_results[item].inSource);
+  *result = 0;
 }
 
 LRESULT FindInFiles::OnResultsResize(WPARAM, LPARAM)

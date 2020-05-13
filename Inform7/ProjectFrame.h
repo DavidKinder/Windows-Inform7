@@ -9,7 +9,7 @@
 #include "ProjectSettings.h"
 #include "FlatSplitter.h"
 #include "SearchBar.h"
-#include "SearchWindow.h"
+#include "FindInFiles.h"
 #include "MenuBar.h"
 #include "ProgressWnd.h"
 
@@ -150,9 +150,11 @@ public:
   static bool StartExistingProject(const char* dir, CWnd* parent);
   static bool StartLastProject(void);
 
-  CString GetSource(void);
   CString GetDisplayName(bool fullName);
   void SendChanged(InformApp::Changed changed, int value);
+
+  CString GetSource(void);
+  void HighlightSource(const CHARRANGE& range);
 
   enum ProcessAction
   {
@@ -243,7 +245,7 @@ protected:
   Skein m_skein;
   std::queue<PlaySkein> m_playThreads;
 
-  SearchWindow m_search;
+  FindInFiles m_finder;
   HWND m_focus;
 
   const ProjectType m_projectType;

@@ -8,7 +8,6 @@
 
 #include "AboutDialog.h"
 #include "PrefsDialog.h"
-#include "FindInFiles.h"
 #include "ReportHtml.h"
 #include "SpellCheck.h"
 #include "SplashScreen.h"
@@ -93,8 +92,8 @@ BOOL InformApp::InitInstance()
   FindExtensions();
   CreatedProcess ni = RunCensus();
 
-  // Start decoding the documentation for searching
-  theFinder.InitInstance();
+  // Initialize finding in files
+  FindInFiles::InitInstance();
   TabDoc::InitInstance();
 
   // Show the splash screen
@@ -122,8 +121,8 @@ int InformApp::ExitInstance()
   for (it = m_bitmaps.begin(); it != m_bitmaps.end(); ++it)
     delete it->second;
 
-  theFinder.ExitInstance();
   GameWindow::ExitInstance();
+  FindInFiles::ExitInstance();
   TabDoc::ExitInstance();
   SpellCheck::Finalize();
   ReportHtml::ShutWebBrowser();
@@ -137,12 +136,6 @@ BOOL InformApp::PreTranslateMessage(MSG* pMsg)
   if ((pMsg->hwnd == NULL) && DispatchThreadMessageEx(pMsg))
     return TRUE;
   CWnd* wnd = CWnd::FromHandle(pMsg->hwnd);
-
-  if (theFinder.GetSafeHwnd() != 0)
-  {
-    if ((&theFinder == wnd) || theFinder.IsChild(wnd))
-      return theFinder.PreTranslateMessage(pMsg);
-  }
 
   CArray<CFrameWnd*> frames;
   GetWindowFrames(frames);

@@ -23,18 +23,19 @@ protected:
 class FindInFiles : public I7BaseDialog
 {
 public:
-  FindInFiles();
+  FindInFiles(ProjectFrame* project);
+  ~FindInFiles();
 
-  void Show(ProjectFrame* project);
-  void Hide(ProjectFrame* project);
+  void Show(void);
+  void Hide(void);
 
   void FindInSource(LPCWSTR text);
   void FindInDocs(LPCWSTR text);
 
-  void InitInstance(void);
-  void ExitInstance(void);
+  static void InitInstance(void);
+  static void ExitInstance(void);
 
-  LPCWSTR GetAutoComplete(int index);
+  static LPCWSTR GetAutoComplete(int index);
 
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);
@@ -51,6 +52,7 @@ protected:
   afx_msg void OnFindAll();
   afx_msg void OnChangeFindRule();
   afx_msg void OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result);
+  afx_msg void OnResultsSelect(NMHDR* pNotifyStruct, LRESULT* result);
   afx_msg LRESULT OnResultsResize(WPARAM, LPARAM);
 
   void Find(const CString& text, const CString& doc, const char* type);
@@ -94,7 +96,7 @@ protected:
 
   UnicodeEdit m_find;
   CComPtr<IAutoComplete2> m_findAutoComplete;
-  CList<CStringW> m_findHistory;
+  static CList<CStringW> m_findHistory;
 
   std::vector<FindResult> m_results;
   FindResultsCtrl m_resultsList;
@@ -103,5 +105,3 @@ protected:
   CStatic m_regexHelp;
   RichDrawText* m_richText;
 };
-
-extern FindInFiles theFinder;
