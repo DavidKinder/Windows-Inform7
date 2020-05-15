@@ -123,6 +123,7 @@ void FindResultsCtrl::OnHeaderDividerDblClick(NMHDR* pNotifyStruct, LRESULT* res
 
 BEGIN_MESSAGE_MAP(FindInFiles, I7BaseDialog)
   ON_WM_CLOSE()
+  ON_WM_DESTROY()
   ON_WM_DRAWITEM()
   ON_WM_ERASEBKGND()
   ON_WM_GETMINMAXINFO()
@@ -149,24 +150,6 @@ FindInFiles::FindInFiles(ProjectFrame* project)
   m_ignoreCase = TRUE;
   m_findRule = 0;
   m_richText = NULL;
-}
-
-FindInFiles::~FindInFiles()
-{
-  // Save the window state
-  if (GetSafeHwnd() != 0)
-  {
-    CRegKey registryKey;
-    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
-    {
-      WINDOWPLACEMENT place;
-      place.length = sizeof place;
-      GetWindowPlacement(&place);
-      registryKey.SetBinaryValue("Find in Files Placement",&place,sizeof WINDOWPLACEMENT);
-    }
-  }
-
-  delete m_richText;
 }
 
 void FindInFiles::Show(void)
@@ -373,6 +356,24 @@ void FindInFiles::OnClose()
 {
   ShowWindow(SW_HIDE);
   m_project->SetActiveWindow();
+}
+
+void FindInFiles::OnDestroy()
+{
+  delete m_richText;
+  m_richText = NULL;
+
+  // Save the window state
+  CRegKey registryKey;
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
+  {
+    WINDOWPLACEMENT place;
+    place.length = sizeof place;
+    GetWindowPlacement(&place);
+    registryKey.SetBinaryValue("Find in Files Placement",&place,sizeof WINDOWPLACEMENT);
+  }
+
+  I7BaseDialog::OnDestroy();
 }
 
 void FindInFiles::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
