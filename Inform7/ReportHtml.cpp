@@ -126,6 +126,7 @@ public:
     {
       "\\Documentation",
       "\\Documentation\\doc_images",
+      "\\Documentation\\outcome_images",
       "\\Documentation\\sections",
       "\\Images"
     };
