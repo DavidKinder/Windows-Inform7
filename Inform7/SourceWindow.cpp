@@ -165,7 +165,7 @@ void SourceWindow::Highlight(CHARRANGE range, bool centre)
   if (!m_edit.IsLineShown(lines.cpMin) || !m_edit.IsLineShown(lines.cpMax))
     ShowBetween(0,0,NULL);
 
-  m_edit.Highlight(range,centre);
+  m_edit.Select(range,centre);
 }
 
 int SourceWindow::GetCurrentLine(void)

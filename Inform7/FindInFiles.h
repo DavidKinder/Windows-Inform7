@@ -55,7 +55,8 @@ protected:
   afx_msg void OnResultsSelect(NMHDR* pNotifyStruct, LRESULT* result);
   afx_msg LRESULT OnResultsResize(WPARAM, LPARAM);
 
-  void Find(const CString& text, const CString& doc, const char* type);
+  void Find(const CString& text, const char* doc, const char* path, const char* type);
+  void FindExts(void);
 
   int FindLineStart(const CString& text, int pos);
   int FindLineEnd(const CString& text, int pos);
@@ -72,13 +73,16 @@ protected:
     CStringW context;
     CHARRANGE inContext;
 
-    CString sourceSort;
-    CString sourceDocument;
-    CString sourceType;
-    CHARRANGE inSource;
+    CString sort;
+    CString doc;
+    CString path;
+    CString type;
+    CHARRANGE loc;
 
     InformApp::Colours colour;
   };
+
+  void ShowResult(const FindResult& result);
 
   ProjectFrame* m_project;
   CSize m_minSize;

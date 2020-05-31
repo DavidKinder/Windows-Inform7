@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FindInFiles.h"
+#include "ExtensionFrame.h"
 #include "ProjectFrame.h"
 #include "OSLayer.h"
 #include "RichEdit.h"
@@ -480,7 +481,7 @@ void FindInFiles::OnFindAll()
   {
     int item = m_resultsList.GetNextItem(-1,LVNI_SELECTED);
     if ((item >= 0) && (item < (int)m_results.size()))
-      m_project->HighlightSource(m_results[item].inSource);
+      ShowResult(m_results.at(item));
     return;
   }
 
@@ -509,15 +510,17 @@ void FindInFiles::OnFindAll()
   CWaitCursor wc;
   m_results.clear();
   if (m_lookSource)
-    Find(m_project->GetSource(),m_project->GetDisplayName(false),"Source");
+    Find(m_project->GetSource(),m_project->GetDisplayName(false),"","Source");
+  if (m_lookExts)
+    FindExts();
 
   // Update the results
   m_resultsList.DeleteAllItems();
   for (int i = 0; i < (int)m_results.size(); i++)
   {
     m_resultsList.InsertItem(i,"");
-    m_resultsList.SetItemText(i,1,m_results[i].sourceDocument);
-    m_resultsList.SetItemText(i,2,m_results[i].sourceType);
+    m_resultsList.SetItemText(i,1,m_results[i].doc);
+    m_resultsList.SetItemText(i,2,m_results[i].type);
   }
 
   // Resize the results columns
@@ -661,7 +664,7 @@ void FindInFiles::OnResultsSelect(NMHDR*, LRESULT* result)
 {
   int item = m_resultsList.GetNextItem(-1,LVNI_SELECTED);
   if ((item >= 0) && (item < (int)m_results.size()))
-    m_project->HighlightSource(m_results[item].inSource);
+    ShowResult(m_results.at(item));
   *result = 0;
 }
 
@@ -706,7 +709,7 @@ LRESULT FindInFiles::OnResultsResize(WPARAM, LPARAM)
   return 0;
 }
 
-void FindInFiles::Find(const CString& text, const CString& doc, const char* type)
+void FindInFiles::Find(const CString& text, const char* doc, const char* path, const char* type)
 {
   try
   {
@@ -767,10 +770,11 @@ void FindInFiles::Find(const CString& text, const CString& doc, const char* type
       result.context = context;
       result.inContext.cpMin = leading.GetLength();
       result.inContext.cpMax = leading.GetLength() + match.GetLength();
-      result.sourceDocument = doc;
-      result.sourceType = type;
-      result.inSource.cpMin = matchStart;
-      result.inSource.cpMax = matchEnd;
+      result.doc = doc;
+      result.path = path;
+      result.type = type;
+      result.loc.cpMin = matchStart;
+      result.loc.cpMax = matchEnd;
       m_results.push_back(result);
     }
   }
@@ -829,6 +833,33 @@ void FindInFiles::Find(const CString& text, const CString& doc, const char* type
       break;
     }
     MessageBox(msg,INFORM_TITLE,MB_ICONERROR|MB_OK);
+  }
+}
+
+void FindInFiles::FindExts(void)
+{
+  for (const auto& extension : theApp.GetExtensions())
+  {
+    CFile extFile;
+    if (extFile.Open(extension.path.c_str(),CFile::modeRead))
+    {
+      int utfLen = (int)extFile.GetLength();
+
+      // Read in the file as UTF-8
+      CString utfText;
+      LPSTR utfPtr = utfText.GetBufferSetLength(utfLen);
+      extFile.Read(utfPtr,utfLen);
+      utfText.ReleaseBuffer(utfLen);
+
+      // Check for a UTF-8 BOM
+      if (utfText.GetLength() >= 3)
+      {
+        if (utfText.Left(3) == "\xEF\xBB\xBF")
+          utfText = utfText.Mid(3);
+      }
+
+      Find(utfText,extension.title.c_str(),extension.path.c_str(),"Extensions");
+    }
   }
 }
 
@@ -900,7 +931,15 @@ FindInFiles::FindResult::FindResult()
 {
   inContext.cpMin = 0;
   inContext.cpMax = 0;
-  inSource.cpMin = 0;
-  inSource.cpMax = 0;
+  loc.cpMin = 0;
+  loc.cpMax = 0;
   colour = InformApp::ColourBack;
+}
+
+void FindInFiles::ShowResult(const FindResult& result)
+{
+  if (result.type == "Source")
+    m_project->SelectInSource(result.loc);
+  else if (result.type == "Extensions")
+    ExtensionFrame::StartSelect(result.path,result.loc,m_project->GetSettings());
 }

@@ -548,7 +548,7 @@ bool TabSource::Highlight(const char* url, COLORREF colour)
   return false;
 }
 
-void TabSource::Highlight(const CHARRANGE& range)
+void TabSource::Select(const CHARRANGE& range)
 {
   SetActiveTab(SrcTab_Source,false);
   m_source.Highlight(range,true);

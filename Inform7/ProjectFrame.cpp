@@ -1217,11 +1217,16 @@ CString ProjectFrame::GetSource(void)
   return ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->GetSource();
 }
 
-void ProjectFrame::HighlightSource(const CHARRANGE& range)
+void ProjectFrame::SelectInSource(const CHARRANGE& range)
 {
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Source));
-  ((TabSource*)panel->GetTab(Panel::Tab_Source))->Highlight(range);
+  ((TabSource*)panel->GetTab(Panel::Tab_Source))->Select(range);
   panel->SetActiveTab(Panel::Tab_Source);
+}
+
+const ProjectSettings& ProjectFrame::GetSettings(void)
+{
+  return m_settings;
 }
 
 void ProjectFrame::OnFileNew()

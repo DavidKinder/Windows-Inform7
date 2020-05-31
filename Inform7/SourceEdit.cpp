@@ -966,7 +966,7 @@ void SourceEdit::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results
   }
 }
 
-void SourceEdit::Highlight(CHARRANGE range, bool centre)
+void SourceEdit::Select(CHARRANGE range, bool centre)
 {
   SetFocus();
 
@@ -1011,7 +1011,7 @@ void SourceEdit::Highlight(int line, COLORREF colour, bool centre)
     if (pos >= 0)
     {
       CHARRANGE range = { pos, pos };
-      Highlight(range,centre);
+      Select(range,centre);
 
       if (colour != -1)
       {

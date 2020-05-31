@@ -31,7 +31,7 @@ public:
 
   void SetDocument(TabSource* master);
   bool Highlight(const char* url, COLORREF colour);
-  void Highlight(const CHARRANGE& range);
+  void Select(const CHARRANGE& range);
   void PasteCode(const wchar_t* code);
   void UpdateSpellCheck(void);
   bool CheckNeedReopen(const char* path);

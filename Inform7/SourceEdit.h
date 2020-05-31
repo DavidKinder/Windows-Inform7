@@ -75,7 +75,7 @@ public:
   const CTime& GetFileTime(void);
 
   void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results, const char* sourceFile);
-  void Highlight(CHARRANGE range, bool centre);
+  void Select(CHARRANGE range, bool centre);
   void Highlight(int line, COLORREF colour, bool centre);
   void ShowBetween(int startLine, int endLine);
   bool IsLineShown(int line);

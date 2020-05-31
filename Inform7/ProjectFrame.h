@@ -154,7 +154,9 @@ public:
   void SendChanged(InformApp::Changed changed, int value);
 
   CString GetSource(void);
-  void HighlightSource(const CHARRANGE& range);
+  void SelectInSource(const CHARRANGE& range);
+
+  const ProjectSettings& GetSettings(void);
 
   enum ProcessAction
   {
