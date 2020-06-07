@@ -205,6 +205,7 @@ ProjectFrame::ProjectFrame(ProjectType projectType)
     m_busy(false), m_I6debug(false), m_game(m_skein), m_finder(this), m_focus(0),
     m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0), m_splitter(true)
 {
+  m_menuBar.SetUseF10(false);
   if (m_projectType == Project_I7XP)
     m_skein.SetFile("");
 }
