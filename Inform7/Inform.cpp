@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Inform.h"
 #include "OSLayer.h"
+#include "DpiFunctions.h"
 
 #include "ProjectFrame.h"
 #include "ExtensionFrame.h"
@@ -94,7 +95,6 @@ BOOL InformApp::InitInstance()
 
   // Initialize finding in files
   FindInFiles::InitInstance();
-  TabDoc::InitInstance();
 
   // Show the splash screen
   SplashScreen splash;
@@ -123,7 +123,6 @@ int InformApp::ExitInstance()
 
   GameWindow::ExitInstance();
   FindInFiles::ExitInstance();
-  TabDoc::ExitInstance();
   SpellCheck::Finalize();
   ReportHtml::ShutWebBrowser();
   Scintilla_ReleaseResources();
@@ -1397,7 +1396,7 @@ void InformApp::SetFonts(void)
   ::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof ncm,&ncm,0);
   int fontSize = abs(MulDiv(ncm.lfMessageFont.lfHeight,72,dc->GetDeviceCaps(LOGPIXELSY)));
   fontSize = max(fontSize,9);
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 5; i++)
   {
     if (m_fontNames[i].IsEmpty())
       m_fontNames[i] = ncm.lfMessageFont.lfFaceName;
@@ -1416,6 +1415,11 @@ void InformApp::SetFonts(void)
     m_fontSizes[FontPanel] = abs(::MulDiv(fontInfo.lfHeight,72,dc->GetDeviceCaps(LOGPIXELSY)));
     m_fonts[FontPanel].CreateFontIndirect(&fontInfo);
   }
+
+  m_fontSizes[FontSmall] = min(fontSize-1,(fontSize*9)/10);
+  int minPointSize = (DPI::getSystemDPI() > 96) ? 8 : 9;
+  if (m_fontSizes[FontSmall] < minPointSize)
+    m_fontSizes[FontSmall] = min(fontSize,minPointSize);
 
   // Release the desktop device context
   wnd->ReleaseDC(dc);

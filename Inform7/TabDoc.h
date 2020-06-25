@@ -22,16 +22,13 @@ public:
   void CompileProject(CompileStage stage, int code);
   void PrefsChanged(CRegKey& key);
 
-  void Show(const char* url);
+  void Show(const char* url, LPCWSTR find = NULL);
   void SetFocusFlag(bool set);
 
   // Implementation of SearchWindow::Source
   void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results);
   void Highlight(const SearchWindow::Result& result);
   CString Description(void);
-  
-  static void InitInstance(void);
-  static void ExitInstance(void);
 
 protected:
   virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
@@ -62,34 +59,4 @@ private:
   FlatTab m_tab;
   ReportHtml m_html;
   bool m_initialised;
-
-  struct DocText
-  {
-    DocText();
-    void AddToBody(WCHAR ch);
-
-    CString section;
-    CString title;
-    CString sort;
-    CStringW body;
-    CString file;
-    int colourScheme;
-  };
-
-  static void DecodeHTML(const char* filename, int scheme);
-  static UINT BackgroundDecodeThread(LPVOID);
-
-  struct DocData
-  {
-    CCriticalSection lock;
-    bool done;
-    CArray<TabDoc::DocText*> texts;
-
-    DocData() : done(false)
-    {
-    }
-  };
-
-  static DocData* m_data;
-  static CWinThread* m_pThread;
 };

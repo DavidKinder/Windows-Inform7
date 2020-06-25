@@ -39,6 +39,7 @@ public:
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);
   virtual BOOL OnInitDialog();
+  virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
   virtual void OnCancel();
 
   DECLARE_MESSAGE_MAP()
@@ -55,8 +56,20 @@ protected:
   afx_msg void OnResultsSelect(NMHDR* pNotifyStruct, LRESULT* result);
   afx_msg LRESULT OnResultsResize(WPARAM, LPARAM);
 
-  void Find(const CString& text, const char* doc, const char* path, const char* type);
-  void FindExts(void);
+private:
+  enum FoundIn
+  {
+    FoundInSource,
+    FoundInExtension,
+    FoundInWritingWithInform,
+    FoundInRecipeBook,
+    FoundInUnknown
+  };
+
+  void Find(const CString& text, const char* doc, const char* docSort,
+    const char* path, const char* prefix, FoundIn type);
+  void FindInExtensions(void);
+  void FindInDocumentation(void);
 
   int FindLineStart(const CString& text, int pos);
   int FindLineEnd(const CString& text, int pos);
@@ -69,17 +82,20 @@ protected:
   struct FindResult
   {
     FindResult();
+    bool operator<(const FindResult& fr) const;
 
+    CString TypeName(void);
+    COLORREF Colour(void);
+
+    CStringW prefix;
     CStringW context;
     CHARRANGE inContext;
 
-    CString sort;
+    FoundIn type;
     CString doc;
+    CString docSort;
     CString path;
-    CString type;
     CHARRANGE loc;
-
-    InformApp::Colours colour;
   };
 
   void ShowResult(const FindResult& result);
@@ -108,4 +124,36 @@ protected:
 
   CStatic m_regexHelp;
   RichDrawText* m_richText;
+
+  // Caching of text extracted from the documentation
+
+  struct DocText
+  {
+    DocText(FoundIn docType);
+
+    CString section;
+    CString title;
+    CString sort;
+    CString prefix;
+    CString body; // UTF-8
+    CString link;
+    FoundIn type;
+  };
+
+  static void DecodeHTML(const char* filename, FoundIn docType);
+  static UINT BackgroundDecodeThread(LPVOID);
+
+  struct DocData
+  {
+    CCriticalSection lock;
+    bool done;
+    CArray<FindInFiles::DocText*> texts;
+
+    DocData() : done(false)
+    {
+    }
+  };
+
+  static DocData* m_data;
+  static CWinThread* m_pThread;
 };

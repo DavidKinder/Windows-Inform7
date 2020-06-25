@@ -9,6 +9,13 @@
 
 #include <regex>
 
+// XXXXDK
+// encoding of section,title,prefix,link (to example! UberCompleteClavier)
+// searching for non-ASCII? Non-ASCII in results? When selected?
+// which part of documentation to search
+// wait for census before searching extensions
+// remove SearchWindow and old implementations of search
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -224,6 +231,15 @@ void FindInFiles::FindInDocs(LPCWSTR text)
 
 void FindInFiles::InitInstance(void)
 {
+  // Start decoding the text in the documentation
+  m_data = new FindInFiles::DocData();
+  m_pThread = AfxBeginThread(BackgroundDecodeThread,NULL,THREAD_PRIORITY_NORMAL,0,CREATE_SUSPENDED);
+  if (m_pThread)
+  {
+    m_pThread->m_bAutoDelete = FALSE;
+    m_pThread->ResumeThread();
+  }
+
   try
   {
     // Read the serialized auto complete history from the registry
@@ -288,6 +304,40 @@ void FindInFiles::ExitInstance(void)
   {
     ex->Delete();
   }
+
+  // Free the memory for the text extracted from the documentation if the
+  // background thread is finished.
+  if (m_data)
+  {
+    CSingleLock lock(&(m_data->lock),TRUE);
+    if (m_data->done)
+    {
+      for (int i = 0; i < m_data->texts.GetSize(); i++)
+        delete m_data->texts[i];
+      m_data->texts.RemoveAll();
+    }
+  }
+
+  // If the background thread is still running, suspend it, otherwise clean up.
+  if (m_pThread)
+  {
+    DWORD code = 0;
+    if (::GetExitCodeThread(*m_pThread,&code))
+    {
+      if (code == STILL_ACTIVE)
+        m_pThread->SuspendThread();
+      else
+      {
+        delete m_pThread;
+        m_pThread = NULL;
+      }
+    }
+  }
+  if (m_data)
+  {
+    delete m_data;
+    m_data = NULL;
+  }
 }
 
 LPCWSTR FindInFiles::GetAutoComplete(int index)
@@ -330,6 +380,7 @@ BOOL FindInFiles::OnInitDialog()
     m_findAutoComplete->SetOptions(ACO_AUTOSUGGEST);
     fes->ExternalRelease();
 
+    m_resultsList.SetFont(theApp.GetFont(InformApp::FontSmall));
     m_resultsList.SetExtendedStyle(LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
     m_resultsList.InsertColumn(0,"Result");
     m_resultsList.InsertColumn(1,"Document");
@@ -346,6 +397,14 @@ BOOL FindInFiles::OnInitDialog()
     return TRUE;
   }
   return FALSE;
+}
+
+BOOL FindInFiles::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+  // Do nothing if an operation is in progress
+  if (theApp.IsWaitCursor())
+    return TRUE;
+  return I7BaseDialog::OnCommand(wParam,lParam);
 }
 
 void FindInFiles::OnCancel()
@@ -510,9 +569,12 @@ void FindInFiles::OnFindAll()
   CWaitCursor wc;
   m_results.clear();
   if (m_lookSource)
-    Find(m_project->GetSource(),m_project->GetDisplayName(false),"","Source");
+    Find(m_project->GetSource(),m_project->GetDisplayName(false),"","","",FoundInSource);
   if (m_lookExts)
-    FindExts();
+    FindInExtensions();
+  if (m_lookDocPhrases || m_lookDocMain || m_lookDocExamples)
+    FindInDocumentation();
+  std::sort(m_results.begin(),m_results.end());
 
   // Update the results
   m_resultsList.DeleteAllItems();
@@ -520,14 +582,14 @@ void FindInFiles::OnFindAll()
   {
     m_resultsList.InsertItem(i,"");
     m_resultsList.SetItemText(i,1,m_results[i].doc);
-    m_resultsList.SetItemText(i,2,m_results[i].type);
+    m_resultsList.SetItemText(i,2,m_results[i].TypeName());
   }
 
   // Resize the results columns
   CRect resultsRect;
-  m_resultsList.GetWindowRect(resultsRect);
-  m_resultsList.SetColumnWidth(0,(int)(0.65 * resultsRect.Width()));
-  m_resultsList.SetColumnWidth(1,(int)(0.2 * resultsRect.Width()));
+  m_resultsList.GetClientRect(resultsRect);
+  m_resultsList.SetColumnWidth(0,(int)(0.54 * resultsRect.Width()));
+  m_resultsList.SetColumnWidth(1,(int)(0.24 * resultsRect.Width()));
   m_resultsList.SetColumnWidth(2,LVSCW_AUTOSIZE_USEHEADER);
 
   // Update the found status message and what is visible
@@ -595,7 +657,7 @@ void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
   {
     // Work out the background colour
     int item = (int)custom->nmcd.dwItemSpec;
-    COLORREF backColour = theApp.GetColour(m_results[item].colour);
+    COLORREF backColour = m_results[item].Colour();
     if ((item % 2) != 0)
       backColour = Darken(backColour);
 
@@ -626,25 +688,41 @@ void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
     // Special case painting of the first column
     if (custom->iSubItem == 0)
     {
-      // Create a bold font
-      LOGFONT logFont;
-      m_resultsList.GetFont()->GetLogFont(&logFont);
-      logFont.lfWeight = FW_BOLD;
-      CFont boldFont;
-      boldFont.CreateFontIndirect(&logFont);
-
       // Get the text
+      const CStringW& prefix = m_results[item].prefix;
       const CStringW& text = m_results[item].context;
       int high1 = m_results[item].inContext.cpMin;
       int high2 = m_results[item].inContext.cpMax;
 
       // Draw the text
+      if (!prefix.IsEmpty())
+      {
+        LOGFONT logFont;
+        m_resultsList.GetFont()->GetLogFont(&logFont);
+        logFont.lfItalic = TRUE;
+        CFont italicFont;
+        italicFont.CreateFontIndirect(&logFont);
+        CFont* previousFont = dc->SelectObject(&italicFont);
+        DrawText(dc,prefix,prefix.GetLength(),textRect,DT_VCENTER|DT_NOPREFIX);
+        dc->SelectObject(previousFont);
+      }
       DrawText(dc,text.GetString(),high1,textRect,DT_VCENTER|DT_NOPREFIX);
-      dc->SelectObject(&boldFont);
-      DrawText(dc,text.GetString()+high1,high2-high1,textRect,DT_VCENTER|DT_NOPREFIX);
-      dc->SelectObject(m_resultsList.GetFont());
-      DrawText(dc,text.GetString()+high2,text.GetLength()-high2,textRect,
-        DT_VCENTER|DT_WORD_ELLIPSIS|DT_NOPREFIX);
+      if (textRect.left < textRect.right)
+      {
+        LOGFONT logFont;
+        m_resultsList.GetFont()->GetLogFont(&logFont);
+        logFont.lfWeight = FW_BOLD;
+        CFont boldFont;
+        boldFont.CreateFontIndirect(&logFont);
+        CFont* previousFont = dc->SelectObject(&boldFont);
+        DrawText(dc,text.GetString()+high1,high2-high1,textRect,DT_VCENTER|DT_NOPREFIX);
+        dc->SelectObject(previousFont);
+      }
+      if (textRect.left < textRect.right)
+      {
+        DrawText(dc,text.GetString()+high2,text.GetLength()-high2,textRect,
+          DT_VCENTER|DT_WORD_ELLIPSIS|DT_NOPREFIX);
+      }
     }
     else
     {
@@ -674,24 +752,35 @@ LRESULT FindInFiles::OnResultsResize(WPARAM, LPARAM)
   CDC* dc = m_resultsList.GetDC();
   CFont* oldFont = dc->SelectObject(m_resultsList.GetFont());
 
-  // Create a bold font
+  // Create bold and italic fonts
   LOGFONT logFont;
   m_resultsList.GetFont()->GetLogFont(&logFont);
   logFont.lfWeight = FW_BOLD;
   CFont boldFont;
   boldFont.CreateFontIndirect(&logFont);
+  logFont.lfWeight = FW_NORMAL;
+  logFont.lfItalic = TRUE;
+  CFont italicFont;
+  italicFont.CreateFontIndirect(&logFont);
 
   int colWidth = 0;
   for (int i = 0; i < (int)m_results.size(); i++)
   {
     // Get the text
+    const CStringW& prefix = m_results[i].prefix;
     const CStringW& text = m_results[i].context;
     int high1 = m_results[i].inContext.cpMin;
     int high2 = m_results[i].inContext.cpMax;
 
     // Measure the text
+    int width = 0;
+    if (!prefix.IsEmpty())
+    {
+      dc->SelectObject(&italicFont);
+      width += MeasureText(dc,prefix.GetString(),prefix.GetLength());
+    }
     dc->SelectObject(m_resultsList.GetFont());
-    int width = MeasureText(dc,text.GetString(),high1);
+    width += MeasureText(dc,text.GetString(),high1);
     dc->SelectObject(&boldFont);
     width += MeasureText(dc,text.GetString()+high1,high2-high1);
     dc->SelectObject(m_resultsList.GetFont());
@@ -709,7 +798,8 @@ LRESULT FindInFiles::OnResultsResize(WPARAM, LPARAM)
   return 0;
 }
 
-void FindInFiles::Find(const CString& text, const char* doc, const char* path, const char* type)
+void FindInFiles::Find(const CString& text, const char* doc, const char* docSort,
+  const char* path, const char* prefix, FoundIn type)
 {
   try
   {
@@ -758,8 +848,12 @@ void FindInFiles::Find(const CString& text, const char* doc, const char* path, c
       int lineStart = FindLineStart(text,matchStart);
       int lineEnd = FindLineEnd(text,matchEnd);
       CStringW leading = GetMatchRange(text,lineStart,matchStart);
+      leading.Replace(L'\t',L' ');
+      leading.TrimLeft();
       CStringW match = GetMatchRange(text,matchStart,matchEnd);
       CStringW trailing = GetMatchRange(text,matchEnd,lineEnd);
+      trailing.Replace(L'\t',L' ');
+      trailing.TrimRight();
       CStringW context = leading + match + trailing;
       context.Replace(L'\n',L' ');
       context.Replace(L'\r',L' ');
@@ -767,12 +861,14 @@ void FindInFiles::Find(const CString& text, const char* doc, const char* path, c
 
       // Store the found result
       FindResult result;
+      result.prefix = prefix;
       result.context = context;
       result.inContext.cpMin = leading.GetLength();
       result.inContext.cpMax = leading.GetLength() + match.GetLength();
-      result.doc = doc;
-      result.path = path;
       result.type = type;
+      result.doc = doc;
+      result.docSort = docSort;
+      result.path = path;
       result.loc.cpMin = matchStart;
       result.loc.cpMax = matchEnd;
       m_results.push_back(result);
@@ -836,7 +932,7 @@ void FindInFiles::Find(const CString& text, const char* doc, const char* path, c
   }
 }
 
-void FindInFiles::FindExts(void)
+void FindInFiles::FindInExtensions(void)
 {
   for (const auto& extension : theApp.GetExtensions())
   {
@@ -858,7 +954,49 @@ void FindInFiles::FindExts(void)
           utfText = utfText.Mid(3);
       }
 
-      Find(utfText,extension.title.c_str(),extension.path.c_str(),"Extensions");
+      Find(utfText,extension.title.c_str(),"",extension.path.c_str(),"",FoundInExtension);
+      theApp.RunMessagePump();
+    }
+  }
+}
+
+void FindInFiles::FindInDocumentation(void)
+{
+  // Make sure that the background thread has decoded the documentation
+  while (true)
+  {
+    {
+      CSingleLock lock(&(m_data->lock),TRUE);
+      if (m_data->done)
+        break;
+    }
+    ::Sleep(100);
+    theApp.RunMessagePump();
+  }
+
+  // Clean up after the background thread
+  if (m_pThread)
+  {
+    DWORD code = 0;
+    if (::GetExitCodeThread(*m_pThread,&code))
+    {
+      if (code != STILL_ACTIVE)
+      {
+        delete m_pThread;
+        m_pThread = NULL;
+      }
+    }
+  }
+
+  {
+    CSingleLock lock(&(m_data->lock),TRUE);
+    for (int i = 0; i < m_data->texts.GetSize(); i++)
+    {
+      DocText* docText = m_data->texts[i];
+      CString title;
+      title.Format("%s: %s",docText->section,docText->title);
+      Find(docText->body,title,docText->sort,docText->link,docText->prefix,docText->type);
+      theApp.RunMessagePump();
     }
   }
 }
@@ -929,17 +1067,336 @@ COLORREF FindInFiles::Darken(COLORREF colour)
 
 FindInFiles::FindResult::FindResult()
 {
+  type = FoundInUnknown;
   inContext.cpMin = 0;
   inContext.cpMax = 0;
   loc.cpMin = 0;
   loc.cpMax = 0;
-  colour = InformApp::ColourBack;
+}
+
+bool FindInFiles::FindResult::operator<(const FindInFiles::FindResult& fr) const
+{
+  if (type != fr.type)
+    return type < fr.type;
+  if (docSort != fr.docSort)
+    return docSort < fr.docSort;
+  if (doc != fr.doc)
+    return doc < fr.doc;
+  if (loc.cpMin != fr.loc.cpMin)
+    return loc.cpMin < fr.loc.cpMin;
+  return loc.cpMax < fr.loc.cpMax;
+}
+
+CString FindInFiles::FindResult::TypeName(void)
+{
+  switch (type)
+  {
+  case FoundInSource:
+    return "Source";
+  case FoundInExtension:
+    return "Extensions";
+  case FoundInWritingWithInform:
+    return "Writing with Inform";
+  case FoundInRecipeBook:
+    return "The Inform Recipe Book";
+  }
+  return "";
+}
+
+COLORREF FindInFiles::FindResult::Colour(void)
+{
+  if (type == FoundInRecipeBook)
+    return theApp.GetColour(InformApp::ColourContents);
+  return theApp.GetColour(InformApp::ColourBack);
 }
 
 void FindInFiles::ShowResult(const FindResult& result)
 {
-  if (result.type == "Source")
+  switch (result.type)
+  {
+  case FoundInSource:
     m_project->SelectInSource(result.loc);
-  else if (result.type == "Extensions")
+    break;
+  case FoundInExtension:
     ExtensionFrame::StartSelect(result.path,result.loc,m_project->GetSettings());
+    break;
+  case FoundInWritingWithInform:
+  case FoundInRecipeBook:
+    m_project->SelectInDocumentation(result.path,
+      result.context.Mid(result.inContext.cpMin,result.inContext.cpMax-result.inContext.cpMin));
+    break;
+  }
+}
+
+// Caching of text extracted from the documentation
+
+FindInFiles::DocData* FindInFiles::m_data = NULL;
+CWinThread* FindInFiles::m_pThread = NULL;
+
+struct Tag
+{
+  const char* name;
+  int len;
+  bool remove;
+  bool cr;
+};
+
+static struct Tag tags[] =
+{
+  "a",          1,false,false,
+  "B>",         2,false,false,
+  "b>",         2,false,false,
+  "blockquote",10,false,false,
+  "br",         2,false,true,
+  "font",       4,false,false,
+  "h",          1,false,false,
+  "i>",         2,false,false,
+  "img",        3,false,false,
+  "p>",         2,false,true,
+  "p ",         2,false,true,
+  "script",     6,true, false,
+  "table",      5,false,false,
+  "TABLE",      5,false,false,
+  "td",         2,false,false,
+  "TD",         2,false,false,
+  "tr",         2,false,false,
+  "TR",         2,false,false,
+  "div",        3,false,false,
+  "pre",        3,false,false,
+  "span",       4,true, false,
+};
+
+struct Literal
+{
+  const char* name;
+  int len;
+  char replace;
+};
+
+static struct Literal literals[] =
+{
+  "quot;",5,'\"',
+  "nbsp;",5,' ',
+  "lt;",3,'<',
+  "gt;",3,'>',
+  "amp;",4,'&',
+  "#160;",5,' ',
+};
+
+void FindInFiles::DecodeHTML(const char* filename, FoundIn docType)
+{
+  // Open the file
+  CFile htmlFile;
+  if (htmlFile.Open(filename,CFile::modeRead) == 0)
+    return;
+
+  // Read it into memory
+  CString html;
+  int len = (int)htmlFile.GetLength();
+  htmlFile.Read(html.GetBuffer(len),len);
+  html.ReleaseBuffer(len);
+
+  // Get the body text
+  int body1 = html.Find("<body");
+  if (body1 == -1)
+    return;
+  body1 = html.Find(">",body1);
+  if (body1 == -1)
+    return;
+  int body2 = html.Find("</body>");
+  if (body2 <= body1)
+    return;
+  CString bodyHtml = html.Mid(body1+1,body2-body1-1);
+
+  // Create a DocText instance for this file
+  DocText* mainDocText = new DocText(docType);
+  mainDocText->link = filename;
+  {
+    CSingleLock lock(&(m_data->lock),TRUE);
+    m_data->texts.Add(mainDocText);
+  }
+
+  // Reserve space for the main text
+  len = bodyHtml.GetLength();
+  mainDocText->body.Preallocate(len);
+
+  // Scan the text, removing markup
+  DocText* docText = mainDocText;
+  bool ignore = false;
+  bool white = false;
+  const char* p1 = bodyHtml;
+  const char* p2 = p1+len;
+  while (p1 < p2)
+  {
+    // Look for a markup element
+    if ((*p1 == '<') && (isalpha((unsigned char)(*(p1+1))) || (*(p1+1) == '/')))
+    {
+      // Check for a closing markup element
+      bool closing = false;
+      if (*(p1+1) == '/')
+      {
+        closing = true;
+        p1++;
+      }
+
+      // Scan for a known markup element
+      bool found = false;
+      int i = 0;
+      while (!found && (i < sizeof tags / sizeof tags[0]))
+      {
+        if (strncmp(p1+1,tags[i].name,tags[i].len) == 0)
+          found = true;
+        if (!found)
+          i++;
+      }
+      ASSERT(found);
+
+      // Remove the markup
+      if (found && tags[i].remove)
+      {
+        ASSERT(!closing);
+
+        // Remove everything until the closing element
+        CString search;
+        search.Format("</%s>",tags[i].name);
+        p1 = strstr(p1,search);
+        if (p1 != NULL)
+          p1 += search.GetLength()-1;
+        else
+          p1 = p2;
+      }
+      else
+      {
+        // Remove just the element
+        while ((p1 < p2) && (*p1 != '>'))
+          p1++;
+      }
+      ASSERT(*p1 == '>');
+
+      // Add a carriage return for appropriate markup
+      if (found && !closing && tags[i].cr && !ignore)
+        docText->body.AppendChar('\n');
+      white = false;
+    }
+    else if ((*p1 == '<') && (*(p1+1) == '!'))
+    {
+      // Extract metadata from comments
+      char meta1[256], meta2[256];
+      if (sscanf(p1,"<!-- SEARCH TITLE \"%[^\"]",meta1) == 1)
+        docText->title = meta1;
+      else if (sscanf(p1,"<!-- SEARCH SECTION \"%[^\"]",meta1) == 1)
+        docText->section = meta1;
+      else if (sscanf(p1,"<!-- SEARCH SORT \"%[^\"]",meta1) == 1)
+        docText->sort = meta1;
+      else if (sscanf(p1,"<!-- START EXAMPLE \"%[^\"]\" \"%[^\"]",meta1,meta2) == 2)
+      {
+        docText = new DocText(mainDocText->type);
+        docText->link.Format("%s#%s",mainDocText->link,meta2);
+        docText->prefix.Format("(Example %s) ",meta1);
+        docText->title = mainDocText->title;
+        docText->section = mainDocText->section;
+        docText->sort = mainDocText->sort;
+        docText->body.Preallocate(len/2);
+        {
+          CSingleLock lock(&(m_data->lock),TRUE);
+          m_data->texts.Add(docText);
+        }
+      }
+      else if (strncmp(p1,"<!-- END EXAMPLE -->",20) == 0)
+        docText = mainDocText;
+      else if (strncmp(p1,"<!-- START IGNORE ",18) == 0)
+        ignore = true;
+      else if (strncmp(p1,"<!-- END IGNORE -->",19) == 0)
+        ignore = false;
+
+      p1 = strstr(p1,"-->");
+      if (p1 != NULL)
+        p1 += 2;
+      else
+        p1 = p2;
+    }
+    else if (*p1 == '&')
+    {
+      // Scan for a known literal
+      bool found = false;
+      int i = 0;
+      while (!found && (i < sizeof literals / sizeof literals[0]))
+      {
+        if (strncmp(p1+1,literals[i].name,literals[i].len) == 0)
+          found = true;
+        if (!found)
+          i++;
+      }
+
+      // Replace the literal
+      if (found)
+      {
+        if (!ignore)
+          docText->body.AppendChar(literals[i].replace);
+        p1 += literals[i].len;
+      }
+      else
+      {
+        ASSERT(FALSE);
+        if (!ignore)
+          docText->body.AppendChar(*p1);
+      }
+      white = false;
+    }
+    else if (isspace((unsigned char)(*p1)))
+    {
+      if (!white && !ignore)
+        docText->body.AppendChar(' ');
+      white = true;
+    }
+    else
+    {
+      if (!ignore)
+        docText->body.AppendChar(*p1);
+      white = false;
+    }
+    p1++;
+  }
+}
+
+UINT FindInFiles::BackgroundDecodeThread(LPVOID)
+{
+  CFileFind findDoc;
+  for (int i = 0; i < 2; i++)
+  {
+    CString findPath;
+    FoundIn docType = FoundInUnknown;
+    switch (i)
+    {
+    case 0:
+      findPath.Format("%s\\Documentation\\doc*.html",theApp.GetAppDir());
+      docType = FoundInWritingWithInform;
+      break;
+    case 1:
+      findPath.Format("%s\\Documentation\\rdoc*.html",theApp.GetAppDir());
+      docType = FoundInRecipeBook;
+      break;
+    }
+
+    BOOL found = findDoc.FindFile(findPath);
+    while (found)
+    {
+      // Get the filename of a documentation file
+      found = findDoc.FindNextFile();
+
+      // Extract the title and text
+      DecodeHTML(findDoc.GetFilePath(),docType);
+    }
+  }
+
+  {
+    CSingleLock lock(&(m_data->lock),TRUE);
+    m_data->done = true;
+  }
+  TRACE("Background thread finished processing HTML for searching\n");
+  return 0;
+}
+
+FindInFiles::DocText::DocText(FoundIn docType) : type(docType)
+{
 }

@@ -1225,6 +1225,13 @@ void ProjectFrame::SelectInSource(const CHARRANGE& range)
   panel->SetActiveTab(Panel::Tab_Source);
 }
 
+void ProjectFrame::SelectInDocumentation(const char* link, LPCWSTR find)
+{
+  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
+  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(TextFormat::AnsiToUTF8(link),find);
+  panel->SetActiveTab(Panel::Tab_Doc);
+}
+
 const ProjectSettings& ProjectFrame::GetSettings(void)
 {
   return m_settings;

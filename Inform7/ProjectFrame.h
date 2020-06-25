@@ -155,6 +155,7 @@ public:
 
   CString GetSource(void);
   void SelectInSource(const CHARRANGE& range);
+  void SelectInDocumentation(const char* link, LPCWSTR find);
 
   const ProjectSettings& GetSettings(void);
 

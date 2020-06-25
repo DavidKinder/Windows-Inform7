@@ -89,7 +89,8 @@ public:
     FontSystem = 0,
     FontDisplay = 1,
     FontFixedWidth = 2,
-    FontPanel = 3
+    FontPanel = 3,
+    FontSmall = 4
   };
 
   CFont* GetFont(Fonts font);
@@ -195,9 +196,9 @@ protected:
   bool CreateHomeDirs(void);
   void SetFonts(void);
 
-  CString m_fontNames[4];
-  int m_fontSizes[4];
-  CFont m_fonts[4];
+  CString m_fontNames[5];
+  int m_fontSizes[5];
+  CFont m_fonts[5];
 
   CArray<CFrameWnd*> m_frames;
   std::map<std::string,CDibSection*> m_bitmaps;
