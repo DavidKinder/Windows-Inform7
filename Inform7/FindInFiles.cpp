@@ -10,8 +10,6 @@
 #include <regex>
 
 // XXXXDK
-// encoding of section,title,prefix,link (to example! UberCompleteClavier)
-// searching for non-ASCII? Non-ASCII in results? When selected?
 // which part of documentation to search
 // wait for census before searching extensions
 // remove SearchWindow and old implementations of search
@@ -861,7 +859,7 @@ void FindInFiles::Find(const CString& text, const char* doc, const char* docSort
 
       // Store the found result
       FindResult result;
-      result.prefix = prefix;
+      result.prefix = TextFormat::UTF8ToUnicode(prefix);
       result.context = context;
       result.inContext.cpMin = leading.GetLength();
       result.inContext.cpMax = leading.GetLength() + match.GetLength();
