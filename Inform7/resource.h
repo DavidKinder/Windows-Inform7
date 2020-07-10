@@ -200,7 +200,7 @@
 #define IDC_LOOK_SOURCE                 1095
 #define IDC_LOOK_EXTENSIONS             1096
 #define IDC_LOOK_DOC_MAIN               1097
-#define IDC_LOOK_DOC_EXAMPLES           1098
+#define IDC_LOOK_DOC_CODE               1098
 #define IDC_LOOK_DOC_PHRASES            1099
 #define IDC_IGNORE_CASE                 1100
 #define IDC_FIND_RULE                   1101

@@ -10,7 +10,6 @@
 #include <regex>
 
 // XXXXDK
-// which part of documentation to search
 // wait for census before searching extensions
 // remove SearchWindow and old implementations of search
 
@@ -151,7 +150,7 @@ FindInFiles::FindInFiles(ProjectFrame* project)
   m_lookExts = TRUE;
   m_lookDocPhrases = TRUE;
   m_lookDocMain = TRUE;
-  m_lookDocExamples = TRUE;
+  m_lookDocCode = TRUE;
 
   m_ignoreCase = TRUE;
   m_findRule = 0;
@@ -204,7 +203,7 @@ void FindInFiles::FindInSource(LPCWSTR text)
   m_lookExts = FALSE;
   m_lookDocPhrases = FALSE;
   m_lookDocMain = FALSE;
-  m_lookDocExamples = FALSE;
+  m_lookDocCode = FALSE;
   m_ignoreCase = TRUE;
   m_findRule = 0;
   m_findText = text;
@@ -219,7 +218,7 @@ void FindInFiles::FindInDocs(LPCWSTR text)
   m_lookExts = FALSE;
   m_lookDocPhrases = TRUE;
   m_lookDocMain = TRUE;
-  m_lookDocExamples = TRUE;
+  m_lookDocCode = TRUE;
   m_ignoreCase = TRUE;
   m_findRule = 0;
   m_findText = text;
@@ -359,7 +358,7 @@ void FindInFiles::DoDataExchange(CDataExchange* pDX)
   DDX_Check(pDX,IDC_LOOK_EXTENSIONS,m_lookExts);
   DDX_Check(pDX,IDC_LOOK_DOC_PHRASES,m_lookDocPhrases);
   DDX_Check(pDX,IDC_LOOK_DOC_MAIN,m_lookDocMain);
-  DDX_Check(pDX,IDC_LOOK_DOC_EXAMPLES,m_lookDocExamples);
+  DDX_Check(pDX,IDC_LOOK_DOC_CODE,m_lookDocCode);
   DDX_Check(pDX,IDC_IGNORE_CASE,m_ignoreCase);
   DDX_CBIndex(pDX,IDC_FIND_RULE,m_findRule);
   DDX_Control(pDX, IDC_RESULTS, m_resultsList);
@@ -570,7 +569,7 @@ void FindInFiles::OnFindAll()
     Find(m_project->GetSource(),m_project->GetDisplayName(false),"","","",FoundInSource);
   if (m_lookExts)
     FindInExtensions();
-  if (m_lookDocPhrases || m_lookDocMain || m_lookDocExamples)
+  if (m_lookDocMain || m_lookDocPhrases || m_lookDocCode)
     FindInDocumentation();
   std::sort(m_results.begin(),m_results.end());
 
@@ -990,10 +989,51 @@ void FindInFiles::FindInDocumentation(void)
     CSingleLock lock(&(m_data->lock),TRUE);
     for (int i = 0; i < m_data->texts.GetSize(); i++)
     {
+      // Find any matches in this documentation page
       DocText* docText = m_data->texts[i];
       CString title;
       title.Format("%s: %s",docText->section,docText->title);
+      size_t resultsIndex = m_results.size();
       Find(docText->body,title,docText->sort,docText->link,docText->prefix,docText->type);
+
+      // Check that any matches are in appropriate sections
+      while (resultsIndex < m_results.size())
+      {
+        int start = m_results[resultsIndex].loc.cpMin;
+        CString phraseId = GetSectionId(start,docText->phraseSections);
+        CString codeId = GetSectionId(start,docText->codeSections);
+
+        bool keep = false;
+        CString linkId;
+        if (m_lookDocMain && phraseId.IsEmpty() && codeId.IsEmpty())
+          keep = true;
+        else if (m_lookDocPhrases && !phraseId.IsEmpty())
+        {
+          keep = true;
+          linkId = phraseId;
+        }
+        else if (m_lookDocCode && !codeId.IsEmpty())
+        {
+          keep = true;
+          linkId = codeId;
+        }
+
+        if (keep)
+        {
+          if (!linkId.IsEmpty())
+          {
+            CString baseLink = m_results[resultsIndex].path;
+            int endPos = baseLink.ReverseFind('#');
+            if (endPos > 0)
+              baseLink = baseLink.Left(endPos);
+            m_results[resultsIndex].path.Format("%s#%s",baseLink,linkId);
+          }
+          resultsIndex++;
+        }
+        else
+          m_results.erase(m_results.begin() + resultsIndex);
+      }
+
       theApp.RunMessagePump();
     }
   }
@@ -1222,6 +1262,10 @@ void FindInFiles::DecodeHTML(const char* filename, FoundIn docType)
   DocText* docText = mainDocText;
   bool ignore = false;
   bool white = false;
+  int codeStart = 0;
+  int phraseStart = 0;
+  CString codeAnchor;
+  CString phraseAnchor;
   const char* p1 = bodyHtml;
   const char* p2 = p1+len;
   while (p1 < p2)
@@ -1306,6 +1350,26 @@ void FindInFiles::DecodeHTML(const char* filename, FoundIn docType)
         ignore = true;
       else if (strncmp(p1,"<!-- END IGNORE -->",19) == 0)
         ignore = false;
+      else if (sscanf(p1,"<!-- START CODE \"%[^\"]",meta1) == 1)
+      {
+        codeStart = docText->body.GetLength();
+        codeAnchor = meta1;
+      }
+      else if (strncmp(p1,"<!-- END CODE -->",17) == 0)
+      {
+        int codeEnd = docText->body.GetLength();
+        docText->codeSections.push_back(DocSection(codeStart,codeEnd,codeAnchor));
+      }
+      else if (sscanf(p1,"<!-- START PHRASE \"%[^\"]",meta1) == 1)
+      {
+        phraseStart = docText->body.GetLength();
+        phraseAnchor = meta1;
+      }
+      else if (strncmp(p1,"<!-- END PHRASE -->",19) == 0)
+      {
+        int phraseEnd = docText->body.GetLength();
+        docText->phraseSections.push_back(DocSection(phraseStart,phraseEnd,phraseAnchor));
+      }
 
       p1 = strstr(p1,"-->");
       if (p1 != NULL)
@@ -1393,6 +1457,23 @@ UINT FindInFiles::BackgroundDecodeThread(LPVOID)
   }
   TRACE("Background thread finished processing HTML for searching\n");
   return 0;
+}
+
+CString FindInFiles::GetSectionId(int pos, const std::vector<DocSection>& sections)
+{
+  for (auto it = sections.begin(); it != sections.end(); ++it)
+  {
+    if (pos < it->start)
+      break;
+    if ((pos >= it->start) && (pos < it->end))
+      return it->id;
+  }
+  return "";
+}
+
+FindInFiles::DocSection::DocSection(int start_, int end_, const char* id_)
+  : start(start_), end(end_), id(id_)
+{
 }
 
 FindInFiles::DocText::DocText(FoundIn docType) : type(docType)

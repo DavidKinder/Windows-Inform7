@@ -109,7 +109,7 @@ private:
   int m_lookExts;
   int m_lookDocPhrases;
   int m_lookDocMain;
-  int m_lookDocExamples;
+  int m_lookDocCode;
 
   int m_ignoreCase;
   int m_findRule;
@@ -127,6 +127,15 @@ private:
 
   // Caching of text extracted from the documentation
 
+  struct DocSection
+  {
+    DocSection(int start_, int end_, const char* id_);
+
+    int start;
+    int end;
+    CString id;
+  };
+
   struct DocText
   {
     DocText(FoundIn docType);
@@ -138,10 +147,12 @@ private:
     CString body; // UTF-8
     CString link;
     FoundIn type;
+    std::vector<DocSection> codeSections, phraseSections;
   };
 
   static void DecodeHTML(const char* filename, FoundIn docType);
   static UINT BackgroundDecodeThread(LPVOID);
+  static CString GetSectionId(int pos, const std::vector<DocSection>& sections);
 
   struct DocData
   {
