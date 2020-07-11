@@ -2,10 +2,9 @@
 
 #include "TabBase.h"
 #include "ReportHtml.h"
-#include "SearchWindow.h"
 #include "FlatTab.h"
 
-class TabDoc : public TabBase, public SearchWindow::Source
+class TabDoc : public TabBase
 {
   DECLARE_DYNAMIC(TabDoc)
 
@@ -24,11 +23,6 @@ public:
 
   void Show(const char* url, LPCWSTR find = NULL);
   void SetFocusFlag(bool set);
-
-  // Implementation of SearchWindow::Source
-  void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results);
-  void Highlight(const SearchWindow::Result& result);
-  CString Description(void);
 
 protected:
   virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);

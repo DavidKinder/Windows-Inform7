@@ -926,46 +926,6 @@ const CTime& SourceEdit::GetFileTime(void)
   return m_fileTime;
 }
 
-void SourceEdit::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results, const char* sourceFile)
-{
-  int len = (int)CallEdit(SCI_GETLENGTH);
-  TextToFind find;
-  find.chrg.cpMin = 0;
-  find.chrg.cpMax = len;
-  CString textUtf = TextFormat::UnicodeToUTF8(text);
-  find.lpstrText = (char*)(LPCSTR)textUtf;
-
-  while (true)
-  {
-    // Search for the text
-    if (CallEdit(SCI_FINDTEXT,0,(sptr_t)&find) == -1)
-      return;
-
-    // Get the surrounding text as context
-    CStringW leading = GetTextRange(find.chrgText.cpMin-4,find.chrgText.cpMin,len);
-    CStringW match = GetTextRange(find.chrgText.cpMin,find.chrgText.cpMax,len);
-    CStringW trailing = GetTextRange(find.chrgText.cpMax,find.chrgText.cpMax+32,len);
-    CStringW context = leading + match + trailing;
-    context.Replace(L'\n',L' ');
-    context.Replace(L'\r',L' ');
-    context.Replace(L'\t',L' ');
-
-    // Store the found result
-    SearchWindow::Result result;
-    result.context = context;
-    result.inContext.cpMin = leading.GetLength();
-    result.inContext.cpMax = leading.GetLength() + match.GetLength();
-    result.sourceLocation = sourceFile;
-    result.inSource.cpMin = find.chrgText.cpMin;
-    result.inSource.cpMax = find.chrgText.cpMax;
-    results.push_back(result);
-
-    // Look for the next match
-    find.chrg.cpMin = find.chrgText.cpMax;
-    theApp.RunMessagePump();
-  }
-}
-
 void SourceEdit::Select(CHARRANGE range, bool centre)
 {
   SetFocus();

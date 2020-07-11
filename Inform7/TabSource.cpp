@@ -598,20 +598,3 @@ void TabSource::UpdateElasticTabStops(void)
   SourceEdit& edit = m_source.GetEdit();
   edit.SetElasticTabStops(edit.GetElasticTabStops());
 }
-
-void TabSource::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
-{
-  m_source.GetEdit().Search(text,results,m_sourceFile);
-}
-
-void TabSource::Highlight(const SearchWindow::Result& result)
-{
-  SetActiveTab(SrcTab_Source,false);
-  m_source.Highlight(result.inSource,true);
-  Panel::GetPanel(this)->SetActiveTab(Panel::Tab_Source);
-}
-
-CString TabSource::Description(void)
-{
-  return "source";
-}

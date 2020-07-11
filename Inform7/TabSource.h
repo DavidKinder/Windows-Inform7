@@ -3,10 +3,9 @@
 #include "TabBase.h"
 #include "FlatTab.h"
 #include "ContentsWindow.h"
-#include "SearchWindow.h"
 #include "SourceWindow.h"
 
-class TabSource : public TabBase, public SearchWindow::Source
+class TabSource : public TabBase
 {
   DECLARE_DYNAMIC(TabSource)
 
@@ -38,11 +37,6 @@ public:
   CTime GetFileTimestamp(const char* path);
   void UpdateElasticTabStops(void);
   CString GetSource(void);
-
-  // Implementation of SearchWindow::Source
-  void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results);
-  void Highlight(const SearchWindow::Result& result);
-  CString Description(void);
 
 protected:
   DECLARE_MESSAGE_MAP()

@@ -116,30 +116,6 @@ void TabDoc::SetFocusFlag(bool set)
   m_html.SetFocusFlag(set);
 }
 
-static bool SortBySource(SearchWindow::Result& result1, SearchWindow::Result& result2)
-{
-  return result1.sourceSort < result2.sourceSort;
-}
-
-void TabDoc::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
-{
-}
-
-void TabDoc::Highlight(const SearchWindow::Result& result)
-{
-  std::wstring search = result.context.substr(
-    result.inContext.cpMin,result.inContext.cpMax-result.inContext.cpMin);
-  m_html.Navigate(TextFormat::AnsiToUTF8(result.sourceFile.c_str()),false,search.c_str());
-  m_initialised = true;
-  UpdateActiveTab();
-  Panel::GetPanel(this)->SetActiveTab(Panel::Tab_Doc);
-}
-
-CString TabDoc::Description(void)
-{
-  return "documentation";
-}
-
 BOOL TabDoc::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 {
   // Pick up a tab change
