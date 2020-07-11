@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "AboutDialog.h"
 #include "Inform.h"
-#include "OSLayer.h"
-#include "DpiFunctions.h"
 #include "Build.h"
 
 #ifdef _DEBUG
@@ -149,20 +147,13 @@ BOOL AboutDialog::OnInitDialog()
     "\\tab and others\\par"
     "\\par"
     "\\b Elastic tabstops invented by\\b0\\par"
-    "\\tab Nick Gravgaard}";
+    "\\tab Nick Gravgaard";
 
   // Start with only as much text as should be visible
-  {
-    CString creditsRTF;
-    creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s",
-      (theApp.GetFontSize(InformApp::FontSystem)*2)+2,text1);
-    CMemFile creditsFile((BYTE*)(LPCSTR)creditsRTF,creditsRTF.GetLength());
-    EDITSTREAM stream;
-    stream.dwCookie = (DWORD_PTR)&creditsFile;
-    stream.dwError = 0;
-    stream.pfnCallback = FileReadCallback;
-    m_credits.StreamIn(SF_RTF,stream);
-  }
+  CString creditsRTF;
+  creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s}}",
+    (theApp.GetFontSize(InformApp::FontSystem)*2)+2,text1);
+  m_credits.SetTextRTF(creditsRTF);
 
   // Ask the control how big the credits text is
   LayoutControls();
@@ -181,17 +172,9 @@ BOOL AboutDialog::OnInitDialog()
   MoveWindow(dlgRect);
 
   // Show all the credits text
-  {
-    CString creditsRTF;
-    creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s%s",
-      (theApp.GetFontSize(InformApp::FontSystem)*2)+2,text1,text2);
-    CMemFile creditsFile((BYTE*)(LPCSTR)creditsRTF,creditsRTF.GetLength());
-    EDITSTREAM stream;
-    stream.dwCookie = (DWORD_PTR)&creditsFile;
-    stream.dwError = 0;
-    stream.pfnCallback = FileReadCallback;
-    m_credits.StreamIn(SF_RTF,stream);
-  }
+  creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s%s}}",
+    (theApp.GetFontSize(InformApp::FontSystem)*2)+2,text1,text2);
+  m_credits.SetTextRTF(creditsRTF);
 
   m_initialSize = dlgRect.Size();
   return TRUE;
@@ -199,40 +182,7 @@ BOOL AboutDialog::OnInitDialog()
 
 BOOL AboutDialog::OnEraseBkgnd(CDC* dc)
 {
-  int dpi = DPI::getWindowDPI(this);
-
-  CRect dlgRect, creditsRect;
-  GetClientRect(dlgRect);
-  m_credits.GetWindowRect(creditsRect);
-  ScreenToClient(creditsRect);
-
-  // Don't erase behind the credits edit control, as that will make it flicker
-  COLORREF back = ::GetSysColor(COLOR_BTNFACE);
-  dc->FillSolidRect(CRect(0,0,dlgRect.right,creditsRect.top),back);
-  dc->FillSolidRect(CRect(0,creditsRect.bottom,dlgRect.right,dlgRect.bottom),back);
-  dc->FillSolidRect(CRect(0,0,creditsRect.left,dlgRect.bottom),back);
-  dc->FillSolidRect(CRect(creditsRect.right,0,dlgRect.right,dlgRect.bottom),back);
-
-  CRect gripRect = dlgRect;
-  gripRect.left = gripRect.right - DPI::getSystemMetrics(SM_CXHSCROLL,dpi);
-  gripRect.top = gripRect.bottom - DPI::getSystemMetrics(SM_CYVSCROLL,dpi);
-
-  // Draw a gripper to show that the dialog can be resized
-  bool drawn = false;
-  if (theOS.IsAppThemed())
-  {
-    // Open the status bar theme
-    HTHEME theme = theOS.OpenThemeData(this,L"Status");
-    if (theme)
-    {
-      theOS.DrawThemeBackground(theme,dc,SP_GRIPPER,0,gripRect);
-      theOS.CloseThemeData(theme);
-      drawn = true;
-    }
-  }
-  if (!drawn)
-    dc->DrawFrameControl(gripRect,DFC_SCROLL,DFCS_SCROLLSIZEGRIP);
-
+  EraseWithGripper(dc);
   return TRUE;
 }
 

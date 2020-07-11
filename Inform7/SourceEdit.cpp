@@ -7,6 +7,8 @@
 #include "OSLayer.h"
 #include "DpiFunctions.h"
 
+#include "Platform.h"
+#include "Scintilla.h"
 #include "SciLexer.h"
 
 #ifdef _DEBUG
@@ -893,18 +895,11 @@ void SourceEdit::OpenFile(CFile* file)
 
 bool SourceEdit::SaveFile(CFile* file)
 {
-  // Get the contents of the document as UTF-8
-  CallEdit(SCI_CONVERTEOLS,SC_EOL_LF);
-  int len = (int)CallEdit(SCI_GETLENGTH);
-  CString utfText;
-  LPSTR utfPtr = utfText.GetBufferSetLength(len+1);
-  CallEdit(SCI_GETTEXT,len+1,(sptr_t)utfPtr);
-  utfText.ReleaseBuffer();
-
   // Write out the document contents
   bool success = true;
   try
   {
+    CString utfText = GetSource();
     file->Write(utfText,utfText.GetLength());
     CallEdit(SCI_SETSAVEPOINT);
   }
@@ -931,49 +926,7 @@ const CTime& SourceEdit::GetFileTime(void)
   return m_fileTime;
 }
 
-void SourceEdit::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results, const char* sourceFile)
-{
-  CWaitCursor wc;
-
-  int len = (int)CallEdit(SCI_GETLENGTH);
-  TextToFind find;
-  find.chrg.cpMin = 0;
-  find.chrg.cpMax = len;
-  CString textUtf = TextFormat::UnicodeToUTF8(text);
-  find.lpstrText = (char*)(LPCSTR)textUtf;
-
-  while (true)
-  {
-    // Search for the text
-    if (CallEdit(SCI_FINDTEXT,0,(sptr_t)&find) == -1)
-      return;
-
-    // Get the surrounding text as context
-    CStringW leading = GetTextRange(find.chrgText.cpMin-4,find.chrgText.cpMin,len);
-    CStringW match = GetTextRange(find.chrgText.cpMin,find.chrgText.cpMax,len);
-    CStringW trailing = GetTextRange(find.chrgText.cpMax,find.chrgText.cpMax+32,len);
-    CStringW context = leading + match + trailing;
-    context.Replace(L'\n',L' ');
-    context.Replace(L'\r',L' ');
-    context.Replace(L'\t',L' ');
-
-    // Store the found result
-    SearchWindow::Result result;
-    result.context = context;
-    result.inContext.cpMin = leading.GetLength();
-    result.inContext.cpMax = leading.GetLength() + match.GetLength();
-    result.sourceLocation = sourceFile;
-    result.inSource.cpMin = find.chrgText.cpMin;
-    result.inSource.cpMax = find.chrgText.cpMax;
-    results.push_back(result);
-
-    // Look for the next match
-    find.chrg.cpMin = find.chrgText.cpMax;
-    theApp.RunMessagePump();
-  }
-}
-
-void SourceEdit::Highlight(CHARRANGE range, bool centre)
+void SourceEdit::Select(CHARRANGE range, bool centre)
 {
   SetFocus();
 
@@ -1018,7 +971,7 @@ void SourceEdit::Highlight(int line, COLORREF colour, bool centre)
     if (pos >= 0)
     {
       CHARRANGE range = { pos, pos };
-      Highlight(range,centre);
+      Select(range,centre);
 
       if (colour != -1)
       {
@@ -1344,6 +1297,18 @@ CHARRANGE SourceEdit::GetRangeLines(CHARRANGE range)
   lines.cpMin = (int)CallEdit(SCI_LINEFROMPOSITION,range.cpMin);
   lines.cpMax = (int)CallEdit(SCI_LINEFROMPOSITION,range.cpMax);
   return lines;
+}
+
+CString SourceEdit::GetSource(void)
+{
+  // Get the contents of the document as UTF-8
+  CallEdit(SCI_CONVERTEOLS,SC_EOL_LF);
+  int len = (int)CallEdit(SCI_GETLENGTH);
+  CString utfText;
+  LPSTR utfPtr = utfText.GetBufferSetLength(len+1);
+  CallEdit(SCI_GETTEXT,len+1,(sptr_t)utfPtr);
+  utfText.ReleaseBuffer();
+  return utfText;
 }
 
 extern "C" sptr_t __stdcall Scintilla_DirectFunction(sptr_t, UINT, uptr_t, sptr_t);

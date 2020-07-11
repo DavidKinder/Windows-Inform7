@@ -9,7 +9,7 @@
 #include "ProjectSettings.h"
 #include "FlatSplitter.h"
 #include "SearchBar.h"
-#include "SearchWindow.h"
+#include "FindInFiles.h"
 #include "MenuBar.h"
 #include "ProgressWnd.h"
 
@@ -99,6 +99,8 @@ protected:
   afx_msg void OnFileImportSkein();
   afx_msg void OnFileExportExtProject();
 
+  afx_msg void OnEditFindInFiles();
+
   afx_msg void OnUpdateIfNotBusy(CCmdUI *pCmdUI);
   afx_msg void OnUpdateCompile(CCmdUI *pCmdUI);
   afx_msg void OnPlayGo();
@@ -151,12 +153,19 @@ public:
   CString GetDisplayName(bool fullName);
   void SendChanged(InformApp::Changed changed, int value);
 
+  CString GetSource(void);
+  void SelectInSource(const CHARRANGE& range);
+  void SelectInDocumentation(const char* link, LPCWSTR find);
+
+  const ProjectSettings& GetSettings(void);
+
   enum ProcessAction
   {
     ProcessNoAction,
     ProcessHelpExtensions
   };
   void MonitorProcess(InformApp::CreatedProcess cp, ProcessAction action, LPCSTR name);
+  bool IsProcessRunning(LPCSTR name);
 
 protected:
   // Implementation of InformApp::OutputSink
@@ -216,7 +225,6 @@ protected:
   int ChoosePanel(Panel::Tabs newTab);
 
   bool LoadToolBar(void);
-  CRect GetInitialSearchRect(Panel::Tabs searchTab);
 
   enum SkeinAction
   {
@@ -241,7 +249,7 @@ protected:
   Skein m_skein;
   std::queue<PlaySkein> m_playThreads;
 
-  SearchWindow m_search;
+  FindInFiles m_finder;
   HWND m_focus;
 
   const ProjectType m_projectType;

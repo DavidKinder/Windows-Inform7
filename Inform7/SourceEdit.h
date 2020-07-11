@@ -1,13 +1,9 @@
 #pragma once
 
 #include "EditFind.h"
-#include "SearchWindow.h"
 #include "SpellCheck.h"
 #include "SourceLexer.h"
 #include "SourceSettings.h"
-
-#include "Platform.h"
-#include "Scintilla.h"
 
 class SourceEdit : public CWnd
 {
@@ -77,8 +73,7 @@ public:
   bool IsEdited(void);
   const CTime& GetFileTime(void);
 
-  void Search(LPCWSTR text, std::vector<SearchWindow::Result>& results, const char* sourceFile);
-  void Highlight(CHARRANGE range, bool centre);
+  void Select(CHARRANGE range, bool centre);
   void Highlight(int line, COLORREF colour, bool centre);
   void ShowBetween(int startLine, int endLine);
   bool IsLineShown(int line);
@@ -107,7 +102,7 @@ public:
   int GetLineHeight(void);
   CHARRANGE GetRangeLines(CHARRANGE range);
 
-  void ConvertPasteText(LPDATAOBJECT obj, wchar_t* uptr, unsigned int ulen, char*& ptr, unsigned int& len);
+  CString GetSource(void);
 
 private:
   LONG_PTR CallEdit(UINT msg, DWORD wp = 0, LONG_PTR lp = 0);
@@ -119,7 +114,7 @@ private:
   void SetSourceStyle(int style, int boldItalic, bool underline, int size);
 
 private:
-  sptr_t m_editPtr;
+  LONG_PTR m_editPtr;
   CTime m_fileTime;
 
   int m_marker;

@@ -184,7 +184,6 @@ void TabResults::CompileProject(CompileStage stage, int code)
     switch (code)
     {
     case 0:
-    case 1:
       // Show the cBlorb status report
       m_report.Navigate(TextFormat::AnsiToUTF8(m_projectDir+CBLORB_FILE),false);
       SetActiveTab(ResTab_Report,false);

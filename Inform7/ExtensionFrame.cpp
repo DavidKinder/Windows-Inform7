@@ -402,6 +402,34 @@ bool ExtensionFrame::StartHighlight(const char* url, COLORREF colour, const Proj
   return false;
 }
 
+void ExtensionFrame::StartSelect(const char* path, const CHARRANGE& range, const ProjectSettings& settings)
+{
+  // Check if the extension is already open
+  CArray<CFrameWnd*> frames;
+  theApp.GetWindowFrames(frames);
+  for (int i = 0; i < frames.GetSize(); i++)
+  {
+    if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
+    {
+      ExtensionFrame* extFrame = (ExtensionFrame*)frames[i];
+      if (extFrame->m_extension.CompareNoCase(path) == 0)
+      {
+        // Show the window with the highlight
+        extFrame->m_edit.Select(range,true);
+        extFrame->ShowWindow(SW_SHOW);
+        return;
+      }
+    }
+  }
+
+  // Open a new window
+  ExtensionFrame* extFrame = NewFrame(settings);
+  extFrame->OpenFile(path);
+
+  // Select the text
+  extFrame->m_edit.Select(range,true);
+}
+
 void ExtensionFrame::InstallExtensions(CFrameWnd* parent)
 {
   // Ask the user for one or more extensions
@@ -601,7 +629,7 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
     CWaitCursor wc;
 
     CStringW lastExt;
-    int installed = 0, total = urls->GetSize();
+    int installed = 0, total = (int)urls->GetSize();
     for (int i = 0; i < total; i++)
     {
       SetDownloadProgress(parent,total,i,installed);

@@ -111,6 +111,8 @@ BEGIN
             MENUITEM "Find &Previous\tShift+F8",    ID_EDIT_FIND_PREV
             MENUITEM "&Use Selection for Find",     ID_EDIT_USE_SEL
             MENUITEM "&Scroll to Selection",        ID_EDIT_SCROLL
+            MENUITEM SEPARATOR
+            MENUITEM "Find &in Files\tF10",         ID_EDIT_FIND_IN_FILES
         END
         MENUITEM "Check &Spelling...\tCtrl+G",  ID_EDIT_SPELLING
         MENUITEM SEPARATOR
@@ -299,6 +301,7 @@ BEGIN
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
     "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
     "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    VK_F10,         ID_EDIT_FIND_IN_FILES,  VIRTKEY, NOINVERT
     VK_F8,          ID_EDIT_FIND_NEXT,      VIRTKEY, NOINVERT
     VK_F8,          ID_EDIT_FIND_PREV,      VIRTKEY, SHIFT, NOINVERT
     "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
@@ -312,38 +315,38 @@ BEGIN
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_2,       ID_FORMAT_COMMENT,      VIRTKEY, ALT, NOINVERT
+    "M",            ID_FORMAT_RENUMBER,     VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_4,       ID_FORMAT_SHIFT_LEFT,   VIRTKEY, ALT, NOINVERT
+    VK_OEM_6,       ID_FORMAT_SHIFT_RIGHT,  VIRTKEY, ALT, NOINVERT
+    VK_OEM_2,       ID_FORMAT_UNCOMMENT,    VIRTKEY, SHIFT, ALT, NOINVERT
+    VK_F4,          ID_HEAD_ENTIRE,         VIRTKEY, NOINVERT
     VK_F1,          ID_HELP_INDEX,          VIRTKEY, NOINVERT
     VK_F5,          ID_PLAY_GO,             VIRTKEY, NOINVERT
     VK_F7,          ID_PLAY_REFRESH,        VIRTKEY, NOINVERT
     VK_F9,          ID_PLAY_REPLAY,         VIRTKEY, NOINVERT
     VK_F3,          ID_SEARCH_DOCS,         VIRTKEY, NOINVERT
     VK_F2,          ID_SEARCH_SOURCE,       VIRTKEY, NOINVERT
-    "3",            ID_WINDOW_INDEX_HOME,   VIRTKEY, CONTROL, NOINVERT
-    "4",            ID_WINDOW_INDEX_CONTENTS, VIRTKEY, CONTROL, NOINVERT
     "5",            ID_WINDOW_INDEX_ACTIONS, VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_WINDOW_INDEX_CONTENTS, VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_WINDOW_INDEX_HOME,   VIRTKEY, CONTROL, NOINVERT
     "6",            ID_WINDOW_INDEX_KINDS,  VIRTKEY, CONTROL, NOINVERT
     "7",            ID_WINDOW_INDEX_PHRASES, VIRTKEY, CONTROL, NOINVERT
     "8",            ID_WINDOW_INDEX_RULES,  VIRTKEY, CONTROL, NOINVERT
     "9",            ID_WINDOW_INDEX_SCENES, VIRTKEY, CONTROL, NOINVERT
     "0",            ID_WINDOW_INDEX_WORLD,  VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_WINDOW_LEFTPANE,     VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_WINDOW_RIGHTPANE,    VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_WINDOW_SWITCH,       VIRTKEY, NOINVERT
     VK_F7,          ID_WINDOW_TAB_DOCUMENTATION, VIRTKEY, CONTROL, NOINVERT
-    VK_F2,          ID_WINDOW_TAB_RESULTS,  VIRTKEY, CONTROL, NOINVERT
-    VK_F6,          ID_WINDOW_TAB_STORY,    VIRTKEY, CONTROL, NOINVERT
-    VK_F3,          ID_WINDOW_TAB_INDEX,    VIRTKEY, CONTROL, NOINVERT
     VK_F8,          ID_WINDOW_TAB_EXTENSIONS, VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          ID_WINDOW_TAB_INDEX,    VIRTKEY, CONTROL, NOINVERT
+    VK_F2,          ID_WINDOW_TAB_RESULTS,  VIRTKEY, CONTROL, NOINVERT
     VK_F9,          ID_WINDOW_TAB_SETTINGS, VIRTKEY, CONTROL, NOINVERT
     VK_F4,          ID_WINDOW_TAB_SKEIN,    VIRTKEY, CONTROL, NOINVERT
     VK_F1,          ID_WINDOW_TAB_SOURCE,   VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_WINDOW_TAB_STORY,    VIRTKEY, CONTROL, NOINVERT
     VK_F5,          ID_WINDOW_TAB_TRANSCRIPT, VIRTKEY, CONTROL, NOINVERT
-    VK_F4,          ID_HEAD_ENTIRE,         VIRTKEY, NOINVERT
-    VK_OEM_6,       ID_FORMAT_SHIFT_RIGHT,  VIRTKEY, ALT, NOINVERT
-    VK_OEM_4,       ID_FORMAT_SHIFT_LEFT,   VIRTKEY, ALT, NOINVERT
-    VK_OEM_2,       ID_FORMAT_COMMENT,      VIRTKEY, ALT, NOINVERT
-    VK_OEM_2,       ID_FORMAT_UNCOMMENT,    VIRTKEY, SHIFT, ALT, NOINVERT
-    "M",            ID_FORMAT_RENUMBER,     VIRTKEY, CONTROL, NOINVERT
-    "1",            ID_WINDOW_LEFTPANE,     VIRTKEY, CONTROL, NOINVERT
-    "2",            ID_WINDOW_RIGHTPANE,    VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_EXTFRAME ACCELERATORS
@@ -553,6 +556,29 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,122,158,10
 END
 
+IDD_FIND_FILES DIALOGEX 0, 0, 399, 262
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Find in Files"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Find:",IDC_STATIC,7,6,18,8
+    EDITTEXT        IDC_FIND,29,5,288,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Find &All",IDC_FIND_ALL,327,5,65,12
+    GROUPBOX        "Where to look",IDC_STATIC,7,20,170,69
+    CONTROL         "&Source",IDC_LOOK_SOURCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,30,39,10
+    CONTROL         "Installed E&xtensions",IDC_LOOK_EXTENSIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,41,80,10
+    LTEXT           "Documentation:",IDC_STATIC,23,53,61,8
+    CONTROL         "&Phrase Definitions",IDC_LOOK_DOC_PHRASES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,34,63,74,10
+    CONTROL         "&Main Text",IDC_LOOK_DOC_MAIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,34,74,48,10
+    CONTROL         "S&ource Examples",IDC_LOOK_DOC_CODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,90,74,70,10
+    GROUPBOX        "How to search",IDC_STATIC,186,20,131,41
+    CONTROL         "Ignore &Case",IDC_IGNORE_CASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,209,30,55,10
+    COMBOBOX        IDC_FIND_RULE,209,43,88,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "",IDC_FOUND,7,92,385,8
+    CONTROL         "",IDC_RESULTS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_NOSORTHEADER | NOT WS_VISIBLE | WS_BORDER | WS_TABSTOP,7,101,385,155
+    CONTROL         "",IDC_REGEX_HELP,"Static",SS_OWNERDRAW | NOT WS_VISIBLE | WS_GROUP,282,81,42,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -621,6 +647,10 @@ BEGIN
         BOTTOMMARGIN, 215
     END
 
+    IDD_SEARCH, DIALOG
+    BEGIN
+    END
+
     IDD_NEWPROJECT, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -642,6 +672,14 @@ BEGIN
         LEFTMARGIN, 6
         RIGHTMARGIN, 245
         TOPMARGIN, 3
+    END
+
+    IDD_FIND_FILES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 392
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 256
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -801,6 +839,20 @@ BEGIN
     0
 END
 
+IDD_FIND_FILES DLGINIT
+BEGIN
+    IDC_FIND_RULE, 0x403, 9, 0
+0x6f43, 0x746e, 0x6961, 0x736e, "\000" 
+    IDC_FIND_RULE, 0x403, 12, 0
+0x7453, 0x7261, 0x7374, 0x7720, 0x7469, 0x0068, 
+    IDC_FIND_RULE, 0x403, 10, 0
+0x7546, 0x6c6c, 0x7720, 0x726f, 0x0064, 
+    IDC_FIND_RULE, 0x403, 19, 0
+0x6552, 0x7567, 0x616c, 0x2072, 0x7865, 0x7270, 0x7365, 0x6973, 0x6e6f, 
+"\000" 
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -813,6 +865,11 @@ BEGIN
 END
 
 IDD_SETTINGS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_FIND_FILES AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -844,6 +901,8 @@ END
 STRINGTABLE
 BEGIN
     ID_EDIT_SPELLING        "Spell check the source"
+    ID_EDIT_FIND_NEXT       "Find the next match for the last find action"
+    ID_EDIT_FIND_PREV       "Find the previous match for the last find action"
     ID_EDIT_SCROLL          "Scroll to the currently selected text"
     ID_EDIT_USE_SEL         "If checked, use the currently selected text to populate the find dialog"
     ID_FORMAT_SHIFT_RIGHT   "Shift the selected lines one tab to the right"
@@ -952,8 +1011,6 @@ BEGIN
     ID_EDIT_COPY            "Copy the selected text to the clipboard"
     ID_EDIT_CUT             "Cut the selected text to the clipboard"
     ID_EDIT_FIND            "Open the find dialog"
-    ID_EDIT_FIND_NEXT       "Find the next match for the last find action"
-    ID_EDIT_FIND_PREV       "Find the previous match for the last find action"
     ID_EDIT_PASTE           "Paste text from the clipboard"
     ID_EDIT_REPLACE         "Open the replace dialog"
     ID_EDIT_SELECT_ALL      "Select all text in the current panel"

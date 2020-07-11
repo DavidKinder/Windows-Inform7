@@ -11,7 +11,7 @@ public:
 
   DWORD SetEventMask(DWORD eventMask);
   void EmptyUndoBuffer(void);
-  long StreamIn(int format, EDITSTREAM& es);
+  void SetTextRTF(const char* rtf);
 
   void GetSel(CHARRANGE& cr) const;
   void SetSel(CHARRANGE& cr);
@@ -62,6 +62,7 @@ public:
   ~RichDrawText();
 
   void SetText(LPCWSTR text);
+  void SetTextRTF(const char* rtf);
   void Range(long cpFirst, long cpLim, ITextRange** ppRange);
 
   void SizeText(CDC& dc, CRect& rect);

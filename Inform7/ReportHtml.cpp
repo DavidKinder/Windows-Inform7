@@ -58,7 +58,7 @@ public:
         {
           m_dataLen = status.m_size;
           m_data = new char[m_dataLen];
-          int64 read = reqFile.Read(m_data,m_dataLen);
+          int64 read = reqFile.Read(m_data,(UINT)m_dataLen);
           ASSERT(read == m_dataLen);
           reqFile.Close();
 
@@ -105,7 +105,7 @@ public:
 
       memcpy(data_out,m_data + m_dataOffset,transfer);
       m_dataOffset += transfer;
-      bytes_read = transfer;
+      bytes_read = (int)transfer;
       return true;
     }
     bytes_read = 0;
@@ -126,6 +126,7 @@ public:
     {
       "\\Documentation",
       "\\Documentation\\doc_images",
+      "\\Documentation\\outcome_images",
       "\\Documentation\\sections",
       "\\Images"
     };
@@ -178,7 +179,7 @@ private:
         const char* hex2 = strchr(hex,toupper(input[i+2]));
         if ((hex1 != NULL) && (hex2 != NULL))
         {
-          char ch = ((hex1-hex)<<4)+(hex2-hex);
+          char ch = (char)(((hex1-hex)<<4)+(hex2-hex));
           output.AppendChar(ch);
           i += 3;
           continue;

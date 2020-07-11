@@ -1,14 +1,20 @@
 #include "stdafx.h"
 #include "Inform.h"
 #include "OSLayer.h"
-#include "ReportHtml.h"
-#include "AboutDialog.h"
-#include "PrefsDialog.h"
-#include "SplashScreen.h"
+#include "DpiFunctions.h"
+
 #include "ProjectFrame.h"
 #include "ExtensionFrame.h"
-#include "SpellCheck.h"
 #include "TabDoc.h"
+
+#include "AboutDialog.h"
+#include "PrefsDialog.h"
+#include "ReportHtml.h"
+#include "SpellCheck.h"
+#include "SplashScreen.h"
+
+#include "Platform.h"
+#include "Scintilla.h"
 
 #include "png.h"
 extern "C" {
@@ -87,8 +93,8 @@ BOOL InformApp::InitInstance()
   FindExtensions();
   CreatedProcess ni = RunCensus();
 
-  // Start decoding the documentation for searching
-  TabDoc::InitInstance();
+  // Initialize finding in files
+  FindInFiles::InitInstance();
 
   // Show the splash screen
   SplashScreen splash;
@@ -116,7 +122,7 @@ int InformApp::ExitInstance()
     delete it->second;
 
   GameWindow::ExitInstance();
-  TabDoc::ExitInstance();
+  FindInFiles::ExitInstance();
   SpellCheck::Finalize();
   ReportHtml::ShutWebBrowser();
   Scintilla_ReleaseResources();
@@ -128,11 +134,10 @@ BOOL InformApp::PreTranslateMessage(MSG* pMsg)
 {
   if ((pMsg->hwnd == NULL) && DispatchThreadMessageEx(pMsg))
     return TRUE;
+  CWnd* wnd = CWnd::FromHandle(pMsg->hwnd);
 
   CArray<CFrameWnd*> frames;
   GetWindowFrames(frames);
-
-  CWnd* wnd = CWnd::FromHandle(pMsg->hwnd);
   for (int i = 0; i < frames.GetSize(); i++)
   {
     CFrameWnd* frame = frames[i];
@@ -271,7 +276,7 @@ void InformApp::OnAppExit()
   // will cause the window to be removed from the frames array.
   while (m_frames.GetSize() > 0)
   {
-    int count = m_frames.GetSize();
+    INT_PTR count = m_frames.GetSize();
     m_frames[0]->SendMessage(WM_CLOSE);
 
     // If the window does not close, stop
@@ -1391,7 +1396,7 @@ void InformApp::SetFonts(void)
   ::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof ncm,&ncm,0);
   int fontSize = abs(MulDiv(ncm.lfMessageFont.lfHeight,72,dc->GetDeviceCaps(LOGPIXELSY)));
   fontSize = max(fontSize,9);
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 5; i++)
   {
     if (m_fontNames[i].IsEmpty())
       m_fontNames[i] = ncm.lfMessageFont.lfFaceName;
@@ -1410,6 +1415,11 @@ void InformApp::SetFonts(void)
     m_fontSizes[FontPanel] = abs(::MulDiv(fontInfo.lfHeight,72,dc->GetDeviceCaps(LOGPIXELSY)));
     m_fonts[FontPanel].CreateFontIndirect(&fontInfo);
   }
+
+  m_fontSizes[FontSmall] = min(fontSize-1,(fontSize*9)/10);
+  int minPointSize = (DPI::getSystemDPI() > 96) ? 8 : 9;
+  if (m_fontSizes[FontSmall] < minPointSize)
+    m_fontSizes[FontSmall] = min(fontSize,minPointSize);
 
   // Release the desktop device context
   wnd->ReleaseDC(dc);

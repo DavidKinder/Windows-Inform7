@@ -548,6 +548,12 @@ bool TabSource::Highlight(const char* url, COLORREF colour)
   return false;
 }
 
+void TabSource::Select(const CHARRANGE& range)
+{
+  SetActiveTab(SrcTab_Source,false);
+  m_source.Highlight(range,true);
+}
+
 void TabSource::PasteCode(const wchar_t* code)
 {
   SetActiveTab(SrcTab_Source,false);
@@ -557,6 +563,11 @@ void TabSource::PasteCode(const wchar_t* code)
 void TabSource::UpdateSpellCheck(void)
 {
   m_source.GetEdit().UpdateSpellCheck();
+}
+
+CString TabSource::GetSource(void)
+{
+  return m_source.GetEdit().GetSource();
 }
 
 bool TabSource::CheckNeedReopen(const char* path)
@@ -586,21 +597,4 @@ void TabSource::UpdateElasticTabStops(void)
 {
   SourceEdit& edit = m_source.GetEdit();
   edit.SetElasticTabStops(edit.GetElasticTabStops());
-}
-
-void TabSource::Search(LPCWSTR text, std::vector<SearchWindow::Result>& results)
-{
-  m_source.GetEdit().Search(text,results,m_sourceFile);
-}
-
-void TabSource::Highlight(const SearchWindow::Result& result)
-{
-  SetActiveTab(SrcTab_Source,false);
-  m_source.Highlight(result.inSource,true);
-  Panel::GetPanel(this)->SetActiveTab(Panel::Tab_Source);
-}
-
-CString TabSource::Description(void)
-{
-  return "source";
 }

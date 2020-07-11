@@ -73,7 +73,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_WANTSTOP, OnWantStop)
   ON_MESSAGE(WM_RUNCENSUS, OnRunCensus)
   ON_MESSAGE(WM_STORYNAME, OnStoryName)
-
+  
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
   ON_COMMAND(ID_FILE_INSTALL_EXT, OnFileInstallExt)
@@ -92,6 +92,8 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
   ON_COMMAND(ID_FILE_IMPORT_SKEIN, OnFileImportSkein)
   ON_COMMAND(ID_FILE_EXPORT_EXT, OnFileExportExtProject)
+
+  ON_COMMAND(ID_EDIT_FIND_IN_FILES, OnEditFindInFiles)
 
   ON_UPDATE_COMMAND_UI(ID_PLAY_GO, OnUpdateCompile)
   ON_COMMAND(ID_PLAY_GO, OnPlayGo)
@@ -200,9 +202,10 @@ private:
 
 ProjectFrame::ProjectFrame(ProjectType projectType)
   : m_projectType(projectType), m_needCompile(true), m_last5StartTime(0),
-    m_busy(false), m_I6debug(false), m_game(m_skein), m_focus(0),
+    m_busy(false), m_I6debug(false), m_game(m_skein), m_finder(this), m_focus(0),
     m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0), m_splitter(true)
 {
+  m_menuBar.SetUseF10(false);
   if (m_projectType == Project_I7XP)
     m_skein.SetFile("");
 }
@@ -307,13 +310,6 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
   }
 
-  // Create the search results window
-  if (!m_search.Create(this))
-  {
-    TRACE("Failed to create search results window\n");
-    return -1;
-  }
-
   // Set the application icon
   theApp.SetIcon(this);
 
@@ -325,7 +321,7 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   if (m_projectType != Project_I7XP)
     GetMenu()->RemoveMenu(ID_FILE_EXPORT_EXT,MF_BYCOMMAND);
 
-  if (theApp.GetTestMode())
+  if (!theApp.GetTestMode())
   {
     // Remove test menu item
     GetMenu()->RemoveMenu(ID_PLAY_LOAD,MF_BYCOMMAND);
@@ -425,6 +421,7 @@ void ProjectFrame::OnClose()
     }
   }
 
+  m_finder.Hide();
   m_game.StopInterpreter(false);
   CleanProject();
 
@@ -828,17 +825,15 @@ LRESULT ProjectFrame::OnRuntimeProblem(WPARAM problem, LPARAM)
 
 LRESULT ProjectFrame::OnSearchSource(WPARAM text, LPARAM)
 {
-  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Source));
-  panel->SetActiveTab(Panel::Tab_Source);
-  m_search.Search((TabSource*)panel->GetTab(Panel::Tab_Source),(LPCWSTR)text,GetInitialSearchRect(Panel::Tab_Source));
+  m_finder.Show();
+  m_finder.FindInSource((LPCWSTR)text);
   return 0;
 }
 
 LRESULT ProjectFrame::OnSearchDoc(WPARAM text, LPARAM)
 {
-  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
-  panel->SetActiveTab(Panel::Tab_Doc);
-  m_search.Search((TabDoc*)panel->GetTab(Panel::Tab_Doc),(LPCWSTR)text,GetInitialSearchRect(Panel::Tab_Doc));
+  m_finder.Show();
+  m_finder.FindInDocs((LPCWSTR)text);
   return 0;
 }
 
@@ -1218,6 +1213,30 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
   }
 }
 
+CString ProjectFrame::GetSource(void)
+{
+  return ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->GetSource();
+}
+
+void ProjectFrame::SelectInSource(const CHARRANGE& range)
+{
+  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Source));
+  ((TabSource*)panel->GetTab(Panel::Tab_Source))->Select(range);
+  panel->SetActiveTab(Panel::Tab_Source);
+}
+
+void ProjectFrame::SelectInDocumentation(const char* link, LPCWSTR find)
+{
+  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
+  ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(TextFormat::AnsiToUTF8(link),find);
+  panel->SetActiveTab(Panel::Tab_Doc);
+}
+
+const ProjectSettings& ProjectFrame::GetSettings(void)
+{
+  return m_settings;
+}
+
 void ProjectFrame::OnFileNew()
 {
   SaveSettings();
@@ -1358,6 +1377,11 @@ void ProjectFrame::OnFileExportExtProject()
   dialog.m_ofn.lpstrTitle = "Export this extension";
   if (dialog.DoModal() == IDOK)
     ::CopyFile(sourcePath,dialog.GetPathName(),FALSE);
+}
+
+void ProjectFrame::OnEditFindInFiles()
+{
+  m_finder.Show();
 }
 
 void ProjectFrame::OnUpdateIfNotBusy(CCmdUI *pCmdUI)
@@ -2745,6 +2769,22 @@ void ProjectFrame::MonitorProcess(InformApp::CreatedProcess cp, ProcessAction ac
     SetTimer(1,200,NULL);
 }
 
+bool ProjectFrame::IsProcessRunning(LPCSTR name)
+{
+  for (int i = 0; i < m_processes.GetSize(); i++)
+  {
+    const SubProcess& sub = m_processes.GetAt(i);
+    if (sub.name == name)
+    {
+      DWORD result = STILL_ACTIVE;
+      ::GetExitCodeProcess(sub.cp.process,&result);
+      if (result == STILL_ACTIVE)
+        return true;
+    }
+  }
+  return false;
+}
+
 void ProjectFrame::OnTimer(UINT_PTR nIDEvent)
 {
   if (nIDEvent == 1)
@@ -2909,7 +2949,7 @@ void ProjectFrame::OnSourceLink(const char* url, TabInterface* from, COLORREF hi
     if (replace)
     {
       // Replace link to source code, if needed
-      for (int i = m_exLineOffsets.GetSize()-1; (i >= 0) && replace_url.IsEmpty(); i--)
+      for (INT_PTR i = m_exLineOffsets.GetSize()-1; (i >= 0) && replace_url.IsEmpty(); i--)
       {
         const ExLineOffset& elo = m_exLineOffsets.GetAt(i);
         if ((exId == elo.id) && (line >= elo.from))
@@ -3119,20 +3159,6 @@ bool ProjectFrame::LoadToolBar(void)
     break;
   }
   return true;
-}
-
-CRect ProjectFrame::GetInitialSearchRect(Panel::Tabs searchTab)
-{
-  CRect panelRect;
-  int panelIndex = (GetPanel(1)->GetActiveTab() == searchTab) ? 0 : 1;
-  GetPanel(panelIndex)->GetWindowRect(panelRect);
-
-  CRect searchRect(0,0,panelRect.Width()*3/4,panelRect.Height()*2/3);
-  if (panelIndex == 0)
-    searchRect.MoveToXY(panelRect.right-searchRect.Width(),panelRect.top);
-  else
-    searchRect.MoveToXY(panelRect.TopLeft());
-  return searchRect;
 }
 
 bool ProjectFrame::UpdateExampleList(void)

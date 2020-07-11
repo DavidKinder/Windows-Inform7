@@ -9,4 +9,5 @@ class I7BaseDialog : public BaseDialog
 protected:
   I7BaseDialog(UINT templateId, CWnd* parent = NULL);
   void SetFont(CDialogTemplate& dlgTemplate);
+  void EraseWithGripper(CDC* dc);
 };

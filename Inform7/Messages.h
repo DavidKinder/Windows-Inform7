@@ -191,3 +191,6 @@ public:
 // Sent to a preferences dialog sheet to indicate that the preview
 // is to be updated.
 #define WM_UPDATEPREVIEW  WM_APP+42
+
+// Sent to the Find in Files dialog to resize the results column
+#define WM_RESIZERESULTS  WM_APP+43

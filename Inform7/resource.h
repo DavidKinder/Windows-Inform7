@@ -17,6 +17,7 @@
 #define IDD_PREFS_EDIT                  156
 #define IDD_PREFS_TEXT                  157
 #define IDD_PREFS_ADVANCED              158
+#define IDD_FIND_FILES                  159
 #define ID_FILE_INSTALL_EXT             200
 #define ID_FILE_INSTALL_FOLDER          201
 #define ID_FILE_INSTALL_XP              202
@@ -30,11 +31,12 @@
 #define ID_EDIT_FIND_PREV               210
 #define ID_EDIT_SCROLL                  211
 #define ID_EDIT_USE_SEL                 212
-#define ID_FORMAT_SHIFT_RIGHT           213
-#define ID_FORMAT_SHIFT_LEFT            214
-#define ID_FORMAT_COMMENT               215
-#define ID_FORMAT_UNCOMMENT             216
-#define ID_FORMAT_RENUMBER              217
+#define ID_EDIT_FIND_IN_FILES           213
+#define ID_FORMAT_SHIFT_RIGHT           214
+#define ID_FORMAT_SHIFT_LEFT            215
+#define ID_FORMAT_COMMENT               216
+#define ID_FORMAT_UNCOMMENT             217
+#define ID_FORMAT_RENUMBER              218
 #define ID_PLAY_GO                      220
 #define ID_PLAY_STOP                    221
 #define ID_PLAY_TEST                    222
@@ -193,6 +195,18 @@
 #define IDC_SUBST_SIZE                  1090
 #define IDC_PREVIEW                     1091
 #define IDC_TABPREVIEW                  1092
+#define IDC_FIND                        1093
+#define IDC_FIND_ALL                    1094
+#define IDC_LOOK_SOURCE                 1095
+#define IDC_LOOK_EXTENSIONS             1096
+#define IDC_LOOK_DOC_MAIN               1097
+#define IDC_LOOK_DOC_CODE               1098
+#define IDC_LOOK_DOC_PHRASES            1099
+#define IDC_IGNORE_CASE                 1100
+#define IDC_FIND_RULE                   1101
+#define IDC_FOUND                       1102
+#define IDC_RESULTS                     1103
+#define IDC_REGEX_HELP                  1104
 #define ID_OPEN_EXTENSIONS_LIST         2000
 #define ID_NEW_EXTENSIONS_LIST          3000
 
@@ -200,9 +214,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        285
+#define _APS_NEXT_RESOURCE_VALUE        288
 #define _APS_NEXT_COMMAND_VALUE         283
-#define _APS_NEXT_CONTROL_VALUE         1093
+#define _APS_NEXT_CONTROL_VALUE         1105
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif

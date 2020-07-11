@@ -2,6 +2,9 @@
 #include "Inform.h"
 #include "ReportEdit.h"
 
+#include "Platform.h"
+#include "Scintilla.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif

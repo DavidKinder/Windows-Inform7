@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Platform.h"
-#include "Scintilla.h"
-
 class ReportEdit : public CWnd
 {
   DECLARE_DYNAMIC(ReportEdit)
@@ -29,6 +26,6 @@ private:
   void SetFonts(void);
   LONG_PTR CallEdit(UINT msg, DWORD wp = 0, LONG_PTR lp = 0);
 
-  sptr_t m_editPtr;
+  LONG_PTR m_editPtr;
   bool m_fixed;
 };

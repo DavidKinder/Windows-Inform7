@@ -866,7 +866,7 @@ void PrefsDialog::ChangeDialogFont(CWnd* wnd, CFont* font, double scaleX)
   long yDiff = windowRect.Height() - clientRect.Height();
 
   newClientRect.left = newClientRect.top = 0;
-  newClientRect.right = clientRect.right * scaleX * newWidth / oldWidth;
+  newClientRect.right = (LONG)(clientRect.right * scaleX * newWidth / oldWidth);
   newClientRect.bottom = clientRect.bottom * newHeight / oldHeight;
 
   newWindowRect.left = windowRect.left - (newClientRect.right - clientRect.right)/2;
@@ -895,8 +895,8 @@ void PrefsDialog::ChangeDialogFont(CWnd* wnd, CFont* font, double scaleX)
     }
 
     wnd->ScreenToClient(windowRect);
-    windowRect.left = windowRect.left * scaleX * newWidth / oldWidth;
-    windowRect.right = windowRect.right *scaleX *  newWidth / oldWidth;
+    windowRect.left = (LONG)(windowRect.left * scaleX * newWidth / oldWidth);
+    windowRect.right = (LONG)(windowRect.right *scaleX *  newWidth / oldWidth);
     windowRect.top = windowRect.top * newHeight / oldHeight;
     windowRect.bottom = windowRect.bottom * newHeight / oldHeight;
     childWnd->MoveWindow(windowRect);
