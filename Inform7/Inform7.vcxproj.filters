@@ -277,9 +277,6 @@
     <ClInclude Include="SearchEdit.h">
       <Filter>Search</Filter>
     </ClInclude>
-    <ClInclude Include="SearchWindow.h">
-      <Filter>Search</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Libraries\mfc\Dib.h">
       <Filter>Bitmaps</Filter>
     </ClInclude>
@@ -321,6 +318,9 @@
     </ClInclude>
     <ClInclude Include="EditFind.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="FindInFiles.h">
+      <Filter>Search</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -496,9 +496,6 @@
       <Filter>Search</Filter>
     </ClCompile>
     <ClCompile Include="SearchEdit.cpp">
-      <Filter>Search</Filter>
-    </ClCompile>
-    <ClCompile Include="SearchWindow.cpp">
       <Filter>Search</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\mfc\Dib.cpp">
@@ -904,9 +901,6 @@
       <Filter>Libraries\scintilla</Filter>
     </ClCompile>
     <ClCompile Include="Scintilla\src\PropSet.cxx">
-      <Filter>Libraries\scintilla</Filter>
-    </ClCompile>
-    <ClCompile Include="Scintilla\src\RESearch.cxx">
       <Filter>Libraries\scintilla</Filter>
     </ClCompile>
     <ClCompile Include="Scintilla\src\RunStyles.cxx">
@@ -1409,6 +1403,12 @@
     </ClCompile>
     <ClCompile Include="EditFind.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="FindInFiles.cpp">
+      <Filter>Search</Filter>
+    </ClCompile>
+    <ClCompile Include="Scintilla\src\RESearch.cxx">
+      <Filter>Libraries\scintilla</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
