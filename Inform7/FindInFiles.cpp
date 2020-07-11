@@ -9,10 +9,6 @@
 
 #include <regex>
 
-// XXXXDK
-// wait for census before searching extensions
-// remove SearchWindow and old implementations of search
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -931,6 +927,26 @@ void FindInFiles::Find(const CString& text, const char* doc, const char* docSort
 
 void FindInFiles::FindInExtensions(void)
 {
+  // If an extension census is running, wait for it to finish
+  while (true)
+  {
+    bool findNow = true;
+    CArray<CFrameWnd*> frames;
+    theApp.GetWindowFrames(frames);
+    for (int i = 0; i < frames.GetSize(); i++)
+    {
+      if (frames[i]->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
+      {
+        if (((ProjectFrame*)frames[i])->IsProcessRunning("ni (census)"))
+          findNow = false;
+      }
+    }
+    if (findNow)
+      break;
+    ::Sleep(100);
+    theApp.RunMessagePump();
+  }
+
   for (const auto& extension : theApp.GetExtensions())
   {
     CFile extFile;

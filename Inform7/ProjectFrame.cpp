@@ -2769,6 +2769,22 @@ void ProjectFrame::MonitorProcess(InformApp::CreatedProcess cp, ProcessAction ac
     SetTimer(1,200,NULL);
 }
 
+bool ProjectFrame::IsProcessRunning(LPCSTR name)
+{
+  for (int i = 0; i < m_processes.GetSize(); i++)
+  {
+    const SubProcess& sub = m_processes.GetAt(i);
+    if (sub.name == name)
+    {
+      DWORD result = STILL_ACTIVE;
+      ::GetExitCodeProcess(sub.cp.process,&result);
+      if (result == STILL_ACTIVE)
+        return true;
+    }
+  }
+  return false;
+}
+
 void ProjectFrame::OnTimer(UINT_PTR nIDEvent)
 {
   if (nIDEvent == 1)

@@ -165,6 +165,7 @@ public:
     ProcessHelpExtensions
   };
   void MonitorProcess(InformApp::CreatedProcess cp, ProcessAction action, LPCSTR name);
+  bool IsProcessRunning(LPCSTR name);
 
 protected:
   // Implementation of InformApp::OutputSink
