@@ -2,7 +2,6 @@
 #include "ContentsWindow.h"
 #include "TabSource.h"
 #include "Inform.h"
-#include "OSLayer.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -258,7 +257,7 @@ void ContentsPane::DrawNode(CDC* dc, Node* node, bool& title, int& h, int origin
       if (intersect.IntersectRect(textRect,client))
       {
         // Draw the heading
-        theOS.DrawText(dc,name,name.GetLength(),textRect,DT_WORD_ELLIPSIS);
+        ::DrawTextW(dc->GetSafeHdc(),name,name.GetLength(),textRect,DT_WORD_ELLIPSIS);
         if (node->GetLevel() != SourceLexer::Title)
         {
           COLORREF back = theApp.GetColour(InformApp::ColourContents);

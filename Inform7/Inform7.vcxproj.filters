@@ -103,9 +103,6 @@
     <ClInclude Include="Messages.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="OSLayer.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Panel.h">
       <Filter>Core</Filter>
     </ClInclude>
@@ -328,9 +325,6 @@
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Inform.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="OSLayer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Panel.cpp">

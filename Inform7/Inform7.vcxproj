@@ -67,7 +67,7 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>libcef.lib;msxml2.lib;rpcrt4.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;nafxcwd.lib;libcmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcef.lib;msxml2.lib;rpcrt4.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;dbghelp.lib;dwmapi.lib;nafxcwd.lib;libcmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>../../../Libraries/libcef/lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -111,7 +111,7 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>libcef.lib;msxml2.lib;rpcrt4.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;nafxcw.lib;libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcef.lib;msxml2.lib;rpcrt4.lib;version.lib;dsound.lib;imm32.lib;dbghelp.lib;wininet.lib;dwmapi.lib;nafxcw.lib;libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>../Build/$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>../../../Libraries/libcef/lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -176,7 +176,6 @@
     <ClInclude Include="Messages.h" />
     <ClInclude Include="NewDialogs.h" />
     <ClInclude Include="NoFocusCheck.h" />
-    <ClInclude Include="OSLayer.h" />
     <ClInclude Include="Panel.h" />
     <ClInclude Include="PrefsDialog.h" />
     <ClInclude Include="ProgressWnd.h" />
@@ -2010,7 +2009,6 @@
     <ClCompile Include="Inform.cpp" />
     <ClCompile Include="NewDialogs.cpp" />
     <ClCompile Include="NoFocusCheck.cpp" />
-    <ClCompile Include="OSLayer.cpp" />
     <ClCompile Include="Panel.cpp" />
     <ClCompile Include="PrefsDialog.cpp" />
     <ClCompile Include="ProgressWnd.cpp" />

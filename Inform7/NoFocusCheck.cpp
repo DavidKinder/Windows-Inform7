@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "NoFocusCheck.h"
-#include "OSLayer.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "SourceWindow.h"
 #include "Inform.h"
-#include "OSLayer.h"
 
 #include "Platform.h"
 #include "Scintilla.h"
@@ -305,15 +304,18 @@ void SourceWindow::Draw(CDC& dc)
     // Get the colour for the lines around groups
     COLORREF lineColour = ::GetSysColor(COLOR_BTNSHADOW);
     HTHEME theme = 0;
-    if (theOS.IsAppThemed())
+    if (::IsAppThemed())
     {
-      HTHEME theme = theOS.OpenThemeData(this,L"BUTTON");
+      HTHEME theme = ::OpenThemeData(GetSafeHwnd(),L"Button");
       if (theme != 0)
       {
-        COLORREF themeColour = theOS.GetThemeColor(theme,BP_GROUPBOX,GBS_NORMAL,TMT_EDGEFILLCOLOR);
-        theOS.CloseThemeData(theme);
-        if (themeColour != 0)
-          lineColour = themeColour;
+        COLORREF themeColour = 0;
+        if (SUCCEEDED(::GetThemeColor(theme,BP_GROUPBOX,GBS_NORMAL,TMT_EDGEFILLCOLOR,&themeColour)))
+        {
+          if (themeColour != 0)
+            lineColour = themeColour;
+        }
+        ::CloseThemeData(theme);
       }
     }
 

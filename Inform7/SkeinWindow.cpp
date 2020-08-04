@@ -3,7 +3,6 @@
 #include "TabSkein.h"
 #include "Inform.h"
 #include "Dialogs.h"
-#include "OSLayer.h"
 #include "DpiFunctions.h"
 
 #include <math.h>
@@ -296,10 +295,14 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
       LPCWSTR msg =
         L"This will remove commands from the skein that have not been locked. "
         L"This operation cannot be undone.";
-      if (theOS.TaskDialog(this,head,msg,L_INFORM_TITLE,MB_ICONWARNING|MB_YESNO) == IDYES)
+      int btn = 0;
+      if (SUCCEEDED(::TaskDialog(GetSafeHwnd(),0,L_INFORM_TITLE,head,msg,TDCBF_YES_BUTTON|TDCBF_NO_BUTTON,TD_WARNING_ICON,&btn)))
       {
-        bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
-        m_skein->Trim(node,gameRunning);
+        if (btn == IDYES)
+        {
+          bool gameRunning = (GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0);
+          m_skein->Trim(node,gameRunning);
+        }
       }
     }
     break;

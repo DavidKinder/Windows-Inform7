@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "ProjectDirDialog.h"
-#include "OSLayer.h"
 #include "Resource.h"
 
 #ifdef _DEBUG
@@ -90,7 +89,7 @@ public:
 
       // Open the file dialog in the parent directory
       CComPtr<IShellItem> si;
-      if (SUCCEEDED(theOS.SHCreateItemFromParsingName(
+      if (SUCCEEDED(::SHCreateItemFromParsingName(
         CStringW(initialDir),NULL,__uuidof(IShellItem),(void**)&si)))
       {
         m_dialog->SetFolder(si);

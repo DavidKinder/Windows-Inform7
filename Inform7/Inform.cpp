@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Inform.h"
-#include "OSLayer.h"
 #include "DpiFunctions.h"
 
 #include "ProjectFrame.h"
@@ -48,8 +47,7 @@ BOOL InformApp::InitInstance()
 {
   InitCommonControls();
   CWinApp::InitInstance();
-  theOS.Init();
-  theOS.BufferedPaintInit();
+  ::BufferedPaintInit();
 
   if (!AfxOleInit())
     return FALSE;
@@ -74,12 +72,12 @@ BOOL InformApp::InitInstance()
   // If possible, create a job to assign child processes to. Since the
   // job will be closed when this process exits, this ensures that any
   // child processes still running will also exit.
-  m_job = theOS.CreateJobObject(NULL,NULL);
+  m_job = ::CreateJobObject(NULL,NULL);
   if (m_job)
   {
     JOBOBJECT_EXTENDED_LIMIT_INFORMATION jeli = { 0 };
     jeli.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-    VERIFY(theOS.SetInformationJobObject(m_job,
+    VERIFY(::SetInformationJobObject(m_job,
       JobObjectExtendedLimitInformation,&jeli,sizeof(jeli)));
   }
 
@@ -126,7 +124,7 @@ int InformApp::ExitInstance()
   SpellCheck::Finalize();
   ReportHtml::ShutWebBrowser();
   Scintilla_ReleaseResources();
-
+  ::BufferedPaintUnInit();
   return CWinApp::ExitInstance();
 }
 
@@ -954,7 +952,7 @@ InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& com
 
     // If there is a job, assign the process to it
     if (m_job)
-      VERIFY(theOS.AssignProcessToJobObject(m_job,process.hProcess));
+      VERIFY(::AssignProcessToJobObject(m_job,process.hProcess));
   }
   return cp;
 }
@@ -1285,7 +1283,11 @@ void InformApp::SetMyDocuments(bool showMsgs)
     }
   }
   if (m_home.IsEmpty())
-    m_home = theOS.SHGetFolderPath(0,CSIDL_PERSONAL,NULL,SHGFP_TYPE_CURRENT);
+  {
+    char path[MAX_PATH];
+    if (SUCCEEDED(::SHGetFolderPath(0,CSIDL_PERSONAL,NULL,SHGFP_TYPE_CURRENT,path)))
+      m_home = path;
+  }
 
   int len = m_home.GetLength();
   if (len > 0)
@@ -1297,8 +1299,8 @@ void InformApp::SetMyDocuments(bool showMsgs)
     CreateHomeDirs();
   }
 
-  CString desktop = theOS.SHGetFolderPath(0,CSIDL_DESKTOP,NULL,SHGFP_TYPE_CURRENT);
-  if (desktop.IsEmpty() == FALSE)
+  char desktop[MAX_PATH];
+  if (SUCCEEDED(::SHGetFolderPath(0,CSIDL_DESKTOP,NULL,SHGFP_TYPE_CURRENT,desktop)))
     ::SetEnvironmentVariable("DESKTOP",desktop);
 }
 

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "NewDialogs.h"
 #include "Inform.h"
-#include "OSLayer.h"
 #include "UnicodeEdit.h"
 
 namespace {
@@ -76,7 +75,7 @@ BOOL AbstractNewDialog::OnInitDialog()
   theApp.SetIcon(this);
 
   // Add auto-completion to the directory edit control
-  theOS.SHAutoComplete(GetDlgItem(IDC_DIR),SHACF_FILESYSTEM);
+  ::SHAutoComplete(GetDlgItem(IDC_DIR)->GetSafeHwnd(),SHACF_FILESYSTEM);
 
   // The create button isn't enabled until all fields are filled in
   GetDlgItem(IDOK)->EnableWindow(
@@ -113,7 +112,7 @@ void AbstractNewDialog::OnClickedDirPopup()
   dialog->SetOptions(options|FOS_PICKFOLDERS);
 
   CComPtr<IShellItem> si;
-  if (SUCCEEDED(theOS.SHCreateItemFromParsingName(
+  if (SUCCEEDED(::SHCreateItemFromParsingName(
     CStringW(m_dir),NULL,__uuidof(IShellItem),(void**)&si)))
   {
     dialog->SetFolder(si);
@@ -254,7 +253,7 @@ bool NewProjectDialog::CheckPath(void)
   if (::GetFileAttributes(path) == INVALID_FILE_ATTRIBUTES)
   {
     // Create the project directory
-    if (theOS.SHCreateDirectoryEx(this,path) != ERROR_SUCCESS)
+    if (::SHCreateDirectoryEx(GetSafeHwnd(),path,NULL) != ERROR_SUCCESS)
     {
       CString msg;
       msg.Format("Failed to create the %s directory\n%s",GetType(),(LPCSTR)path);
@@ -325,7 +324,7 @@ bool NewExtensionDialog::CheckPath(void)
   if (::GetFileAttributes(path) == INVALID_FILE_ATTRIBUTES)
   {
     // Create the extension author directory
-    if (theOS.SHCreateDirectoryEx(this,path) != ERROR_SUCCESS)
+    if (::SHCreateDirectoryEx(GetSafeHwnd(),path,NULL) != ERROR_SUCCESS)
     {
       CString msg;
       msg.Format("Failed to create the %s directory\n%s",GetType(),(LPCSTR)path);

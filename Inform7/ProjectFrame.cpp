@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "ProjectFrame.h"
 #include "ExtensionFrame.h"
-#include "OSLayer.h"
 #include "Messages.h"
 #include "TextFormat.h"
 #include "ProjectDirDialog.h"
@@ -496,37 +495,42 @@ void ProjectFrame::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
 
       // Get the theme, if any
       HTHEME theme = 0;
-      if (theOS.IsAppThemed())
-        theme = theOS.OpenThemeData(this,L"MENU");
+      if (::IsAppThemed())
+        theme = ::OpenThemeData(GetSafeHwnd(),L"Menu");
 
       if (theme != 0)
       {
         // Get a device context for buffered painting
-        HANDLE pb = 0;
-        CDC* dc = theOS.BeginBufferedPaint(di->hDC,&(di->rcItem),BPBF_COMPATIBLEBITMAP,&pb);
+        HDC hdc = 0;
+        HANDLE pb = ::BeginBufferedPaint(di->hDC,&(di->rcItem),BPBF_COMPATIBLEBITMAP,NULL,&hdc);
+        if (pb == 0)
+          return;
+        CDC* dc = CDC::FromHandle(hdc);
 
         // Draw the menu background
-        theOS.DrawThemeBackground(theme,dc,MENU_POPUPBACKGROUND,0,&rc);
+        ::DrawThemeBackground(theme,dc->GetSafeHdc(),MENU_POPUPBACKGROUND,0,&rc,NULL);
 
         // Draw the menu gutter
         rc.right = di->rcItem.left+m_menuGutter;
-        theOS.DrawThemeBackground(theme,dc,MENU_POPUPGUTTER,0,&rc);
+        ::DrawThemeBackground(theme,dc->GetSafeHdc(),MENU_POPUPGUTTER,0,&rc,NULL);
 
         // Draw the menu item
         int state = (di->itemState & ODS_SELECTED) ? MPI_HOT : MPI_NORMAL;
         rc.left = di->rcItem.left;
         rc.right = di->rcItem.right;
-        theOS.DrawThemeBackground(theme,dc,MENU_POPUPITEM,state,&rc);
+        ::DrawThemeBackground(theme,dc->GetSafeHdc(),MENU_POPUPITEM,state,&rc,NULL);
 
         // Select a colour for the menu text, based on the theme's colours
+        COLORREF itemColour = 0;
+        ::GetThemeColor(theme,MENU_POPUPITEM,state,TMT_TEXTCOLOR,&itemColour);
         if (ext->system)
         {
-          dc->SetTextColor(theApp.BlendedColour(
-            theOS.GetThemeColor(theme,MENU_POPUPITEM,state,TMT_TEXTCOLOR),4,
-            theOS.GetThemeColor(theme,MENU_POPUPBACKGROUND,0,TMT_FILLCOLORHINT),1));
+          COLORREF backColour = 0;
+          ::GetThemeColor(theme,MENU_POPUPBACKGROUND,0,TMT_FILLCOLORHINT,&backColour);
+          dc->SetTextColor(theApp.BlendedColour(itemColour,4,backColour,1));
         }
         else
-          dc->SetTextColor(theOS.GetThemeColor(theme,MENU_POPUPITEM,state,TMT_TEXTCOLOR));
+          dc->SetTextColor(itemColour);
 
         // Draw the menu text
         rc.left = di->rcItem.left+m_menuGutter+m_menuTextGap.cx;
@@ -535,8 +539,8 @@ void ProjectFrame::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
         dc->DrawText(CString(ext->title.c_str()),rc,DT_VCENTER|DT_SINGLELINE);
         dc->SelectObject(oldFont);
 
-        theOS.EndBufferedPaint(pb,TRUE);
-        theOS.CloseThemeData(theme);
+        ::EndBufferedPaint(pb,TRUE);
+        ::CloseThemeData(theme);
       }
       else
       {
@@ -1801,7 +1805,7 @@ void ProjectFrame::OnReleaseMaterials()
   // If the path to the ".materials" directory doesn't exist, create it
   CString path = GetMaterialsFolder();
   if (::GetFileAttributes(path) == INVALID_FILE_ATTRIBUTES)
-    theOS.SHCreateDirectoryEx(this,path);
+    ::SHCreateDirectoryEx(GetSafeHwnd(),path,NULL);
 
   // Open an Explorer window
   ::ShellExecute(0,"explore",path,NULL,NULL,SW_SHOWNORMAL);
@@ -2364,8 +2368,9 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
             L"done from the \"Windows Security\" app: go to \"Virus and Threat Protection\", "
             L"then \"Manage Settings\", then \"Add or Remove Exclusions\".";
           config.pszVerificationText = L"Don't warn about this any more";
+          config.cxWidth = 300;
           BOOL dontWarn = FALSE;
-          if (theOS.TaskDialogIndirect(&config,&dontWarn) == IDOK)
+          if (SUCCEEDED(::TaskDialogIndirect(&config,NULL,NULL,&dontWarn)))
             theApp.WriteProfileInt("Window","Slow Compile Warn",dontWarn ? 0 : 1);
         }
       }
@@ -2512,8 +2517,8 @@ void ProjectFrame::UpdateMenuParams(void)
 
   // Get the theme, if any
   HTHEME theme = 0;
-  if (theOS.IsAppThemed())
-    theme = theOS.OpenThemeData(this,L"MENU");
+  if (::IsAppThemed())
+    theme = ::OpenThemeData(GetSafeHwnd(),L"Menu");
 
   // Get the menu item spacings
   if (theme != 0)
@@ -2521,20 +2526,22 @@ void ProjectFrame::UpdateMenuParams(void)
     CDC* dc = GetDC();
 
     CSize szC(0,0);
-    theOS.GetThemePartSize(theme,dc,MENU_POPUPCHECK,0,TS_TRUE,&szC);
+    ::GetThemePartSize(theme,dc->GetSafeHdc(),MENU_POPUPCHECK,0,NULL,TS_TRUE,&szC);
     MARGINS mrgC = {0}, mrgCb = {0};
-    theOS.GetThemeMargins(theme,dc,MENU_POPUPCHECK,0,TMT_CONTENTMARGINS,&mrgC);
-    theOS.GetThemeMargins(theme,dc,MENU_POPUPCHECKBACKGROUND,0,TMT_CONTENTMARGINS,&mrgCb);
+    ::GetThemeMargins(theme,dc->GetSafeHdc(),MENU_POPUPCHECK,0,TMT_CONTENTMARGINS,NULL,&mrgC);
+    ::GetThemeMargins(theme,dc->GetSafeHdc(),MENU_POPUPCHECKBACKGROUND,0,TMT_CONTENTMARGINS,NULL,&mrgCb);
     m_menuGutter = szC.cx+mrgC.cxLeftWidth+mrgC.cxRightWidth+mrgCb.cxLeftWidth+mrgCb.cxRightWidth;
 
-    m_menuTextGap.cx = theOS.GetThemeInt(theme,MENU_POPUPBACKGROUND,0,TMT_BORDERSIZE);
+    int gapX = 0;
+    ::GetThemeInt(theme,MENU_POPUPBACKGROUND,0,TMT_BORDERSIZE,&gapX);
+    m_menuTextGap.cx = gapX;
     CSize sz = dc->GetTextExtent("Test");
     m_menuTextGap.cy =
       szC.cy+mrgC.cyTopHeight+mrgC.cyBottomHeight+mrgCb.cyTopHeight+mrgCb.cyBottomHeight-sz.cy;
     m_menuTextGap.cy = max(0,m_menuTextGap.cy/2);
 
     ReleaseDC(dc);
-    theOS.CloseThemeData(theme);
+    ::CloseThemeData(theme);
   }
   else
   {
@@ -3136,7 +3143,7 @@ bool ProjectFrame::LoadToolBar(void)
       // Find the height of the examples list control
       int h = 0;
       COMBOBOXINFO boxInfo = { sizeof COMBOBOXINFO,0 };
-      if (theOS.GetComboBoxInfo(&m_exampleList,&boxInfo))
+      if (m_exampleList.GetComboBoxInfo(&boxInfo))
         h = boxInfo.rcItem.bottom+boxInfo.rcItem.top;
       else
       {

@@ -3,7 +3,6 @@
 #include "stdafx.h"
 #include "TabTranscript.h"
 #include "Inform.h"
-#include "OSLayer.h"
 #include "Panel.h"
 #include "Messages.h"
 #include "Resource.h"
@@ -200,6 +199,10 @@ void TabTranscript::OnBlessAll()
   LPCWSTR msg =
     L"This will bless all the items currently in the transcript so that they appear as "
     L"the expected text in the right-hand column. This operation cannot be undone.";
-  if (theOS.TaskDialog(this,head,msg,L_INFORM_TITLE,MB_ICONWARNING|MB_YESNO) == IDYES)
-    m_window.BlessAll();
+  int btn = 0;
+  if (SUCCEEDED(::TaskDialog(GetSafeHwnd(),0,L_INFORM_TITLE,head,msg,TDCBF_YES_BUTTON|TDCBF_NO_BUTTON,TD_WARNING_ICON,&btn)))
+  {
+    if (btn == IDYES)
+      m_window.BlessAll();
+  }
 }

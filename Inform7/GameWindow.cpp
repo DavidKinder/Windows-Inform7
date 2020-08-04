@@ -8,7 +8,6 @@
 #include "GameText.h"
 #include "Inform.h"
 #include "Messages.h"
-#include "OSLayer.h"
 #include "DSoundEngine.h"
 #include "GlkSound.h"
 
@@ -163,7 +162,7 @@ void GameWindow::RunInterpreter(const char* dir, const char* file, bool glulx)
   // a debugger of the interpreter, as that stops the real debugger being attached to
   // the interpreter.
   InformApp::CreatedProcess cp = theApp.CreateProcess(
-    dir,command,start,!(theOS.IsDebuggerPresent()),"");
+    dir,command,start,!(::IsDebuggerPresent()),"");
   if (cp.process != INVALID_HANDLE_VALUE)
   {
     m_interpreter = cp.process;
@@ -1027,7 +1026,15 @@ bool GameWindow::GameKeyEvent(CWnd* wnd, WPARAM wParam, LPARAM lParam)
         break;
       default:
         // If not a special key, get the Unicode value of the key
-        key = theOS.ToUnicode((UINT)wParam,(UINT)lParam,0);
+        {
+          BYTE state[256];
+          if (::GetKeyboardState(state))
+          {
+            WCHAR buffer[16];
+            if (::ToUnicode((UINT)wParam,(UINT)lParam,state,buffer,16,0) == 1)
+              key = buffer[0];
+          }
+        }
         break;
       }
 

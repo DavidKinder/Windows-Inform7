@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "FlatTab.h"
 #include "Inform.h"
-#include "OSLayer.h"
 #include "Panel.h"
 
 #ifdef _DEBUG
@@ -72,16 +71,18 @@ void FlatTab::OnPaint()
   COLORREF lineColour = ::GetSysColor(COLOR_BTNSHADOW);
   if (!m_buttons)
   {
-    HTHEME theme = 0;
-    if (theOS.IsAppThemed())
+    if (::IsAppThemed())
     {
-      HTHEME theme = theOS.OpenThemeData(this,L"TAB");
+      HTHEME theme = ::OpenThemeData(GetSafeHwnd(),L"TAB");
       if (theme != 0)
       {
-        COLORREF themeColour = theOS.GetThemeColor(theme,TABP_TABITEM,TIBES_NORMAL,TMT_EDGEFILLCOLOR);
-        theOS.CloseThemeData(theme);
-        if (themeColour != 0)
-          lineColour = themeColour;
+        COLORREF themeColour = 0;
+        if (SUCCEEDED(::GetThemeColor(theme,TABP_TABITEM,TIBES_NORMAL,TMT_EDGEFILLCOLOR,&themeColour)))
+        {
+          if (themeColour != 0)
+            lineColour = themeColour;
+        }
+        ::CloseThemeData(theme);
       }
     }
   }

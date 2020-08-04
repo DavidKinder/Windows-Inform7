@@ -2,7 +2,6 @@
 #include "BaseDialog.h"
 #include "DpiFunctions.h"
 #include "Inform.h"
-#include "OSLayer.h"
 
 IMPLEMENT_DYNAMIC(I7BaseDialog, BaseDialog)
 
@@ -29,14 +28,14 @@ void I7BaseDialog::EraseWithGripper(CDC* dc)
 
   // Draw a gripper to show that the dialog can be resized
   bool drawn = false;
-  if (theOS.IsAppThemed())
+  if (::IsAppThemed())
   {
     // Open the status bar theme
-    HTHEME theme = theOS.OpenThemeData(this,L"Status");
+    HTHEME theme = ::OpenThemeData(GetSafeHwnd(),L"Status");
     if (theme)
     {
-      theOS.DrawThemeBackground(theme,dc,SP_GRIPPER,0,gripRect);
-      theOS.CloseThemeData(theme);
+      ::DrawThemeBackground(theme,dc->GetSafeHdc(),SP_GRIPPER,0,gripRect,NULL);
+      ::CloseThemeData(theme);
       drawn = true;
     }
   }

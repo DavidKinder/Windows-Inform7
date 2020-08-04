@@ -7,7 +7,6 @@
 #include "TextFormat.h"
 #include "NewDialogs.h"
 #include "Dialogs.h"
-#include "OSLayer.h"
 #include "Build.h"
 
 #ifdef _DEBUG
@@ -899,7 +898,8 @@ void ExtensionFrame::ShowInstalledMessage(CWnd* parent, int installed, int total
     else
       msg.Format(L"Extension %s installed successfully.",lastExt);
   }
-  theOS.TaskDialog(parent,head,msg,L_INFORM_TITLE,MB_ICONINFORMATION|MB_OK);
+  ::TaskDialog(parent->GetSafeHwnd(),0,
+    L_INFORM_TITLE,head,msg,TDCBF_OK_BUTTON,TD_INFORMATION_ICON,NULL);
 }
 
 CString ExtensionFrame::GetDisplayName(bool fullName)

@@ -2,7 +2,6 @@
 #include "FindInFiles.h"
 #include "ExtensionFrame.h"
 #include "ProjectFrame.h"
-#include "OSLayer.h"
 #include "RichEdit.h"
 #include "TextFormat.h"
 #include "resource.h"
@@ -434,8 +433,11 @@ void FindInFiles::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
   if (nIDCtl == IDC_REGEX_HELP)
   {
     CRect helpRect(di->rcItem);
-    HANDLE pb = 0;
-    CDC* dc = theOS.BeginBufferedPaint(di->hDC,helpRect,BPBF_COMPATIBLEBITMAP,&pb);
+    HDC hdc = 0;
+    HANDLE pb = ::BeginBufferedPaint(di->hDC,helpRect,BPBF_COMPATIBLEBITMAP,NULL,&hdc);
+    if (pb == 0)
+      return;
+    CDC* dc = CDC::FromHandle(hdc);
     dc->FillSolidRect(helpRect,::GetSysColor(COLOR_BTNFACE));
 
     const char* text1 =
@@ -488,7 +490,7 @@ void FindInFiles::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
     textRect.MoveToX(helpRect.right - textRect.Width());
     m_richText->DrawText(*dc,textRect);
 
-    theOS.EndBufferedPaint(pb,TRUE);
+    ::EndBufferedPaint(pb,TRUE);
   }
   else
     CWnd::OnDrawItem(nIDCtl,di);
@@ -669,8 +671,11 @@ void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
     textRect.DeflateRect(2,0);
 
     // Set up the device context
-    HANDLE pb = 0;
-    CDC* dc = theOS.BeginBufferedPaint(custom->nmcd.hdc,rect,BPBF_COMPATIBLEBITMAP,&pb);
+    HDC hdc = 0;
+    HANDLE pb = ::BeginBufferedPaint(custom->nmcd.hdc,rect,BPBF_COMPATIBLEBITMAP,NULL,&hdc);
+    if (pb == 0)
+      return;
+    CDC* dc = CDC::FromHandle(hdc);
     dc->SetTextColor(::GetSysColor(selected ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
     dc->SetBkMode(TRANSPARENT);
     CFont* oldFont = dc->SelectObject(m_resultsList.GetFont());
@@ -724,7 +729,7 @@ void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
     }
 
     dc->SelectObject(oldFont);
-    theOS.EndBufferedPaint(pb,TRUE);
+    ::EndBufferedPaint(pb,TRUE);
     *result = CDRF_SKIPDEFAULT;
   }
   break;
@@ -1089,10 +1094,10 @@ void FindInFiles::DrawText(CDC* dc, LPCWSTR text, int length, CRect& rect, UINT 
 {
   if (length > 0)
   {
-    theOS.DrawText(dc,text,length,rect,format|DT_SINGLELINE);
+    ::DrawTextW(dc->GetSafeHdc(),text,length,rect,format|DT_SINGLELINE);
 
     CRect measure(rect);
-    theOS.DrawText(dc,text,length,measure,format|DT_SINGLELINE|DT_CALCRECT);
+    ::DrawTextW(dc->GetSafeHdc(),text,length,measure,format|DT_SINGLELINE|DT_CALCRECT);
     rect.left += measure.Width();
   }
 }

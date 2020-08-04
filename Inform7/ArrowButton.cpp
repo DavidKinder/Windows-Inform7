@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "ArrowButton.h"
-#include "OSLayer.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -34,10 +33,10 @@ void ArrowButton::DrawControl(CDC* dc, CRect rect, UINT ownerDrawState)
   TEXTMETRIC metrics;
   dc->GetTextMetrics(&metrics);
 
-  if (theOS.IsAppThemed())
+  if (::IsAppThemed())
   {
     // Open the button theme
-    HTHEME theme = theOS.OpenThemeData(this,L"Button");
+    HTHEME theme = ::OpenThemeData(GetSafeHwnd(),L"Button");
     if (theme)
     {
       // Work out the button state
@@ -52,13 +51,13 @@ void ArrowButton::DrawControl(CDC* dc, CRect rect, UINT ownerDrawState)
         state = PBS_NORMAL;
 
       // Get the background size
-      theOS.GetThemeBackgroundContentRect(theme,dc,BP_PUSHBUTTON,state,rect);
+      ::GetThemeBackgroundContentRect(theme,dc->GetSafeHdc(),BP_PUSHBUTTON,state,rect,NULL);
 
       // Draw the button's text
       CRect textRect(rect);
       textRect.left += metrics.tmAveCharWidth;
       CStringW textW(text);
-      theOS.DrawThemeText(theme,dc,BP_PUSHBUTTON,state,textW,
+      ::DrawThemeText(theme,dc->GetSafeHdc(),BP_PUSHBUTTON,state,textW,textW.GetLength(),
         DT_LEFT|DT_VCENTER|DT_SINGLELINE,DTT_GRAYED,textRect);
 
       // Draw the arrow
@@ -70,7 +69,7 @@ void ArrowButton::DrawControl(CDC* dc, CRect rect, UINT ownerDrawState)
         dc->DrawFocusRect(rect);
 
       // Close the button theme
-      theOS.CloseThemeData(theme);
+      ::CloseThemeData(theme);
     }
   }
   else

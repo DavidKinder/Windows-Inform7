@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "TranscriptWindow.h"
 #include "Inform.h"
-#include "OSLayer.h"
 #include "Messages.h"
 
 #include <math.h>
@@ -223,7 +222,7 @@ void TranscriptWindow::OnDraw(CDC* pDC)
       dc.SetTextColor(theApp.GetColour(InformApp::ColourText));
       CRect textRect(m_layout.margin.cx,y+m_layout.margin.cy,
         btnRect.left-m_layout.margin.cx,y+yinput);
-      theOS.DrawText(&dc,line,line.GetLength(),textRect,DT_SINGLELINE|DT_NOPREFIX|DT_END_ELLIPSIS);
+      ::DrawTextW(dc.GetSafeHdc(),line,line.GetLength(),textRect,DT_SINGLELINE|DT_NOPREFIX|DT_END_ELLIPSIS);
 
       // Draw the 'bless' button, and store its position
       y += yinput;
@@ -886,10 +885,10 @@ CRect TranscriptWindow::DrawButton(
   bool over = (rect.PtInRect(mousePoint) != 0);
   bool down = (m_buttonDown == button);
 
-  if (theOS.IsAppThemed())
+  if (::IsAppThemed())
   {
     // Open the button theme
-    HTHEME theme = theOS.OpenThemeData(this,L"Button");
+    HTHEME theme = ::OpenThemeData(GetSafeHwnd(),L"Button");
     if (theme)
     {
       UINT state = PBS_NORMAL;
@@ -903,19 +902,19 @@ CRect TranscriptWindow::DrawButton(
         state = PBS_HOT;
 
       // Draw the themed control frame
-      theOS.DrawThemeBackground(theme,&dc,BP_PUSHBUTTON,state,rect);
+      ::DrawThemeBackground(theme,dc.GetSafeHdc(),BP_PUSHBUTTON,state,rect,NULL);
 
       // Get the background size
       CRect backRect(rect);
-      theOS.GetThemeBackgroundContentRect(theme,&dc,BP_PUSHBUTTON,state,backRect);
+      ::GetThemeBackgroundContentRect(theme,dc.GetSafeHdc(),BP_PUSHBUTTON,state,backRect,NULL);
 
       // Draw the themed button text
       CStringW textW(text);
-      theOS.DrawThemeText(theme,&dc,BP_PUSHBUTTON,state,textW,
+      ::DrawThemeText(theme,dc.GetSafeHdc(),BP_PUSHBUTTON,state,textW,textW.GetLength(),
         DT_CENTER|DT_VCENTER|DT_SINGLELINE,DTT_GRAYED,backRect);
 
       // Close the button theme
-      theOS.CloseThemeData(theme);
+      ::CloseThemeData(theme);
     }
   }
   else
