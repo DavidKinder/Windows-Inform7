@@ -18,6 +18,8 @@
 #define IDD_PREFS_TEXT                  157
 #define IDD_PREFS_ADVANCED              158
 #define IDD_FIND_FILES                  159
+#define IDD_FIND                        160
+#define IDD_REPLACE                     161
 #define ID_FILE_INSTALL_EXT             200
 #define ID_FILE_INSTALL_FOLDER          201
 #define ID_FILE_INSTALL_XP              202
@@ -207,6 +209,11 @@
 #define IDC_FOUND                       1102
 #define IDC_RESULTS                     1103
 #define IDC_REGEX_HELP                  1104
+#define IDC_FIND_NEXT                   1105
+#define IDC_FIND_PREVIOUS               1106
+#define IDC_REPLACE_WITH                1107
+#define IDC_REPLACE_ALL                 1108
+#define IDC_REPLACE_FIND                1109
 #define ID_OPEN_EXTENSIONS_LIST         2000
 #define ID_NEW_EXTENSIONS_LIST          3000
 
@@ -216,7 +223,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        288
 #define _APS_NEXT_COMMAND_VALUE         283
-#define _APS_NEXT_CONTROL_VALUE         1105
+#define _APS_NEXT_CONTROL_VALUE         1110
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif
