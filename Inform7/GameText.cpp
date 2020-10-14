@@ -118,13 +118,13 @@ void GameText::AddText(const CStringW& text, bool fromSkein)
     range->Select();
 
     // Set the link effect field for the newly added text, and store the link
-    // number in the style field
+    // number in the language ID field
     CHARFORMAT2 format;
     ::ZeroMemory(&format,sizeof format);
     format.cbSize = sizeof format;
-    format.dwMask = CFM_LINK|CFM_STYLE;
+    format.dwMask = CFM_LINK|CFM_LCID;
     format.dwEffects = CFE_LINK;
-    format.sStyle = m_link;
+    format.lcid = m_link;
     SendMessage(EM_SETCHARFORMAT,SCF_SELECTION,(LPARAM)&format);
 
     // Put back the old selection
@@ -525,13 +525,13 @@ void GameText::OnEnLink(NMHDR *pNMHDR, LRESULT *pResult)
     if (cp > link->chrg.cpMin)
       cp--;
     CComPtr<ITextRange> range;
-    m_textDoc->Range(cp,cp,&range);
+    m_textDoc->Range(cp,cp+1,&range);
 
-    // Get the link number from the style field of the font
+    // Get the link number from the language ID field of the font
     CComPtr<ITextFont> font;
     range->GetFont(&font);
     long linkValue = 0;
-    font->GetStyle(&linkValue);
+    font->GetLanguageID(&linkValue);
     if ((linkValue != 0) && (linkValue != tomUndefined))
       m_main->GameLinkEvent(this,linkValue);
   }

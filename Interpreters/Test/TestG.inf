@@ -406,10 +406,15 @@ Array args buffer 28;
 
   print " ";
   glk_set_hyperlink(2);
-  print "Link 2";
+  print "Link2";
 
-  glk_set_hyperlink(3);
-  print "Link3";
+  glk_set_hyperlink(333333);
+  print "Link 333,333";
+  glk_set_hyperlink(0);
+
+  print " ";
+  glk_set_hyperlink(3333333333);
+  print "Link 3,333,333,333";
   glk_set_hyperlink(0);
 
   print " [Not a link] ";
@@ -423,8 +428,8 @@ Array args buffer 28;
   glk_set_hyperlink(0);
 
   print " [Not a link] ";
-  glk_set_hyperlink(6);
-  print "Link6";
+  glk_set_hyperlink(666666);
+  print "Link 666,666";
   glk_set_hyperlink(0);
 
   glk_set_window(win1);
