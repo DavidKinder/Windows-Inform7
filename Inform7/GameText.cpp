@@ -532,7 +532,7 @@ void GameText::OnEnLink(NMHDR *pNMHDR, LRESULT *pResult)
     range->GetFont(&font);
     long linkValue = 0;
     font->GetLanguageID(&linkValue);
-    if ((linkValue != 0) && (linkValue != tomUndefined))
+    if (linkValue != 0)
       m_main->GameLinkEvent(this,linkValue);
   }
 }
