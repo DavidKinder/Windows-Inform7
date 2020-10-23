@@ -2,7 +2,6 @@
 
 #include "Inform.h"
 #include "BaseDialog.h"
-#include "UnicodeEdit.h"
 
 #include <vector>
 
@@ -114,7 +113,6 @@ private:
   int m_ignoreCase;
   int m_findRule;
 
-  UnicodeEdit m_find;
   CComPtr<IAutoComplete2> m_findAutoComplete;
   static CList<CStringW> m_findHistory;
 

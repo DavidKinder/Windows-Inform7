@@ -346,7 +346,6 @@ LPCWSTR FindInFiles::GetAutoComplete(int index)
 void FindInFiles::DoDataExchange(CDataExchange* pDX)
 {
   I7BaseDialog::DoDataExchange(pDX);
-  DDX_Control(pDX, IDC_FIND, m_find);
   DDX_Control(pDX, IDC_REGEX_HELP, m_regexHelp);
   DDX_TextW(pDX, IDC_FIND, m_findText);
   DDX_Check(pDX,IDC_LOOK_SOURCE,m_lookSource);
@@ -368,7 +367,7 @@ BOOL FindInFiles::OnInitDialog()
       return FALSE;
     FindEnumString* fes = new FindEnumString();
     CComQIPtr<IEnumString> ies(fes->GetInterface(&IID_IEnumString));
-    m_findAutoComplete->Init(m_find.GetSafeHwnd(),ies,NULL,NULL);
+    m_findAutoComplete->Init(GetDlgItem(IDC_FIND)->GetSafeHwnd(),ies,NULL,NULL);
     m_findAutoComplete->SetOptions(ACO_AUTOSUGGEST);
     fes->ExternalRelease();
 
