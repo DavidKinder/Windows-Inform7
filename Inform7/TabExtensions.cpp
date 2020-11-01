@@ -15,9 +15,9 @@ IMPLEMENT_DYNAMIC(TabExtensions, TabBase)
 
 BEGIN_MESSAGE_MAP(TabExtensions, TabBase)
   ON_WM_SIZE()
+  ON_MESSAGE(WM_FINDREPLACECMD, OnFindReplaceCmd)
   ON_MESSAGE(WM_PUBLIBERROR, OnPubLibError)
   ON_MESSAGE(WM_USERNAVIGATE, OnUserNavigate)
-  ON_REGISTERED_MESSAGE(FINDMSG, OnFindReplaceCmd)
 END_MESSAGE_MAP()
 
 const char* TabExtensions::m_files[TabExtensions::Number_ExtTabs] =

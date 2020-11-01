@@ -16,18 +16,16 @@ public:
   void RepeatFind(bool forward);
 
 private:
-  bool FindNext(bool fromSelect);
+  bool FindNext(bool fromSelect, bool forward);
   bool Select(const CHARRANGE& range);
   bool Replace(void);
   bool ReplaceAll(void);
 
+  CStringW GetInitialFindText(void);
+
   FindReplaceDialog* m_dialog;
   bool m_findOnly;
-
   CStringW m_lastFind;
-  BOOL m_searchDown;
-  BOOL m_matchCase;
-  BOOL m_matchWholeWord;
 
   SourceEdit* m_edit;
 };

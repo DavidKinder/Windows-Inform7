@@ -19,7 +19,8 @@
 #define IDD_PREFS_ADVANCED              158
 #define IDD_FIND_FILES                  159
 #define IDD_FIND                        160
-#define IDD_REPLACE                     161
+#define IDD_FIND_BASIC                  161
+#define IDD_REPLACE                     162
 #define ID_FILE_INSTALL_EXT             200
 #define ID_FILE_INSTALL_FOLDER          201
 #define ID_FILE_INSTALL_XP              202

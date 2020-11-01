@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "EditFind.h"
 #include "FindReplaceDialog.h"
-#include "SourceEdit.h"
 #include "Inform.h"
+#include "Messages.h"
+#include "SourceEdit.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -11,9 +12,6 @@
 EditFind::EditFind() : m_dialog(NULL), m_edit(NULL)
 {
   m_findOnly = true;
-  m_searchDown = TRUE;
-  m_matchCase = FALSE;
-  m_matchWholeWord = FALSE;
 }
 
 void EditFind::Create(SourceEdit* edit, bool findOnly)
@@ -22,66 +20,52 @@ void EditFind::Create(SourceEdit* edit, bool findOnly)
   {
     if (findOnly == m_findOnly)
     {
-      m_dialog->SetActiveWindow();
-      m_dialog->ShowWindow(SW_SHOW);
+      CStringW findText;
+      if (m_dialog->IsWindowVisible() == FALSE)
+        findText = GetInitialFindText();
+      m_dialog->Show(findText);
       return;
     }
     Destroy();
+    //XXXXDK save state for other dialog?
   }
 
   m_edit = edit;
   m_findOnly = findOnly;
 
-  // Use the current selection or the previous search text to
-  // populate the find dialog.
-  CStringW findText;
-  if (theApp.GetProfileInt("Window","Find Uses Selection",0) != 0)
-  {
-    CHARRANGE sel = edit->GetSelect();
-    findText = edit->GetTextRange(sel.cpMin,sel.cpMax);
-  }
-  if (findText.IsEmpty())
-    findText = m_lastFind;
-
-  m_dialog = FindReplaceDialog::Create(findOnly ? TRUE : FALSE,findText,
-    m_searchDown,m_matchCase,&m_matchWholeWord,edit);
-  m_dialog->SetActiveWindow();
-  m_dialog->ShowWindow(SW_SHOW);
+  m_dialog = FindReplaceDialog::Create(findOnly ? IDD_FIND : IDD_REPLACE,edit);
+  if (m_dialog)
+    m_dialog->Show(GetInitialFindText());
 }
 
 void EditFind::Destroy(void)
 {
-  if ((m_dialog != NULL) && ::IsWindow(m_dialog->m_hWnd))
-    m_dialog->SendMessage(WM_CLOSE);
+  delete m_dialog;
   m_dialog = NULL;
   m_edit = NULL;
 }
 
-LRESULT EditFind::FindReplaceCmd(WPARAM, LPARAM lParam)
+LRESULT EditFind::FindReplaceCmd(WPARAM wParam, LPARAM lParam)
 {
-  FindReplaceDialog* dialog = FindReplaceDialog::GetNotifier(lParam);
-  ASSERT(dialog == m_dialog);
-
   bool found = true;
 
-  if (dialog->IsTerminating())
+  ASSERT(m_dialog != NULL);
+  if (m_dialog)
   {
-    m_lastFind = dialog->GetFindString();
-    m_searchDown = dialog->SearchDown();
-    m_matchCase = dialog->MatchCase();
-    m_matchWholeWord = dialog->MatchWholeWord();
-    m_dialog = NULL;
+    switch (wParam)
+    {
+    case FindCmd_Next:
+      found = FindNext(true,true);
+      if (!found)
+        found = FindNext(false,true);
+      break;
+    case FindCmd_Previous:
+      found = FindNext(true,false);
+      if (!found)
+        found = FindNext(false,false);
+      break;
+    }
   }
-  else if (dialog->FindNext())
-  {
-    found = FindNext(true);
-    if (!found)
-      found = FindNext(false);
-  }
-  else if (dialog->ReplaceCurrent())
-    found = Replace();
-  else if (dialog->ReplaceAll())
-    found = ReplaceAll();
 
   if (!found)
     ::MessageBeep(MB_ICONEXCLAMATION);
@@ -96,20 +80,20 @@ const CStringW& EditFind::GetLastFind(void)
 void EditFind::RepeatFind(bool forward)
 {
   // Search for the text
-  CHARRANGE found = m_edit->FindText(m_lastFind,true,forward,m_matchCase,m_matchWholeWord);
+  CHARRANGE found = m_edit->FindText(m_lastFind,true,forward,FALSE,FALSE);//XXXXDK m_matchCase,m_matchWholeWord);
 
   // Was there a match?
   if (found.cpMin >= 0)
     Select(found);
 }
 
-bool EditFind::FindNext(bool fromSelect)
+bool EditFind::FindNext(bool fromSelect, bool forward)
 {
   ASSERT(m_edit != NULL);
 
   // Search for the text
-  CHARRANGE found = m_edit->FindText(m_dialog->GetFindString(),fromSelect,
-    (m_dialog->SearchDown() != 0),(m_dialog->MatchCase() != 0),(m_dialog->MatchWholeWord() != 0));
+  CHARRANGE found = m_edit->FindText(m_dialog->GetFindString(),fromSelect,forward,
+    (m_dialog->MatchCase() != 0),(m_dialog->MatchWholeWord() != 0));
 
   // Was there a match?
   if (found.cpMin >= 0)
@@ -157,7 +141,7 @@ bool EditFind::Replace(void)
   }
 
   // Find the next occurence
-  return FindNext(true);
+  return FindNext(true,true);
 }
 
 bool EditFind::ReplaceAll(void)
@@ -182,10 +166,24 @@ bool EditFind::ReplaceAll(void)
     }
   }
 
-  if (currentMatch || FindNext(true))
+  if (currentMatch || FindNext(true,true))
   {
     while (Replace());
     return true;
   }
   return false;
+}
+
+CStringW EditFind::GetInitialFindText(void)
+{
+  // Return the current selection or the previous search text
+  CStringW findText;
+  if (theApp.GetProfileInt("Window","Find Uses Selection",0) != 0)
+  {
+    CHARRANGE sel = m_edit->GetSelect();
+    findText = m_edit->GetTextRange(sel.cpMin,sel.cpMax);
+  }
+  if (findText.IsEmpty())
+    findText = m_lastFind;
+  return findText;
 }

@@ -1,10 +1,15 @@
 #include "stdafx.h"
 #include "FindReplaceDialog.h"
+#include "Inform.h"
+#include "Messages.h"
+#include "UnicodeEdit.h"
+#include "resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
+/*XXXXDK
 typedef UINT_PTR (CALLBACK* COMMDLGPROC)(HWND, UINT, WPARAM, LPARAM);
 
 class FindReplaceDialogImpl : public FindReplaceDialog
@@ -101,25 +106,128 @@ public:
   WCHAR m_replaceWith[128];
 };
 
-IMPLEMENT_DYNAMIC(FindReplaceDialog, CDialog)
 IMPLEMENT_DYNAMIC(FindReplaceDialogImpl, FindReplaceDialog)
+*/
 
-FindReplaceDialog* FindReplaceDialog::Create(BOOL findOnly, LPCWSTR findWhat,
-  BOOL searchDown, BOOL matchCase, const BOOL* matchWholeWord, CWnd* parentWnd)
+IMPLEMENT_DYNAMIC(FindReplaceDialog, I7BaseDialog)
+
+BEGIN_MESSAGE_MAP(FindReplaceDialog, I7BaseDialog)
+  ON_WM_CLOSE()
+  ON_BN_CLICKED(IDC_FIND_NEXT, OnFindNext)
+  ON_BN_CLICKED(IDC_FIND_PREVIOUS, OnFindPrevious)
+  ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
+END_MESSAGE_MAP()
+
+FindReplaceDialog* FindReplaceDialog::Create(UINT id, CWnd* parentWnd)
 {
-  return new FindReplaceDialogImpl(findOnly,findWhat,searchDown,matchCase,matchWholeWord,parentWnd);
+  FindReplaceDialog* dialog = new FindReplaceDialog(id,parentWnd);
+  if (dialog->I7BaseDialog::Create(dialog->m_lpszTemplateName,parentWnd) == FALSE)
+  {
+    ASSERT(FALSE);
+    delete dialog;
+    return NULL;
+  }
+  theApp.SetIcon(dialog);
+  return dialog;
 }
 
-FindReplaceDialog* PASCAL FindReplaceDialog::GetNotifier(LPARAM lparam)
+void FindReplaceDialog::Show(LPCWSTR findText)
 {
-  return (FindReplaceDialogImpl*)(lparam - offsetof(FindReplaceDialogImpl,m_fr));
+  SetActiveWindow();
+  ShowWindow(SW_SHOW);
+  
+  if (wcslen(findText) > 0)
+  {
+    UpdateData(TRUE);
+    m_findText = CStringW(findText).Trim();
+    UpdateData(FALSE);
+  }
+
+  CWnd* find = GetDlgItem(IDC_FIND);
+  find->SendMessage(EM_SETSEL,0,-1);
+  find->SendMessage(EM_SCROLLCARET);
+  find->SetFocus();
 }
 
-FindReplaceDialog::FindReplaceDialog() : CCommonDialog(NULL)
+FindReplaceDialog::FindReplaceDialog(UINT id, CWnd* parentWnd) : I7BaseDialog(id,parentWnd)
 {
+  m_ignoreCase = TRUE;
 }
 
-void FindReplaceDialog::PostNcDestroy()
+void FindReplaceDialog::DoDataExchange(CDataExchange* pDX)
 {
-  delete this;
+  I7BaseDialog::DoDataExchange(pDX);
+  DDX_TextW(pDX, IDC_FIND, m_findText);
+  DDX_Check(pDX,IDC_IGNORE_CASE,m_ignoreCase);
+}
+
+void FindReplaceDialog::OnCancel()
+{
+  SendMessage(WM_CLOSE);
+}
+
+CStringW FindReplaceDialog::GetFindString(void) const
+{
+  return m_findText;
+}
+
+CStringW FindReplaceDialog::GetReplaceString(void) const
+{
+  return L"";//XXXXDK
+}
+
+bool FindReplaceDialog::MatchCase(void) const
+{
+  return (m_ignoreCase == FALSE);
+}
+
+BOOL FindReplaceDialog::MatchWholeWord(void) const
+{
+  return FALSE;//XXXXDK
+}
+
+BOOL FindReplaceDialog::ReplaceCurrent(void) const
+{
+  return FALSE;//XXXXDK
+}
+
+BOOL FindReplaceDialog::ReplaceAll(void) const
+{
+  return FALSE;//XXXXDK
+}
+
+void FindReplaceDialog::OnClose()
+{
+  UpdateData(TRUE);
+  m_pParentWnd->SendMessage(WM_FINDREPLACECMD,FindCmd_Close);
+
+  ShowWindow(SW_HIDE);
+  GetParentFrame()->SetActiveWindow();
+}
+
+void FindReplaceDialog::OnFindNext()
+{
+  UpdateData(TRUE);
+  if (!m_findText.IsEmpty())
+    m_pParentWnd->SendMessage(WM_FINDREPLACECMD,FindCmd_Next);
+}
+
+void FindReplaceDialog::OnFindPrevious()
+{
+  UpdateData(TRUE);
+  if (!m_findText.IsEmpty())
+    m_pParentWnd->SendMessage(WM_FINDREPLACECMD,FindCmd_Previous);
+}
+
+//XXXXDK doesn't work!
+LRESULT FindReplaceDialog::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
+{
+  if (GetSafeHwnd() != 0)
+  {
+    UpdateData(TRUE);
+    BOOL hasFindText = !m_findText.IsEmpty();
+    GetDlgItem(IDC_FIND_NEXT)->EnableWindow(hasFindText);
+    GetDlgItem(IDC_FIND_PREVIOUS)->EnableWindow(hasFindText);
+  }
+  return 0;
 }

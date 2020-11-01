@@ -192,5 +192,16 @@ public:
 // is to be updated.
 #define WM_UPDATEPREVIEW  WM_APP+42
 
-// Sent to the Find in Files dialog to resize the results column
+// Sent to the Find in Files dialog to resize the results column.
 #define WM_RESIZERESULTS  WM_APP+43
+
+enum FindCommand
+{
+  FindCmd_Close,
+  FindCmd_Next,
+  FindCmd_Previous
+};
+
+// Sent to the parent window of Find and Replace dialogs to indicate
+// a command has been triggered in that dialog.
+#define WM_FINDREPLACECMD WM_APP+44

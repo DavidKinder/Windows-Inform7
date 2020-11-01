@@ -15,8 +15,8 @@ IMPLEMENT_DYNAMIC(TabDoc, TabBase)
 
 BEGIN_MESSAGE_MAP(TabDoc, TabBase)
   ON_WM_SIZE()
+  ON_MESSAGE(WM_FINDREPLACECMD, OnFindReplaceCmd)
   ON_MESSAGE(WM_USERNAVIGATE, OnUserNavigate)
-  ON_REGISTERED_MESSAGE(FINDMSG, OnFindReplaceCmd)
 END_MESSAGE_MAP()
 
 const char* TabDoc::m_files[TabDoc::Number_DocTabs] =
