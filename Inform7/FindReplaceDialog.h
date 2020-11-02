@@ -28,7 +28,7 @@ protected:
   afx_msg void OnClose();
   afx_msg void OnFindNext();
   afx_msg void OnFindPrevious();
-  afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM, LPARAM);
+  afx_msg void OnChangeFindText();
 
 private:
   CStringW m_findText;

@@ -51,6 +51,7 @@ protected:
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg void OnFindAll();
   afx_msg void OnChangeFindRule();
+  afx_msg void OnChangeFindText();
   afx_msg void OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result);
   afx_msg void OnResultsSelect(NMHDR* pNotifyStruct, LRESULT* result);
   afx_msg LRESULT OnResultsResize(WPARAM, LPARAM);

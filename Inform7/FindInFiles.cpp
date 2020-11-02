@@ -130,6 +130,7 @@ BEGIN_MESSAGE_MAP(FindInFiles, I7BaseDialog)
   ON_WM_SIZE()
   ON_BN_CLICKED(IDC_FIND_ALL, OnFindAll)
   ON_CBN_SELCHANGE(IDC_FIND_RULE, OnChangeFindRule)
+  ON_EN_CHANGE(IDC_FIND, OnChangeFindText)
   ON_NOTIFY(NM_CUSTOMDRAW, IDC_RESULTS, OnResultsDraw)
   ON_NOTIFY(NM_DBLCLK, IDC_RESULTS, OnResultsSelect)
   ON_NOTIFY(NM_RETURN, IDC_RESULTS, OnResultsSelect)
@@ -180,7 +181,10 @@ void FindInFiles::Show(void)
 
   if (GetSafeHwnd() != 0)
   {
+    UpdateData(TRUE);
+
     ShowWindow(SW_SHOW);
+    GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
     GetDlgItem(IDC_FIND)->SetFocus();
   }
 }
@@ -203,6 +207,7 @@ void FindInFiles::FindInSource(LPCWSTR text)
   m_findRule = 0;
   m_findText = text;
   UpdateData(FALSE);
+  GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
   PostMessage(WM_COMMAND,IDC_FIND_ALL);
 }
 
@@ -218,6 +223,7 @@ void FindInFiles::FindInDocs(LPCWSTR text)
   m_findRule = 0;
   m_findText = text;
   UpdateData(FALSE);
+  GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
   PostMessage(WM_COMMAND,IDC_FIND_ALL);
 }
 
@@ -630,6 +636,12 @@ void FindInFiles::OnChangeFindRule()
   }
 }
 
+void FindInFiles::OnChangeFindText()
+{
+  UpdateData(TRUE);
+  GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
+}
+
 void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
 {
   // Default to letting Windows draw the control
@@ -649,8 +661,12 @@ void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
     break;
   case CDDS_ITEMPREPAINT|CDDS_SUBITEM:
   {
-    // Work out the background colour
+    // Make sure that we have a result for the given item
     int item = (int)custom->nmcd.dwItemSpec;
+    if (item >= m_results.size())
+      return;
+
+    // Work out the background colour
     COLORREF backColour = m_results[item].Colour();
     if ((item % 2) != 0)
       backColour = Darken(backColour);

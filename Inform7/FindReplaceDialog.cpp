@@ -9,113 +9,13 @@
 #define new DEBUG_NEW
 #endif
 
-/*XXXXDK
-typedef UINT_PTR (CALLBACK* COMMDLGPROC)(HWND, UINT, WPARAM, LPARAM);
-
-class FindReplaceDialogImpl : public FindReplaceDialog
-{
-  DECLARE_DYNAMIC(FindReplaceDialogImpl)
-
-public:
-  CStringW GetReplaceString(void) const
-  {
-    return CStringW(m_fr.lpstrReplaceWith);
-  }
-
-  CStringW GetFindString(void) const
-  {
-    return CStringW(m_fr.lpstrFindWhat);
-  }
-
-  BOOL SearchDown(void) const
-  {
-    return m_fr.Flags & FR_DOWN;
-  }
-
-  BOOL FindNext(void) const
-  {
-    return m_fr.Flags & FR_FINDNEXT;
-  }
-
-  BOOL MatchCase(void) const
-  {
-    return m_fr.Flags & FR_MATCHCASE;
-  }
-
-  BOOL MatchWholeWord(void) const
-  {
-    return m_fr.Flags & FR_WHOLEWORD;
-  }
-
-  BOOL ReplaceCurrent(void) const
-  {
-    return m_fr. Flags & FR_REPLACE;
-  }
-
-  BOOL ReplaceAll(void) const
-  {
-    return m_fr.Flags & FR_REPLACEALL;
-  }
-
-  BOOL IsTerminating(void) const
-  {
-    return m_fr.Flags & FR_DIALOGTERM;
-  }
-
-  FindReplaceDialogImpl(BOOL findOnly, LPCWSTR findWhat,
-    BOOL searchDown, BOOL matchCase, const BOOL* matchWholeWord, CWnd* parentWnd)
-  {
-    memset(&m_fr,0,sizeof(m_fr));
-    m_findWhat[0] = L'\0';
-    m_replaceWith[0] = L'\0';
-
-    m_fr.Flags = FR_ENABLEHOOK;
-    if (searchDown)
-      m_fr.Flags |= FR_DOWN;
-    if (matchCase)
-      m_fr.Flags |= FR_MATCHCASE;
-    if (matchWholeWord && *matchWholeWord)
-      m_fr.Flags |= FR_WHOLEWORD;
-    else if (!matchWholeWord)
-      m_fr.Flags |= FR_HIDEWHOLEWORD;
-
-    m_fr.lpfnHook = (COMMDLGPROC)_AfxCommDlgProc;
-    m_fr.lStructSize = sizeof m_fr;
-    m_fr.hwndOwner = parentWnd->GetSafeHwnd();
-    m_nIDHelp = findOnly ? AFX_IDD_FIND : AFX_IDD_REPLACE;
-
-    m_fr.lpstrFindWhat = (LPWSTR)m_findWhat;
-    m_fr.wFindWhatLen = sizeof m_findWhat / sizeof m_findWhat[0];
-    m_fr.lpstrReplaceWith = (LPWSTR)m_replaceWith;
-    m_fr.wReplaceWithLen = sizeof m_replaceWith / sizeof m_replaceWith[0];
-
-    if (findWhat != NULL)
-      ::lstrcpynW(m_findWhat,findWhat,m_fr.wFindWhatLen);
-
-    AfxHookWindowCreate(this);
-    if (findOnly)
-      ::FindTextW(&m_fr);
-    else
-      ::ReplaceTextW(&m_fr);
-    if (!AfxUnhookWindowCreate())
-      PostNcDestroy();
-  }
-
-  FINDREPLACEW m_fr;
-  WCHAR m_findWhat[128];
-  WCHAR m_replaceWith[128];
-};
-
-IMPLEMENT_DYNAMIC(FindReplaceDialogImpl, FindReplaceDialog)
-*/
-
 IMPLEMENT_DYNAMIC(FindReplaceDialog, I7BaseDialog)
 
 BEGIN_MESSAGE_MAP(FindReplaceDialog, I7BaseDialog)
   ON_WM_CLOSE()
   ON_BN_CLICKED(IDC_FIND_NEXT, OnFindNext)
   ON_BN_CLICKED(IDC_FIND_PREVIOUS, OnFindPrevious)
-  ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
+  ON_EN_CHANGE(IDC_FIND, OnChangeFindText)
 END_MESSAGE_MAP()
 
 FindReplaceDialog* FindReplaceDialog::Create(UINT id, CWnd* parentWnd)
@@ -136,12 +36,14 @@ void FindReplaceDialog::Show(LPCWSTR findText)
   SetActiveWindow();
   ShowWindow(SW_SHOW);
   
+  UpdateData(TRUE);
   if (wcslen(findText) > 0)
   {
-    UpdateData(TRUE);
     m_findText = CStringW(findText).Trim();
     UpdateData(FALSE);
   }
+
+  GetDlgItem(IDC_FIND_NEXT)->EnableWindow(!m_findText.IsEmpty());
 
   CWnd* find = GetDlgItem(IDC_FIND);
   find->SendMessage(EM_SETSEL,0,-1);
@@ -208,26 +110,17 @@ void FindReplaceDialog::OnClose()
 void FindReplaceDialog::OnFindNext()
 {
   UpdateData(TRUE);
-  if (!m_findText.IsEmpty())
-    m_pParentWnd->SendMessage(WM_FINDREPLACECMD,FindCmd_Next);
+  m_pParentWnd->SendMessage(WM_FINDREPLACECMD,FindCmd_Next);
 }
 
 void FindReplaceDialog::OnFindPrevious()
 {
   UpdateData(TRUE);
-  if (!m_findText.IsEmpty())
-    m_pParentWnd->SendMessage(WM_FINDREPLACECMD,FindCmd_Previous);
+  m_pParentWnd->SendMessage(WM_FINDREPLACECMD,FindCmd_Previous);
 }
 
-//XXXXDK doesn't work!
-LRESULT FindReplaceDialog::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
+void FindReplaceDialog::OnChangeFindText()
 {
-  if (GetSafeHwnd() != 0)
-  {
-    UpdateData(TRUE);
-    BOOL hasFindText = !m_findText.IsEmpty();
-    GetDlgItem(IDC_FIND_NEXT)->EnableWindow(hasFindText);
-    GetDlgItem(IDC_FIND_PREVIOUS)->EnableWindow(hasFindText);
-  }
-  return 0;
+  UpdateData(TRUE);
+  GetDlgItem(IDC_FIND_NEXT)->EnableWindow(!m_findText.IsEmpty());
 }
