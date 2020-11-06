@@ -8,24 +8,27 @@ class EditFind
 public:
   EditFind();
 
-  void Create(SourceEdit* edit, bool findOnly);
+  void CreateFind(SourceEdit* edit);
+  void CreateReplace(SourceEdit* edit);
   void Destroy(void);
+
   LRESULT FindReplaceCmd(WPARAM wParam, LPARAM lParam);
 
   const CStringW& GetLastFind(void);
   void RepeatFind(bool forward);
 
 private:
-  bool FindNext(bool fromSelect, bool forward);
+  bool FindNext(FindReplaceDialog* current, bool fromSelect, bool forward);
   bool Select(const CHARRANGE& range);
   bool Replace(void);
   bool ReplaceAll(void);
 
+  FindReplaceDialog* GetCurrentDialog(void);
   CStringW GetInitialFindText(void);
 
-  FindReplaceDialog* m_dialog;
-  bool m_findOnly;
-  CStringW m_lastFind;
+  FindReplaceDialog* m_dialogFind;
+  FindReplaceDialog* m_dialogReplace;
 
   SourceEdit* m_edit;
+  CStringW m_lastFind;
 };

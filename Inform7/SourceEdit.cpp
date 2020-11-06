@@ -293,12 +293,12 @@ void SourceEdit::OnUpdateNeedText(CCmdUI* pCmdUI)
 
 void SourceEdit::OnEditFind()
 {
-  m_find.Create(this,true);
+  m_find.CreateFind(this);
 }
 
 void SourceEdit::OnEditReplace()
 {
-  m_find.Create(this,false);
+  m_find.CreateReplace(this);
 }
 
 LRESULT SourceEdit::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
