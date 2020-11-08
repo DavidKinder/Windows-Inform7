@@ -149,7 +149,7 @@ FindInFiles::FindInFiles(ProjectFrame* project)
   m_lookDocCode = TRUE;
 
   m_ignoreCase = TRUE;
-  m_findRule = 0;
+  m_findRule = FindRule_Contains;
   m_richText = NULL;
 }
 
@@ -204,7 +204,7 @@ void FindInFiles::FindInSource(LPCWSTR text)
   m_lookDocMain = FALSE;
   m_lookDocCode = FALSE;
   m_ignoreCase = TRUE;
-  m_findRule = 0;
+  m_findRule = FindRule_Contains;
   m_findText = text;
   UpdateData(FALSE);
   GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
@@ -220,7 +220,7 @@ void FindInFiles::FindInDocs(LPCWSTR text)
   m_lookDocMain = TRUE;
   m_lookDocCode = TRUE;
   m_ignoreCase = TRUE;
-  m_findRule = 0;
+  m_findRule = FindRule_Contains;
   m_findText = text;
   UpdateData(FALSE);
   GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
@@ -360,7 +360,7 @@ void FindInFiles::DoDataExchange(CDataExchange* pDX)
   DDX_Check(pDX,IDC_LOOK_DOC_MAIN,m_lookDocMain);
   DDX_Check(pDX,IDC_LOOK_DOC_CODE,m_lookDocCode);
   DDX_Check(pDX,IDC_IGNORE_CASE,m_ignoreCase);
-  DDX_CBIndex(pDX,IDC_FIND_RULE,m_findRule);
+  DDX_CBIndex(pDX,IDC_FIND_RULE,(int&)m_findRule);
   DDX_Control(pDX, IDC_RESULTS, m_resultsList);
 }
 
@@ -619,7 +619,7 @@ void FindInFiles::OnFindAll()
 void FindInFiles::OnChangeFindRule()
 {
   UpdateData(TRUE);
-  if (m_findRule == 3)
+  if (m_findRule == FindRule_Regex)
   {
     m_resultsList.ModifyStyle(WS_VISIBLE,0);
     m_regexHelp.ModifyStyle(0,WS_VISIBLE);
@@ -821,7 +821,7 @@ void FindInFiles::Find(const CString& text, const char* doc, const char* docSort
     std::regex::flag_type flags = std::regex::ECMAScript;
     if (m_ignoreCase)
       flags |= std::regex::icase;
-    if (m_findRule != 3) // Not "Regular expression"
+    if (m_findRule != FindRule_Regex)
     {
       // Escape any characters with a special meaning in regular expressions
       for (int i = 0; i < findUtf.GetLength(); i++)
@@ -835,10 +835,10 @@ void FindInFiles::Find(const CString& text, const char* doc, const char* docSort
     }
     switch (m_findRule)
     {
-    case 1: // "Starts with"
+    case FindRule_StartsWith:
       findUtf.Insert(0,"\\b");
       break;
-    case 2: // "Full word"
+    case FindRule_FullWord:
       findUtf.Insert(0,"\\b");
       findUtf.Append("\\b");
       break;

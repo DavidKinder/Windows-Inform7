@@ -12,6 +12,7 @@
 EditFind::EditFind() : m_dialogFind(NULL), m_dialogReplace(NULL), m_edit(NULL)
 {
   m_matchCase = false;
+  m_findRule = FindRule_Contains;
 }
 
 void EditFind::CreateFind(SourceEdit* edit)
@@ -82,6 +83,7 @@ LRESULT EditFind::FindReplaceCmd(WPARAM wParam, LPARAM lParam)
     case FindCmd_Close:
       m_lastFind = current->GetFindString();
       m_matchCase = current->MatchCase();
+      m_findRule = current->GetFindRule();
       break;
     case FindCmd_Next:
       found = FindNext(current,true,true);
@@ -112,7 +114,7 @@ const CStringW& EditFind::GetLastFind(void)
 void EditFind::RepeatFind(bool forward)
 {
   // Search for the text
-  CHARRANGE found = m_edit->FindText(m_lastFind,true,forward,m_matchCase,FALSE);//XXXXDK m_matchWholeWord
+  CHARRANGE found = m_edit->FindText(m_lastFind,true,forward,m_matchCase,m_findRule);
 
   // Was there a match?
   if (found.cpMin >= 0)
@@ -125,7 +127,7 @@ bool EditFind::FindNext(FindReplaceDialog* current, bool fromSelect, bool forwar
 
   // Search for the text
   CHARRANGE found = m_edit->FindText(current->GetFindString(),
-    fromSelect,forward,current->MatchCase(),(current->MatchWholeWord() != 0));
+    fromSelect,forward,current->MatchCase(),current->GetFindRule());
 
   // Was there a match?
   if (found.cpMin >= 0)

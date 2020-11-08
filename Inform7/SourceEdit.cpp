@@ -1121,13 +1121,22 @@ CStringW SourceEdit::GetTextRange(int cpMin, int cpMax, int len)
   return TextFormat::UTF8ToUnicode(utfText);
 }
 
-CHARRANGE SourceEdit::FindText(LPCWSTR text, bool fromSelect, bool down, bool matchCase, bool wholeWord)
+CHARRANGE SourceEdit::FindText(LPCWSTR text, bool fromSelect, bool down, bool matchCase, FindRule findRule)
 {
+  ASSERT(findRule != FindRule_Regex);//XXXXDK
+
   int flags = 0;
   if (matchCase)
     flags |= SCFIND_MATCHCASE;
-  if (wholeWord)
+  switch (findRule)
+  {
+  case FindRule_StartsWith:
+    flags |= SCFIND_WORDSTART;
+    break;
+  case FindRule_FullWord:
     flags |= SCFIND_WHOLEWORD;
+    break;
+  }
 
   TextToFind find;
   if (down)

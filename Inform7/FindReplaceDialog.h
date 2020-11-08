@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BaseDialog.h"
+#include "FindInFiles.h"
 
 class FindReplaceDialog : public I7BaseDialog
 {
@@ -13,9 +14,7 @@ public:
   CStringW GetFindString(void) const;
   CStringW GetReplaceString(void) const;
   bool MatchCase(void) const;
-  BOOL MatchWholeWord(void) const;
-  BOOL ReplaceCurrent(void) const;
-  BOOL ReplaceAll(void) const;
+  FindRule GetFindRule(void) const;
 
 protected:
   FindReplaceDialog(UINT id, CWnd* parentWnd);
@@ -33,4 +32,5 @@ protected:
 private:
   CStringW m_findText;
   BOOL m_ignoreCase;
+  FindRule m_findRule;
 };

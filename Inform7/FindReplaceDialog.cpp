@@ -54,6 +54,7 @@ void FindReplaceDialog::Show(LPCWSTR findText)
 FindReplaceDialog::FindReplaceDialog(UINT id, CWnd* parentWnd) : I7BaseDialog(id,parentWnd)
 {
   m_ignoreCase = TRUE;
+  m_findRule = FindRule_Contains;
 }
 
 void FindReplaceDialog::DoDataExchange(CDataExchange* pDX)
@@ -61,6 +62,7 @@ void FindReplaceDialog::DoDataExchange(CDataExchange* pDX)
   I7BaseDialog::DoDataExchange(pDX);
   DDX_TextW(pDX, IDC_FIND, m_findText);
   DDX_Check(pDX,IDC_IGNORE_CASE,m_ignoreCase);
+  DDX_CBIndex(pDX,IDC_FIND_RULE,(int&)m_findRule);
 }
 
 void FindReplaceDialog::OnCancel()
@@ -83,19 +85,9 @@ bool FindReplaceDialog::MatchCase(void) const
   return (m_ignoreCase == FALSE);
 }
 
-BOOL FindReplaceDialog::MatchWholeWord(void) const
+FindRule FindReplaceDialog::GetFindRule(void) const
 {
-  return FALSE;//XXXXDK
-}
-
-BOOL FindReplaceDialog::ReplaceCurrent(void) const
-{
-  return FALSE;//XXXXDK
-}
-
-BOOL FindReplaceDialog::ReplaceAll(void) const
-{
-  return FALSE;//XXXXDK
+  return m_findRule;
 }
 
 void FindReplaceDialog::OnClose()

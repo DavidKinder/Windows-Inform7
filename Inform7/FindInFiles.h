@@ -8,6 +8,14 @@
 class ProjectFrame;
 class RichDrawText;
 
+enum FindRule
+{
+  FindRule_Contains = 0,
+  FindRule_StartsWith = 1,
+  FindRule_FullWord = 2,
+  FindRule_Regex = 3
+};
+
 class FindResultsCtrl : public CListCtrl
 {
 public:
@@ -112,7 +120,7 @@ private:
   int m_lookDocCode;
 
   int m_ignoreCase;
-  int m_findRule;
+  FindRule m_findRule;
 
   CComPtr<IAutoComplete2> m_findAutoComplete;
   static CList<CStringW> m_findHistory;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FindInFiles.h"
+
 class SourceEdit;
 class FindReplaceDialog;
 
@@ -33,4 +35,5 @@ private:
 
   CStringW m_lastFind;
   bool m_matchCase;
+  FindRule m_findRule;
 };
