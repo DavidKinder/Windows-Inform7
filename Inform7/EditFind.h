@@ -30,5 +30,7 @@ private:
   FindReplaceDialog* m_dialogReplace;
 
   SourceEdit* m_edit;
+
   CStringW m_lastFind;
+  bool m_matchCase;
 };
