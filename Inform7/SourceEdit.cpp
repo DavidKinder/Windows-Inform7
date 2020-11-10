@@ -653,14 +653,21 @@ void SourceEdit::OnDocModified(NMHDR* hdr, LRESULT*)
 {
   if (hdr->code == SCN_MODIFIED)
   {
-    // If text has been added or removed, update the elastic tabstops
-    if (m_elasticTabStops)
+    // Has text has been added or removed?
+    SCNotification* notify = (SCNotification*)hdr;
+    if (notify->modificationType & (SC_MOD_INSERTTEXT|SC_MOD_DELETETEXT))
     {
-      SCNotification* notify = (SCNotification*)hdr;
-      if (notify->modificationType & SC_MOD_INSERTTEXT)
-        ElasticTabStops_OnModify(m_editPtr,notify->position,notify->position+notify->length);
-      else if (notify->modificationType & SC_MOD_DELETETEXT)
-        ElasticTabStops_OnModify(m_editPtr,notify->position,notify->position);
+      // Update the elastic tabstops
+      if (m_elasticTabStops)
+      {
+        if (notify->modificationType & SC_MOD_INSERTTEXT)
+          ElasticTabStops_OnModify(m_editPtr,notify->position,notify->position+notify->length);
+        else if (notify->modificationType & SC_MOD_DELETETEXT)
+          ElasticTabStops_OnModify(m_editPtr,notify->position,notify->position);
+      }
+
+      // Tell the find/replace logic that the text has changed
+      m_find.SourceChanged();
     }
   }
 }
@@ -1123,7 +1130,7 @@ CStringW SourceEdit::GetTextRange(int cpMin, int cpMax, int len)
 
 CHARRANGE SourceEdit::FindText(LPCWSTR text, bool fromSelect, bool down, bool matchCase, FindRule findRule)
 {
-  ASSERT(findRule != FindRule_Regex);//XXXXDK
+  ASSERT(findRule != FindRule_Regex);
 
   int flags = 0;
   if (matchCase)

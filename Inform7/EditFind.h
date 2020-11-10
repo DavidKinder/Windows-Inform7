@@ -18,9 +18,11 @@ public:
 
   const CStringW& GetLastFind(void);
   void RepeatFind(bool forward);
+  void SourceChanged(void);
 
 private:
   bool FindNext(FindReplaceDialog* current, bool fromSelect, bool forward);
+  CHARRANGE FindText(LPCWSTR text, bool fromSelect, bool down, bool matchCase, FindRule findRule);
   bool Select(const CHARRANGE& range);
   bool Replace(void);
   bool ReplaceAll(void);
@@ -32,8 +34,9 @@ private:
   FindReplaceDialog* m_dialogReplace;
 
   SourceEdit* m_edit;
+  CString m_lastSource;
 
   CStringW m_lastFind;
-  bool m_matchCase;
-  FindRule m_findRule;
+  bool m_lastMatchCase;
+  FindRule m_lastFindRule;
 };

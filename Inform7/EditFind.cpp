@@ -4,6 +4,9 @@
 #include "Inform.h"
 #include "Messages.h"
 #include "SourceEdit.h"
+#include "TextFormat.h"
+
+#include <regex>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -11,8 +14,8 @@
 
 EditFind::EditFind() : m_dialogFind(NULL), m_dialogReplace(NULL), m_edit(NULL)
 {
-  m_matchCase = false;
-  m_findRule = FindRule_Contains;
+  m_lastMatchCase = false;
+  m_lastFindRule = FindRule_Contains;
 }
 
 void EditFind::CreateFind(SourceEdit* edit)
@@ -78,23 +81,30 @@ LRESULT EditFind::FindReplaceCmd(WPARAM wParam, LPARAM lParam)
   ASSERT(current != NULL);
   if (current)
   {
-    switch (wParam)
+    try
     {
-    case FindCmd_Close:
-      m_lastFind = current->GetFindString();
-      m_matchCase = current->MatchCase();
-      m_findRule = current->GetFindRule();
-      break;
-    case FindCmd_Next:
-      found = FindNext(current,true,true);
-      if (!found)
-        found = FindNext(current,false,true);
-      break;
-    case FindCmd_Previous:
-      found = FindNext(current,true,false);
-      if (!found)
-        found = FindNext(current,false,false);
-      break;
+      switch (wParam)
+      {
+      case FindCmd_Close:
+        m_lastFind = current->GetFindString();
+        m_lastMatchCase = current->MatchCase();
+        m_lastFindRule = current->GetFindRule();
+        break;
+      case FindCmd_Next:
+        found = FindNext(current,true,true);
+        if (!found)
+          found = FindNext(current,false,true);
+        break;
+      case FindCmd_Previous:
+        found = FindNext(current,true,false);
+        if (!found)
+          found = FindNext(current,false,false);
+        break;
+      }
+    }
+    catch (std::regex_error& ex)
+    {
+      current->MessageBox(FindInFiles::RegexError(ex),INFORM_TITLE,MB_ICONERROR|MB_OK);
     }
   }
 
@@ -113,20 +123,31 @@ const CStringW& EditFind::GetLastFind(void)
 
 void EditFind::RepeatFind(bool forward)
 {
-  // Search for the text
-  CHARRANGE found = m_edit->FindText(m_lastFind,true,forward,m_matchCase,m_findRule);
+  try
+  {
+    // Search for the text
+    CHARRANGE found = FindText(m_lastFind,true,forward,m_lastMatchCase,m_lastFindRule);
 
-  // Was there a match?
-  if (found.cpMin >= 0)
-    Select(found);
+    // Was there a match?
+    if (found.cpMin >= 0)
+      Select(found);
+  }
+  catch (std::regex_error& ex)
+  {
+    m_edit->MessageBox(FindInFiles::RegexError(ex),INFORM_TITLE,MB_ICONERROR|MB_OK);
+  }
+}
+
+void EditFind::SourceChanged(void)
+{
+  // Discard the cached source code text, if any
+  m_lastSource.Empty();
 }
 
 bool EditFind::FindNext(FindReplaceDialog* current, bool fromSelect, bool forward)
 {
-  ASSERT(m_edit != NULL);
-
   // Search for the text
-  CHARRANGE found = m_edit->FindText(current->GetFindString(),
+  CHARRANGE found = FindText(current->GetFindString(),
     fromSelect,forward,current->MatchCase(),current->GetFindRule());
 
   // Was there a match?
@@ -139,6 +160,71 @@ bool EditFind::FindNext(FindReplaceDialog* current, bool fromSelect, bool forwar
     }
   }
   return false;
+}
+
+CHARRANGE EditFind::FindText(LPCWSTR text, bool fromSelect, bool down, bool matchCase, FindRule findRule)
+{
+  ASSERT(m_edit != NULL);
+
+  if (findRule != FindRule_Regex)
+    return m_edit->FindText(text,fromSelect,down,matchCase,findRule);
+
+  // If not already present, cache the source code text
+  if (m_lastSource.IsEmpty())
+    m_lastSource = m_edit->GetSource();
+
+  // Set up a regular expression
+  CString textUtf = TextFormat::UnicodeToUTF8(text);
+  std::regex::flag_type flags = std::regex::ECMAScript;
+  if (!matchCase)
+    flags |= std::regex::icase;
+  std::regex regexp;
+  regexp.assign(textUtf,flags);
+
+  // Work out where to start searching from
+  int start = 0;
+  if (fromSelect)
+  {
+    CHARRANGE select = m_edit->GetSelect();
+    start = down ? select.cpMax : select.cpMin;
+  }
+  else
+    start = down ? 0 : -1;
+
+  // Search for the text
+  CHARRANGE result = { -1,-1 };
+  int len = m_lastSource.GetLength();
+  if (start < len)
+  {
+    if (down)
+    {
+      std::cregex_iterator regexIt(m_lastSource.GetString()+start,m_lastSource.GetString()+len,regexp);
+      if ((regexIt != std::cregex_iterator()) && (regexIt->length() > 0))
+      {
+        result.cpMin = start+(int)regexIt->position();
+        result.cpMax = start+(int)(regexIt->position() + regexIt->length());
+      }
+    }
+    else
+    {
+      // Search from the beginning for the last result before the start position
+      std::cregex_iterator regexIt(m_lastSource.GetString(),m_lastSource.GetString()+len,regexp);
+      for (; regexIt != std::cregex_iterator(); ++regexIt)
+      {
+        if (regexIt->length() > 0)
+        {
+          int matchStart = (int)regexIt->position();
+          int matchEnd = (int)(regexIt->position() + regexIt->length());
+          if ((start == -1) || (matchEnd < start))
+          {
+            result.cpMin = matchStart;
+            result.cpMax = matchEnd;
+          }
+        }
+      }
+    }
+  }
+  return result;
 }
 
 bool EditFind::Select(const CHARRANGE& range)

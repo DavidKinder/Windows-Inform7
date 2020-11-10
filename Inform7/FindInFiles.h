@@ -3,6 +3,7 @@
 #include "Inform.h"
 #include "BaseDialog.h"
 
+#include <regex>
 #include <vector>
 
 class ProjectFrame;
@@ -42,6 +43,7 @@ public:
   static void ExitInstance(void);
 
   static LPCWSTR GetAutoComplete(int index);
+  static const char* RegexError(const std::regex_error& ex);
 
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);

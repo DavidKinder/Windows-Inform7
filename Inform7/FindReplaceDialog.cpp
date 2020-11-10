@@ -62,7 +62,8 @@ void FindReplaceDialog::DoDataExchange(CDataExchange* pDX)
   I7BaseDialog::DoDataExchange(pDX);
   DDX_TextW(pDX, IDC_FIND, m_findText);
   DDX_Check(pDX,IDC_IGNORE_CASE,m_ignoreCase);
-  DDX_CBIndex(pDX,IDC_FIND_RULE,(int&)m_findRule);
+  if (GetDlgItem(IDC_FIND_RULE))
+    DDX_CBIndex(pDX,IDC_FIND_RULE,(int&)m_findRule);
 }
 
 void FindReplaceDialog::OnCancel()
