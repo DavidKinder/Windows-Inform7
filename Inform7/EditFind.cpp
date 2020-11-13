@@ -100,6 +100,12 @@ LRESULT EditFind::FindReplaceCmd(WPARAM wParam, LPARAM lParam)
         if (!found)
           found = FindNext(current,false,false);
         break;
+      case FindCmd_Replace:
+        found = Replace(current);
+        break;
+      case FindCmd_ReplaceAll:
+        found = ReplaceAll(current);
+        break;
       }
     }
     catch (std::regex_error& ex)
@@ -240,16 +246,103 @@ bool EditFind::Select(const CHARRANGE& range)
   return false;
 }
 
-bool EditFind::Replace(void)
+// In a regular expression replacement string, we want:
+//  \0 through \9 to be replaced with the corresponding found group
+//  \\ to \
+//  \t \r \v \f \n to newline or tab characters 8, 10, 11, 12, 13
+//  \x09 etc. to UTF-8 code
+void RegexReplaceString(CStringW& replace, const std::cmatch& match)
+{
+  bool foundSlash = false;
+  for (int i = 0; i < replace.GetLength(); i++)
+  {
+    WCHAR c = replace.GetAt(i);
+    if (c == L'\\')
+    {
+      if (foundSlash)
+      {
+        replace.Delete(i,1);
+        i--;
+        foundSlash = false;
+      }
+      else
+        foundSlash = true;
+    }
+    else if (foundSlash)
+    {
+      if ((c >= L'0') && (c <= L'9'))
+      {
+        int group = (int)(c - L'0');
+        if (group < match.size())
+        {
+          CStringW groupStr = TextFormat::UTF8ToUnicode(match[group].str().c_str());
+          replace.Delete(i-1,2);
+          replace.Insert(i-1,groupStr);
+          i = (i-1) + (int)(groupStr.GetLength()-1);
+        }
+      }
+      else if ((c == L't') || (c == L'r') || (c == L'v') || (c == L'f') || (c == L'n'))
+      {
+        if (c == L't')
+          c = 9;
+        else if (c == L'r')
+          c = 10;
+        else if (c == L'v')
+          c = 11;
+        else if (c == L'f')
+          c = 12;
+        else if (c == L'n')
+          c = 13;
+        replace.SetAt(i-1,c);
+        replace.Delete(i,1);
+        i--;
+      }
+      else if (c == L'x')
+      {
+        if (i < replace.GetLength()-2)
+        {
+          int hexInt = 0;
+          if (swscanf(replace.Mid(i+1,2),L"%x",&hexInt) == 1)
+          {
+            replace.SetAt(i-1,hexInt);
+            replace.Delete(i,3);
+            i--;
+          }
+        }
+      }
+      foundSlash = false;
+    }
+  }
+}
+
+bool EditFind::Replace(FindReplaceDialog* current)
 {
   // Get the text in the current selection
   CHARRANGE sel = m_edit->GetSelect();
   CStringW selText = m_edit->GetTextRange(sel.cpMin,sel.cpMax);
 
   // If the current selection matches the text in the dialog, replace it
-  FindReplaceDialog* current = GetCurrentDialog();
-  ASSERT(current != NULL);
-  if (current != NULL)
+  if (current->GetFindRule() == FindRule_Regex)
+  {
+    // Set up a regular expression
+    CString findUtf = TextFormat::UnicodeToUTF8(current->GetFindString());
+    std::regex::flag_type flags = std::regex::ECMAScript;
+    if (!current->MatchCase())
+      flags |= std::regex::icase;
+    std::regex regexp;
+    regexp.assign(findUtf,flags);
+
+    // Run the regular expression on the selected text
+    CString selTextUtf = TextFormat::UnicodeToUTF8(selText);
+    std::cmatch matchResults;
+    if (std::regex_match(selTextUtf.GetString(),selTextUtf.GetString()+selTextUtf.GetLength(),matchResults,regexp))
+    {
+      CStringW replace = current->GetReplaceString();
+      RegexReplaceString(replace,matchResults);
+      m_edit->ReplaceSelect(replace);
+    }
+  }
+  else
   {
     if (current->MatchCase())
     {
@@ -261,42 +354,36 @@ bool EditFind::Replace(void)
       if (selText.CompareNoCase(current->GetFindString()) == 0)
         m_edit->ReplaceSelect(current->GetReplaceString());
     }
-
-    // Find the next occurence
-    return FindNext(current,true,true);
   }
-  return false;
+
+  // Find the next occurence
+  return FindNext(current,true,true);
 }
 
-bool EditFind::ReplaceAll(void)
+bool EditFind::ReplaceAll(FindReplaceDialog* current)
 {
-  FindReplaceDialog* current = GetCurrentDialog();
-  ASSERT(current != NULL);
-  if (current != NULL)
+  // Does the current selection match?
+  bool currentMatch = false;
   {
-    // Does the current selection match?
-    bool currentMatch = false;
-    {
-      CHARRANGE sel = m_edit->GetSelect();
-      CStringW selText = m_edit->GetTextRange(sel.cpMin,sel.cpMax);
+    CHARRANGE sel = m_edit->GetSelect();
+    CStringW selText = m_edit->GetTextRange(sel.cpMin,sel.cpMax);
 
-      if (current->MatchCase())
-      {
-        if (selText.Compare(current->GetFindString()) == 0)
-          currentMatch = true;
-      }
-      else
-      {
-        if (selText.CompareNoCase(current->GetFindString()) == 0)
-          currentMatch = true;
-      }
-    }
-
-    if (currentMatch || FindNext(current,true,true))
+    if (current->MatchCase())
     {
-      while (Replace());
-      return true;
+      if (selText.Compare(current->GetFindString()) == 0)
+        currentMatch = true;
     }
+    else
+    {
+      if (selText.CompareNoCase(current->GetFindString()) == 0)
+        currentMatch = true;
+    }
+  }
+
+  if (currentMatch || FindNext(current,true,true))
+  {
+    while (Replace(current));
+    return true;
   }
   return false;
 }

@@ -16,6 +16,9 @@ BEGIN_MESSAGE_MAP(FindReplaceDialog, I7BaseDialog)
   ON_BN_CLICKED(IDC_FIND_NEXT, OnFindNext)
   ON_BN_CLICKED(IDC_FIND_PREVIOUS, OnFindPrevious)
   ON_EN_CHANGE(IDC_FIND, OnChangeFindText)
+  ON_BN_CLICKED(IDC_REPLACE, OnReplace)
+  ON_BN_CLICKED(IDC_REPLACE_ALL, OnReplaceAll)
+  ON_EN_CHANGE(IDC_REPLACE_WITH, OnChangeReplaceWith)
 END_MESSAGE_MAP()
 
 FindReplaceDialog* FindReplaceDialog::Create(UINT id, CWnd* parentWnd)
@@ -43,8 +46,7 @@ void FindReplaceDialog::Show(LPCWSTR findText)
     UpdateData(FALSE);
   }
 
-  GetDlgItem(IDC_FIND_NEXT)->EnableWindow(!m_findText.IsEmpty());
-
+  EnableActions();
   CWnd* find = GetDlgItem(IDC_FIND);
   find->SendMessage(EM_SETSEL,0,-1);
   find->SendMessage(EM_SCROLLCARET);
@@ -64,6 +66,8 @@ void FindReplaceDialog::DoDataExchange(CDataExchange* pDX)
   DDX_Check(pDX,IDC_IGNORE_CASE,m_ignoreCase);
   if (GetDlgItem(IDC_FIND_RULE))
     DDX_CBIndex(pDX,IDC_FIND_RULE,(int&)m_findRule);
+  if (GetDlgItem(IDC_REPLACE_WITH))
+    DDX_TextW(pDX, IDC_REPLACE_WITH, m_replaceWith);
 }
 
 void FindReplaceDialog::OnCancel()
@@ -78,7 +82,7 @@ CStringW FindReplaceDialog::GetFindString(void) const
 
 CStringW FindReplaceDialog::GetReplaceString(void) const
 {
-  return L"";//XXXXDK
+  return m_replaceWith;
 }
 
 bool FindReplaceDialog::MatchCase(void) const
@@ -115,5 +119,38 @@ void FindReplaceDialog::OnFindPrevious()
 void FindReplaceDialog::OnChangeFindText()
 {
   UpdateData(TRUE);
-  GetDlgItem(IDC_FIND_NEXT)->EnableWindow(!m_findText.IsEmpty());
+  EnableActions();
+}
+
+void FindReplaceDialog::OnReplace()
+{
+  UpdateData(TRUE);
+  m_pParentWnd->SendMessage(WM_FINDREPLACECMD,FindCmd_Replace);
+}
+
+void FindReplaceDialog::OnReplaceAll()
+{
+  UpdateData(TRUE);
+  m_pParentWnd->SendMessage(WM_FINDREPLACECMD,FindCmd_ReplaceAll);
+}
+
+void FindReplaceDialog::OnChangeReplaceWith()
+{
+  UpdateData(TRUE);
+  EnableActions();
+}
+
+void FindReplaceDialog::EnableActions(void)
+{
+  BOOL canFind = !m_findText.IsEmpty();
+  GetDlgItem(IDC_FIND_NEXT)->EnableWindow(canFind);
+  GetDlgItem(IDC_FIND_PREVIOUS)->EnableWindow(canFind);
+
+  BOOL canReplace = !m_findText.IsEmpty() && !m_replaceWith.IsEmpty();
+  CWnd* button = GetDlgItem(IDC_REPLACE);
+  if (button)
+    button->EnableWindow(canReplace);
+  button = GetDlgItem(IDC_REPLACE_ALL);
+  if (button)
+    button->EnableWindow(canReplace);
 }

@@ -1240,13 +1240,6 @@ const InformApp::ExtLocation* InformApp::GetExtension(const char* author, const 
   return NULL;
 }
 
-static char hex(int digit)
-{
-  if (digit < 10)
-    return '0'+digit;
-  return 'a'+digit-10;
-}
-
 void InformApp::SetMyDocuments(bool showMsgs)
 {
   m_home.Empty();

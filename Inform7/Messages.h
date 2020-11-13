@@ -199,7 +199,9 @@ enum FindCommand
 {
   FindCmd_Close,
   FindCmd_Next,
-  FindCmd_Previous
+  FindCmd_Previous,
+  FindCmd_Replace,
+  FindCmd_ReplaceAll
 };
 
 // Sent to the parent window of Find and Replace dialogs to indicate

@@ -28,9 +28,14 @@ protected:
   afx_msg void OnFindNext();
   afx_msg void OnFindPrevious();
   afx_msg void OnChangeFindText();
+  afx_msg void OnReplace();
+  afx_msg void OnReplaceAll();
+  afx_msg void OnChangeReplaceWith();
 
 private:
-  CStringW m_findText;
+  void EnableActions(void);
+
+  CStringW m_findText, m_replaceWith;
   BOOL m_ignoreCase;
   FindRule m_findRule;
 };

@@ -24,8 +24,8 @@ private:
   bool FindNext(FindReplaceDialog* current, bool fromSelect, bool forward);
   CHARRANGE FindText(LPCWSTR text, bool fromSelect, bool down, bool matchCase, FindRule findRule);
   bool Select(const CHARRANGE& range);
-  bool Replace(void);
-  bool ReplaceAll(void);
+  bool Replace(FindReplaceDialog* current);
+  bool ReplaceAll(FindReplaceDialog* current);
 
   FindReplaceDialog* GetCurrentDialog(void);
   CStringW GetInitialFindText(void);
