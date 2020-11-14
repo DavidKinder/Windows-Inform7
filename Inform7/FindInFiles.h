@@ -2,12 +2,20 @@
 
 #include "Inform.h"
 #include "BaseDialog.h"
-#include "UnicodeEdit.h"
 
+#include <regex>
 #include <vector>
 
 class ProjectFrame;
 class RichDrawText;
+
+enum FindRule
+{
+  FindRule_Contains = 0,
+  FindRule_StartsWith = 1,
+  FindRule_FullWord = 2,
+  FindRule_Regex = 3
+};
 
 class FindResultsCtrl : public CListCtrl
 {
@@ -35,6 +43,7 @@ public:
   static void ExitInstance(void);
 
   static LPCWSTR GetAutoComplete(int index);
+  static const char* RegexError(const std::regex_error& ex);
 
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);
@@ -52,6 +61,7 @@ protected:
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg void OnFindAll();
   afx_msg void OnChangeFindRule();
+  afx_msg void OnChangeFindText();
   afx_msg void OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result);
   afx_msg void OnResultsSelect(NMHDR* pNotifyStruct, LRESULT* result);
   afx_msg LRESULT OnResultsResize(WPARAM, LPARAM);
@@ -112,9 +122,8 @@ private:
   int m_lookDocCode;
 
   int m_ignoreCase;
-  int m_findRule;
+  FindRule m_findRule;
 
-  UnicodeEdit m_find;
   CComPtr<IAutoComplete2> m_findAutoComplete;
   static CList<CStringW> m_findHistory;
 

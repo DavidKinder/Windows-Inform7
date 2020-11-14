@@ -667,23 +667,20 @@ class I7CefFind
 public:
   I7CefFind() : m_dialog(NULL), m_object(NULL)
   {
-    m_searchDown = true;
     m_matchCase = false;
     m_findNext = false;
   }
 
   ~I7CefFind()
   {
-    if ((m_dialog != NULL) && ::IsWindow(m_dialog->m_hWnd))
-      m_dialog->PostMessage(WM_CLOSE);
+    delete m_dialog;
   }
 
   void Create(ReportHtml* object)
   {
     if (m_dialog != NULL)
     {
-      m_dialog->SetActiveWindow();
-      m_dialog->ShowWindow(SW_SHOW);
+      m_dialog->Show(L"");
       return;
     }
 
@@ -694,10 +691,9 @@ public:
     if (parent && parent->IsKindOf(RUNTIME_CLASS(FlatSplitter)))
       parent = parent->GetParent();
 
-    m_dialog = FindReplaceDialog::Create(
-      TRUE,m_lastFind,m_searchDown,m_matchCase,NULL,parent);
-    m_dialog->SetActiveWindow();
-    m_dialog->ShowWindow(SW_SHOW);
+    m_dialog = FindReplaceDialog::Create(IDD_FIND_BASIC,parent);
+    if (m_dialog)
+      m_dialog->Show(L"");
   }
 
   void OnLoadEnd(void)
@@ -707,45 +703,33 @@ public:
 
   LRESULT FindReplaceCmd(WPARAM wParam, LPARAM lParam)
   {
-    FindReplaceDialog* dialog = FindReplaceDialog::GetNotifier(lParam);
-    ASSERT(dialog == m_dialog);
-    if (dialog != m_dialog)
-      return 0;
-
-    bool found = true;
-
-    if (dialog->IsTerminating())
+    ASSERT(m_dialog != NULL);
+    if (m_dialog)
     {
-      m_object->StopFind();
-      m_lastFind = dialog->GetFindString();
-      m_searchDown = dialog->SearchDown();
-      m_matchCase = dialog->MatchCase();
-      m_findNext = false;
-      m_dialog = NULL;
-    }
-    else if (dialog->FindNext())
-    {
-      found = FindNext();
-      if (!found && m_findNext)
+      switch (wParam)
       {
+      case FindCmd_Close:
+        m_object->StopFind();
         m_findNext = false;
-        found = FindNext();
+        break;
+      case FindCmd_Next:
+        FindNext(true);
+        break;
+      case FindCmd_Previous:
+        FindNext(false);
+        break;
       }
     }
-
-    if (!found)
-      ::MessageBeep(MB_ICONEXCLAMATION);
     return 0;
   }
 
 private:
-  bool FindNext(void)
+  void FindNext(bool forward)
   {
     ASSERT(m_object != NULL);
 
     // Has the search changed?
-    if ((m_lastFind != m_dialog->GetFindString()) ||
-        (m_matchCase != (m_dialog->MatchCase() != 0)))
+    if ((m_lastFind != m_dialog->GetFindString()) || (m_matchCase != m_dialog->MatchCase()))
     {
       // Reset the search
       m_object->StopFind();
@@ -757,16 +741,12 @@ private:
     m_matchCase = m_dialog->MatchCase();
 
     // Search for the text
-    m_object->Find(m_dialog->GetFindString(),m_findNext,
-      (m_dialog->SearchDown() != 0),(m_dialog->MatchCase() != 0));
+    m_object->Find(m_dialog->GetFindString(),m_findNext,forward,m_matchCase);
     m_findNext = true;
-    return true;
   }
 
   FindReplaceDialog* m_dialog;
-
   CStringW m_lastFind;
-  bool m_searchDown;
   bool m_matchCase;
   bool m_findNext;
 

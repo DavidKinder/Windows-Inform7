@@ -89,7 +89,7 @@ public:
   CHARRANGE GetCurrentWord(void);
   CHARRANGE GetNextWord(CHARRANGE word);
   CStringW GetTextRange(int cpMin, int cpMax, int len = -1);
-  CHARRANGE FindText(LPCWSTR text, bool fromSelect, bool down, bool matchCase, bool wholeWord);
+  CHARRANGE FindText(LPCWSTR text, bool fromSelect, bool down, bool matchCase, FindRule findRule);
 
   void LoadSettings(SourceSettings& set, COLORREF back);
   void PrefsChanged(void);

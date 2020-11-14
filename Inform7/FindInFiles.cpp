@@ -6,8 +6,6 @@
 #include "TextFormat.h"
 #include "resource.h"
 
-#include <regex>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -130,6 +128,7 @@ BEGIN_MESSAGE_MAP(FindInFiles, I7BaseDialog)
   ON_WM_SIZE()
   ON_BN_CLICKED(IDC_FIND_ALL, OnFindAll)
   ON_CBN_SELCHANGE(IDC_FIND_RULE, OnChangeFindRule)
+  ON_EN_CHANGE(IDC_FIND, OnChangeFindText)
   ON_NOTIFY(NM_CUSTOMDRAW, IDC_RESULTS, OnResultsDraw)
   ON_NOTIFY(NM_DBLCLK, IDC_RESULTS, OnResultsSelect)
   ON_NOTIFY(NM_RETURN, IDC_RESULTS, OnResultsSelect)
@@ -148,7 +147,7 @@ FindInFiles::FindInFiles(ProjectFrame* project)
   m_lookDocCode = TRUE;
 
   m_ignoreCase = TRUE;
-  m_findRule = 0;
+  m_findRule = FindRule_Contains;
   m_richText = NULL;
 }
 
@@ -180,7 +179,10 @@ void FindInFiles::Show(void)
 
   if (GetSafeHwnd() != 0)
   {
+    UpdateData(TRUE);
+
     ShowWindow(SW_SHOW);
+    GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
     GetDlgItem(IDC_FIND)->SetFocus();
   }
 }
@@ -200,9 +202,10 @@ void FindInFiles::FindInSource(LPCWSTR text)
   m_lookDocMain = FALSE;
   m_lookDocCode = FALSE;
   m_ignoreCase = TRUE;
-  m_findRule = 0;
+  m_findRule = FindRule_Contains;
   m_findText = text;
   UpdateData(FALSE);
+  GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
   PostMessage(WM_COMMAND,IDC_FIND_ALL);
 }
 
@@ -215,9 +218,10 @@ void FindInFiles::FindInDocs(LPCWSTR text)
   m_lookDocMain = TRUE;
   m_lookDocCode = TRUE;
   m_ignoreCase = TRUE;
-  m_findRule = 0;
+  m_findRule = FindRule_Contains;
   m_findText = text;
   UpdateData(FALSE);
+  GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
   PostMessage(WM_COMMAND,IDC_FIND_ALL);
 }
 
@@ -343,10 +347,48 @@ LPCWSTR FindInFiles::GetAutoComplete(int index)
   return NULL;
 }
 
+const char* FindInFiles::RegexError(const std::regex_error& ex)
+{
+  switch (ex.code())
+  {
+  case std::regex_constants::error_collate:
+    return "The find expression contained an invalid collating element name.";
+  case std::regex_constants::error_ctype:
+    return "The find expression contained an invalid character class name.";
+  case std::regex_constants::error_escape:
+    return "The find expression contained an invalid escaped character, or a trailing escape.";
+  case std::regex_constants::error_backref:
+    return "The find expression contained an invalid back reference.";
+  case std::regex_constants::error_brack:
+    return "The find expression contained mismatched [ and ].";
+  case std::regex_constants::error_paren:
+    return "The find expression contained mismatched ( and ).";
+  case std::regex_constants::error_brace:
+    return "The find expression contained mismatched { and }.";
+  case std::regex_constants::error_badbrace:
+    return "The find expression contained an invalid range in a { expression }.";
+  case std::regex_constants::error_range:
+    return "The find expression contained an invalid character range, such as [b-a].";
+  case std::regex_constants::error_space:
+    return "Insufficient memory to process the find expression.";
+  case std::regex_constants::error_badrepeat:
+    return "One of *?+{ was not preceded by a valid regular expression.";
+  case std::regex_constants::error_complexity:
+    return "The complexity of an attempted match against a regular expression was too much.";
+  case std::regex_constants::error_stack:
+    return "There was insufficient memory to determine whether the regular expression could match the specified character sequence.";
+  case std::regex_constants::error_parse:
+    return "Failed to parse find expression.";
+  case std::regex_constants::error_syntax:
+    return "Syntax error in find expression.";
+  default:
+    return "Error in find expression.";
+  }
+}
+
 void FindInFiles::DoDataExchange(CDataExchange* pDX)
 {
   I7BaseDialog::DoDataExchange(pDX);
-  DDX_Control(pDX, IDC_FIND, m_find);
   DDX_Control(pDX, IDC_REGEX_HELP, m_regexHelp);
   DDX_TextW(pDX, IDC_FIND, m_findText);
   DDX_Check(pDX,IDC_LOOK_SOURCE,m_lookSource);
@@ -355,7 +397,7 @@ void FindInFiles::DoDataExchange(CDataExchange* pDX)
   DDX_Check(pDX,IDC_LOOK_DOC_MAIN,m_lookDocMain);
   DDX_Check(pDX,IDC_LOOK_DOC_CODE,m_lookDocCode);
   DDX_Check(pDX,IDC_IGNORE_CASE,m_ignoreCase);
-  DDX_CBIndex(pDX,IDC_FIND_RULE,m_findRule);
+  DDX_CBIndex(pDX,IDC_FIND_RULE,(int&)m_findRule);
   DDX_Control(pDX, IDC_RESULTS, m_resultsList);
 }
 
@@ -368,7 +410,7 @@ BOOL FindInFiles::OnInitDialog()
       return FALSE;
     FindEnumString* fes = new FindEnumString();
     CComQIPtr<IEnumString> ies(fes->GetInterface(&IID_IEnumString));
-    m_findAutoComplete->Init(m_find.GetSafeHwnd(),ies,NULL,NULL);
+    m_findAutoComplete->Init(GetDlgItem(IDC_FIND)->GetSafeHwnd(),ies,NULL,NULL);
     m_findAutoComplete->SetOptions(ACO_AUTOSUGGEST);
     fes->ExternalRelease();
 
@@ -563,12 +605,19 @@ void FindInFiles::OnFindAll()
   // Search for the text
   CWaitCursor wc;
   m_results.clear();
-  if (m_lookSource)
-    Find(m_project->GetSource(),m_project->GetDisplayName(false),"","","",FoundInSource);
-  if (m_lookExts)
-    FindInExtensions();
-  if (m_lookDocMain || m_lookDocPhrases || m_lookDocCode)
-    FindInDocumentation();
+  try
+  {
+    if (m_lookSource)
+      Find(m_project->GetSource(),m_project->GetDisplayName(false),"","","",FoundInSource);
+    if (m_lookExts)
+      FindInExtensions();
+    if (m_lookDocMain || m_lookDocPhrases || m_lookDocCode)
+      FindInDocumentation();
+  }
+  catch (std::regex_error& ex)
+  {
+    MessageBox(RegexError(ex),INFORM_TITLE,MB_ICONERROR|MB_OK);
+  }
   std::sort(m_results.begin(),m_results.end());
 
   // Update the results
@@ -614,7 +663,7 @@ void FindInFiles::OnFindAll()
 void FindInFiles::OnChangeFindRule()
 {
   UpdateData(TRUE);
-  if (m_findRule == 3)
+  if (m_findRule == FindRule_Regex)
   {
     m_resultsList.ModifyStyle(WS_VISIBLE,0);
     m_regexHelp.ModifyStyle(0,WS_VISIBLE);
@@ -629,6 +678,12 @@ void FindInFiles::OnChangeFindRule()
       Invalidate();
     }
   }
+}
+
+void FindInFiles::OnChangeFindText()
+{
+  UpdateData(TRUE);
+  GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
 }
 
 void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
@@ -650,8 +705,12 @@ void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
     break;
   case CDDS_ITEMPREPAINT|CDDS_SUBITEM:
   {
-    // Work out the background colour
+    // Make sure that we have a result for the given item
     int item = (int)custom->nmcd.dwItemSpec;
+    if (item >= m_results.size())
+      return;
+
+    // Work out the background colour
     COLORREF backColour = m_results[item].Colour();
     if ((item % 2) != 0)
       backColour = Darken(backColour);
@@ -799,134 +858,75 @@ LRESULT FindInFiles::OnResultsResize(WPARAM, LPARAM)
 void FindInFiles::Find(const CString& text, const char* doc, const char* docSort,
   const char* path, const char* prefix, FoundIn type)
 {
-  try
+  // Set up a regular expression
+  CString findUtf = TextFormat::UnicodeToUTF8(m_findText);
+  std::regex::flag_type flags = std::regex::ECMAScript;
+  if (m_ignoreCase)
+    flags |= std::regex::icase;
+  if (m_findRule != FindRule_Regex)
   {
-    // Set up a regular expression
-    CString findUtf = TextFormat::UnicodeToUTF8(m_findText);
-    std::regex::flag_type flags = std::regex::ECMAScript;
-    if (m_ignoreCase)
-      flags |= std::regex::icase;
-    if (m_findRule != 3) // Not "Regular expression"
+    // Escape any characters with a special meaning in regular expressions
+    for (int i = 0; i < findUtf.GetLength(); i++)
     {
-      // Escape any characters with a special meaning in regular expressions
-      for (int i = 0; i < findUtf.GetLength(); i++)
+      if (strchr(".^$|()[]{}*+?\\",findUtf.GetAt(i)))
       {
-        if (strchr(".^$|()[]{}*+?\\",findUtf.GetAt(i)))
-        {
-          findUtf.Insert(i,'\\');
-          i++;
-        }
-      }      
-    }
-    switch (m_findRule)
-    {
-    case 1: // "Starts with"
-      findUtf.Insert(0,"\\b");
-      break;
-    case 2: // "Full word"
-      findUtf.Insert(0,"\\b");
-      findUtf.Append("\\b");
-      break;
-    }
-    std::regex regexp;
-    regexp.assign(findUtf,flags);
-
-    // Search for the text
-    auto regexBegin = std::cregex_iterator(text.GetString(),text.GetString()+text.GetLength(),regexp);
-    for (auto it = regexBegin; it != std::cregex_iterator(); ++it)
-    {
-      if (it->length() <= 0)
-        return;
-
-      int matchStart = (int)it->position();
-      int matchEnd = (int)(it->position() + it->length());
-
-      // Get the surrounding text as context. Note that we get the leading, matching and
-      // trailing texts separately so that we can count the number of Unicode characters in each.
-      int lineStart = FindLineStart(text,matchStart);
-      int lineEnd = FindLineEnd(text,matchEnd);
-      CStringW leading = GetMatchRange(text,lineStart,matchStart);
-      leading.Replace(L'\t',L' ');
-      leading.TrimLeft();
-      CStringW match = GetMatchRange(text,matchStart,matchEnd);
-      CStringW trailing = GetMatchRange(text,matchEnd,lineEnd);
-      trailing.Replace(L'\t',L' ');
-      trailing.TrimRight();
-      CStringW context = leading + match + trailing;
-      context.Replace(L'\n',L' ');
-      context.Replace(L'\r',L' ');
-      context.Replace(L'\t',L' ');
-
-      // Store the found result
-      FindResult result;
-      result.prefix = TextFormat::UTF8ToUnicode(prefix);
-      result.context = context;
-      result.inContext.cpMin = leading.GetLength();
-      result.inContext.cpMax = leading.GetLength() + match.GetLength();
-      result.type = type;
-      result.doc = doc;
-      result.docSort = docSort;
-      result.path = path;
-      result.loc.cpMin = matchStart;
-      result.loc.cpMax = matchEnd;
-      m_results.push_back(result);
-    }
+        findUtf.Insert(i,'\\');
+        i++;
+      }
+    }      
   }
-  catch (std::regex_error& ex)
+  switch (m_findRule)
   {
-    const char* msg = NULL;
-    switch (ex.code())
-    {
-    case std::regex_constants::error_collate:
-      msg = "The find expression contained an invalid collating element name.";
-      break;
-    case std::regex_constants::error_ctype:
-      msg = "The find expression contained an invalid character class name.";
-      break;
-    case std::regex_constants::error_escape:
-      msg = "The find expression contained an invalid escaped character, or a trailing escape.";
-      break;
-    case std::regex_constants::error_backref:
-      msg = "The find expression contained an invalid back reference.";
-      break;
-    case std::regex_constants::error_brack:
-      msg = "The find expression contained mismatched [ and ].";
-      break;
-    case std::regex_constants::error_paren:
-      msg = "The find expression contained mismatched ( and ).";
-      break;
-    case std::regex_constants::error_brace:
-      msg = "The find expression contained mismatched { and }.";
-      break;
-    case std::regex_constants::error_badbrace:
-      msg = "The find expression contained an invalid range in a { expression }.";
-      break;
-    case std::regex_constants::error_range:
-      msg = "The find expression contained an invalid character range, such as [b-a].";
-      break;
-    case std::regex_constants::error_space:
-      msg = "Insufficient memory to process the find expression.";
-      break;
-    case std::regex_constants::error_badrepeat:
-      msg = "One of *?+{ was not preceded by a valid regular expression.";
-      break;
-    case std::regex_constants::error_complexity:
-      msg = "The complexity of an attempted match against a regular expression was too much.";
-      break;
-    case std::regex_constants::error_stack:
-      msg = "There was insufficient memory to determine whether the regular expression could match the specified character sequence.";
-      break;
-    case std::regex_constants::error_parse:
-      msg = "Failed to parse find expression.";
-      break;
-    case std::regex_constants::error_syntax:
-      msg = "Syntax error in find expression.";
-      break;
-    default:
-      msg = "Error in find expression.";
-      break;
-    }
-    MessageBox(msg,INFORM_TITLE,MB_ICONERROR|MB_OK);
+  case FindRule_StartsWith:
+    findUtf.Insert(0,"\\b");
+    break;
+  case FindRule_FullWord:
+    findUtf.Insert(0,"\\b");
+    findUtf.Append("\\b");
+    break;
+  }
+  std::regex regexp;
+  regexp.assign(findUtf,flags);
+
+  // Search for the text
+  std::cregex_iterator regexIt(text.GetString(),text.GetString()+text.GetLength(),regexp);
+  for (; regexIt != std::cregex_iterator(); ++regexIt)
+  {
+    if (regexIt->length() <= 0)
+      return;
+
+    int matchStart = (int)regexIt->position();
+    int matchEnd = (int)(regexIt->position() + regexIt->length());
+
+    // Get the surrounding text as context. Note that we get the leading, matching and
+    // trailing texts separately so that we can count the number of Unicode characters in each.
+    int lineStart = FindLineStart(text,matchStart);
+    int lineEnd = FindLineEnd(text,matchEnd);
+    CStringW leading = GetMatchRange(text,lineStart,matchStart);
+    leading.Replace(L'\t',L' ');
+    leading.TrimLeft();
+    CStringW match = GetMatchRange(text,matchStart,matchEnd);
+    CStringW trailing = GetMatchRange(text,matchEnd,lineEnd);
+    trailing.Replace(L'\t',L' ');
+    trailing.TrimRight();
+    CStringW context = leading + match + trailing;
+    context.Replace(L'\n',L' ');
+    context.Replace(L'\r',L' ');
+    context.Replace(L'\t',L' ');
+
+    // Store the found result
+    FindResult result;
+    result.prefix = TextFormat::UTF8ToUnicode(prefix);
+    result.context = context;
+    result.inContext.cpMin = leading.GetLength();
+    result.inContext.cpMax = leading.GetLength() + match.GetLength();
+    result.type = type;
+    result.doc = doc;
+    result.docSort = docSort;
+    result.path = path;
+    result.loc.cpMin = matchStart;
+    result.loc.cpMax = matchEnd;
+    m_results.push_back(result);
   }
 }
 
