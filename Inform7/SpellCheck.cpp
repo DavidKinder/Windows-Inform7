@@ -429,7 +429,7 @@ void SpellCheck::OnClickedAdd()
   }
 
   // Add the word if it is not already in the dictionary
-  CString word = TextFormat::UnicodeToLatin1(m_currentBadWord);
+  std::string word(TextFormat::UnicodeToLatin1(m_currentBadWord));
   if (spell->spell(word) == 0)
     spell->add(word);
   NextWord();

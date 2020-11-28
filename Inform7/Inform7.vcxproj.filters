@@ -735,9 +735,6 @@
     <ClCompile Include="..\..\..\Libraries\hunspell\csutil.cxx">
       <Filter>Libraries\hunspell</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\hunspell\dictmgr.cxx">
-      <Filter>Libraries\hunspell</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\hunspell\filemgr.cxx">
       <Filter>Libraries\hunspell</Filter>
     </ClCompile>
