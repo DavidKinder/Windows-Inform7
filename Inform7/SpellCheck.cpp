@@ -450,6 +450,7 @@ void SpellCheck::OnChangedLanguage()
       currentLanguage = it;
       InitSpellObject();
       theApp.SendAllFrames(InformApp::Spelling,0);
+      GetParentFrame()->ActivateFrame();
       return;
     }
   }
