@@ -134,8 +134,8 @@ void SpellCheck::InitSpellObject(void)
   dicPath.Format("%s\\Dictionaries\\%s.dic",(LPCSTR)appDir,currentLanguage->second.c_str());
   spell = new Hunspell(affPath,dicPath);
 
-  // Only Latin-1 encoded dictionaries are currently supported
-  if (strcmp(spell->get_dic_encoding(),"ISO8859-1") != 0)
+  // Only UTF-8 encoded dictionaries are supported
+  if (strcmp(spell->get_dic_encoding(),"UTF-8") != 0)
   {
     CString msg;
     msg.Format("Dictionary %s has an unsupported encoding: %s",
@@ -193,7 +193,7 @@ void SpellCheck::ShowWordFromSelection(void)
   // Get suggestions for the correct spelling
   char** suggested = NULL;
   int numSuggested = spell->suggest(&suggested,
-    TextFormat::UnicodeToLatin1(m_currentBadWord));
+    TextFormat::UnicodeToUTF8(m_currentBadWord));
 
   // Update the list of suggestions
   m_suggestions.ResetContent();
@@ -201,7 +201,7 @@ void SpellCheck::ShowWordFromSelection(void)
   {
     for (int i = 0; i < numSuggested; i++)
     {
-      CStringW suggest = TextFormat::Latin1ToUnicode(suggested[i]);
+      CStringW suggest = TextFormat::UTF8ToUnicode(suggested[i]);
       m_suggestions.AddString(CString(suggest));
       free(suggested[i]);
     }
@@ -286,7 +286,7 @@ bool SpellCheck::TestWord(CHARRANGE range)
     return false;
 
   // Check the dictionary for the word
-  CString word = TextFormat::UnicodeToLatin1(wordU);
+  CString word = TextFormat::UnicodeToUTF8(wordU);
   if (spell->spell(word) != 0)
     return false;
 
@@ -411,25 +411,8 @@ void SpellCheck::OnClickedReplace()
 
 void SpellCheck::OnClickedAdd()
 {
-  // Check for invalid characters
-  bool invalid = false;
-  for (int i = 0; i < m_currentBadWord.GetLength(); i++)
-  {
-    if (m_currentBadWord[i] > 255)
-      invalid = true;
-  }
-  if (invalid)
-  {
-    CString msg;
-    msg.Format(
-      "Cannot add the word to the dictionary, as it contains characters\n"
-      "outside of the dictionary's character set, %s.",spell->get_dic_encoding());
-    MessageBox(msg,INFORM_TITLE,MB_ICONERROR|MB_OK);
-    return;
-  }
-
   // Add the word if it is not already in the dictionary
-  std::string word(TextFormat::UnicodeToLatin1(m_currentBadWord));
+  std::string word(TextFormat::UnicodeToUTF8(m_currentBadWord));
   if (spell->spell(word) == 0)
     spell->add(word);
   NextWord();
