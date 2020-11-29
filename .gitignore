@@ -1,7 +1,6 @@
 Build/*.*
 Build/Chrome/
 Build/Compilers/
-Build/Dictionaries/
 Build/Documentation/*.*
 Build/Documentation/bg_images
 Build/Documentation/doc_images
