@@ -148,6 +148,7 @@ public:
   static bool StartNewProject(const char* dir, CWnd* parent);
   static bool StartNewExtProject(const char* dir, CWnd* parent, const InformApp::ExtLocation* fromExt);
   static bool StartExistingProject(const char* dir, CWnd* parent);
+  static bool StartNamedProject(const char* project);
   static bool StartLastProject(void);
 
   CString GetDisplayName(bool fullName);

@@ -44,6 +44,8 @@ public:
 protected:
   DECLARE_MESSAGE_MAP()
 
+  afx_msg BOOL OnOpenRecentFile(UINT nID);
+  afx_msg void OnFileClearRecent();
   afx_msg void OnAppExit();
   afx_msg void OnAppPrefs();
   afx_msg void OnAppAbout();

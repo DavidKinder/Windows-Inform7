@@ -2138,7 +2138,11 @@ bool ProjectFrame::StartExistingProject(const char* dir, CWnd* parent)
   if (dialog.ShowDialog() != IDOK)
     return false;
   CString project = dialog.GetProjectDir();
+  return StartNamedProject(project);
+}
 
+bool ProjectFrame::StartNamedProject(const char* project)
+{
   // Is the project already open?
   CArray<CFrameWnd*> frames;
   theApp.GetWindowFrames(frames);
@@ -2155,6 +2159,9 @@ bool ProjectFrame::StartExistingProject(const char* dir, CWnd* parent)
     }
   }
 
+  if (::GetFileAttributes(project) == INVALID_FILE_ATTRIBUTES)
+    return false;
+
   ProjectFrame* frame = NewFrame(TypeFromDir(project));
   frame->OpenProject(project);
   return true;
@@ -2163,6 +2170,9 @@ bool ProjectFrame::StartExistingProject(const char* dir, CWnd* parent)
 bool ProjectFrame::StartLastProject(void)
 {
   CString last = theApp.GetLastProjectDir();
+  if (::GetFileAttributes(last) == INVALID_FILE_ATTRIBUTES)
+    return false;
+
   ProjectFrame* frame = NewFrame(TypeFromDir(last));
   frame->OpenProject(last);
   return true;
@@ -2178,6 +2188,7 @@ void ProjectFrame::OpenProject(const char* project)
 
   // Set the project directory
   m_projectDir = project;
+  theApp.AddToRecentFileList(m_projectDir);
 
   // Rename any old-style " Materials" folder to ".materials"
   int projectExt = m_projectDir.Find(GetProjectFileExt());
@@ -2212,6 +2223,7 @@ bool ProjectFrame::SaveProject(const char* project)
   // Save the project from the left hand panel
   bool saved = GetPanel(0)->SaveProject(m_projectDir,true);
   GetPanel(1)->SaveProject(m_projectDir,false);
+  theApp.AddToRecentFileList(m_projectDir);
   return saved;
 }
 
@@ -2554,9 +2566,9 @@ void ProjectFrame::UpdateMenuParams(void)
 void ProjectFrame::UpdateExtensionsMenu(void)
 {
   CMenu* fileMenu = GetMenu()->GetSubMenu(0);
-  CMenu* newExtMenu = fileMenu->GetSubMenu(3)->GetSubMenu(1);
+  CMenu* newExtMenu = fileMenu->GetSubMenu(4)->GetSubMenu(1);
   ASSERT(newExtMenu != NULL);
-  CMenu* openExtMenu = fileMenu->GetSubMenu(6);
+  CMenu* openExtMenu = fileMenu->GetSubMenu(7);
   ASSERT(openExtMenu != NULL);
 
   while (newExtMenu->GetMenuItemCount() > 0)

@@ -341,8 +341,11 @@ void ExtensionFrame::StartExisting(const char* path, const ProjectSettings& sett
     }
   }
 
-  ExtensionFrame* frame = NewFrame(settings);
-  frame->OpenFile(path);
+  if (::GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES)
+  {
+    ExtensionFrame* frame = NewFrame(settings);
+    frame->OpenFile(path);
+  }
 }
 
 bool ExtensionFrame::StartHighlight(const char* url, COLORREF colour, const ProjectSettings& settings)
@@ -421,12 +424,15 @@ void ExtensionFrame::StartSelect(const char* path, const CHARRANGE& range, const
     }
   }
 
-  // Open a new window
-  ExtensionFrame* extFrame = NewFrame(settings);
-  extFrame->OpenFile(path);
+  if (::GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES)
+  {
+    // Open a new window
+    ExtensionFrame* extFrame = NewFrame(settings);
+    extFrame->OpenFile(path);
 
-  // Select the text
-  extFrame->m_edit.Select(range,true);
+    // Select the text
+    extFrame->m_edit.Select(range,true);
+  }
 }
 
 void ExtensionFrame::InstallExtensions(CFrameWnd* parent)

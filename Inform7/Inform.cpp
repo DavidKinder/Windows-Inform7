@@ -26,7 +26,82 @@ CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString
 #define new DEBUG_NEW
 #endif
 
+class RecentProjectList : public CRecentFileList
+{
+public:
+  RecentProjectList(int size) : CRecentFileList(0,"Recent File List","File%d",size)
+  {
+  }
+
+  void RemoveAll(void)
+  {
+    for (int i = 0; i < m_nSize; i++)
+      m_arrNames[i].Empty();
+  }
+
+  virtual void UpdateMenu(CCmdUI* pCmdUI)
+  {
+    for (int i = 0; i < m_nSize;)
+    {
+      if (!m_arrNames[i].IsEmpty())
+      {
+        if (::GetFileAttributes(m_arrNames[i]) == INVALID_FILE_ATTRIBUTES)
+        {
+          Remove(i);
+          continue;
+        }
+      }
+      i++;
+    }
+
+    CMenu* pMenu = pCmdUI->m_pSubMenu;
+    if (m_strOriginal.IsEmpty() && (pMenu != NULL))
+      pMenu->GetMenuString(pCmdUI->m_nID,m_strOriginal,MF_BYCOMMAND);
+
+    if (m_arrNames[0].IsEmpty())
+    {
+      if (!m_strOriginal.IsEmpty())
+        pCmdUI->SetText(m_strOriginal);
+      pCmdUI->Enable(FALSE);
+
+      if (pCmdUI->m_pSubMenu != NULL)
+      {
+        for (int i = 1; i < m_nSize; i++)
+          pCmdUI->m_pSubMenu->DeleteMenu(pCmdUI->m_nID+i,MF_BYCOMMAND);
+      }
+      return;
+    }
+
+    if (pCmdUI->m_pSubMenu == NULL)
+      return;
+
+    for (int i = 0; i < m_nSize; i++)
+      pCmdUI->m_pSubMenu->DeleteMenu(pCmdUI->m_nID+i,MF_BYCOMMAND);
+
+    for (int i = 0; i < m_nSize; i++)
+    {
+      if (!m_arrNames[i].IsEmpty())
+      {
+        CString menuItem;
+        menuItem.Format("&%d ",i+1);
+
+        LPCSTR name = ::PathFindFileName(m_arrNames[i]);
+        for (; *name != '\0'; ++name)
+        {
+          if (*name == '&')
+            menuItem.AppendChar('&');
+          menuItem.AppendChar(*name);
+        }
+        pCmdUI->m_pSubMenu->InsertMenu(i,MF_STRING|MF_BYPOSITION,pCmdUI->m_nID++,menuItem);
+      }
+    }
+    pCmdUI->m_bEnableChanged = TRUE;
+  }
+};
+
 BEGIN_MESSAGE_MAP(InformApp, CWinApp)
+  ON_COMMAND_EX_RANGE(ID_FILE_MRU_FILE1, ID_FILE_MRU_FILE9, OnOpenRecentFile)
+  ON_COMMAND(ID_FILE_CLEAR_RECENT, OnFileClearRecent)
   ON_COMMAND(ID_APP_EXIT, OnAppExit)
   ON_COMMAND(ID_APP_PREFS, OnAppPrefs)
   ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
@@ -68,6 +143,10 @@ BOOL InformApp::InitInstance()
   // as by this point only the main Inform 7 application is here, not
   // any of the CEF worker processes.
   SetMyDocuments(true);
+
+  // Load the recently used project list
+  m_pRecentFileList = new RecentProjectList(9);
+  m_pRecentFileList->ReadList();
 
   // If possible, create a job to assign child processes to. Since the
   // job will be closed when this process exits, this ensures that any
@@ -114,6 +193,10 @@ BOOL InformApp::InitInstance()
 
 int InformApp::ExitInstance()
 {
+  // Save the recently used project list
+  if (m_pRecentFileList != NULL)
+    m_pRecentFileList->WriteList();
+
   // Clear the bitmap cache
   std::map<std::string,CDibSection*>::iterator it;
   for (it = m_bitmaps.begin(); it != m_bitmaps.end(); ++it)
@@ -266,6 +349,19 @@ CString InformApp::GetTraceForProcess(DWORD processId)
     return trace;
   }
   return "";
+}
+
+BOOL InformApp::OnOpenRecentFile(UINT nID)
+{
+  CString project = (*m_pRecentFileList)[nID - ID_FILE_MRU_FILE1];
+  if (!project.IsEmpty())
+    ProjectFrame::StartNamedProject(project);
+  return TRUE;
+}
+
+void InformApp::OnFileClearRecent()
+{
+  ((RecentProjectList*)m_pRecentFileList)->RemoveAll();
 }
 
 void InformApp::OnAppExit()

@@ -66,6 +66,12 @@ BEGIN
     BEGIN
         MENUITEM "&New Project...\tCtrl+N",     ID_FILE_NEW
         MENUITEM "&Open Project...\tCtrl+O",    ID_FILE_OPEN
+        POPUP "Open &Recent"
+        BEGIN
+            MENUITEM "Recent Project",              ID_FILE_MRU_FILE1
+            MENUITEM SEPARATOR
+            MENUITEM "&Clear Recent Menu",          ID_FILE_CLEAR_RECENT
+        END
         MENUITEM SEPARATOR
         POPUP "New Ex&tension Project"
         BEGIN
@@ -82,7 +88,7 @@ BEGIN
             MENUITEM SEPARATOR
         END
         MENUITEM "Show Installed Extensions &Folder", ID_FILE_INSTALL_FOLDER
-        MENUITEM "Expo&rt Extension...",        ID_FILE_EXPORT_EXT
+        MENUITEM "Export Extension...",         ID_FILE_EXPORT_EXT
         MENUITEM SEPARATOR
         MENUITEM "Import into S&kein...",       ID_FILE_IMPORT_SKEIN
         MENUITEM SEPARATOR
