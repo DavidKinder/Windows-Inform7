@@ -653,12 +653,15 @@ void FindInFiles::OnFindAll()
 
   // Update the results
   m_resultsList.DeleteAllItems();
+  m_resultsList.SetRedraw(FALSE);
+  m_resultsList.SetItemCount((int)m_results.size());
   for (int i = 0; i < (int)m_results.size(); i++)
   {
     m_resultsList.InsertItem(i,"");
     m_resultsList.SetItemText(i,1,m_results[i].doc);
     m_resultsList.SetItemText(i,2,m_results[i].TypeName());
   }
+  m_resultsList.SetRedraw(TRUE);
 
   // Resize the results columns
   CRect resultsRect;
@@ -1119,7 +1122,7 @@ void FindInFiles::WaitForDocThread(void)
 
 void FindInFiles::UpdateProgress(void)
 {
-  m_progress.SetPos((int)(100 * (m_current+1)) / (m_total+1));
+  m_progress.SetPos((int)((100 * (m_current+1)) / (m_total+1)));
 }
 
 int FindInFiles::FindLineStart(const CString& text, int pos)
