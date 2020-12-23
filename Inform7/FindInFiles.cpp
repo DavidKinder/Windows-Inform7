@@ -149,6 +149,9 @@ FindInFiles::FindInFiles(ProjectFrame* project)
   m_ignoreCase = TRUE;
   m_findRule = FindRule_Contains;
   m_richText = NULL;
+
+  m_total = 0;
+  m_current = 0;
 }
 
 void FindInFiles::Show(void)
@@ -389,6 +392,8 @@ const char* FindInFiles::RegexError(const std::regex_error& ex)
 void FindInFiles::DoDataExchange(CDataExchange* pDX)
 {
   I7BaseDialog::DoDataExchange(pDX);
+  DDX_Control(pDX, IDC_FOUND, m_found);
+  DDX_Control(pDX, IDC_PROGRESS, m_progress);
   DDX_Control(pDX, IDC_REGEX_HELP, m_regexHelp);
   DDX_TextW(pDX, IDC_FIND, m_findText);
   DDX_Check(pDX,IDC_LOOK_SOURCE,m_lookSource);
@@ -425,6 +430,9 @@ BOOL FindInFiles::OnInitDialog()
     m_minSize = windowRect.Size();
     m_resultsList.GetWindowRect(resultsRect);
     m_resultsBottomRight = windowRect.BottomRight() - resultsRect.BottomRight();
+
+    m_found.ModifyStyle(0,WS_VISIBLE);
+    m_progress.ModifyStyle(WS_VISIBLE,0);
 
     ScreenToClient(resultsRect);
     m_regexHelp.MoveWindow(resultsRect);
@@ -602,13 +610,32 @@ void FindInFiles::OnFindAll()
   if (dropdown)
     dropdown->ResetEnumerator();
 
-  // Search for the text
   CWaitCursor wc;
+
+  // How many files are to be searched?
+  m_total = 0;
+  if (m_lookSource)
+    m_total++;
+  if (m_lookExts)
+    m_total += CountExtensions();
+  if (m_lookDocMain || m_lookDocPhrases || m_lookDocCode)
+    m_total += CountDocumentation();
+  m_current = 0;
+
+  // Show a progress bar
+  m_progress.ModifyStyle(0,WS_VISIBLE);
+  m_found.ModifyStyle(WS_VISIBLE,0);
+
+  // Search for the text
   m_results.clear();
   try
   {
     if (m_lookSource)
+    {
+      UpdateProgress();
       Find(m_project->GetSource(),m_project->GetDisplayName(false),"","","",FoundInSource);
+      m_current++;
+    }
     if (m_lookExts)
       FindInExtensions();
     if (m_lookDocMain || m_lookDocPhrases || m_lookDocCode)
@@ -619,6 +646,10 @@ void FindInFiles::OnFindAll()
     MessageBox(RegexError(ex),INFORM_TITLE,MB_ICONERROR|MB_OK);
   }
   std::sort(m_results.begin(),m_results.end());
+
+  // Hide the progress bar
+  m_found.ModifyStyle(0,WS_VISIBLE);
+  m_progress.ModifyStyle(WS_VISIBLE,0);
 
   // Update the results
   m_resultsList.DeleteAllItems();
@@ -655,7 +686,7 @@ void FindInFiles::OnFindAll()
     m_resultsList.SetFocus();
     break;
   }
-  GetDlgItem(IDC_FOUND)->SetWindowText(foundMsg);
+  m_found.SetWindowText(foundMsg);
   m_regexHelp.ModifyStyle(WS_VISIBLE,0);
   Invalidate();
 }
@@ -667,7 +698,7 @@ void FindInFiles::OnChangeFindRule()
   {
     m_resultsList.ModifyStyle(WS_VISIBLE,0);
     m_regexHelp.ModifyStyle(0,WS_VISIBLE);
-    GetDlgItem(IDC_FOUND)->SetWindowText("");
+    m_found.SetWindowText("");
     Invalidate();
   }
   else
@@ -932,28 +963,11 @@ void FindInFiles::Find(const CString& text, const char* doc, const char* docSort
 
 void FindInFiles::FindInExtensions(void)
 {
-  // If an extension census is running, wait for it to finish
-  while (true)
-  {
-    bool findNow = true;
-    CArray<CFrameWnd*> frames;
-    theApp.GetWindowFrames(frames);
-    for (int i = 0; i < frames.GetSize(); i++)
-    {
-      if (frames[i]->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
-      {
-        if (((ProjectFrame*)frames[i])->IsProcessRunning("ni (census)"))
-          findNow = false;
-      }
-    }
-    if (findNow)
-      break;
-    ::Sleep(100);
-    theApp.RunMessagePump();
-  }
-
+  WaitForCensus();
   for (const auto& extension : theApp.GetExtensions())
   {
+    UpdateProgress();
+
     CFile extFile;
     if (extFile.Open(extension.path.c_str(),CFile::modeRead))
     {
@@ -974,11 +988,107 @@ void FindInFiles::FindInExtensions(void)
 
       Find(utfText,extension.title.c_str(),"",extension.path.c_str(),"",FoundInExtension);
       theApp.RunMessagePump();
+      m_current++;
     }
   }
 }
 
+size_t FindInFiles::CountExtensions(void)
+{
+  WaitForCensus();
+  return theApp.GetExtensions().size();
+}
+
+void FindInFiles::WaitForCensus(void)
+{
+  // If an extension census is running, wait for it to finish
+  while (true)
+  {
+    bool findNow = true;
+    CArray<CFrameWnd*> frames;
+    theApp.GetWindowFrames(frames);
+    for (int i = 0; i < frames.GetSize(); i++)
+    {
+      if (frames[i]->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
+      {
+        if (((ProjectFrame*)frames[i])->IsProcessRunning("ni (census)"))
+          findNow = false;
+      }
+    }
+    if (findNow)
+      break;
+    ::Sleep(100);
+    theApp.RunMessagePump();
+  }
+}
+
 void FindInFiles::FindInDocumentation(void)
+{
+  WaitForDocThread();
+
+  CSingleLock lock(&(m_data->lock),TRUE);
+  for (int i = 0; i < m_data->texts.GetSize(); i++)
+  {
+    UpdateProgress();
+
+    // Find any matches in this documentation page
+    DocText* docText = m_data->texts[i];
+    CString title;
+    title.Format("%s: %s",docText->section,docText->title);
+    size_t resultsIndex = m_results.size();
+    Find(docText->body,title,docText->sort,docText->link,docText->prefix,docText->type);
+
+    // Check that any matches are in appropriate sections
+    while (resultsIndex < m_results.size())
+    {
+      int start = m_results[resultsIndex].loc.cpMin;
+      CString phraseId = GetSectionId(start,docText->phraseSections);
+      CString codeId = GetSectionId(start,docText->codeSections);
+
+      bool keep = false;
+      CString linkId;
+      if (m_lookDocMain && phraseId.IsEmpty() && codeId.IsEmpty())
+        keep = true;
+      else if (m_lookDocPhrases && !phraseId.IsEmpty())
+      {
+        keep = true;
+        linkId = phraseId;
+      }
+      else if (m_lookDocCode && !codeId.IsEmpty())
+      {
+        keep = true;
+        linkId = codeId;
+      }
+
+      if (keep)
+      {
+        if (!linkId.IsEmpty())
+        {
+          CString baseLink = m_results[resultsIndex].path;
+          int endPos = baseLink.ReverseFind('#');
+          if (endPos > 0)
+            baseLink = baseLink.Left(endPos);
+          m_results[resultsIndex].path.Format("%s#%s",baseLink,linkId);
+        }
+        resultsIndex++;
+      }
+      else
+        m_results.erase(m_results.begin() + resultsIndex);
+    }
+
+    theApp.RunMessagePump();
+    m_current++;
+  }
+}
+
+size_t FindInFiles::CountDocumentation(void)
+{
+  WaitForDocThread();
+  CSingleLock lock(&(m_data->lock),TRUE);
+  return m_data->texts.GetSize();
+}
+
+void FindInFiles::WaitForDocThread(void)
 {
   // Make sure that the background thread has decoded the documentation
   while (true)
@@ -1005,59 +1115,11 @@ void FindInFiles::FindInDocumentation(void)
       }
     }
   }
+}
 
-  {
-    CSingleLock lock(&(m_data->lock),TRUE);
-    for (int i = 0; i < m_data->texts.GetSize(); i++)
-    {
-      // Find any matches in this documentation page
-      DocText* docText = m_data->texts[i];
-      CString title;
-      title.Format("%s: %s",docText->section,docText->title);
-      size_t resultsIndex = m_results.size();
-      Find(docText->body,title,docText->sort,docText->link,docText->prefix,docText->type);
-
-      // Check that any matches are in appropriate sections
-      while (resultsIndex < m_results.size())
-      {
-        int start = m_results[resultsIndex].loc.cpMin;
-        CString phraseId = GetSectionId(start,docText->phraseSections);
-        CString codeId = GetSectionId(start,docText->codeSections);
-
-        bool keep = false;
-        CString linkId;
-        if (m_lookDocMain && phraseId.IsEmpty() && codeId.IsEmpty())
-          keep = true;
-        else if (m_lookDocPhrases && !phraseId.IsEmpty())
-        {
-          keep = true;
-          linkId = phraseId;
-        }
-        else if (m_lookDocCode && !codeId.IsEmpty())
-        {
-          keep = true;
-          linkId = codeId;
-        }
-
-        if (keep)
-        {
-          if (!linkId.IsEmpty())
-          {
-            CString baseLink = m_results[resultsIndex].path;
-            int endPos = baseLink.ReverseFind('#');
-            if (endPos > 0)
-              baseLink = baseLink.Left(endPos);
-            m_results[resultsIndex].path.Format("%s#%s",baseLink,linkId);
-          }
-          resultsIndex++;
-        }
-        else
-          m_results.erase(m_results.begin() + resultsIndex);
-      }
-
-      theApp.RunMessagePump();
-    }
-  }
+void FindInFiles::UpdateProgress(void)
+{
+  m_progress.SetPos((int)(100 * (m_current+1)) / (m_total+1));
 }
 
 int FindInFiles::FindLineStart(const CString& text, int pos)

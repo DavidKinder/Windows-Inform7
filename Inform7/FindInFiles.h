@@ -79,7 +79,12 @@ private:
   void Find(const CString& text, const char* doc, const char* docSort,
     const char* path, const char* prefix, FoundIn type);
   void FindInExtensions(void);
+  size_t CountExtensions(void);
+  void WaitForCensus(void);
   void FindInDocumentation(void);
+  size_t CountDocumentation(void);
+  void WaitForDocThread(void);
+  void UpdateProgress(void);
 
   int FindLineStart(const CString& text, int pos);
   int FindLineEnd(const CString& text, int pos);
@@ -127,10 +132,15 @@ private:
   CComPtr<IAutoComplete2> m_findAutoComplete;
   static CList<CStringW> m_findHistory;
 
+  size_t m_total;
+  size_t m_current;
+
   std::vector<FindResult> m_results;
   FindResultsCtrl m_resultsList;
   CSize m_resultsBottomRight;
 
+  CStatic m_found;
+  CProgressCtrl m_progress;
   CStatic m_regexHelp;
   RichDrawText* m_richText;
 
