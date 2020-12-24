@@ -130,3 +130,36 @@ CStringW TextFormat::Latin1ToUnicode(const CString& in)
   text.ReleaseBuffer(len);
   return text;
 }
+
+CString TextFormat::FormatNumber(int value)
+{
+  CStringW unformatted;
+  unformatted.Format(L"%d",value);
+
+  NUMBERFMTW fmt = { 0 };
+  fmt.lpDecimalSep = L"."; // Not used
+
+  WCHAR thousands[32] = L"";
+  if (::GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT,LOCALE_STHOUSAND,thousands,32) == 0)
+    return CString(unformatted);
+  fmt.lpThousandSep = thousands;
+
+  WCHAR grouping[32] = L"";
+  if (::GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT,LOCALE_SGROUPING,grouping,32) == 0)
+    return CString(unformatted);
+  CString groupInfo(grouping);
+  if (groupInfo == "3;0")
+    fmt.Grouping = 3;
+  else if (groupInfo == "3;2;0")
+    fmt.Grouping = 32;
+
+  int len = ::GetNumberFormatEx(LOCALE_NAME_USER_DEFAULT,0,unformatted,&fmt,NULL,0);
+  if (len == 0)
+    return CString(unformatted);
+
+  CStringW formatted;
+  LPWSTR buffer = formatted.GetBufferSetLength(len+1);
+  ::GetNumberFormatEx(LOCALE_NAME_USER_DEFAULT,0,unformatted,&fmt,buffer,len);
+  formatted.ReleaseBuffer();
+  return CString(formatted);
+}

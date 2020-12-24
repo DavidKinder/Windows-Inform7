@@ -9,4 +9,6 @@ namespace TextFormat
 
   CString UnicodeToLatin1(const CStringW& in);
   CStringW Latin1ToUnicode(const CString& in);
+
+  CString FormatNumber(int value);
 };

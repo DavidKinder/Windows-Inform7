@@ -684,7 +684,7 @@ void FindInFiles::OnFindAll()
     m_resultsList.SetFocus();
     break;
   default:
-    foundMsg.Format("Found %d results:",m_results.size());
+    foundMsg.Format("Found %s results:",TextFormat::FormatNumber((int)m_results.size()));
     m_resultsList.ModifyStyle(0,WS_VISIBLE);
     m_resultsList.SetFocus();
     break;
