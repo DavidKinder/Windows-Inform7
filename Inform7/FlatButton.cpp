@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FlatButton.h"
 #include "Inform.h"
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -96,7 +97,7 @@ CDibSection* FlatButton::GetImage(const char* name, const CSize& size, bool ligh
 {
   // Is the image in the cache?
   CString scaleName;
-  scaleName.Format("%s-scaled",name);
+  scaleName.Format("%s-scaled-%ddpi",name,DPI::getWindowDPI(this));
   if (light)
     scaleName += "-light";
   CDibSection* dib = theApp.GetCachedImage(scaleName);

@@ -1167,7 +1167,7 @@ CDibSection* SkeinWindow::GetImage(const char* name)
 {
   // Is the image in the cache?
   CString scaledName;
-  scaledName.Format("%s-scaled",name);
+  scaledName.Format("%s-scaled-%ddpi",name,DPI::getWindowDPI(this));
   CDibSection* dib = theApp.GetCachedImage(scaledName);
   if (dib != NULL)
     return dib;

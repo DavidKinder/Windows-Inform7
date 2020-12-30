@@ -2,6 +2,7 @@
 #include "ContentsWindow.h"
 #include "TabSource.h"
 #include "Inform.h"
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -444,7 +445,7 @@ CDibSection* ContentsPane::GetCircle(COLORREF back, int index)
 {
   // Is the image in the cache?
   CString circleName;
-  circleName.Format("Contents-circle-scaled-%d",index);
+  circleName.Format("Contents-circle-scaled-%d-%ddpi",index,DPI::getWindowDPI(this));
   CDibSection* circleDib = theApp.GetCachedImage(circleName);
   if (circleDib != NULL)
     return circleDib;

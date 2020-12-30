@@ -2,6 +2,7 @@
 #include "StopButton.h"
 #include "Inform.h"
 #include "Dib.h"
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -54,7 +55,8 @@ BOOL StopButton::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 CDibSection* StopButton::GetImage(bool dark)
 {
   // Is the image in the cache?
-  const char* imageName = dark ? "Stop-scaled-dark" : "Stop-scaled";
+  CString imageName;
+  imageName.Format(dark ? "Stop-scaled-%ddpi-dark" : "Stop-scaled-%ddpi",DPI::getWindowDPI(this));
   CDibSection* imageDib = theApp.GetCachedImage(imageName);
   if (imageDib != NULL)
     return imageDib;

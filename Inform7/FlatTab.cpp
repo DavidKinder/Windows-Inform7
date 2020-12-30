@@ -2,6 +2,7 @@
 #include "FlatTab.h"
 #include "Inform.h"
 #include "Panel.h"
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -312,7 +313,7 @@ CDibSection* FlatTab::GetImage(const char* name, const CSize& size)
 {
   // Is the image in the cache?
   CString scaleName;
-  scaleName.Format("%s-scaled",name);
+  scaleName.Format("%s-scaled-%ddpi",name,DPI::getWindowDPI(this));
   CDibSection* dib = theApp.GetCachedImage(scaleName);
   if (dib != NULL)
     return dib;
