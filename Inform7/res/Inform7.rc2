@@ -1,5 +1,5 @@
 //
-// InformUI.RC2 - resources Microsoft Visual C++ does not edit directly
+// Inform7.RC2 - resources Microsoft Visual C++ does not edit directly
 //
 
 #ifdef APSTUDIO_INVOKED
@@ -9,6 +9,8 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // Add manually edited resources here...
+
+#define RC2_INCLUDES_MANIFEST
 
 #ifdef RC2_INCLUDES_MANIFEST
 IDR_MANIFEST            RT_MANIFEST             "res\\Inform7.manifest"

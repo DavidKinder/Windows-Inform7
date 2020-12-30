@@ -1420,4 +1420,9 @@
       <Filter>Resources</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="res\Inform7.manifest">
+      <Filter>Resources</Filter>
+    </Manifest>
+  </ItemGroup>
 </Project>
