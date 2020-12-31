@@ -91,7 +91,7 @@ void ProgressWnd::TaskProgress(const char* text, int progress)
     int width = parentWidth * 3/4;
     if (width > monWidth / 3)
       width = monWidth / 3;
-    CSize fs = theApp.MeasureFont(theApp.GetFont(InformApp::FontSystem));
+    CSize fs = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontSystem));
     int height = fs.cy * 11/2;
 
     SetWindowPos(&CWnd::wndTop,

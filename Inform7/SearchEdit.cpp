@@ -36,7 +36,7 @@ void SearchEdit::Init(UINT id, CWnd* parent)
 
   CRect clientSize;
   GetClientRect(clientSize);
-  CSize fontSize = theApp.MeasureFont(GetFont());
+  CSize fontSize = theApp.MeasureFont(this,GetFont());
   int ym = (clientSize.Height()-fontSize.cy)/2;
 
   CRect editSize;

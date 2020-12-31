@@ -273,7 +273,7 @@ void TabSkein::OnSize(UINT nType, int cx, int cy)
   int sw = theApp.MeasureText(&m_save).cx+(fontSize.cx*3);
   x -= sw+gapx;
   m_save.MoveWindow(x,gapy,sw,heading-(2*gapy),TRUE);
-  int hw = theApp.MeasureText("Show Help",m_help.GetFont()).cx+(fontSize.cx*3);
+  int hw = theApp.MeasureText(&m_help,"Show Help").cx+(fontSize.cx*3);
   x -= hw+gapx;
   m_help.MoveWindow(x,gapy,hw,heading-(2*gapy),TRUE);
   x -= lw+gapx;

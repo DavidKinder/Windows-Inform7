@@ -167,7 +167,7 @@ BOOL AboutDialog::OnInitDialog()
   CRect dlgRect;
   GetWindowRect(dlgRect);
   dlgRect.bottom += (m_creditHeight - creditsRect.Height());
-  CSize fontSize = theApp.MeasureFont(m_credits.GetFont());
+  CSize fontSize = theApp.MeasureFont(this,m_credits.GetFont());
   dlgRect.bottom += 2*(fontSize.cy/4);
   MoveWindow(dlgRect);
 
@@ -254,7 +254,7 @@ void AboutDialog::LayoutControls(void)
 
   // Add margins to the credits
   newCreditsRect.MoveToXY(0,0);
-  CSize fontSize = theApp.MeasureFont(m_credits.GetFont());
+  CSize fontSize = theApp.MeasureFont(this,m_credits.GetFont());
   newCreditsRect.left += fontSize.cx/2;
   newCreditsRect.right -= fontSize.cx/2;
   newCreditsRect.top += fontSize.cy/4;

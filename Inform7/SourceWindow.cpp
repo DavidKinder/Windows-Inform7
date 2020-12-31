@@ -240,7 +240,7 @@ void SourceWindow::Resize(void)
   GetClientRect(client);
 
   // Adjust for margins
-  CSize fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontDisplay));
+  CSize fontSize = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontDisplay));
   if (m_tearTop)
     client.top += m_imageTop->GetSize().cy;
   else if (m_windowType == SingleLine)
@@ -270,7 +270,7 @@ void SourceWindow::Draw(CDC& dc)
 {
   CRect client;
   GetClientRect(client);
-  CSize fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontDisplay));
+  CSize fontSize = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontDisplay));
   int fh = fontSize.cy/4;
 
   m_arrowTop.SetRectEmpty();

@@ -787,7 +787,7 @@ BOOL PrefsDialog::OnInitDialog()
 
   // Is a smaller font needed?
   CFont* font = theApp.GetFont(InformApp::FontSystem);
-  CSize fontSize = theApp.MeasureFont(font);
+  CSize fontSize = theApp.MeasureFont(this,font);
   double scaleX = 1.0;
   if (monHeight < 45*fontSize.cy)
   {
@@ -796,7 +796,7 @@ BOOL PrefsDialog::OnInitDialog()
     lf.lfHeight = monHeight/45;
     m_font.CreateFontIndirect(&lf);
     font = &m_font;
-    scaleX = (double)fontSize.cx / (double)theApp.MeasureFont(font).cx;
+    scaleX = (double)fontSize.cx / (double)theApp.MeasureFont(this,font).cx;
   }
 
   // Change the font of the property sheet and its pages

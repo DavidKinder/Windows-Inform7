@@ -426,15 +426,18 @@ int InformApp::GetFontSize(Fonts font)
   return m_fontSizes[font];
 }
 
-CSize InformApp::MeasureFont(CFont* font)
+CSize InformApp::MeasureFont(CWnd* wnd, CFont* font)
 {
+  ASSERT(wnd);
+  ASSERT(wnd->GetSafeHwnd() != 0);
+
   // Get the with and height of the font
-  CDC* dc = AfxGetMainWnd()->GetDC();
+  CDC* dc = wnd->GetDC();
   CFont* oldFont = dc->SelectObject(font);
   TEXTMETRIC metrics;
   dc->GetTextMetrics(&metrics);
   dc->SelectObject(oldFont);
-  AfxGetMainWnd()->ReleaseDC(dc);
+  wnd->ReleaseDC(dc);
 
   // Cope with invalid font information in bad fonts
   if (metrics.tmAveCharWidth < 1)
@@ -445,23 +448,23 @@ CSize InformApp::MeasureFont(CFont* font)
 
 CSize InformApp::MeasureText(CWnd* button)
 {
+  ASSERT(button);
+
   CString text;
   button->GetWindowText(text);
-  CDC* dc = button->GetDC();
-  CFont* oldFont = dc->SelectObject(button->GetFont());
-  CSize size = dc->GetTextExtent(text);
-  dc->SelectObject(oldFont);
-  button->ReleaseDC(dc);
-  return size;
+  return MeasureText(button,text);
 }
 
-CSize InformApp::MeasureText(LPCSTR text, CFont* font)
+CSize InformApp::MeasureText(CWnd* wnd, LPCSTR text)
 {
-  CDC* dc = AfxGetMainWnd()->GetDC();
-  CFont* oldFont = dc->SelectObject(font);
+  ASSERT(wnd);
+  ASSERT(wnd->GetSafeHwnd() != 0);
+
+  CDC* dc = wnd->GetDC();
+  CFont* oldFont = dc->SelectObject(wnd->GetFont());
   CSize size = dc->GetTextExtent(text);
   dc->SelectObject(oldFont);
-  AfxGetMainWnd()->ReleaseDC(dc);
+  wnd->ReleaseDC(dc);
   return size;
 }
 

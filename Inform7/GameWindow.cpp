@@ -142,7 +142,7 @@ void GameWindow::RunInterpreter(const char* dir, const char* file, bool glulx)
   // Get screen properties to send to the interpreter
   CRect screen;
   GetClientRect(screen);
-  m_fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontFixedWidth));
+  m_fontSize = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontFixedWidth));
 
   // Work out the interpreter to run
   CString terp;
@@ -276,7 +276,7 @@ void GameWindow::PrefsChanged(void)
   while (it.Iterate())
     it.Value()->FontChanged();
 
-  m_fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontFixedWidth));
+  m_fontSize = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontFixedWidth));
   Resize(true);
 }
 

@@ -75,7 +75,7 @@ void GameText::FontChanged(void)
   SetStyle(false,false,false,false,0);
 
   // Set the size of the margins to match the font
-  CSize fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontDisplay));
+  CSize fontSize = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontDisplay));
   SetMargins(fontSize.cx);
 }
 
@@ -413,7 +413,7 @@ int GameText::OnCreate(LPCREATESTRUCT lpCreateStruct)
   SetEventMask(ENM_CHANGE|ENM_PROTECTED|ENM_KEYEVENTS|ENM_LINK);
 
   // Set margins
-  CSize fontSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontDisplay));
+  CSize fontSize = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontDisplay));
   SetMargins(fontSize.cx);
 
   // Set the default foreground colour

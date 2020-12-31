@@ -80,7 +80,7 @@ void FindReplaceDialog::PrepareHelp(void)
     if (m_richText == NULL)
       m_richText = new RichDrawText();
 
-    CSize textSize = theApp.MeasureText("HELP",GetFont());
+    CSize textSize = theApp.MeasureText(this,"HELP");
     int helpLines = GetDlgItem(IDC_REPLACE) ? 11 : 10;
 
     CRect helpRect;

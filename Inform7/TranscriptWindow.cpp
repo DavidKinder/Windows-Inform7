@@ -58,7 +58,7 @@ int TranscriptWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
   // Control for editing text
   if (m_edit.Create(ES_MULTILINE|ES_WANTRETURN|WS_CHILD,this,0) == FALSE)
     return -1;
-  m_edit.SetMargins(theApp.MeasureFont(m_edit.GetFont()).cx/4);
+  m_edit.SetMargins(theApp.MeasureFont(this,m_edit.GetFont()).cx/4);
 
   return 0;
 }
@@ -237,7 +237,7 @@ void TranscriptWindow::OnDraw(CDC* pDC)
       DrawText(dc,textRect,transcript,nl.node->GetTranscriptDiffs());
       textRect.OffsetRect(m_layout.columnWidth+m_layout.centreMargin-m_layout.margin.cx,0);
       DrawText(dc,textRect,expected,nl.node->GetExpectedDiffs());
-      textRect.InflateRect(theApp.MeasureFont(m_edit.GetFont()).cx/4,0);
+      textRect.InflateRect(theApp.MeasureFont(this,m_edit.GetFont()).cx/4,0);
       m_expecteds.push_back(std::make_pair(backRect,Expected(nl.node,textRect)));
 
       // Advance the y position
@@ -472,7 +472,7 @@ void TranscriptWindow::Layout(void)
   m_layout.columnWidth = clientRect.Width()/2;
 
   m_layout.font = theApp.GetFont(InformApp::FontDisplay);
-  m_layout.fontSize = theApp.MeasureFont(m_layout.font);
+  m_layout.fontSize = theApp.MeasureFont(this,m_layout.font);
   m_layout.margin = CSize(m_layout.fontSize.cx,m_layout.fontSize.cy/3);
   m_layout.centreMargin = m_layout.margin.cx*4;
 

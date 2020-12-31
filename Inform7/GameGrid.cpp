@@ -67,7 +67,7 @@ void GameGrid::FontChanged(void)
   m_currentFont.DeleteObject();
 
   // Get the width and height of the font
-  CSize fontSize = theApp.MeasureFont(font);
+  CSize fontSize = theApp.MeasureFont(this,font);
   m_charWidth = fontSize.cx;
   m_charHeight = fontSize.cy;
 }

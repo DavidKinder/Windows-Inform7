@@ -21,7 +21,7 @@ BOOL StopButton::Create(DWORD style, const RECT& rect, CWnd* parent, UINT id)
 
 CSize StopButton::GetButtonSize(void)
 {
-  CSize sz = theApp.MeasureFont(theApp.GetFont(InformApp::FontSystem));
+  CSize sz = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontSystem));
   sz.cx = sz.cy;
   return sz;
 }

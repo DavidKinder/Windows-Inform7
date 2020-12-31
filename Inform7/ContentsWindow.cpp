@@ -178,7 +178,7 @@ void ContentsPane::Draw(CDC* dc, int origin_y)
 
   // Select the default font
   CFont* oldFont = dc->SelectObject(&m_font);
-  CSize fs = theApp.MeasureFont(&m_font);
+  CSize fs = theApp.MeasureFont(this,&m_font);
   dc->SetTextColor(theApp.GetColour(InformApp::ColourText));
   dc->SetBkMode(TRANSPARENT);
 
@@ -241,7 +241,7 @@ void ContentsPane::DrawNode(CDC* dc, Node* node, bool& title, int& h, int origin
     if ((node->GetLevel() == SourceLexer::Title) || (node->GetLevel() <= m_smallest))
     {
       const CStringW& name = node->item->name;
-      CSize fs = theApp.MeasureFont(&m_font);
+      CSize fs = theApp.MeasureFont(this,&m_font);
       int x = fs.cx+((node->indent-(title ? 1 : 0))*fs.cy);
       int y = origin_y+(((h++)*4+1)*fs.cy/3);
 
@@ -316,7 +316,7 @@ void ContentsPane::DrawNode(CDC* dc, Node* node, bool& title, int& h, int origin
 
 void ContentsPane::DrawSelectBack(CDC* dc, Node* node, const CRect& textRect)
 {
-  CSize fs = theApp.MeasureFont(&m_font);
+  CSize fs = theApp.MeasureFont(this,&m_font);
   CRect backRect(textRect);
   backRect.left -= fs.cy;
   backRect.InflateRect(fs.cx/3,fs.cy/6);
@@ -435,7 +435,7 @@ void ContentsPane::SetScrollSize(void)
   {
     CRect client;
     GetClientRect(client);
-    CSize fs = theApp.MeasureFont(&m_font);
+    CSize fs = theApp.MeasureFont(this,&m_font);
     int count = m_tree->GetCount(m_smallest,true);
     SetScrollSizes(MM_TEXT,CSize(1,((count*4)+1)*fs.cy/3),client.Size());
   }
@@ -455,7 +455,7 @@ CDibSection* ContentsPane::GetCircle(COLORREF back, int index)
   CSize dibSize = dib->GetSize();
 
   // Work out the scaled image size
-  CSize circleDibSize = theApp.MeasureFont(theApp.GetFont(InformApp::FontDisplay));
+  CSize circleDibSize = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontDisplay));
   circleDibSize.cx = circleDibSize.cy;
 
   // Create a scaled image
@@ -778,7 +778,7 @@ void ContentsWindow::OnSize(UINT nType, int cx, int cy)
 {
   CWnd::OnSize(nType,cx,cy);
 
-  CSize fs = theApp.MeasureFont(theApp.GetFont(InformApp::FontSystem));
+  CSize fs = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontSystem));
   m_contents.MoveWindow(0,0,cx,cy-fs.cy*2);
   m_depth.MoveWindow(cx/3,(cy-fs.cy*2)+4,cx/3,fs.cy*3/2);
 }
@@ -803,7 +803,7 @@ void ContentsWindow::Draw(CDC* dc)
   CRect client, contents;
   GetClientRect(client);
   m_contents.GetClientRect(contents);
-  CSize fs = theApp.MeasureFont(theApp.GetFont(InformApp::FontSystem));
+  CSize fs = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontSystem));
 
   // Only draw the space under the contents pane
   client.top = contents.Height();

@@ -724,7 +724,7 @@ void SkeinWindow::SetFontsBitmaps(void)
   m_boldFont.CreateFontIndirect(&fontInfo);
 
   // Work out the size of the font
-  m_fontSize = theApp.MeasureFont(font);
+  m_fontSize = theApp.MeasureFont(this,font);
 
   // Load bitmaps
   m_bitmaps[BackActive] = GetImage("Skein-active");
