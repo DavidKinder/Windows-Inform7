@@ -455,7 +455,7 @@ CDibSection* ContentsPane::GetCircle(COLORREF back, int index)
   CSize dibSize = dib->GetSize();
 
   // Work out the scaled image size
-  CSize circleDibSize = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontDisplay));
+  CSize circleDibSize = theApp.MeasureFont(this,theApp.GetFont(this,InformApp::FontDisplay));
   circleDibSize.cx = circleDibSize.cy;
 
   // Create a scaled image
@@ -525,7 +525,7 @@ void ContentsPane::CreateFonts(void)
   // Set up the fonts
   LOGFONT fontInfo;
   ::ZeroMemory(&fontInfo,sizeof fontInfo);
-  theApp.GetFont(InformApp::FontDisplay)->GetLogFont(&fontInfo);
+  theApp.GetFont(this,InformApp::FontDisplay)->GetLogFont(&fontInfo);
   m_font.CreateFontIndirect(&fontInfo);
   fontInfo.lfWeight = FW_BOLD;
   m_boldFont.CreateFontIndirect(&fontInfo);
@@ -778,7 +778,7 @@ void ContentsWindow::OnSize(UINT nType, int cx, int cy)
 {
   CWnd::OnSize(nType,cx,cy);
 
-  CSize fs = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontSystem));
+  CSize fs = theApp.MeasureFont(this,theApp.GetFont(this,InformApp::FontSystem));
   m_contents.MoveWindow(0,0,cx,cy-fs.cy*2);
   m_depth.MoveWindow(cx/3,(cy-fs.cy*2)+4,cx/3,fs.cy*3/2);
 }
@@ -803,7 +803,7 @@ void ContentsWindow::Draw(CDC* dc)
   CRect client, contents;
   GetClientRect(client);
   m_contents.GetClientRect(contents);
-  CSize fs = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontSystem));
+  CSize fs = theApp.MeasureFont(this,theApp.GetFont(this,InformApp::FontSystem));
 
   // Only draw the space under the contents pane
   client.top = contents.Height();
@@ -811,7 +811,7 @@ void ContentsWindow::Draw(CDC* dc)
   dc->DrawEdge(client,EDGE_ETCHED,BF_TOP);
 
   // Draw the label for the control
-  CFont* oldFont = dc->SelectObject(theApp.GetFont(InformApp::FontSystem));
+  CFont* oldFont = dc->SelectObject(theApp.GetFont(this,InformApp::FontSystem));
   dc->SetTextColor(theApp.GetColour(InformApp::ColourText));
   dc->SetBkMode(TRANSPARENT);
   CRect labelRect(0,client.top+4,(client.Width()/3)-fs.cx,client.top+(fs.cy*3/2));

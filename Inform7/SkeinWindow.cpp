@@ -475,7 +475,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
   if (bitmap.CreateBitmap(pDC->GetSafeHdc(),client.Width(),client.Height()) == FALSE)
     return;
   CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&bitmap);
-  CFont* oldFont = dc.SelectObject(theApp.GetFont(InformApp::FontDisplay));
+  CFont* oldFont = dc.SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
   CPoint origin = pDC->GetViewportOrg();
 
   // Clear the background
@@ -691,7 +691,7 @@ CSize SkeinWindow::GetLayoutSize(bool force)
   {
     // Redo the layout if needed
     CDC* dc = AfxGetMainWnd()->GetDC();
-    CFont* font = dc->SelectObject(theApp.GetFont(InformApp::FontDisplay));
+    CFont* font = dc->SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
     m_skein->Layout(*dc,m_fontSize.cx*8,force);
     dc->SelectObject(font);
     AfxGetMainWnd()->ReleaseDC(dc);
@@ -713,7 +713,7 @@ int SkeinWindow::GetNodeYPos(int nodes, int ends)
 void SkeinWindow::SetFontsBitmaps(void)
 {
   // Set the edit control's font
-  CFont* font = theApp.GetFont(InformApp::FontDisplay);
+  CFont* font = theApp.GetFont(this,InformApp::FontDisplay);
   m_edit.SetFont(font);
 
   // Create a font
@@ -1277,7 +1277,7 @@ void SkeinWindow::StartEdit(Skein::Node* node, bool label)
       nodeRect.bottom = nodeRect.top + m_fontSize.cy+1;
     }
 
-    m_edit.SetFont(theApp.GetFont(InformApp::FontDisplay));
+    m_edit.SetFont(theApp.GetFont(this,InformApp::FontDisplay));
     m_edit.StartEdit(node,nodeRect,label);
   }
 }

@@ -78,7 +78,7 @@ protected:
 public:
   void AddToTabHistory(TabState state);
   static Panel* GetPanel(CWnd* wnd);
-  static double GetFontScale(CWnd* wnd, CDC* dc);
+  static double GetFontScale(CWnd* wnd);
 
   class FreezeHistory
   {

@@ -29,7 +29,7 @@ void TabBase::Create(CWnd* parent)
   EnableToolTips();
 
   // Create the navigation buttons
-  CFont* font = theApp.GetFont(InformApp::FontPanel);
+  CFont* font = theApp.GetFont(this,InformApp::FontPanel);
   m_navigate[0].Create("?<",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_NAVIGATE_BACK);
   m_navigate[0].SetFont(font);
   m_navigate[1].Create("?>",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_NAVIGATE_FORE);

@@ -419,7 +419,7 @@ BOOL FindInFiles::OnInitDialog()
     m_findAutoComplete->SetOptions(ACO_AUTOSUGGEST);
     fes->ExternalRelease();
 
-    m_resultsList.SetFont(theApp.GetFont(InformApp::FontSmall));
+    m_resultsList.SetFont(theApp.GetFont(this,InformApp::FontSmall));
     m_resultsList.SetExtendedStyle(LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
     m_resultsList.InsertColumn(0,"Result");
     m_resultsList.InsertColumn(1,"Document");

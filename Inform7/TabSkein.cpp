@@ -47,7 +47,7 @@ void TabSkein::CreateTab(CWnd* parent)
   Create(parent);
 
   // Create the command buttons
-  CFont* font = theApp.GetFont(InformApp::FontPanel);
+  CFont* font = theApp.GetFont(this,InformApp::FontPanel);
   m_label.Create("Labels",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_LABEL);
   m_label.SetFont(font);
   m_play.Create("Play All",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_PLAY_ALL);

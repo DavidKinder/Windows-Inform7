@@ -408,12 +408,36 @@ void InformApp::OnUpdateEditUseSel(CCmdUI *pCmdUI)
   pCmdUI->Enable(FALSE);
 }
 
-CFont* InformApp::GetFont(Fonts font)
+CFont* InformApp::GetFont(CWnd* wnd, Fonts font)
 {
-  CFont& theFont = m_fonts[font];
-  if ((HFONT)theFont == 0)
-    theFont.CreatePointFont(10*GetFontSize(font),GetFontName(font));
-  return &theFont;
+  ASSERT(wnd->GetSafeHwnd() != 0);
+
+  int dpi = DPI::getWindowDPI(wnd);
+  auto it = m_fonts.find(std::make_pair(font,dpi));
+  if (it != m_fonts.end())
+    return it->second;
+
+  CFont* theFont = new CFont();
+  if (font == FontPanel)
+  {
+    CWnd* frame = wnd->GetParentFrame();
+    ASSERT(frame);
+
+    LOGFONT fontInfo;
+    ::ZeroMemory(&fontInfo,sizeof fontInfo);
+    GetFont(frame,InformApp::FontSystem)->GetLogFont(&fontInfo);
+    fontInfo.lfHeight = (LONG)(Panel::GetFontScale(frame) * fontInfo.lfHeight);
+    theFont->CreateFontIndirect(&fontInfo);
+  }
+  else
+  {
+    CDC* dc = wnd->GetDC();
+    theFont->CreatePointFont(10*GetFontSize(font),GetFontName(font),dc);
+    wnd->ReleaseDC(dc);
+  }
+
+  m_fonts[std::make_pair(font,dpi)] = theFont;
+  return theFont;
 }
 
 const char* InformApp::GetFontName(Fonts font)
@@ -428,7 +452,6 @@ int InformApp::GetFontSize(Fonts font)
 
 CSize InformApp::MeasureFont(CWnd* wnd, CFont* font)
 {
-  ASSERT(wnd);
   ASSERT(wnd->GetSafeHwnd() != 0);
 
   // Get the with and height of the font
@@ -457,7 +480,6 @@ CSize InformApp::MeasureText(CWnd* button)
 
 CSize InformApp::MeasureText(CWnd* wnd, LPCSTR text)
 {
-  ASSERT(wnd);
   ASSERT(wnd->GetSafeHwnd() != 0);
 
   CDC* dc = wnd->GetDC();
@@ -1430,8 +1452,18 @@ static int CALLBACK EnumFontProc(ENUMLOGFONTEX*, NEWTEXTMETRICEX* ,DWORD, LPARAM
 void InformApp::SetFonts(void)
 {
   // Clear existing fonts
-  m_fonts[FontDisplay].DeleteObject();
-  m_fonts[FontFixedWidth].DeleteObject();
+  auto it = m_fonts.begin();
+  while (it != m_fonts.end())
+  {
+    Fonts font = it->first.first;
+    if ((font == FontDisplay) || (font == FontFixedWidth))
+    {
+      delete it->second;
+      m_fonts.erase(it++);
+    }
+    else
+      ++it;
+  }
 
   // Look for registry settings
   CRegKey registryKey;
@@ -1490,24 +1522,12 @@ void InformApp::SetFonts(void)
   ::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof ncm,&ncm,0);
   int fontSize = abs(MulDiv(ncm.lfMessageFont.lfHeight,72,dc->GetDeviceCaps(LOGPIXELSY)));
   fontSize = max(fontSize,9);
-  for (int i = 0; i < 5; i++)
+  for (int i = 0; i < FONT_COUNT; i++)
   {
     if (m_fontNames[i].IsEmpty())
       m_fontNames[i] = ncm.lfMessageFont.lfFaceName;
     if (m_fontSizes[i] == 0)
       m_fontSizes[i] = fontSize;
-  }
-
-  if ((HFONT)m_fonts[FontPanel] == 0)
-  {
-    LOGFONT fontInfo;
-    ::ZeroMemory(&fontInfo,sizeof fontInfo);
-    GetFont(InformApp::FontSystem)->GetLogFont(&fontInfo);
-    fontInfo.lfHeight = (LONG)(Panel::GetFontScale(wnd,dc) * fontInfo.lfHeight);
-
-    m_fontNames[FontPanel] = m_fontNames[FontSystem];
-    m_fontSizes[FontPanel] = abs(::MulDiv(fontInfo.lfHeight,72,dc->GetDeviceCaps(LOGPIXELSY)));
-    m_fonts[FontPanel].CreateFontIndirect(&fontInfo);
   }
 
   m_fontSizes[FontSmall] = min(fontSize-1,(fontSize*9)/10);

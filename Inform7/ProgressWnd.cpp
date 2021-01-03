@@ -24,7 +24,7 @@ BOOL ProgressWnd::Create(CWnd* parentWnd, DWORD style)
     return FALSE;
   if (!m_text.Create("",WS_CHILD|WS_VISIBLE|SS_CENTER,CRect(0,0,0,0),this))
     return FALSE;
-  m_text.SetFont(theApp.GetFont(InformApp::FontSystem));
+  m_text.SetFont(theApp.GetFont(this,InformApp::FontSystem));
   if (!m_stop.Create(WS_CHILD,CRect(0,0,0,0),this,IDC_STOP))
     return FALSE;
   if (!m_progress.Create(WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,IDC_PROGRESS))
@@ -91,7 +91,7 @@ void ProgressWnd::TaskProgress(const char* text, int progress)
     int width = parentWidth * 3/4;
     if (width > monWidth / 3)
       width = monWidth / 3;
-    CSize fs = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontSystem));
+    CSize fs = theApp.MeasureFont(this,theApp.GetFont(this,InformApp::FontSystem));
     int height = fs.cy * 11/2;
 
     SetWindowPos(&CWnd::wndTop,

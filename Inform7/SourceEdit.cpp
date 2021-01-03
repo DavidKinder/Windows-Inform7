@@ -133,7 +133,7 @@ BOOL SourceEdit::Create(CWnd* parent, UINT id, COLORREF back, bool includeExt)
   if (!SubclassWindow(wnd))
     return FALSE;
 
-  CSize fontSize = theApp.MeasureFont(this,theApp.GetFont(InformApp::FontDisplay));
+  CSize fontSize = theApp.MeasureFont(this,theApp.GetFont(this,InformApp::FontDisplay));
   m_editPtr = (sptr_t)SendMessage(SCI_GETDIRECTPOINTER);
 
   CallEdit(SCI_SETKEYSUNICODE,isUnicode);

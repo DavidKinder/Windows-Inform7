@@ -88,7 +88,7 @@ void TranscriptWindow::OnDraw(CDC* pDC)
 
   if (m_skein->IsActive())
   {
-    CFont* oldFont = dc.SelectObject(theApp.GetFont(InformApp::FontDisplay));
+    CFont* oldFont = dc.SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
     CPen linePen(PS_SOLID,1,theApp.GetColour(InformApp::ColourBorder));
     CPen* oldPen = dc.SelectObject(&linePen);
 
@@ -471,7 +471,7 @@ void TranscriptWindow::Layout(void)
   m_layout.clientSize = clientRect.Size();
   m_layout.columnWidth = clientRect.Width()/2;
 
-  m_layout.font = theApp.GetFont(InformApp::FontDisplay);
+  m_layout.font = theApp.GetFont(this,InformApp::FontDisplay);
   m_layout.fontSize = theApp.MeasureFont(this,m_layout.font);
   m_layout.margin = CSize(m_layout.fontSize.cx,m_layout.fontSize.cy/3);
   m_layout.centreMargin = m_layout.margin.cx*4;
@@ -867,7 +867,7 @@ CRect TranscriptWindow::DrawButton(
   CDC& dc, CRect& rect, bool centre, const char* text, Button button, bool enable)
 {
   // Select the font and measure the text in it
-  CFont* oldFont = dc.SelectObject(theApp.GetFont(InformApp::FontDisplay));
+  CFont* oldFont = dc.SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
   CSize size = dc.GetTextExtent(text);
 
   // Adjust the width of the button

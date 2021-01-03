@@ -62,7 +62,7 @@ void GameGrid::Layout(const CRect& r)
 
 void GameGrid::FontChanged(void)
 {
-  CFont* font = theApp.GetFont(InformApp::FontFixedWidth);
+  CFont* font = theApp.GetFont(this,InformApp::FontFixedWidth);
   SetFont(font);
   m_currentFont.DeleteObject();
 
@@ -309,7 +309,7 @@ BOOL GameGrid::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 void GameGrid::SelectFont(CDC& dc, int row, int column)
 {
   // Discard any previous font
-  CFont* font = theApp.GetFont(InformApp::FontFixedWidth);
+  CFont* font = theApp.GetFont(this,InformApp::FontFixedWidth);
   dc.SelectObject(font);
   m_currentFont.DeleteObject();
 

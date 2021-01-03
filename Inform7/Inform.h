@@ -92,15 +92,16 @@ public:
     FontDisplay = 1,
     FontFixedWidth = 2,
     FontPanel = 3,
-    FontSmall = 4
+    FontSmall = 4,
+    FONT_COUNT = 5
   };
 
-  CFont* GetFont(Fonts font);
+  CFont* GetFont(CWnd* wnd, Fonts font);
   const char* GetFontName(Fonts font);
   int GetFontSize(Fonts font);
-  CSize MeasureFont(CFont* font);
+  CSize MeasureFont(CWnd* wnd, CFont* font);
   CSize MeasureText(CWnd* button);
-  CSize MeasureText(LPCSTR text, CFont* font);
+  CSize MeasureText(CWnd* wnd, LPCSTR text);
 
   bool GetTestMode(void) const;
   CString GetAppDir(void) const;
@@ -198,9 +199,9 @@ protected:
   bool CreateHomeDirs(void);
   void SetFonts(void);
 
-  CString m_fontNames[5];
-  int m_fontSizes[5];
-  CFont m_fonts[5];
+  CString m_fontNames[FONT_COUNT];
+  int m_fontSizes[FONT_COUNT];
+  std::map<std::pair<Fonts,int>,CFont*> m_fonts;
 
   CArray<CFrameWnd*> m_frames;
   std::map<std::string,CDibSection*> m_bitmaps;

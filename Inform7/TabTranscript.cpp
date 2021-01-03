@@ -38,7 +38,7 @@ void TabTranscript::CreateTab(CWnd* parent)
   Create(parent);
 
   // Create the command buttons
-  CFont* font = theApp.GetFont(InformApp::FontPanel);
+  CFont* font = theApp.GetFont(this,InformApp::FontPanel);
   m_nextSkein.Create("Next in skein",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_REPLAY_DIFF_NEXT_SKEIN);
   m_nextSkein.SetFont(font);
   m_nextDiff.Create("Next diff",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_REPLAY_DIFF_NEXT);

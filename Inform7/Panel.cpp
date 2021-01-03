@@ -337,11 +337,13 @@ Panel* Panel::GetPanel(CWnd* wnd)
   return NULL;
 }
 
-double Panel::GetFontScale(CWnd* wnd, CDC* dc)
+double Panel::GetFontScale(CWnd* wnd)
 {
   // Get the approximate width of the tabs
+  CDC* dc = wnd->GetDC();
   int tabWidth = dc->GetTextExtent(
     " Source | Results | Index | Skein | Transcript | Story | Documentation | Extensions | Settings |").cx;
+  wnd->ReleaseDC(dc);
 
   // Get the width of the monitor
   int monWidth = DPI::getMonitorWorkRect(wnd).Width();

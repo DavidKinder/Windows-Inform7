@@ -786,7 +786,7 @@ BOOL PrefsDialog::OnInitDialog()
   int monHeight = DPI::getMonitorWorkRect(this).Height();
 
   // Is a smaller font needed?
-  CFont* font = theApp.GetFont(InformApp::FontSystem);
+  CFont* font = theApp.GetFont(this,InformApp::FontSystem);
   CSize fontSize = theApp.MeasureFont(this,font);
   double scaleX = 1.0;
   if (monHeight < 45*fontSize.cy)
