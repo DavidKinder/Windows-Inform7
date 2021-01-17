@@ -391,7 +391,7 @@ CAPTION "Inform 7 for Windows"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_CREDITS,"RichEdit20A",ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_TABSTOP,4,53,202,120
-    CTEXT           "Copyright 2006-2020 David Kinder (front end), Graham Nelson et al (compiler).",IDC_COPYRIGHT,25,182,156,17
+    CTEXT           "Copyright 2006-2021 David Kinder (front end), Graham Nelson et al (compiler).",IDC_COPYRIGHT,25,182,156,17
     CTEXT           "Inform",IDC_TITLE,23,22,159,15,SS_CENTERIMAGE
     CONTROL         "",IDC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,79,1,48,18
     CTEXT           "Inform 7 for Windows (%s; %s)",IDC_VERSION,1,42,203,9
@@ -660,7 +660,7 @@ BEGIN
             VALUE "FileDescription", "Inform 7 for Windows"
             VALUE "FileVersion", "7.0"
             VALUE "InternalName", "Inform7"
-            VALUE "LegalCopyright", "(c) 2006-2020 David Kinder"
+            VALUE "LegalCopyright", "(c) 2006-2021 David Kinder"
             VALUE "OriginalFilename", "Inform7.exe"
             VALUE "ProductName", "Inform"
             VALUE "ProductVersion", "7.0"
