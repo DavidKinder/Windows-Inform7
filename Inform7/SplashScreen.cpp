@@ -2,10 +2,11 @@
 #include "SplashScreen.h"
 #include "Inform.h"
 #include "ProjectFrame.h"
+#include "DpiFunctions.h"
 
 IMPLEMENT_DYNAMIC(SplashScreen, I7BaseDialog)
 
-SplashScreen::SplashScreen(CWnd* pParent) : I7BaseDialog(SplashScreen::IDD,pParent)
+SplashScreen::SplashScreen(CWnd* pParent) : I7BaseDialog(SplashScreen::IDD,pParent), m_original(NULL)
 {
 }
 
@@ -24,6 +25,7 @@ BEGIN_MESSAGE_MAP(SplashScreen, I7BaseDialog)
   ON_BN_CLICKED(IDC_REOPEN_LAST, OnReopenLast)
   ON_BN_CLICKED(IDC_OPEN_PROJECT, OnOpenProject)
   ON_WM_SHOWWINDOW()
+  ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 END_MESSAGE_MAP()
 
 void SplashScreen::ShowSplash(void)
@@ -57,64 +59,42 @@ BOOL SplashScreen::OnInitDialog()
     "Inform 7 was created by Graham Nelson, with the help of Emily Short and "
     "many others. The Windows front-end was written by David Kinder.");
 
-  // Create a font for the buttons
-  LOGFONT fontInfo;
-  ::ZeroMemory(&fontInfo,sizeof fontInfo);
-  GetFont()->GetLogFont(&fontInfo);
-  fontInfo.lfWeight = FW_BOLD;
-  m_buttonFont.CreateFontIndirect(&fontInfo);
-  m_newProject.SetFont(&m_buttonFont);
-  m_reopenLast.SetFont(&m_buttonFont);
-  m_openProject.SetFont(&m_buttonFont);
-
   // Does the last project exist?
   if (::GetFileAttributes(theApp.GetLastProjectDir()) == INVALID_FILE_ATTRIBUTES)
     m_reopenLast.EnableWindow(FALSE);
 
-  if (theApp.GetColourDepth() >= 16)
+  // Get the unscaled background
+  m_original = theApp.GetCachedImage("Welcome Background@4x");
+  ASSERT(m_original != NULL);
+  CSize originalSize = m_original->GetSize();
+
+  // Adjust the dialog to the same aspect ratio as the background
+  CRect client;
+  GetClientRect(client);
+  int heightAdjust =
+    ((client.Width() * originalSize.cy) / originalSize.cx) - client.Height();
+  CRect windowRect;
+  GetWindowRect(windowRect);
+  windowRect.bottom += heightAdjust;
+  MoveWindow(windowRect,FALSE);
+
+  // Adjust the button positions
+  CWnd* btns[3];
+  btns[0] = &m_newProject;
+  btns[1] = &m_reopenLast;
+  btns[2] = &m_openProject;
+  for (int i = 0; i < (sizeof btns / sizeof btns[0]); i++)
   {
-    CRect client;
-    GetClientRect(client);
-
-    // Get the unscaled background
-    CDibSection* back = theApp.GetCachedImage("Welcome Background@4x");
-    ASSERT(back != NULL);
-    CSize backSize = back->GetSize();
-
-    // Adjust the dialog to the same aspect ratio as the background
-    int heightAdjust =
-      ((client.Width() * backSize.cy) / backSize.cx) - client.Height();
-    CRect windowRect;
-    GetWindowRect(windowRect);
-    windowRect.bottom += heightAdjust;
-    MoveWindow(windowRect,FALSE);
-    GetClientRect(client);
-
-    // Adjust the button positions
-    CWnd* btns[3];
-    btns[0] = &m_newProject;
-    btns[1] = &m_reopenLast;
-    btns[2] = &m_openProject;
-    for (int i = 0; i < (sizeof btns / sizeof btns[0]); i++)
-    {
-      CRect btnRect;
-      btns[i]->GetWindowRect(btnRect);
-      ScreenToClient(btnRect);
-      btnRect.top += heightAdjust;
-      btnRect.bottom += heightAdjust;
-      btns[i]->MoveWindow(btnRect,FALSE);
-    }
-
-    // Create a bitmap for the scaled background
-    CDC* dc = GetDesktopWindow()->GetDC();
-    m_back.CreateBitmap(dc->GetSafeHdc(),client.Width(),client.Height());
-    GetDesktopWindow()->ReleaseDC(dc);
-
-    // Scale and stretch the background
-    ScaleGfx(back->GetBits(),backSize.cx,backSize.cy,
-      m_back.GetBits(),client.Width(),client.Height());
+    CRect btnRect;
+    btns[i]->GetWindowRect(btnRect);
+    ScreenToClient(btnRect);
+    btnRect.top += heightAdjust;
+    btnRect.bottom += heightAdjust;
+    btns[i]->MoveWindow(btnRect,FALSE);
   }
 
+  SetButtonFont();
+  SetBackBitmap();
   return TRUE;
 }
 
@@ -163,6 +143,15 @@ void SplashScreen::OnShowWindow(BOOL bShow, UINT nStatus)
   }
 }
 
+LRESULT SplashScreen::OnDpiChanged(WPARAM wparam, LPARAM lparam)
+{
+  Default();
+
+  SetButtonFont();
+  SetBackBitmap();
+  return 0;
+}
+
 void SplashScreen::OnNewProject()
 {
   if (ProjectFrame::StartNewProject(theApp.GetLastProjectDir(),this))
@@ -179,4 +168,40 @@ void SplashScreen::OnOpenProject()
 {
   if (ProjectFrame::StartExistingProject(theApp.GetLastProjectDir(),this))
     EndDialog(IDOK);
+}
+
+void SplashScreen::SetButtonFont(void)
+{
+  if (m_newProject.GetSafeHwnd() != 0)
+  {
+    m_buttonFont.DeleteObject();
+
+    LOGFONT fontInfo;
+    ::ZeroMemory(&fontInfo,sizeof fontInfo);
+    GetFont()->GetLogFont(&fontInfo);
+    fontInfo.lfWeight = FW_BOLD;
+    m_buttonFont.CreateFontIndirect(&fontInfo);
+    m_newProject.SetFont(&m_buttonFont);
+    m_reopenLast.SetFont(&m_buttonFont);
+    m_openProject.SetFont(&m_buttonFont);
+  }
+}
+
+void SplashScreen::SetBackBitmap(void)
+{
+  if (m_original)
+  {
+    // Create a bitmap for the scaled background
+    CRect client;
+    GetClientRect(client);
+    CDC* dc = GetDC();
+    m_back.DeleteBitmap();
+    m_back.CreateBitmap(dc->GetSafeHdc(),client.Width(),client.Height());
+    ReleaseDC(dc);
+
+    // Scale and stretch the background
+    CSize originalSize = m_original->GetSize();
+    ScaleGfx(m_original->GetBits(),originalSize.cx,originalSize.cy,
+      m_back.GetBits(),client.Width(),client.Height());
+  }
 }

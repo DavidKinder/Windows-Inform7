@@ -1017,14 +1017,6 @@ void InformApp::ClearScaledImages(void)
   }
 }
 
-int InformApp::GetColourDepth(void)
-{
-  HDC dc = ::GetDC(NULL);
-  int bits = ::GetDeviceCaps(dc,BITSPIXEL);
-  ::ReleaseDC(NULL,dc);
-  return bits;
-}
-
 void InformApp::RunMessagePump(void)
 {
   LONG count = 0;

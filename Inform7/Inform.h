@@ -127,7 +127,6 @@ public:
   CDibSection* GetCachedImage(const char* name);
   void CacheImage(const char* name, CDibSection* dib);
   CDibSection* CreateScaledImage(CDibSection* fromImage, double scaleX, double scaleY);
-  int GetColourDepth(void);
 
   class OutputSink
   {
