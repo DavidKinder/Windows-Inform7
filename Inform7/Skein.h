@@ -229,7 +229,7 @@ private:
     Node* root;
     Node* current;
 
-    Instance() : edited(false), root(NULL)
+    Instance() : edited(false), root(NULL), current(NULL)
     {
     }
 

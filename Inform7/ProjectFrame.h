@@ -272,6 +272,10 @@ protected:
 
   struct SubProcess
   {
+    SubProcess() : action(ProcessNoAction)
+    {
+    }
+
     InformApp::CreatedProcess cp;
     ProcessAction action;
     CString name;
