@@ -2,13 +2,14 @@
 #include "AboutDialog.h"
 #include "Inform.h"
 #include "Build.h"
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 AboutDialog::AboutDialog() : I7BaseDialog(AboutDialog::IDD,FALSE),
-  m_creditHeight(0), m_initialSize(0,0), m_bitmap(NULL)
+  m_dpi(96), m_creditHeight(0), m_initialSize(0,0), m_bitmap(NULL)
 {
 }
 
@@ -17,6 +18,7 @@ BEGIN_MESSAGE_MAP(AboutDialog, I7BaseDialog)
   ON_WM_GETMINMAXINFO()
   ON_WM_SIZE()
   ON_NOTIFY(EN_REQUESTRESIZE, IDC_CREDITS, OnCreditsResize)
+  ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 END_MESSAGE_MAP()
 
 void AboutDialog::DoDataExchange(CDataExchange* pDX)
@@ -40,26 +42,21 @@ BOOL AboutDialog::OnInitDialog()
 {
   I7BaseDialog::OnInitDialog();
   theApp.SetIcon(this);
+  m_dpi = DPI::getWindowDPI(this);
 
   CDibSection* bitmap = theApp.GetCachedImage("Inform");
   CSize bitmapSize = bitmap->GetSize();
 
   m_bitmap.reset(new CDibSection());
-  CDC* dc = AfxGetMainWnd()->GetDC();
+  CDC* dc = GetDC();
   m_bitmap->CreateBitmap(dc->GetSafeHdc(),bitmapSize.cx,bitmapSize.cy);
-  AfxGetMainWnd()->ReleaseDC(dc);
+  ReleaseDC(dc);
   ::CopyMemory(m_bitmap->GetBits(),bitmap->GetBits(),
-    bitmapSize.cx*bitmapSize.cy*sizeof(DWORD));
+    (SIZE_T)bitmapSize.cx*(SIZE_T)bitmapSize.cy*sizeof(DWORD));
   m_bitmap->AlphaBlend(::GetSysColor(COLOR_BTNFACE));
-
   m_logo.SetBitmap(m_bitmap->GetSafeHandle());
 
-  LOGFONT titleFont;
-  m_title.GetFont()->GetLogFont(&titleFont);
-  titleFont.lfWeight = FW_BOLD;
-  titleFont.lfHeight = (LONG)(titleFont.lfHeight*1.6);
-  m_titleFont.CreateFontIndirect(&titleFont);
-  m_title.SetFont(&m_titleFont);
+  SetTitleFont();
 
   CString version1, version2;
   m_version.GetWindowText(version1);
@@ -150,10 +147,9 @@ BOOL AboutDialog::OnInitDialog()
     "\\tab Nick Gravgaard";
 
   // Start with only as much text as should be visible
-  CString creditsRTF;
-  creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s}}",
+  m_creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s}}",
     (theApp.GetFontSize(InformApp::FontSystem)*2)+2,text1);
-  m_credits.SetTextRTF(creditsRTF);
+  m_credits.SetTextRTF(m_creditsRTF);
 
   // Ask the control how big the credits text is
   LayoutControls();
@@ -172,9 +168,9 @@ BOOL AboutDialog::OnInitDialog()
   MoveWindow(dlgRect);
 
   // Show all the credits text
-  creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s%s}}",
+  m_creditsRTF.Format("{\\rtf1\\ansi{\\fs%d%s%s}}",
     (theApp.GetFontSize(InformApp::FontSystem)*2)+2,text1,text2);
-  m_credits.SetTextRTF(creditsRTF);
+  m_credits.SetTextRTF(m_creditsRTF);
 
   m_initialSize = dlgRect.Size();
   return TRUE;
@@ -203,6 +199,25 @@ void AboutDialog::OnCreditsResize(NMHDR* notify, LRESULT*)
 {
   REQRESIZE* resize = (REQRESIZE*)notify;
   m_creditHeight = resize->rc.bottom - resize->rc.top;
+}
+
+LRESULT AboutDialog::OnDpiChanged(WPARAM wparam, LPARAM lparam)
+{
+  int newDpi = (int)HIWORD(wparam);
+  m_initialSize.cx = MulDiv(m_initialSize.cx,newDpi,m_dpi);
+  m_initialSize.cy = MulDiv(m_initialSize.cy,newDpi,m_dpi);
+
+  Default();
+
+  if (m_dpi != newDpi)
+  {
+    m_dpi = newDpi;
+
+    SetTitleFont();
+    if (m_credits.GetSafeHwnd() != 0)
+      m_credits.SetTextRTF(m_creditsRTF);
+  }
+  return 0;
 }
 
 void AboutDialog::LayoutControls(void)
@@ -267,6 +282,20 @@ void AboutDialog::LayoutControls(void)
   cornerRect.left = newCopyrightRect.right+1;
   cornerRect.top = newCreditsRect.bottom+1;
   InvalidateRect(cornerRect,TRUE);
+}
+
+void AboutDialog::SetTitleFont(void)
+{
+  if (m_title.GetSafeHwnd() != 0)
+  {
+    LOGFONT titleFont;
+    m_title.GetFont()->GetLogFont(&titleFont);
+    titleFont.lfWeight = FW_BOLD;
+    titleFont.lfHeight = (LONG)(titleFont.lfHeight*1.6);
+    m_titleFont.DeleteObject();
+    m_titleFont.CreateFontIndirect(&titleFont);
+    m_title.SetFont(&m_titleFont);
+  }
 }
 
 IMPLEMENT_DYNAMIC(AboutCreditsEdit, RichEdit)

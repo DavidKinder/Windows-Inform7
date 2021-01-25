@@ -36,14 +36,20 @@ protected:
   afx_msg void OnGetMinMaxInfo(MINMAXINFO* mmi);
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg void OnCreditsResize(NMHDR* notify, LRESULT*);
+  afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
 
   void LayoutControls(void);
+  void SetTitleFont(void);
+  void SetCredits(void);
 
 private:
+  UINT m_dpi;
+
   CStatic m_logo;
   CStatic m_title, m_version, m_copyright;
 
   AboutCreditsEdit m_credits;
+  CString m_creditsRTF;
   int m_creditHeight;
 
   CSize m_initialSize;
