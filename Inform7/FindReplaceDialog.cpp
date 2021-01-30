@@ -4,7 +4,8 @@
 #include "Messages.h"
 #include "RichEdit.h"
 #include "UnicodeEdit.h"
-#include "resource.h"
+#include "Resource.h"
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -16,6 +17,7 @@ BEGIN_MESSAGE_MAP(FindReplaceDialog, I7BaseDialog)
   ON_WM_CLOSE()
   ON_WM_DESTROY()
   ON_WM_DRAWITEM()
+  ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
   ON_BN_CLICKED(IDC_FIND_NEXT, OnFindNext)
   ON_BN_CLICKED(IDC_FIND_PREVIOUS, OnFindPrevious)
   ON_EN_CHANGE(IDC_FIND, OnChangeFindText)
@@ -35,6 +37,7 @@ FindReplaceDialog* FindReplaceDialog::Create(UINT id, CWnd* parentWnd)
     return NULL;
   }
   theApp.SetIcon(dialog);
+  dialog->m_dpi = DPI::getWindowDPI(dialog);
   dialog->PrepareHelp();
   return dialog;
 }
@@ -60,6 +63,7 @@ void FindReplaceDialog::Show(LPCWSTR findText)
 
 FindReplaceDialog::FindReplaceDialog(UINT id, CWnd* parentWnd) : I7BaseDialog(id,parentWnd)
 {
+  m_dpi = 96;
   m_ignoreCase = TRUE;
   m_findRule = FindRule_Contains;
   m_richText = NULL;
@@ -171,10 +175,7 @@ void FindReplaceDialog::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
       " \\\\S\\tab Non-whitespace\\par"
       " \\\\t\\tab Tab\\par"
       " [A-Z]\\tab Character ranges\\par";
-    CString rtfText;
-    rtfText.Format("{\\rtf1\\ansi{\\fs%d%s}}",
-      theApp.GetFontSize(InformApp::FontSystem)*2,text1);
-    m_richText->SetTextRTF(rtfText);
+    SetRichTextRTF(text1);
     m_richText->DrawText(*dc,helpRect);
 
     const char* text2 =
@@ -186,9 +187,7 @@ void FindReplaceDialog::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
       " x\\{2,\\}\\tab 2 or more of 'x'\\par"
       " x\\{,2\\}\\tab 0-2 of 'x'\\par"
       " x\\{2,4\\}\\tab 2-4 of 'x'\\par";
-    rtfText.Format("{\\rtf1\\ansi{\\fs%d%s}}",
-      theApp.GetFontSize(InformApp::FontSystem)*2,text2);
-    m_richText->SetTextRTF(rtfText);
+    SetRichTextRTF(text2);
     CRect textRect;
     textRect.SetRectEmpty();
     textRect.right = helpRect.Width();
@@ -211,9 +210,7 @@ void FindReplaceDialog::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
       " x|y\\tab x or y\\par"
       " ^\\tab Start of the line\\par"
       " $\\tab End of the line\\par";
-    rtfText.Format("{\\rtf1\\ansi{\\fs%d%s}}",
-      theApp.GetFontSize(InformApp::FontSystem)*2,text3);
-    m_richText->SetTextRTF(rtfText);
+    SetRichTextRTF(text3);
     textRect.SetRectEmpty();
     textRect.right = helpRect.Width();
     m_richText->SizeText(*dc,textRect);
@@ -224,6 +221,17 @@ void FindReplaceDialog::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
   }
   else
     CWnd::OnDrawItem(nIDCtl,di);
+}
+
+LRESULT FindReplaceDialog::OnDpiChanged(WPARAM wparam, LPARAM lparam)
+{
+  int newDpi = (int)HIWORD(wparam);
+  m_heightNormal = MulDiv(m_heightNormal,newDpi,m_dpi);
+  m_heightHelp = MulDiv(m_heightHelp,newDpi,m_dpi);
+
+  Default();
+  m_dpi = newDpi;
+  return 0;
 }
 
 void FindReplaceDialog::OnFindNext()
@@ -300,4 +308,15 @@ void FindReplaceDialog::EnableActions(void)
   button = GetDlgItem(IDC_REPLACE_ALL);
   if (button)
     button->EnableWindow(canReplace);
+}
+
+void FindReplaceDialog::SetRichTextRTF(const char* fragment)
+{
+  int sysDpi = DPI::getSystemDPI();
+  int wndDpi = DPI::getWindowDPI(this);
+
+  CString rtfText;
+  rtfText.Format("{\\rtf1\\ansi{\\fs%d%s}}",
+    (2*theApp.GetFontSize(InformApp::FontSystem)*wndDpi)/sysDpi,fragment);
+  m_richText->SetTextRTF(rtfText);
 }

@@ -30,6 +30,8 @@ protected:
   afx_msg void OnClose();
   afx_msg void OnDestroy();
   afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di);
+  afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
+
   afx_msg void OnFindNext();
   afx_msg void OnFindPrevious();
   afx_msg void OnChangeFindText();
@@ -40,6 +42,7 @@ protected:
 
 private:
   void EnableActions(void);
+  void SetRichTextRTF(const char* fragment);
 
   CStringW m_findText, m_replaceWith;
   BOOL m_ignoreCase;
@@ -48,4 +51,5 @@ private:
   CStatic m_regexHelp;
   RichDrawText* m_richText;
   int m_heightNormal, m_heightHelp;
+  UINT m_dpi;
 };
