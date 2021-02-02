@@ -257,8 +257,8 @@ void TabSettings::OnInitialUpdate()
   GetDlgItem(IDC_STORY_BOX)->GetFont()->GetLogFont(&lf);
   int fh = abs(lf.lfHeight);
   CDC* dc = GetDC();
-  m_labelFont.CreatePointFont(
-    9*theApp.GetFontSize(InformApp::FontSystem),theApp.GetFontName(InformApp::FontSystem),dc);
+  theApp.CreatePointFont(this,&m_labelFont,
+    9*theApp.GetFontSize(InformApp::FontSystem),theApp.GetFontName(InformApp::FontSystem));
   CFont* oldFont = dc->SelectObject(&m_labelFont);
 
   sizeText(dc,m_labelTexts[0],m_labelRects[0],story.top+(2*fh));

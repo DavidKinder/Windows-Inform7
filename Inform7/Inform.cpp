@@ -432,7 +432,7 @@ CFont* InformApp::GetFont(CWnd* wnd, Fonts font)
   else
   {
     CDC* dc = wnd->GetDC();
-    theFont->CreatePointFont(10*GetFontSize(font),GetFontName(font),dc);
+    CreatePointFont(wnd,theFont,10*GetFontSize(font),GetFontName(font));
     wnd->ReleaseDC(dc);
   }
 
@@ -488,6 +488,16 @@ CSize InformApp::MeasureText(CWnd* wnd, LPCSTR text)
   dc->SelectObject(oldFont);
   wnd->ReleaseDC(dc);
   return size;
+}
+
+void InformApp::CreatePointFont(CWnd* wnd, CFont* font, int pointSize, LPCSTR faceName)
+{
+  LOGFONT fontInfo;
+  ::ZeroMemory(&fontInfo,sizeof fontInfo);
+  fontInfo.lfCharSet = DEFAULT_CHARSET;
+  fontInfo.lfHeight = -MulDiv(pointSize,DPI::getWindowDPI(wnd),720);
+  strcpy(fontInfo.lfFaceName,faceName);
+  font->CreateFontIndirect(&fontInfo);
 }
 
 COLORREF InformApp::GetColour(Colours colour)

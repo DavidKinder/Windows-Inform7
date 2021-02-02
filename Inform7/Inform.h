@@ -102,6 +102,7 @@ public:
   CSize MeasureFont(CWnd* wnd, CFont* font);
   CSize MeasureText(CWnd* button);
   CSize MeasureText(CWnd* wnd, LPCSTR text);
+  void CreatePointFont(CWnd* wnd, CFont* font, int pointSize, LPCSTR faceName);
 
   bool GetTestMode(void) const;
   CString GetAppDir(void) const;
