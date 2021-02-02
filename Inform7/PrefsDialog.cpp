@@ -756,8 +756,9 @@ LRESULT PrefsAdvancedPage::OnAfterFontSet(WPARAM, LPARAM)
 {
   // Set a smaller font for the "Also clean out ..." checkbox
   LOGFONT smallFont;
-  GetFont()->GetLogFont(&smallFont);
-  smallFont.lfHeight = (LONG)(smallFont.lfHeight*0.95);
+  m_cleanIndexCheck.GetFont()->GetLogFont(&smallFont);
+  smallFont.lfHeight = (LONG)(smallFont.lfHeight*0.9);
+  m_smallFont.DeleteObject();
   m_smallFont.CreateFontIndirect(&smallFont);
   m_cleanIndexCheck.SetFont(&m_smallFont);
   return 0;
@@ -771,42 +772,43 @@ void PrefsAdvancedPage::UpdateControlStates(void)
 
 PrefsDialog::PrefsDialog(void) : CPropertySheet("Preferences")
 {
+  m_dpi = 96;
+  m_fontHeightPerDpi = 1.0;
   m_psh.dwFlags |= PSH_NOAPPLYNOW;
 }
 
 BEGIN_MESSAGE_MAP(PrefsDialog, CPropertySheet)
+  ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
   ON_MESSAGE(WM_RESIZEPAGE, OnResizePage)  
 END_MESSAGE_MAP()
 
 BOOL PrefsDialog::OnInitDialog() 
 {
   CPropertySheet::OnInitDialog();
+  m_dpi = DPI::getWindowDPI(this);
 
-  // Get the height of the monitor
-  int monHeight = DPI::getMonitorWorkRect(this).Height();
+  // Get the default font for the dialog
+  CFont* sysFont = theApp.GetFont(this,InformApp::FontSystem);
+  sysFont->GetLogFont(&m_logFont);
+  CSize fontSize = theApp.MeasureFont(this,sysFont);
 
   // Is a smaller font needed?
-  CFont* font = theApp.GetFont(this,InformApp::FontSystem);
-  CSize fontSize = theApp.MeasureFont(this,font);
-  double scaleX = 1.0;
+  int monHeight = DPI::getMonitorWorkRect(this).Height();
   if (monHeight < 45*fontSize.cy)
-  {
-    LOGFONT lf;
-    font->GetLogFont(&lf);
-    lf.lfHeight = monHeight/45;
-    m_font.CreateFontIndirect(&lf);
-    font = &m_font;
-    scaleX = (double)fontSize.cx / (double)theApp.MeasureFont(this,font).cx;
-  }
+    m_logFont.lfHeight = monHeight/45;
+  m_font.CreateFontIndirect(&m_logFont);
+  m_fontHeightPerDpi = (double)m_logFont.lfHeight / (double)m_dpi;
+  double scaleX = (double)fontSize.cx / (double)theApp.MeasureFont(this,&m_font).cx;
 
   // Change the font of the property sheet and its pages
-  ChangeDialogFont(this,font,scaleX);
+  ChangeDialogFont(this,&m_font,0.0,scaleX);
   CPropertyPage* page = GetActivePage();
   for (int i = 0; i < GetPageCount(); i++)
   {
     SetActivePage(i);
     CPropertyPage* page = GetActivePage();
-    ChangeDialogFont(page,font,scaleX);
+    DPI::disableDialogDPI(page);
+    ChangeDialogFont(page,&m_font,0.0,scaleX);
     page->SendMessage(WM_AFTERFONTSET);
   }
   SetActivePage(page);
@@ -828,6 +830,52 @@ BOOL PrefsDialog::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
   return CPropertySheet::OnNotify(wParam, lParam, pResult);
 }
 
+LRESULT PrefsDialog::OnDpiChanged(WPARAM wparam, LPARAM lparam)
+{
+  int newDpi = (int)HIWORD(wparam);
+  if (m_dpi != newDpi)
+  {
+    if (GetTabControl() != NULL)
+    {
+      // Use the top-left corner of the suggested window rectangle
+      CRect windowRect;
+      GetWindowRect(windowRect);
+      windowRect.left = ((LPRECT)lparam)->left;
+      windowRect.top = ((LPRECT)lparam)->top;
+      MoveWindow(windowRect,TRUE);
+
+      // Update the font
+      m_logFont.lfHeight = (long)(m_fontHeightPerDpi * newDpi);
+      CFont oldFont;
+      oldFont.Attach(m_font.Detach());
+      m_font.CreateFontIndirect(&m_logFont);
+
+      // Update the dialog to use the new font
+      double scaleDpi = (double)newDpi / (double)m_dpi;
+      ChangeDialogFont(this,&m_font,scaleDpi,1.0);
+      CPropertyPage* page = GetActivePage();
+      for (int i = 0; i < GetPageCount(); i++)
+      {
+        SetActivePage(i);
+        CPropertyPage* page = GetActivePage();
+        ChangeDialogFont(page,&m_font,scaleDpi,1.0);
+        page->SendMessage(WM_AFTERFONTSET);
+      }
+      SetActivePage(page);
+
+      // Resize the property page
+      CTabCtrl* tab = GetTabControl();
+      tab->GetWindowRect(&m_page);
+      ScreenToClient(&m_page);
+      tab->AdjustRect(FALSE,&m_page);
+      page->MoveWindow(&m_page);
+    }
+
+    m_dpi = newDpi;
+  }
+  return 0;
+}
+
 LRESULT PrefsDialog::OnResizePage(WPARAM, LPARAM)
 {
   CPropertyPage* page = GetActivePage();
@@ -835,29 +883,34 @@ LRESULT PrefsDialog::OnResizePage(WPARAM, LPARAM)
   return 0;
 }
 
-void PrefsDialog::ChangeDialogFont(CWnd* wnd, CFont* font, double scaleX)
+void PrefsDialog::ChangeDialogFont(CWnd* wnd, CFont* font, double scale, double extScaleX)
 {
   CRect windowRect;
 
-  TEXTMETRIC tmOld, tmNew;
-  CDC* dc = wnd->GetDC();
-  CFont* oldFont = dc->SelectObject(wnd->GetFont());
-  dc->GetTextMetrics(&tmOld);
-  dc->SelectObject(font);
-  dc->GetTextMetrics(&tmNew);
-  dc->SelectObject(oldFont);
-  wnd->ReleaseDC(dc);
+  double scaleW = 1.0, scaleH = 1.0;
+  if (scale > 0.0)
+  {
+    scaleW = scale;
+    scaleH = scale;
+  }
+  else
+  {
+    TEXTMETRIC tmOld, tmNew;
+    CDC* dc = wnd->GetDC();
+    CFont* oldFont = dc->SelectObject(wnd->GetFont());
+    dc->GetTextMetrics(&tmOld);
+    dc->SelectObject(font);
+    dc->GetTextMetrics(&tmNew);
+    dc->SelectObject(oldFont);
+    wnd->ReleaseDC(dc);
 
-  long oldHeight = tmOld.tmHeight+tmOld.tmExternalLeading;
-  long newHeight = tmNew.tmHeight+tmNew.tmExternalLeading;
-  if (newHeight < oldHeight)
-    newHeight = oldHeight;
-  long oldWidth = tmOld.tmAveCharWidth;
-  long newWidth = tmNew.tmAveCharWidth;
-  if (newWidth < oldWidth)
-    newWidth = oldWidth;
+    scaleW = (double)tmNew.tmAveCharWidth / (double)tmOld.tmAveCharWidth;
+    scaleH = (double)(tmNew.tmHeight+tmNew.tmExternalLeading) /
+      (double)(tmOld.tmHeight+tmOld.tmExternalLeading);
+  }
+  scaleW *= extScaleX;
 
-  // calculate new dialog window rectangle
+  // Calculate new dialog window rectangle
   CRect clientRect, newClientRect, newWindowRect;
 
   wnd->GetWindowRect(windowRect);
@@ -866,8 +919,8 @@ void PrefsDialog::ChangeDialogFont(CWnd* wnd, CFont* font, double scaleX)
   long yDiff = windowRect.Height() - clientRect.Height();
 
   newClientRect.left = newClientRect.top = 0;
-  newClientRect.right = (LONG)(clientRect.right * scaleX * newWidth / oldWidth);
-  newClientRect.bottom = clientRect.bottom * newHeight / oldHeight;
+  newClientRect.right = (long)(clientRect.right * scaleW);
+  newClientRect.bottom = (long)(clientRect.bottom * scaleH);
 
   newWindowRect.left = windowRect.left - (newClientRect.right - clientRect.right)/2;
   newWindowRect.top = windowRect.top - (newClientRect.bottom - clientRect.bottom)/2;
@@ -883,10 +936,10 @@ void PrefsDialog::ChangeDialogFont(CWnd* wnd, CFont* font, double scaleX)
     childWnd->SetFont(font);
     childWnd->GetWindowRect(windowRect);
 
-    CString className;
-    ::GetClassName(childWnd->GetSafeHwnd(),className.GetBufferSetLength(32),31);
-    className.MakeUpper();
-    if (className == "COMBOBOX")
+    CString strClass;
+    ::GetClassName(childWnd->GetSafeHwnd(),strClass.GetBufferSetLength(32),31);
+    strClass.MakeUpper();
+    if (strClass == "COMBOBOX")
     {
       CRect rect;
       childWnd->SendMessage(CB_GETDROPPEDCONTROLRECT,0,(LPARAM)&rect);
@@ -895,10 +948,10 @@ void PrefsDialog::ChangeDialogFont(CWnd* wnd, CFont* font, double scaleX)
     }
 
     wnd->ScreenToClient(windowRect);
-    windowRect.left = (LONG)(windowRect.left * scaleX * newWidth / oldWidth);
-    windowRect.right = (LONG)(windowRect.right *scaleX *  newWidth / oldWidth);
-    windowRect.top = windowRect.top * newHeight / oldHeight;
-    windowRect.bottom = windowRect.bottom * newHeight / oldHeight;
+    windowRect.left = (long)(windowRect.left * scaleW);
+    windowRect.right = (long)(windowRect.right * scaleW);
+    windowRect.top = (long)(windowRect.top * scaleH);
+    windowRect.bottom = (long)(windowRect.bottom * scaleH);
     childWnd->MoveWindow(windowRect);
 
     childWnd = childWnd->GetWindow(GW_HWNDNEXT);

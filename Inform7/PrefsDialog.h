@@ -155,14 +155,19 @@ public:
   virtual BOOL OnInitDialog();
   virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 
+  afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
   afx_msg LRESULT OnResizePage(WPARAM, LPARAM);
 
 protected:
   DECLARE_MESSAGE_MAP()
 
-  void ChangeDialogFont(CWnd* wnd, CFont* font, double scaleX);
+  void ChangeDialogFont(CWnd* wnd, CFont* font, double scale, double extScaleX);
 
 private:
+  UINT m_dpi;
+  double m_fontHeightPerDpi;
+  LOGFONT m_logFont;
+
   CRect m_page;
   CFont m_font;
 };
