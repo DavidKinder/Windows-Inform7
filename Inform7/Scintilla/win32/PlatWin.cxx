@@ -65,12 +65,14 @@ static LONG_PTR GetWindowLongPtr(HWND hWnd, int nIndex) {
 #endif
 
 typedef BOOL (WINAPI *AlphaBlendSig)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
+typedef UINT (WINAPI *GetDpiForWindowSig)(HWND); /* XXXXDK DPI */
 
 static CRITICAL_SECTION crPlatformLock;
 static HINSTANCE hinstPlatformRes = 0;
 static bool onNT = false;
 static HMODULE hDLLImage = 0;
 static AlphaBlendSig AlphaBlendFn = 0;
+static GetDpiForWindowSig GetDpiForWindowFn = 0; /* XXXXDK DPI */
 
 
 bool IsNT() {
@@ -342,8 +344,11 @@ class SurfaceImpl : public Surface {
 	// If 9x OS and current code page is same as ANSI code page.
 	bool win9xACPSame;
 
+	int dpi; /* XXXXDK DPI */
+
 	void BrushColor(ColourAllocated back);
 	void SetFont(Font &font_);
+	int GetDPI(WindowID wid); /* XXXXDK DPI */
 
 	// Private so SurfaceImpl objects can not be copied
 	SurfaceImpl(const SurfaceImpl &) : Surface() {}
@@ -463,26 +468,29 @@ bool SurfaceImpl::Initialised() {
 	return hdc != 0;
 }
 
-void SurfaceImpl::Init(WindowID) {
+void SurfaceImpl::Init(WindowID wid) {
 	Release();
 	hdc = ::CreateCompatibleDC(NULL);
 	hdcOwned = true;
 	::SetTextAlign(reinterpret_cast<HDC>(hdc), TA_BASELINE);
+	dpi = GetDPI(wid); /* XXXXDK DPI */
 }
 
-void SurfaceImpl::Init(SurfaceID sid, WindowID) {
+void SurfaceImpl::Init(SurfaceID sid, WindowID wid) {
 	Release();
 	hdc = reinterpret_cast<HDC>(sid);
 	::SetTextAlign(reinterpret_cast<HDC>(hdc), TA_BASELINE);
+	dpi = GetDPI(wid); /* XXXXDK DPI */
 }
 
-void SurfaceImpl::InitPixMap(int width, int height, Surface *surface_, WindowID) {
+void SurfaceImpl::InitPixMap(int width, int height, Surface *surface_, WindowID wid) {
 	Release();
 	hdc = ::CreateCompatibleDC(static_cast<SurfaceImpl *>(surface_)->hdc);
 	hdcOwned = true;
 	bitmap = ::CreateCompatibleBitmap(static_cast<SurfaceImpl *>(surface_)->hdc, width, height);
 	bitmapOld = static_cast<HBITMAP>(::SelectObject(hdc, bitmap));
 	::SetTextAlign(reinterpret_cast<HDC>(hdc), TA_BASELINE);
+	dpi = GetDPI(wid); /* XXXXDK DPI */
 }
 
 void SurfaceImpl::PenColour(ColourAllocated fore) {
@@ -520,7 +528,19 @@ void SurfaceImpl::SetFont(Font &font_) {
 	}
 }
 
+/* XXXXDK DPI */
+int SurfaceImpl::GetDPI(WindowID wid) {
+	if (GetDpiForWindowFn)
+		return GetDpiForWindowFn(reinterpret_cast<HWND>(wid));
+	return 0;
+}
+/* XXXXDK DPI */
+
 int SurfaceImpl::LogPixelsY() {
+	/* XXXXDK DPI */
+	if (dpi > 0)
+		return dpi;
+	/* XXXXDK DPI */
 	return ::GetDeviceCaps(hdc, LOGPIXELSY);
 }
 
@@ -2242,6 +2262,14 @@ void Platform_Initialise(void *hInstance) {
 	if (hDLLImage) {
 		AlphaBlendFn = (AlphaBlendSig)::GetProcAddress(hDLLImage, "AlphaBlend");
 	}
+
+	/* XXXXDK DPI */
+	HMODULE hUserDll = ::LoadLibrary(TEXT("user32"));
+	if (hUserDll) {
+		GetDpiForWindowFn = (GetDpiForWindowSig)::GetProcAddress(hUserDll, "GetDpiForWindow");
+	}
+	/* XXXXDK DPI */
+
 	ListBoxX_Register();
 }
 

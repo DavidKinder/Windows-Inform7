@@ -337,6 +337,8 @@ LRESULT PrefsEditPage::OnAfterFontSet(WPARAM, LPARAM)
   AdjustControlRow(IDC_COMMENT_STYLE,topRect.top + 2*(rowh + space),IDC_COMMENT_LABEL,IDC_COMMENT_SIZE);
   AdjustControlRow(IDC_QUOTE_STYLE,topRect.top + 3*(rowh + space),IDC_QUOTE_LABEL,IDC_QUOTE_SIZE);
   AdjustControlRow(IDC_SUBST_STYLE,topRect.top + 4*(rowh + space),IDC_SUBST_LABEL,IDC_SUBST_SIZE);
+
+  UpdatePreview();
   return 0;
 }
 
