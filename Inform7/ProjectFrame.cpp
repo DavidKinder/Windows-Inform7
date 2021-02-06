@@ -39,6 +39,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_WM_SETTINGCHANGE()
   ON_WM_TIMER()
   ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
+  ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 
   ON_CBN_SELCHANGE(IDC_EXAMPLE_LIST, OnChangedExample)
   ON_UPDATE_COMMAND_UI(IDC_EXAMPLE_LIST, OnUpdateIfNotBusy)
@@ -610,6 +611,13 @@ LRESULT ProjectFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
     return MenuBarFrameWnd::OnSetMessageString(0,(LPARAM)(LPCSTR)msg);
   }
   return MenuBarFrameWnd::OnSetMessageString(wParam,lParam);
+}
+
+LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
+{
+  MoveWindow((LPRECT)lparam,TRUE);
+  m_progress.UpdateDPI();
+  return 0;
 }
 
 BOOL ProjectFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
@@ -2393,7 +2401,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
   // Run Inform 6
   if (code == 0)
   {
-    SendMessage(WM_PROGRESS,100,(LPARAM)"Compiling Inform 6 source");
+    SendMessage(WM_PROGRESS,100,(LPARAM)"Creating story file");
     code = theApp.RunCommand(m_projectDir+"\\Build",InformCommandLine(release),"inform6.exe",*this,true);
     if (code != 0)
     {

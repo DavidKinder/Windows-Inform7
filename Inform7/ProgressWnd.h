@@ -10,10 +10,12 @@ protected:
   DECLARE_MESSAGE_MAP()
 
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+  afx_msg void OnStopClicked();
 
 public:
   ProgressWnd();
   BOOL Create(CWnd* parentWnd, DWORD style);
+  void UpdateDPI(void);
 
   void ToFront();
   int GetProgress();
@@ -28,7 +30,7 @@ public:
   bool WantStop();
 
 private:
-  afx_msg void OnStopClicked();
+  void Resize(void);
 
   CStatic m_text;
   StopButton m_stop;

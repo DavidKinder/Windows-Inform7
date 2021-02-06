@@ -32,12 +32,27 @@ BOOL ProgressWnd::Create(CWnd* parentWnd, DWORD style)
   return TRUE;
 }
 
+void ProgressWnd::UpdateDPI(void)
+{
+  m_text.SetFont(theApp.GetFont(this,InformApp::FontSystem));
+  if (IsWindowVisible())
+  {
+    Resize();
+    Invalidate();
+  }
+}
+
 BOOL ProgressWnd::OnEraseBkgnd(CDC* dc)
 {
   CRect r;
   GetClientRect(r);
   dc->FillSolidRect(r,::GetSysColor(COLOR_BTNFACE));
   return TRUE;
+}
+
+void ProgressWnd::OnStopClicked()
+{
+  m_wantStop = true;
 }
 
 void ProgressWnd::ToFront()
@@ -77,31 +92,7 @@ void ProgressWnd::TaskProgress(const char* text, int progress)
     SetWindowPos(&CWnd::wndTop,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
   else
   {
-    // Get the width of the monitor
-    int monWidth = DPI::getMonitorWorkRect(this).Width();
-
-    // Get the width of the parent window
-    CWnd* parentWnd = GetParentFrame();
-    CRect parentRect;
-    parentWnd->GetWindowRect(parentRect);
-    parentWnd->ScreenToClient(parentRect);
-    int parentWidth = parentRect.Width();
-
-    // Work out the size of the progress window
-    int width = parentWidth * 3/4;
-    if (width > monWidth / 3)
-      width = monWidth / 3;
-    CSize fs = theApp.MeasureFont(this,theApp.GetFont(this,InformApp::FontSystem));
-    int height = fs.cy * 11/2;
-
-    SetWindowPos(&CWnd::wndTop,
-      parentRect.left+((parentRect.Width()-width)/2),
-      parentRect.top+((parentRect.Height()-height)/2),
-      width,height,SWP_SHOWWINDOW);
-    CSize ssz = m_stop.GetButtonSize();
-    m_text.MoveWindow((fs.cx*2)+ssz.cx,fs.cy,width-(fs.cx*4)-(ssz.cx*2),fs.cy*3/2,TRUE);
-    m_stop.MoveWindow(width-(fs.cx*2)-ssz.cx,fs.cy,ssz.cx,ssz.cy,TRUE);
-    m_progress.MoveWindow(fs.cx*2,fs.cy*3,width-(fs.cx*4),fs.cy*3/2,TRUE);
+    Resize();
     AfxGetApp()->BeginWaitCursor();
   }
 }
@@ -157,7 +148,32 @@ bool ProgressWnd::WantStop()
     return false;
 }
 
-void ProgressWnd::OnStopClicked()
+void ProgressWnd::Resize(void)
 {
-  m_wantStop = true;
+  // Get the width of the monitor
+  int monWidth = DPI::getMonitorWorkRect(this).Width();
+
+  // Get the width of the parent window
+  CWnd* parentWnd = GetParentFrame();
+  CRect parentRect;
+  parentWnd->GetWindowRect(parentRect);
+  parentWnd->ScreenToClient(parentRect);
+  int parentWidth = parentRect.Width();
+
+  // Work out the size of the progress window
+  int width = parentWidth * 3/4;
+  if (width > monWidth / 3)
+    width = monWidth / 3;
+  CSize fs = theApp.MeasureFont(this,theApp.GetFont(this,InformApp::FontSystem));
+  int height = fs.cy * 11/2;
+
+  // Resize the progress window and its controls
+  SetWindowPos(&CWnd::wndTop,
+    parentRect.left+((parentRect.Width()-width)/2),
+    parentRect.top+((parentRect.Height()-height)/2),
+    width,height,SWP_SHOWWINDOW);
+  CSize ssz = m_stop.GetButtonSize();
+  m_text.MoveWindow((fs.cx*2)+ssz.cx,fs.cy,width-(fs.cx*4)-(ssz.cx*2),fs.cy*3/2,TRUE);
+  m_stop.MoveWindow(width-(fs.cx*2)-ssz.cx,fs.cy,ssz.cx,ssz.cy,TRUE);
+  m_progress.MoveWindow(fs.cx*2,fs.cy*3,width-(fs.cx*4),fs.cy*3/2,TRUE);
 }

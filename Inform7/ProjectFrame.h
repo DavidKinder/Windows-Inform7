@@ -53,6 +53,7 @@ protected:
   afx_msg void OnTimer(UINT_PTR nIDEvent);
   afx_msg void OnChangedExample();
   afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
+  afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
 
   afx_msg LRESULT OnPlaySkein(WPARAM, LPARAM);
   afx_msg LRESULT OnGameRunning(WPARAM, LPARAM);
