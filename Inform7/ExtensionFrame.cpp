@@ -21,6 +21,7 @@ BEGIN_MESSAGE_MAP(ExtensionFrame, MenuBarFrameWnd)
   ON_WM_CLOSE()
   ON_WM_SIZE()
   ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
+  ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 
   ON_MESSAGE(WM_PROJECTEDITED, OnProjectEdited)
 
@@ -189,6 +190,12 @@ LRESULT ExtensionFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
     return MenuBarFrameWnd::OnSetMessageString(0,(LPARAM)(LPCSTR)msg);
   }
   return MenuBarFrameWnd::OnSetMessageString(wParam,lParam);
+}
+
+LRESULT ExtensionFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
+{
+  MoveWindow((LPRECT)lparam,TRUE);
+  return 0;
 }
 
 LRESULT ExtensionFrame::OnProjectEdited(WPARAM wparam, LPARAM lparam)
