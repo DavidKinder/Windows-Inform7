@@ -195,6 +195,7 @@ LRESULT ExtensionFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 LRESULT ExtensionFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 {
   MoveWindow((LPRECT)lparam,TRUE);
+  UpdateDPI((int)HIWORD(wparam));
   return 0;
 }
 
