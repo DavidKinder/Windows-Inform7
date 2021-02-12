@@ -27,6 +27,7 @@ protected:
 public:
   SearchEdit(UINT msg, LPCWSTR displayText);
   void Init(UINT id, CWnd* parent);
+  void SetEditRect(void);
 
   virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

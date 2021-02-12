@@ -33,7 +33,11 @@ void SearchEdit::Init(UINT id, CWnd* parent)
 
   m_editing = false;
   SetWindowText(m_displayText);
+  SetEditRect();
+}
 
+void SearchEdit::SetEditRect(void)
+{
   CRect clientSize;
   GetClientRect(clientSize);
   CSize fontSize = theApp.MeasureFont(this,GetFont());

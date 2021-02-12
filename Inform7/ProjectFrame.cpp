@@ -25,6 +25,9 @@
 
 #define MAX_MENU_EXTENSIONS 1000
 
+#define I7XP_TBAR_SPACER_POS 4
+#define I7XP_TBAR_SPACER_COUNT 6
+
 IMPLEMENT_DYNAMIC(ProjectFrame, MenuBarFrameWnd)
 
 BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
@@ -296,10 +299,14 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     TRACE("Failed to create menu bar\n");
     return -1;
   }
-  if (!m_coolBar.AddBar(&m_toolBar,NULL,NULL,RBBS_NOGRIPPER|RBBS_BREAK) ||
-      !m_coolBar.AddBar(&m_searchBar,NULL,NULL,RBBS_NOGRIPPER))
+  if (!m_coolBar.AddBar(&m_toolBar,NULL,NULL,RBBS_NOGRIPPER|RBBS_BREAK))
   {
-    TRACE("Failed to add toolbars\n");
+    TRACE("Failed to add toolbar\n");
+    return -1;
+  }
+  if (!m_coolBar.AddBar(&m_searchBar,NULL,NULL,RBBS_NOGRIPPER))
+  {
+    TRACE("Failed to add search bar\n");
     return -1;
   }
 
@@ -615,7 +622,31 @@ LRESULT ProjectFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 
 LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 {
+  UINT newDpi = (int)HIWORD(wparam);
   MoveWindow((LPRECT)lparam,TRUE);
+
+  UpdateMenuParams();
+  UpdateDPI(newDpi);
+
+  // Set the text on the toolbar buttons again to force them to resize
+  for (int i = 0; i < m_toolBar.GetToolBarCtrl().GetButtonCount(); i++)
+  {
+    UINT id = m_toolBar.GetItemID(i);
+    if (id != ID_SEPARATOR)
+    {
+      CString btnText, tipText;
+      btnText.LoadString(id);
+      AfxExtractSubString(tipText,btnText,1,'\n');
+      m_toolBar.SetButtonText(i,tipText);
+    }
+  }
+
+  if (m_exampleList.GetSafeHwnd() != 0)
+  {
+    m_exampleList.SetFont(m_toolBar.GetFont());
+    SetExampleListLocation();
+  }
+  m_searchBar.UpdateDPI();
   m_progress.UpdateDPI();
   return 0;
 }
@@ -3157,37 +3188,17 @@ bool ProjectFrame::LoadToolBar(void)
       ctrl.HideButton(ID_RELEASE_GAME);
 
       // Create space for the examples list control
-      const int spacerPos = 4;
-      const int numSpacers = 6;
-      for (int i = 0; i < numSpacers; i++)
+      for (int i = 0; i < I7XP_TBAR_SPACER_COUNT; i++)
       {
         TBBUTTON spacer = { -1,0 };
-        ctrl.InsertButton(spacerPos,&spacer);
+        ctrl.InsertButton(I7XP_TBAR_SPACER_POS,&spacer);
       }
-      CRect r1, r2;
-      m_toolBar.GetItemRect(spacerPos,r1);
-      m_toolBar.GetItemRect(spacerPos+numSpacers-1,r2);
 
       // Create the examples list control
       m_exampleList.Create(CBS_DROPDOWNLIST|WS_CHILD|WS_VISIBLE,
         CRect(0,0,100,100),&m_toolBar,IDC_EXAMPLE_LIST);
       m_exampleList.SetFont(m_toolBar.GetFont());
-
-      // Find the height of the examples list control
-      int h = 0;
-      COMBOBOXINFO boxInfo = { sizeof COMBOBOXINFO,0 };
-      if (m_exampleList.GetComboBoxInfo(&boxInfo))
-        h = boxInfo.rcItem.bottom+boxInfo.rcItem.top;
-      else
-      {
-        LOGFONT lf;
-        m_exampleList.GetFont()->GetLogFont(&lf);
-        h = 13+abs(lf.lfHeight);
-      }
-
-      // Position and size the examples list control
-      m_exampleList.MoveWindow(r1.left+4,(r1.bottom+r1.top-h)/2,r2.right-r1.left-8,
-        DPI::getMonitorRect(this).Width()/2);
+      SetExampleListLocation();
 
       // Set the initial contents and selection for the examples
       m_exampleList.AddString("Test All");
@@ -3258,6 +3269,29 @@ bool ProjectFrame::UpdateExampleList(void)
     MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
     return false;
   }
+}
+
+void ProjectFrame::SetExampleListLocation(void)
+{
+  CRect r1, r2;
+  m_toolBar.GetItemRect(I7XP_TBAR_SPACER_POS,r1);
+  m_toolBar.GetItemRect(I7XP_TBAR_SPACER_POS+I7XP_TBAR_SPACER_COUNT-1,r2);
+
+  // Find the height of the examples list control
+  int h = 0;
+  COMBOBOXINFO boxInfo = { sizeof COMBOBOXINFO,0 };
+  if (m_exampleList.GetComboBoxInfo(&boxInfo))
+    h = boxInfo.rcItem.bottom+boxInfo.rcItem.top;
+  else
+  {
+    LOGFONT lf;
+    m_exampleList.GetFont()->GetLogFont(&lf);
+    h = 13+abs(lf.lfHeight);
+  }
+
+  // Position and size the examples list control
+  m_exampleList.MoveWindow(r1.left+4,(r1.bottom+r1.top-h)/2,r2.right-r1.left-8,
+    DPI::getMonitorRect(this).Width()/2);
 }
 
 bool ProjectFrame::GetExtensionInfo(CString& path, CStringW& name, CStringW& author)

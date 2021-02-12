@@ -198,6 +198,7 @@ protected:
   void UpdateMenuParams(void);
   void UpdateExtensionsMenu(void);
   bool UpdateExampleList(void);
+  void SetExampleListLocation(void);
   bool GetExtensionInfo(CString& path, CStringW& name, CStringW& author);
   CString GetMaterialsFolder(void);
   bool CopyExtensionToMaterials(void);

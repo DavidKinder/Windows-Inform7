@@ -13,6 +13,8 @@ public:
   void SearchDocs(void);
 
   BOOL Create(CWnd* parent, UINT style, UINT id);
+  void UpdateDPI(void);
+
   INT_PTR OnToolHitTest(CPoint point, TOOLINFO* ti) const;
   BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 

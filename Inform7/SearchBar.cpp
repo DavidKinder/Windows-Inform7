@@ -40,6 +40,12 @@ BOOL SearchBar::Create(CWnd* parent, UINT style, UINT id)
   return created;
 }
 
+void SearchBar::UpdateDPI(void)
+{
+  m_source.SetEditRect();
+  m_docs.SetEditRect();
+}
+
 INT_PTR SearchBar::OnToolHitTest(CPoint point, TOOLINFO* ti) const
 {
   const CWnd* wnd = ChildWindowFromPoint(point);
