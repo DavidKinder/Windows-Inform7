@@ -641,12 +641,23 @@ LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
     }
   }
 
+  // If showing, update the list of examples
   if (m_exampleList.GetSafeHwnd() != 0)
   {
     m_exampleList.SetFont(m_toolBar.GetFont());
     SetExampleListLocation();
   }
+
+  // Update the search bar in the toolbar
   m_searchBar.UpdateDPI();
+  REBARBANDINFO bandInfo = { sizeof(REBARBANDINFO),0 };
+  bandInfo.fMask = RBBIM_CHILDSIZE;
+  CSize size = m_searchBar.CalcFixedLayout(FALSE,TRUE);
+  bandInfo.cxMinChild = size.cx;
+  bandInfo.cyMinChild = size.cy;
+  m_coolBar.GetReBarCtrl().SetBandInfo(2,&bandInfo);
+  m_coolBar.GetReBarCtrl().MaximizeBand(1);
+
   m_progress.UpdateDPI();
   return 0;
 }

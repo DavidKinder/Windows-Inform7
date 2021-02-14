@@ -44,6 +44,14 @@ void SearchBar::UpdateDPI(void)
 {
   m_source.SetEditRect();
   m_docs.SetEditRect();
+
+  // Work out a new default size from the size and position of the edit controls
+  CRect srcRect, docRect;
+  m_source.GetWindowRect(srcRect);
+  ScreenToClient(srcRect);
+  m_docs.GetWindowRect(docRect);
+  ScreenToClient(docRect);
+  m_sizeDefault = docRect.BottomRight() + srcRect.TopLeft();
 }
 
 INT_PTR SearchBar::OnToolHitTest(CPoint point, TOOLINFO* ti) const
