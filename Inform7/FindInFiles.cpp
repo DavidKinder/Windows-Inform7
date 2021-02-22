@@ -4,7 +4,8 @@
 #include "ProjectFrame.h"
 #include "RichEdit.h"
 #include "TextFormat.h"
-#include "resource.h"
+#include "Resource.h"
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -126,6 +127,7 @@ BEGIN_MESSAGE_MAP(FindInFiles, I7BaseDialog)
   ON_WM_ERASEBKGND()
   ON_WM_GETMINMAXINFO()
   ON_WM_SIZE()
+  ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
   ON_BN_CLICKED(IDC_FIND_ALL, OnFindAll)
   ON_CBN_SELCHANGE(IDC_FIND_RULE, OnChangeFindRule)
   ON_EN_CHANGE(IDC_FIND, OnChangeFindText)
@@ -140,6 +142,8 @@ CList<CStringW> FindInFiles::m_findHistory;
 FindInFiles::FindInFiles(ProjectFrame* project)
   : I7BaseDialog(IDD_FIND_FILES), m_project(project)
 {
+  m_dpi = 96;
+  
   m_lookSource = TRUE;
   m_lookExts = TRUE;
   m_lookDocPhrases = TRUE;
@@ -162,6 +166,7 @@ void FindInFiles::Show(void)
       m_richText = new RichDrawText();
     Create(m_lpszTemplateName,m_project);
     theApp.SetIcon(this);
+    m_dpi = DPI::getWindowDPI(this);
 
     bool placementSet = false;
     CRegKey registryKey;
@@ -429,7 +434,7 @@ BOOL FindInFiles::OnInitDialog()
     GetWindowRect(windowRect);
     m_minSize = windowRect.Size();
     m_resultsList.GetWindowRect(resultsRect);
-    m_resultsBottomRight = windowRect.BottomRight() - resultsRect.BottomRight();
+    m_gapBottomRight = windowRect.BottomRight() - resultsRect.BottomRight();
 
     m_found.ModifyStyle(0,WS_VISIBLE);
     m_progress.ModifyStyle(WS_VISIBLE,0);
@@ -500,10 +505,7 @@ void FindInFiles::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
       " \\\\S\\tab Non-whitespace\\par"
       " \\\\t\\tab Tab\\par"
       " [A-Z]\\tab Character ranges\\par";
-    CString rtfText;
-    rtfText.Format("{\\rtf1\\ansi{\\fs%d%s}}",
-      theApp.GetFontSize(InformApp::FontSystem)*2,text1);
-    m_richText->SetTextRTF(rtfText);
+    SetRichTextRTF(text1);
     m_richText->DrawText(*dc,helpRect);
 
     const char* text2 =
@@ -515,9 +517,7 @@ void FindInFiles::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
       " x\\{2,\\}\\tab 2 or more of 'x'\\par"
       " x\\{,2\\}\\tab 0-2 of 'x'\\par"
       " x\\{2,4\\}\\tab 2-4 of 'x'\\par";
-    rtfText.Format("{\\rtf1\\ansi{\\fs%d%s}}",
-      theApp.GetFontSize(InformApp::FontSystem)*2,text2);
-    m_richText->SetTextRTF(rtfText);
+    SetRichTextRTF(text2);
     CRect textRect;
     textRect.SetRectEmpty();
     textRect.right = helpRect.Width();
@@ -531,9 +531,7 @@ void FindInFiles::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
       " x|y\\tab x or y\\par"
       " ^\\tab Start of the line\\par"
       " $\\tab End of the line\\par";
-    rtfText.Format("{\\rtf1\\ansi{\\fs%d%s}}",
-      theApp.GetFontSize(InformApp::FontSystem)*2,text3);
-    m_richText->SetTextRTF(rtfText);
+    SetRichTextRTF(text3);
     textRect.SetRectEmpty();
     textRect.right = helpRect.Width();
     m_richText->SizeText(*dc,textRect);
@@ -568,14 +566,56 @@ void FindInFiles::OnSize(UINT nType, int cx, int cy)
     CRect windowRect, resultsRect;
     GetWindowRect(windowRect);
     m_resultsList.GetWindowRect(resultsRect);
-    resultsRect.right = windowRect.right - m_resultsBottomRight.cx;
-    resultsRect.bottom = windowRect.bottom - m_resultsBottomRight.cy;
+    resultsRect.right = windowRect.right - m_gapBottomRight.cx;
+    resultsRect.bottom = windowRect.bottom - m_gapBottomRight.cy;
     ScreenToClient(resultsRect);
     m_resultsList.MoveWindow(resultsRect);
   }
 
   // Make sure that the sizing gripper is redrawn
   Invalidate();
+}
+
+LRESULT FindInFiles::OnDpiChanged(WPARAM wparam, LPARAM lparam)
+{
+  int newDpi = (int)HIWORD(wparam);
+
+  // Reset the minimum size before default processing
+  CSize minSize = m_minSize;
+  m_minSize.SetSize(0,0);
+
+  // Get the positon of the results control before default processing
+  CRect resultsRectBefore;
+  if (m_resultsList.GetSafeHwnd() != 0)
+  {
+    m_resultsList.GetWindowRect(resultsRectBefore);
+    ScreenToClient(resultsRectBefore);
+  }
+
+  Default();
+
+  if (newDpi != m_dpi)
+  {
+    if (m_resultsList.GetSafeHwnd() != 0)
+    {
+      CRect resultsRectAfter;
+      m_resultsList.GetWindowRect(resultsRectAfter);
+      ScreenToClient(resultsRectAfter);
+      double scaleX = (double)resultsRectAfter.right / (double)resultsRectBefore.right;
+      double scaleY = (double)resultsRectAfter.top / (double)resultsRectBefore.top;
+
+      m_resultsList.SetFont(theApp.GetFont(this,InformApp::FontSmall));
+      for (int i = 0; i < 3; i++)
+        m_resultsList.SetColumnWidth(i,(int)(scaleX*m_resultsList.GetColumnWidth(i)));
+
+      m_gapBottomRight.cx = (int)(scaleX*m_gapBottomRight.cx);
+      m_gapBottomRight.cy = (int)(scaleY*m_gapBottomRight.cy);
+      m_minSize.cx = (int)(scaleX*minSize.cx);
+      m_minSize.cy = (int)(scaleY*minSize.cy);
+    }
+    m_dpi = newDpi;
+  }
+  return 0;
 }
 
 void FindInFiles::OnFindAll()
@@ -1187,6 +1227,17 @@ COLORREF FindInFiles::Darken(COLORREF colour)
   g = (BYTE)(g * 0.9333);
   b = (BYTE)(b * 0.9333);
   return RGB(r,g,b);
+}
+
+void FindInFiles::SetRichTextRTF(const char* fragment)
+{
+  int sysDpi = DPI::getSystemDPI();
+  int wndDpi = DPI::getWindowDPI(this);
+
+  CString rtfText;
+  rtfText.Format("{\\rtf1\\ansi{\\fs%d%s}}",
+    (2*theApp.GetFontSize(InformApp::FontSystem)*wndDpi)/sysDpi,fragment);
+  m_richText->SetTextRTF(rtfText);
 }
 
 FindInFiles::FindResult::FindResult()

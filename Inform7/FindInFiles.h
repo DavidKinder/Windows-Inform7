@@ -59,6 +59,7 @@ protected:
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
   afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
   afx_msg void OnSize(UINT nType, int cx, int cy);
+  afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
   afx_msg void OnFindAll();
   afx_msg void OnChangeFindRule();
   afx_msg void OnChangeFindText();
@@ -93,6 +94,7 @@ private:
   void DrawText(CDC* dc, LPCWSTR text, int length, CRect& rect, UINT format);
   int MeasureText(CDC* dc, LPCWSTR text, int length);
   COLORREF Darken(COLORREF colour);
+  void SetRichTextRTF(const char* fragment);
 
   struct FindResult
   {
@@ -117,6 +119,7 @@ private:
 
   ProjectFrame* m_project;
   CSize m_minSize;
+  UINT m_dpi;
 
   CStringW m_findText;
 
@@ -137,7 +140,7 @@ private:
 
   std::vector<FindResult> m_results;
   FindResultsCtrl m_resultsList;
-  CSize m_resultsBottomRight;
+  CSize m_gapBottomRight;
 
   CStatic m_found;
   CProgressCtrl m_progress;
