@@ -34,6 +34,8 @@ int main(int, char**)
 
   char buildCount[16], line[256];
   FILE* bcFile = fopen("../Distribution/Inform7/Contents.w","rt");
+  if (bcFile == NULL)
+    return 0;
   while (feof(bcFile) == 0)
   {
     fgets(line,256,bcFile);
@@ -50,4 +52,5 @@ int main(int, char**)
   outFile = fopen("..\\Installer\\Inform7.nsh","wt");
   fprintf(outFile,"!define BUILD %s\n",buildCount);
   fclose(outFile);
+  return 0;
 }
