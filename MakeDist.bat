@@ -20,7 +20,7 @@ pushd \Programs
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Glk\Git\*.c Adv\Glk\Git\*.h Adv\Glk\Git\README*
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Glk\Include\g*.h
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Glk\GlkDll\*.c Adv\Glk\GlkDll\Glk*.cpp Adv\Glk\GlkDll\Glk*.h
-"%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Libraries\mfc\* Libraries\scalegfx\*.h Libraries\scalegfx\*.cpp
+"%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Libraries\mfc\* Libraries\scalegfx\*.h
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Libraries\libmodplug\*
 popd
 
