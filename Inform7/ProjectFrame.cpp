@@ -622,6 +622,15 @@ LRESULT ProjectFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 
 LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 {
+  double splitFraction = 0.0;
+  if (m_splitter.GetSafeHwnd() != 0)
+  {
+    int size0, size1, min;
+    m_splitter.GetColumnInfo(0,size0,min);
+    m_splitter.GetColumnInfo(1,size1,min);
+    splitFraction = (double)size0 / (double)(size0+size1);
+  }
+
   UINT newDpi = (int)HIWORD(wparam);
   MoveWindow((LPRECT)lparam,TRUE);
 
@@ -657,6 +666,13 @@ LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
   bandInfo.cyMinChild = size.cy;
   m_coolBar.GetReBarCtrl().SetBandInfo(2,&bandInfo);
   m_coolBar.GetReBarCtrl().MaximizeBand(1);
+
+  if (m_splitter.GetSafeHwnd() != 0)
+  {
+    CRect client;
+    GetClientRect(client);
+    m_splitter.SetColumnInfo(0,(int)(splitFraction*client.Width()),16);
+  }
 
   m_progress.UpdateDPI();
   return 0;
