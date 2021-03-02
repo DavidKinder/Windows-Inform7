@@ -239,6 +239,11 @@ void Panel::PrefsChanged(CRegKey& key)
     m_tabs[i]->PrefsChanged(key);
 }
 
+void Panel::UpdateDPI(void)
+{
+  m_tab.UpdateDPI();
+}
+
 bool Panel::IsTabEnabled(int tab)
 {
   return m_tabs[tab]->IsEnabled();

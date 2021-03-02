@@ -672,6 +672,9 @@ LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
     CRect client;
     GetClientRect(client);
     m_splitter.SetColumnInfo(0,(int)(splitFraction*client.Width()),16);
+
+    for (int i = 0; i < 2; i++)
+      GetPanel(i)->UpdateDPI();
   }
 
   m_progress.UpdateDPI();

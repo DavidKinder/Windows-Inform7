@@ -25,6 +25,8 @@ public:
     virtual bool IsTabEnabled(int tab) = 0;
   };
 
+  void UpdateDPI(void);
+
   void SetTabController(TabController* controller);
   void SelectNextTab(bool forward);
 

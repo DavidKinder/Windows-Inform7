@@ -237,6 +237,11 @@ BOOL FlatTab::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pH
   return CWnd::OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
 
+void FlatTab::UpdateDPI(void)
+{
+  SetFont(theApp.GetFont(this,InformApp::FontPanel));
+}
+
 void FlatTab::SetTabController(TabController* controller)
 {
   m_controller = controller;

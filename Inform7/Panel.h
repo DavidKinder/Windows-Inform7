@@ -55,6 +55,7 @@ public:
   void LoadSettings(CRegKey& key, bool primary);
   void SaveSettings(CRegKey& key, bool primary);
   void PrefsChanged(CRegKey& key);
+  void UpdateDPI(void);
 
   virtual bool IsTabEnabled(int tab);
 
@@ -67,7 +68,6 @@ protected:
   CRect GetTabSize(void);
 
   FlatTab m_tab;
-  CFont m_tabFont;
   TabInterface* m_tabs[Number_Tabs];
 
   // Position in tab history, counting from the end of the array
