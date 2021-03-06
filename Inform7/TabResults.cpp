@@ -267,18 +267,16 @@ void TabResults::PrefsChanged(CRegKey& key)
   m_console.FontChanged();
 }
 
+void TabResults::UpdateDPI(void)
+{
+  TabBase::UpdateDPI();
+  m_tab.UpdateDPI();
+  Resize();
+}
+
 void TabResults::SetLinkNotify(LinkNotify* notify)
 {
   m_notify = notify;
-}
-
-int TabResults::GetTabHeight(void)
-{
-  // Get the height of the row of tab buttons
-  CRect tabSize(0,0,100,100);
-  CRect tabArea = tabSize;
-  m_tab.AdjustRect(FALSE,tabArea);
-  return tabArea.top;
 }
 
 void TabResults::ShowRuntimeProblem(int problem)
@@ -340,49 +338,53 @@ BOOL TabResults::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 void TabResults::OnSize(UINT nType, int cx, int cy)
 {
   TabBase::OnSize(nType,cx,cy);
-
-  if (m_tab.GetSafeHwnd() == 0)
-    return;
-
-  CRect client;
-  GetClientRect(client);
-
-  // Call the base class to resize and get parameters
-  CSize fontSize;
-  int heading;
-  SizeTab(CRect(client),fontSize,heading);
-
-  // Get the dimensions of the first and last tab buttons
-  CRect firstTabItem, lastTabItem;
-  m_tab.GetItemRect(ResTab_Report,firstTabItem);
-  m_tab.GetItemRect(ResTab_Console,lastTabItem);
-  int w = lastTabItem.right - firstTabItem.left + 4;
-
-  // Resize the tab control
-  CRect tabSize;
-  tabSize.right = client.Width();
-  tabSize.left = tabSize.right-w;
-  if (tabSize.left < 0)
-    tabSize.left = 0;
-  if (tabSize.right > client.right)
-    tabSize.right = client.right;
-  tabSize.top = 0;
-  tabSize.bottom = client.Height()-tabSize.top;
-  m_tab.MoveWindow(tabSize,TRUE);
-
-  // Work out the display area of the tab control
-  CRect tabArea = tabSize;
-  m_tab.AdjustRect(FALSE,tabArea);
-  client.top = tabArea.top;
-
-  // Resize the tab page controls
-  m_report.MoveWindow(client,TRUE);
-  m_console.MoveWindow(client,TRUE);
+  Resize();
 }
 
 LRESULT TabResults::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
 {
   return m_report.OnFindReplaceCmd(wParam,lParam);
+}
+
+void TabResults::Resize(void)
+{
+  if (m_tab.GetSafeHwnd() != 0)
+  {
+    CRect client;
+    GetClientRect(client);
+
+    // Call the base class to resize and get parameters
+    CSize fontSize;
+    int heading;
+    SizeTab(CRect(client),fontSize,heading);
+
+    // Get the dimensions of the first and last tab buttons
+    CRect firstTabItem, lastTabItem;
+    m_tab.GetItemRect(ResTab_Report,firstTabItem);
+    m_tab.GetItemRect(ResTab_Console,lastTabItem);
+    int w = lastTabItem.right - firstTabItem.left + 4;
+
+    // Resize the tab control
+    CRect tabSize;
+    tabSize.right = client.Width();
+    tabSize.left = tabSize.right-w;
+    if (tabSize.left < 0)
+      tabSize.left = 0;
+    if (tabSize.right > client.right)
+      tabSize.right = client.right;
+    tabSize.top = 0;
+    tabSize.bottom = client.Height()-tabSize.top;
+    m_tab.MoveWindow(tabSize,TRUE);
+
+    // Work out the display area of the tab control
+    CRect tabArea = tabSize;
+    m_tab.AdjustRect(FALSE,tabArea);
+    client.top = tabArea.top;
+
+    // Resize the tab page controls
+    m_report.MoveWindow(client,TRUE);
+    m_console.MoveWindow(client,TRUE);
+  }
 }
 
 TabResults::ResultTabs TabResults::GetActiveTab(void)

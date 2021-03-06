@@ -20,6 +20,7 @@ public:
 
   void CompileProject(CompileStage stage, int code);
   void PrefsChanged(CRegKey& key);
+  void UpdateDPI(void);
 
   void Show(const char* url);
   void DownloadedExt(int id);
@@ -45,6 +46,8 @@ protected:
   afx_msg LRESULT OnFindReplaceCmd(WPARAM, LPARAM);
 
 private:
+  void Resize(void);
+
   enum ExtTabs
   {
     ExtTab_Home = 0,

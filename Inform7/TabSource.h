@@ -27,6 +27,7 @@ public:
   void LoadSettings(CRegKey& key, bool primary);
   void SaveSettings(CRegKey& key, bool primary);
   void PrefsChanged(CRegKey& key);
+  void UpdateDPI(void);
 
   void SetDocument(TabSource* master);
   bool Highlight(const char* url, COLORREF colour);
@@ -37,6 +38,7 @@ public:
   CTime GetFileTimestamp(const char* path);
   void UpdateElasticTabStops(void);
   CString GetSource(void);
+  int GetTabHeight(void);
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -55,6 +57,8 @@ protected:
   virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 
 private:
+  void Resize(void);
+
   enum SourceTabs
   {
     SrcTab_Contents = 0,

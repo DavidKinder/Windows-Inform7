@@ -76,6 +76,8 @@ public:
   virtual void SaveSettings(CRegKey& key, bool primary) = 0;
   // Notification that the user preferences have changed
   virtual void PrefsChanged(CRegKey& key) = 0;
+  // Update the tab after the DPI has changed
+  virtual void UpdateDPI(void) = 0;
 
   class LinkNotify
   {

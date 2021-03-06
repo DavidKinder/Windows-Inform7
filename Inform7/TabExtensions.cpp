@@ -106,6 +106,13 @@ void TabExtensions::PrefsChanged(CRegKey& key)
   m_html.Refresh();
 }
 
+void TabExtensions::UpdateDPI(void)
+{
+  TabBase::UpdateDPI();
+  m_tab.UpdateDPI();
+  Resize();
+}
+
 void TabExtensions::Show(const char* url)
 {
   m_html.Navigate(url,true);
@@ -190,40 +197,7 @@ BOOL TabExtensions::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 void TabExtensions::OnSize(UINT nType, int cx, int cy)
 {
   TabBase::OnSize(nType,cx,cy);
-
-  if (m_tab.GetSafeHwnd() == 0)
-    return;
-
-  CRect client;
-  GetClientRect(client);
-
-  // Call the base class to resize and get parameters
-  CSize fontSize;
-  int heading;
-  SizeTab(client,fontSize,heading);
-
-  // Get the dimensions of the first and last tab buttons
-  CRect firstTabItem, lastTabItem;
-  m_tab.GetItemRect(ExtTab_Home,firstTabItem);
-  m_tab.GetItemRect(ExtTab_Library,lastTabItem);
-  int w = lastTabItem.right - firstTabItem.left + 4;
-
-  // Resize the tab control
-  CRect tabSize;
-  tabSize.right = client.Width();
-  tabSize.left = tabSize.right-w;
-  if (tabSize.left < 0)
-    tabSize.left = 0;
-  tabSize.top = 0;
-  tabSize.bottom = client.Height()-tabSize.top;
-  m_tab.MoveWindow(tabSize,TRUE);
-
-  // Work out the display area of the tab control
-  CRect tabArea = tabSize;
-  m_tab.AdjustRect(FALSE,tabArea);
-  client.top = tabArea.top;
-
-  m_html.MoveWindow(client,TRUE);
+  Resize();
 }
 
 LRESULT TabExtensions::OnPubLibError(WPARAM, LPARAM)
@@ -248,6 +222,43 @@ LRESULT TabExtensions::OnUserNavigate(WPARAM, LPARAM)
 LRESULT TabExtensions::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
 {
   return m_html.OnFindReplaceCmd(wParam,lParam);
+}
+
+void TabExtensions::Resize(void)
+{
+  if (m_tab.GetSafeHwnd() != 0)
+  {
+    CRect client;
+    GetClientRect(client);
+
+    // Call the base class to resize and get parameters
+    CSize fontSize;
+    int heading;
+    SizeTab(client,fontSize,heading);
+
+    // Get the dimensions of the first and last tab buttons
+    CRect firstTabItem, lastTabItem;
+    m_tab.GetItemRect(ExtTab_Home,firstTabItem);
+    m_tab.GetItemRect(ExtTab_Library,lastTabItem);
+    int w = lastTabItem.right - firstTabItem.left + 4;
+
+    // Resize the tab control
+    CRect tabSize;
+    tabSize.right = client.Width();
+    tabSize.left = tabSize.right-w;
+    if (tabSize.left < 0)
+      tabSize.left = 0;
+    tabSize.top = 0;
+    tabSize.bottom = client.Height()-tabSize.top;
+    m_tab.MoveWindow(tabSize,TRUE);
+
+    // Work out the display area of the tab control
+    CRect tabArea = tabSize;
+    m_tab.AdjustRect(FALSE,tabArea);
+    client.top = tabArea.top;
+
+    m_html.MoveWindow(client,TRUE);
+  }
 }
 
 TabExtensions::ExtTabs TabExtensions::GetActiveTab(void)

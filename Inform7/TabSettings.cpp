@@ -210,6 +210,10 @@ void TabSettings::PrefsChanged(CRegKey& key)
 {
 }
 
+void TabSettings::UpdateDPI(void)
+{
+}
+
 namespace
 {
   CRect getRect(CWnd* parent, UINT id)

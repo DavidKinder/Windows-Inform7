@@ -136,7 +136,11 @@ void TabSource::OnPaint()
 void TabSource::OnSize(UINT nType, int cx, int cy)
 {
   TabBase::OnSize(nType,cx,cy);
+  Resize();
+}
 
+void TabSource::Resize(void)
+{
   if (m_source.GetSafeHwnd() != 0)
   {
     CRect client;
@@ -522,6 +526,13 @@ void TabSource::PrefsChanged(CRegKey& key)
   m_contents.PrefsChanged();
 }
 
+void TabSource::UpdateDPI(void)
+{
+  TabBase::UpdateDPI();
+  m_tab.UpdateDPI();
+  Resize();
+}
+
 void TabSource::SetDocument(TabSource* master)
 {
   m_source.GetEdit().SetDocument(&(master->m_source.GetEdit()));
@@ -568,6 +579,15 @@ void TabSource::UpdateSpellCheck(void)
 CString TabSource::GetSource(void)
 {
   return m_source.GetEdit().GetSource();
+}
+
+int TabSource::GetTabHeight(void)
+{
+  // Get the height of the row of tab buttons
+  CRect tabSize(0,0,100,100);
+  CRect tabArea = tabSize;
+  m_tab.AdjustRect(FALSE,tabArea);
+  return tabArea.top;
 }
 
 bool TabSource::CheckNeedReopen(const char* path)

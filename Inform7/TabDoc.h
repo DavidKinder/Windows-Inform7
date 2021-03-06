@@ -20,6 +20,7 @@ public:
 
   void CompileProject(CompileStage stage, int code);
   void PrefsChanged(CRegKey& key);
+  void UpdateDPI(void);
 
   void Show(const char* url, LPCWSTR find = NULL);
   void SetFocusFlag(bool set);
@@ -34,6 +35,8 @@ protected:
   afx_msg LRESULT OnFindReplaceCmd(WPARAM, LPARAM);
 
 private:
+  void Resize(void);
+
   enum DocTabs
   {
     DocTab_Home = 0,

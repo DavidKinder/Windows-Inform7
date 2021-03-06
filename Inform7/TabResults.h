@@ -25,6 +25,7 @@ public:
   void CompileProject(CompileStage stage, int code);
   void Progress(const char* msg);
   void PrefsChanged(CRegKey& key);
+  void UpdateDPI(void);
 
   // Implementation of ReportHtml::LinkConsumer
   void SourceLink(const char* url);
@@ -35,12 +36,12 @@ public:
   void LinkDone(void);
 
   void SetLinkNotify(LinkNotify* notify);
-  int GetTabHeight(void);
-
   void ShowRuntimeProblem(int problem);
   void ShowTerpFailed(void);
 
 private:
+  void Resize(void);
+
   enum ResultTabs
   {
     ResTab_Report = 0,

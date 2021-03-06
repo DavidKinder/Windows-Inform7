@@ -28,6 +28,7 @@ public:
   void LoadSettings(CRegKey& key, bool primary);
   void SaveSettings(CRegKey& key, bool primary);
   void PrefsChanged(CRegKey& key);
+  void UpdateDPI(void);
 
   // Implementation of ReportHtml::LinkConsumer
   void SourceLink(const char* url);
@@ -68,4 +69,6 @@ protected:
 
   void SetHelpVisible(const char* node, bool visible);
   void ShowHideHelp(bool show);
+
+  void Resize(void);
 };

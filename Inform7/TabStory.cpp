@@ -101,11 +101,36 @@ bool TabStory::IsEnabled(void)
   return false;
 }
 
+void TabStory::UpdateDPI(void)
+{
+  TabBase::UpdateDPI();
+  m_stop.SetFont(theApp.GetFont(this,InformApp::FontPanel));
+  Resize();
+}
+
 CString TabStory::GetToolTip(UINT_PTR id)
 {
   if (id == ID_PLAY_STOP)
     return "Stop the story that is currently running";
   return TabBase::GetToolTip(id);
+}
+
+void TabStory::Resize(void)
+{
+  if (m_stop.GetSafeHwnd() != 0)
+  {
+    CRect client;
+    GetClientRect(client);
+    CSize fontSize;
+    int heading;
+    SizeTab(client,fontSize,heading);
+
+    int sw = theApp.MeasureText(&m_stop).cx+(fontSize.cx*3);
+    int gapx = (fontSize.cx/4);
+    int gapy = (fontSize.cx/4);
+    int x = client.Width()-sw-gapx;
+    m_stop.MoveWindow(x,gapy,sw,heading-(2*gapy),TRUE);
+  }
 }
 
 BOOL TabStory::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
@@ -116,21 +141,7 @@ BOOL TabStory::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* p
 void TabStory::OnSize(UINT nType, int cx, int cy)
 {
   TabBase::OnSize(nType,cx,cy);
-
-  if (m_stop.GetSafeHwnd() == 0)
-    return;
-
-  CRect client;
-  GetClientRect(client);
-  CSize fontSize;
-  int heading;
-  SizeTab(client,fontSize,heading);
-
-  int sw = theApp.MeasureText(&m_stop).cx+(fontSize.cx*3);
-  int gapx = (fontSize.cx/4);
-  int gapy = (fontSize.cx/4);
-  int x = client.Width()-sw-gapx;
-  m_stop.MoveWindow(x,gapy,sw,heading-(2*gapy),TRUE);
+  Resize();
 }
 
 LRESULT TabStory::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)

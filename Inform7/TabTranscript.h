@@ -21,6 +21,7 @@ public:
 
   void OpenProject(const char* path, bool primary);
   void PrefsChanged(CRegKey& key);
+  void UpdateDPI(void);
 
   void SetSkein(Skein* skein);
   void ShowNode(Skein::Node* node, Skein::Show why);
@@ -30,6 +31,8 @@ public:
   CString GetToolTip(UINT_PTR id);
 
 private:
+  void Resize(void);
+
   Skein* m_skein;
   TranscriptWindow m_window;
 

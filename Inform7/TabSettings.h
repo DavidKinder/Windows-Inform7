@@ -28,6 +28,7 @@ public:
   void LoadSettings(CRegKey& key, bool primary);
   void SaveSettings(CRegKey& key, bool primary);
   void PrefsChanged(CRegKey& key);
+  void UpdateDPI(void);
 
   void SetSettings(ProjectSettings* settings);
   void UpdateSettings(void);

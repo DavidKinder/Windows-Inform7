@@ -846,7 +846,7 @@ LRESULT ProjectFrame::OnGameWaiting(WPARAM wparam, LPARAM)
 
 LRESULT ProjectFrame::OnPaneHeading(WPARAM wparam, LPARAM)
 {
-  return ((TabResults*)GetPanel(0)->GetTab(Panel::Tab_Results))->GetTabHeight();
+  return ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->GetTabHeight();
 }
 
 LRESULT ProjectFrame::OnSelectSide(WPARAM side, LPARAM)

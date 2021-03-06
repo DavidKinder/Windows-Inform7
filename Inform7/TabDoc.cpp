@@ -104,6 +104,13 @@ void TabDoc::PrefsChanged(CRegKey& key)
   m_html.Refresh();
 }
 
+void TabDoc::UpdateDPI(void)
+{
+  TabBase::UpdateDPI();
+  m_tab.UpdateDPI();
+  Resize();
+}
+
 void TabDoc::Show(const char* url, LPCWSTR find)
 {
   m_html.Navigate(url,true,find);
@@ -138,40 +145,7 @@ BOOL TabDoc::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 void TabDoc::OnSize(UINT nType, int cx, int cy)
 {
   TabBase::OnSize(nType,cx,cy);
-
-  if (m_tab.GetSafeHwnd() == 0)
-    return;
-
-  CRect client;
-  GetClientRect(client);
-
-  // Call the base class to resize and get parameters
-  CSize fontSize;
-  int heading;
-  SizeTab(client,fontSize,heading);
-
-  // Get the dimensions of the first and last tab buttons
-  CRect firstTabItem, lastTabItem;
-  m_tab.GetItemRect(DocTab_Home,firstTabItem);
-  m_tab.GetItemRect(DocTab_Index,lastTabItem);
-  int w = lastTabItem.right - firstTabItem.left + 4;
-
-  // Resize the tab control
-  CRect tabSize;
-  tabSize.right = client.Width();
-  tabSize.left = tabSize.right-w;
-  if (tabSize.left < 0)
-    tabSize.left = 0;
-  tabSize.top = 0;
-  tabSize.bottom = client.Height()-tabSize.top;
-  m_tab.MoveWindow(tabSize,TRUE);
-
-  // Work out the display area of the tab control
-  CRect tabArea = tabSize;
-  m_tab.AdjustRect(FALSE,tabArea);
-  client.top = tabArea.top;
-
-  m_html.MoveWindow(client,TRUE);
+  Resize();
 }
 
 LRESULT TabDoc::OnUserNavigate(WPARAM, LPARAM)
@@ -190,6 +164,43 @@ LRESULT TabDoc::OnUserNavigate(WPARAM, LPARAM)
 LRESULT TabDoc::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
 {
   return m_html.OnFindReplaceCmd(wParam,lParam);
+}
+
+void TabDoc::Resize(void)
+{
+  if (m_tab.GetSafeHwnd() != 0)
+  {
+    CRect client;
+    GetClientRect(client);
+
+    // Call the base class to resize and get parameters
+    CSize fontSize;
+    int heading;
+    SizeTab(client,fontSize,heading);
+
+    // Get the dimensions of the first and last tab buttons
+    CRect firstTabItem, lastTabItem;
+    m_tab.GetItemRect(DocTab_Home,firstTabItem);
+    m_tab.GetItemRect(DocTab_Index,lastTabItem);
+    int w = lastTabItem.right - firstTabItem.left + 4;
+
+    // Resize the tab control
+    CRect tabSize;
+    tabSize.right = client.Width();
+    tabSize.left = tabSize.right-w;
+    if (tabSize.left < 0)
+      tabSize.left = 0;
+    tabSize.top = 0;
+    tabSize.bottom = client.Height()-tabSize.top;
+    m_tab.MoveWindow(tabSize,TRUE);
+
+    // Work out the display area of the tab control
+    CRect tabArea = tabSize;
+    m_tab.AdjustRect(FALSE,tabArea);
+    client.top = tabArea.top;
+
+    m_html.MoveWindow(client,TRUE);
+  }
 }
 
 TabDoc::DocTabs TabDoc::GetActiveTab(void)

@@ -94,6 +94,17 @@ void TabTranscript::PrefsChanged(CRegKey& key)
   m_window.PrefsChanged();
 }
 
+void TabTranscript::UpdateDPI(void)
+{
+  TabBase::UpdateDPI();
+  CFont* font = theApp.GetFont(this,InformApp::FontPanel);
+  m_nextSkein.SetFont(font);
+  m_nextDiff.SetFont(font);
+  m_prevDiff.SetFont(font);
+  m_blessAll.SetFont(font);
+  Resize();
+}
+
 void TabTranscript::SetSkein(Skein* skein)
 {
   m_skein = skein;
@@ -131,39 +142,43 @@ CString TabTranscript::GetToolTip(UINT_PTR id)
   return TabBase::GetToolTip(id);
 }
 
+void TabTranscript::Resize(void)
+{
+  if (m_window.GetSafeHwnd() != 0)
+  {
+    CRect client;
+    GetClientRect(client);
+
+    // Call the base class to resize and get parameters
+    CSize fontSize;
+    int heading;
+    SizeTab(client,fontSize,heading);
+
+    // Resize the command button
+    int nsw = theApp.MeasureText(&m_nextSkein).cx+(fontSize.cx*3)+16;
+    int ndw = theApp.MeasureText(&m_nextDiff).cx+(fontSize.cx*3)+16;
+    int pdw = theApp.MeasureText(&m_prevDiff).cx+(fontSize.cx*3)+16;
+    int bw = theApp.MeasureText(&m_blessAll).cx+(fontSize.cx*3);
+    int gapx = (fontSize.cx/4);
+    int gapy = (fontSize.cx/4);
+    int x = client.Width()-bw-gapx;
+    m_blessAll.MoveWindow(x,gapy,bw,heading-(2*gapy),TRUE);
+    x -= pdw+gapx;
+    m_prevDiff.MoveWindow(x,gapy,pdw,heading-(2*gapy),TRUE);
+    x -= ndw+gapx;
+    m_nextDiff.MoveWindow(x,gapy,ndw,heading-(2*gapy),TRUE);
+    x -= nsw+gapx;
+    m_nextSkein.MoveWindow(x,gapy,nsw,heading-(2*gapy),TRUE);
+
+    // Resize the transcript window
+    m_window.MoveWindow(client,TRUE);
+  }
+}
+
 void TabTranscript::OnSize(UINT nType, int cx, int cy)
 {
   TabBase::OnSize(nType,cx,cy);
-
-  if (m_window.GetSafeHwnd() == 0)
-    return;
-
-  CRect client;
-  GetClientRect(client);
-
-  // Call the base class to resize and get parameters
-  CSize fontSize;
-  int heading;
-  SizeTab(client,fontSize,heading);
-
-  // Resize the command button
-  int nsw = theApp.MeasureText(&m_nextSkein).cx+(fontSize.cx*3)+16;
-  int ndw = theApp.MeasureText(&m_nextDiff).cx+(fontSize.cx*3)+16;
-  int pdw = theApp.MeasureText(&m_prevDiff).cx+(fontSize.cx*3)+16;
-  int bw = theApp.MeasureText(&m_blessAll).cx+(fontSize.cx*3);
-  int gapx = (fontSize.cx/4);
-  int gapy = (fontSize.cx/4);
-  int x = client.Width()-bw-gapx;
-  m_blessAll.MoveWindow(x,gapy,bw,heading-(2*gapy),TRUE);
-  x -= pdw+gapx;
-  m_prevDiff.MoveWindow(x,gapy,pdw,heading-(2*gapy),TRUE);
-  x -= ndw+gapx;
-  m_nextDiff.MoveWindow(x,gapy,ndw,heading-(2*gapy),TRUE);
-  x -= nsw+gapx;
-  m_nextSkein.MoveWindow(x,gapy,nsw,heading-(2*gapy),TRUE);
-
-  // Resize the transcript window
-  m_window.MoveWindow(client,TRUE);
+  Resize();
 }
 
 LRESULT TabTranscript::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)

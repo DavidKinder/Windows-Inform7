@@ -21,12 +21,15 @@ public:
   void MakeActive(TabState& state);
   void MakeInactive(void);
   bool IsEnabled(void);
+  void UpdateDPI(void);
 
   BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 
   CString GetToolTip(UINT_PTR id);
 
 private:
+  void Resize(void);
+
   CWnd* m_parent;
   GameWindow* m_game;
   CButton m_stop;

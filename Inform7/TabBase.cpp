@@ -117,6 +117,13 @@ void TabBase::PrefsChanged(CRegKey& key)
 {
 }
 
+void TabBase::UpdateDPI(void)
+{
+  CFont* font = theApp.GetFont(this,InformApp::FontPanel);
+  m_navigate[0].SetFont(font);
+  m_navigate[1].SetFont(font);
+}
+
 void TabBase::OnPaint()
 {
   CPaintDC dc(this);

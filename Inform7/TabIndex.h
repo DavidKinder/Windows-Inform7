@@ -23,6 +23,7 @@ public:
   bool SaveProject(const char* path, bool primary);
   void CompileProject(CompileStage stage, int code);
   void PrefsChanged(CRegKey& key);
+  void UpdateDPI(void);
 
   // Implementation of ReportHtml::LinkConsumer
   void SourceLink(const char* url);
@@ -37,6 +38,8 @@ public:
   void ShowIndex(int index);
 
 private:
+  void Resize(void);
+
   enum IndexTabs
   {
     IdxTab_Home = 0,

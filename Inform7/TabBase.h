@@ -20,6 +20,7 @@ public:
   void LoadSettings(CRegKey& key, bool primary);
   void SaveSettings(CRegKey& key, bool primary);
   void PrefsChanged(CRegKey& key);
+  void UpdateDPI(void);
 
 protected:
   DECLARE_MESSAGE_MAP()

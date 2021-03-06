@@ -166,6 +166,17 @@ void TabSkein::PrefsChanged(CRegKey& key)
   m_helpWindow->Refresh();
 }
 
+void TabSkein::UpdateDPI(void)
+{
+  TabBase::UpdateDPI();
+  CFont* font = theApp.GetFont(this,InformApp::FontPanel);
+  m_label.SetFont(font);
+  m_play.SetFont(font);
+  m_save.SetFont(font);
+  m_help.SetFont(font);
+  Resize();
+}
+
 void TabSkein::SourceLink(const char* url)
 {
 }
@@ -251,36 +262,7 @@ CStringW TabSkein::GetStoryName(void)
 void TabSkein::OnSize(UINT nType, int cx, int cy)
 {
   TabBase::OnSize(nType,cx,cy);
-
-  if (m_splitter.GetSafeHwnd() == 0)
-    return;
-
-  CRect client;
-  GetClientRect(client);
-
-  // Call the base class to resize and get parameters
-  CSize fontSize;
-  int heading;
-  SizeTab(client,fontSize,heading);
-
-  // Resize the command buttons
-  int pw = theApp.MeasureText(&m_play).cx+(fontSize.cx*3);
-  int lw = theApp.MeasureText(&m_label).cx+(fontSize.cx*3)+16;
-  int gapx = (fontSize.cx/4);
-  int gapy = (fontSize.cx/4);
-  int x = client.Width()-pw-gapx;
-  m_play.MoveWindow(x,gapy,pw,heading-(2*gapy),TRUE);
-  int sw = theApp.MeasureText(&m_save).cx+(fontSize.cx*3);
-  x -= sw+gapx;
-  m_save.MoveWindow(x,gapy,sw,heading-(2*gapy),TRUE);
-  int hw = theApp.MeasureText(&m_help,"Show Help").cx+(fontSize.cx*3);
-  x -= hw+gapx;
-  m_help.MoveWindow(x,gapy,hw,heading-(2*gapy),TRUE);
-  x -= lw+gapx;
-  m_label.MoveWindow(x,gapy,lw,heading-(2*gapy),TRUE);
-
-  // Resize the window
-  m_splitter.MoveWindow(client,TRUE);
+  Resize();
 }
 
 LRESULT TabSkein::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
@@ -416,4 +398,37 @@ void TabSkein::ShowHideHelp(bool show)
     m_help.SetWindowText("Show Help");
   }
   m_splitter.RecalcLayout();
+}
+
+void TabSkein::Resize(void)
+{
+  if (m_splitter.GetSafeHwnd() != 0)
+  {
+    CRect client;
+    GetClientRect(client);
+
+    // Call the base class to resize and get parameters
+    CSize fontSize;
+    int heading;
+    SizeTab(client,fontSize,heading);
+
+    // Resize the command buttons
+    int pw = theApp.MeasureText(&m_play).cx+(fontSize.cx*3);
+    int lw = theApp.MeasureText(&m_label).cx+(fontSize.cx*3)+16;
+    int gapx = (fontSize.cx/4);
+    int gapy = (fontSize.cx/4);
+    int x = client.Width()-pw-gapx;
+    m_play.MoveWindow(x,gapy,pw,heading-(2*gapy),TRUE);
+    int sw = theApp.MeasureText(&m_save).cx+(fontSize.cx*3);
+    x -= sw+gapx;
+    m_save.MoveWindow(x,gapy,sw,heading-(2*gapy),TRUE);
+    int hw = theApp.MeasureText(&m_help,"Show Help").cx+(fontSize.cx*3);
+    x -= hw+gapx;
+    m_help.MoveWindow(x,gapy,hw,heading-(2*gapy),TRUE);
+    x -= lw+gapx;
+    m_label.MoveWindow(x,gapy,lw,heading-(2*gapy),TRUE);
+
+    // Resize the window
+    m_splitter.MoveWindow(client,TRUE);
+  }
 }
