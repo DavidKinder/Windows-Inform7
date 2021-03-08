@@ -212,6 +212,8 @@ void TabSettings::PrefsChanged(CRegKey& key)
 
 void TabSettings::UpdateDPI(void)
 {
+  m_labelFont.DeleteObject();
+  Layout();
 }
 
 namespace
@@ -247,6 +249,45 @@ void TabSettings::OnInitialUpdate()
 {
   CFormView::OnInitialUpdate();
 
+  const auto& versions = theApp.GetCompilerVersions();
+  for (auto it = versions.begin(); it != versions.end(); ++it)
+    m_version.AddString(it->label);
+
+  Layout();
+}
+
+BOOL TabSettings::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+  switch (LOWORD(wParam))
+  {
+  case IDC_PREDICTABLE:
+  case IDC_BLORB:
+  case IDC_OUTPUT_Z8:
+  case IDC_OUTPUT_GLULX:
+  case IDC_VERSION_COMBO:
+    UpdateSettings();
+    break;
+  }
+  return CFormView::OnCommand(wParam,lParam);
+}
+
+void TabSettings::OnDraw(CDC* pDC)
+{
+  CFormView::OnDraw(pDC);
+
+  pDC->SetTextColor(::GetSysColor(COLOR_BTNTEXT));
+  pDC->SetBkMode(TRANSPARENT);
+  CFont* oldFont = pDC->SelectObject(&m_labelFont);
+  for (int i = 0; i < 4; i++)
+    pDC->DrawText(m_labelTexts[i],m_labelRects[i],DT_WORDBREAK);
+  pDC->SelectObject(oldFont);
+}
+
+void TabSettings::Layout(void)
+{
+  theApp.CreatePointFont(this,&m_labelFont,
+    9*theApp.GetFontSize(InformApp::FontSystem),theApp.GetFontName(InformApp::FontSystem));
+
   CRect story = getRect(this,IDC_STORY_BOX);
   CRect outputZ8 = getRect(this,IDC_OUTPUT_Z8);
   CRect outputG = getRect(this,IDC_OUTPUT_GLULX);
@@ -254,15 +295,16 @@ void TabSettings::OnInitialUpdate()
   for (int i = 0; i < 4; i++)
   {
     m_labelRects[i].left = outputZ8.left;
+    m_labelRects[i].top = 0;
     m_labelRects[i].right = story.right-(2*(outputZ8.left-story.left));
+    m_labelRects[i].bottom = 0;
   }
 
   LOGFONT lf;
   GetDlgItem(IDC_STORY_BOX)->GetFont()->GetLogFont(&lf);
   int fh = abs(lf.lfHeight);
+
   CDC* dc = GetDC();
-  theApp.CreatePointFont(this,&m_labelFont,
-    9*theApp.GetFontSize(InformApp::FontSystem),theApp.GetFontName(InformApp::FontSystem));
   CFont* oldFont = dc->SelectObject(&m_labelFont);
 
   sizeText(dc,m_labelTexts[0],m_labelRects[0],story.top+(2*fh));
@@ -298,36 +340,6 @@ void TabSettings::OnInitialUpdate()
 
   dc->SelectObject(oldFont);
   ReleaseDC(dc);
-
-  for (auto it = versions.begin(); it != versions.end(); ++it)
-    m_version.AddString(it->label);
-}
-
-BOOL TabSettings::OnCommand(WPARAM wParam, LPARAM lParam)
-{
-  switch (LOWORD(wParam))
-  {
-  case IDC_PREDICTABLE:
-  case IDC_BLORB:
-  case IDC_OUTPUT_Z8:
-  case IDC_OUTPUT_GLULX:
-  case IDC_VERSION_COMBO:
-    UpdateSettings();
-    break;
-  }
-  return CFormView::OnCommand(wParam,lParam);
-}
-
-void TabSettings::OnDraw(CDC* pDC)
-{
-  CFormView::OnDraw(pDC);
-
-  pDC->SetTextColor(::GetSysColor(COLOR_BTNTEXT));
-  pDC->SetBkMode(TRANSPARENT);
-  CFont* oldFont = pDC->SelectObject(&m_labelFont);
-  for (int i = 0; i < 4; i++)
-    pDC->DrawText(m_labelTexts[i],m_labelRects[i],DT_WORDBREAK);
-  pDC->SelectObject(oldFont);
 }
 
 // Copied from MFC sources to enable a call to our CreateDlgIndirect()

@@ -52,6 +52,8 @@ protected:
   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
   virtual void OnDraw(CDC* pDC);
 
+  void Layout(void);
+
   BOOL Create(DWORD, const RECT&, CWnd*, UINT);
   BOOL CreateDlg(LPCTSTR, CWnd*);
   BOOL CreateDlgIndirect(LPCDLGTEMPLATE, CWnd*, HINSTANCE);
