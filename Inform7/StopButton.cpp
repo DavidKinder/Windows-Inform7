@@ -68,9 +68,9 @@ CDibSection* StopButton::GetImage(bool dark)
   // Create a scaled image
   CSize imageDibSize = GetButtonSize();
   imageDib = new CDibSection();
-  CDC* dc = AfxGetMainWnd()->GetDC();
+  CDC* dc = GetDC();
   imageDib->CreateBitmap(dc->GetSafeHdc(),imageDibSize.cx,imageDibSize.cy);
-  AfxGetMainWnd()->ReleaseDC(dc);
+  ReleaseDC(dc);
 
   // Scale and stretch the image
   ScaleGfx(dib->GetBits(),dibSize.cx,dibSize.cy,

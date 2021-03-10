@@ -530,6 +530,8 @@ void TabSource::UpdateDPI(void)
 {
   TabBase::UpdateDPI();
   m_tab.UpdateDPI();
+  m_source.PrefsChanged();
+  m_contents.PrefsChanged();
   Resize();
 }
 

@@ -690,11 +690,11 @@ CSize SkeinWindow::GetLayoutSize(bool force)
   if (m_skein->IsActive())
   {
     // Redo the layout if needed
-    CDC* dc = AfxGetMainWnd()->GetDC();
+    CDC* dc = GetDC();
     CFont* font = dc->SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
     m_skein->Layout(*dc,m_fontSize.cx*8,force);
     dc->SelectObject(font);
-    AfxGetMainWnd()->ReleaseDC(dc);
+    ReleaseDC(dc);
 
     // Get the size of the tree
     int width, depth;

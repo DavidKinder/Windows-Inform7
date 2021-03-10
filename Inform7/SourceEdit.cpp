@@ -1258,10 +1258,9 @@ void SourceEdit::LoadSettings(SourceSettings& set, COLORREF back)
 
 void SourceEdit::PrefsChanged(void)
 {
-  // Somewhat tortuously, this causes Scintilla to update its internal style state, so
-  // that any calls before the next re-paint get the correct style or sizing information.
-  Invalidate();
-  CallEdit(WM_QUERYNEWPALETTE);
+  // This causes Scintilla to update its internal style state, so that any calls before
+  // the next re-paint get the correct style and sizing information.
+  CallEdit(WM_SETTINGCHANGE);
 }
 
 bool SourceEdit::GetElasticTabStops(void)

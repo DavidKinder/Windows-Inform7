@@ -460,9 +460,9 @@ CDibSection* ContentsPane::GetCircle(COLORREF back, int index)
 
   // Create a scaled image
   circleDib = new CDibSection();
-  CDC* dc = AfxGetMainWnd()->GetDC();
+  CDC* dc = GetDC();
   circleDib->CreateBitmap(dc->GetSafeHdc(),circleDibSize.cx,circleDibSize.cy);
-  AfxGetMainWnd()->ReleaseDC(dc);
+  ReleaseDC(dc);
 
   // Scale and stretch the image
   ScaleGfx(dib->GetBits(),dibSize.cx,dibSize.cy,
