@@ -371,10 +371,10 @@ CDibSection* SourceWindow::CreateTornImage(const char* inputImage, const char* o
   CSize inputSize = input->GetSize();
 
   CDibSection* output = new CDibSection();
-  CDC* dc = GetDC();
+  CDC* dc = AfxGetMainWnd()->GetDC();
   BOOL created = output->CreateBitmap(dc->GetSafeHdc(),inputSize.cx,inputSize.cy);
   ASSERT(created);
-  ReleaseDC(dc);
+  AfxGetMainWnd()->ReleaseDC(dc);
 
   int br = GetRValue(m_back);
   int bg = GetGValue(m_back);
