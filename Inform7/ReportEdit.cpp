@@ -62,6 +62,11 @@ void ReportEdit::FontChanged(void)
   Invalidate();
 }
 
+void ReportEdit::PrefsChanged(void)
+{
+  CallEdit(WM_SETTINGCHANGE);
+}
+
 void ReportEdit::OnUpdateNeedSel(CCmdUI* pCmdUI)
 {
   pCmdUI->Enable(CallEdit(SCI_GETSELECTIONSTART) != CallEdit(SCI_GETSELECTIONEND));

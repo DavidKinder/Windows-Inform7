@@ -8,6 +8,7 @@ public:
   ReportEdit();
   BOOL Create(CWnd* parent, UINT id);
   void FontChanged(void);
+  void PrefsChanged(void);
 
   void AppendText(const char* text);
   void ClearText(void);

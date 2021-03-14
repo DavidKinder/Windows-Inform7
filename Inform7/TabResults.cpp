@@ -271,6 +271,7 @@ void TabResults::UpdateDPI(void)
 {
   TabBase::UpdateDPI();
   m_tab.UpdateDPI();
+  m_console.PrefsChanged();
   Resize();
 }
 
