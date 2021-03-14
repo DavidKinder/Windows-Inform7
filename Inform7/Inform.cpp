@@ -197,9 +197,10 @@ int InformApp::ExitInstance()
   if (m_pRecentFileList != NULL)
     m_pRecentFileList->WriteList();
 
-  // Clear the bitmap cache
-  std::map<std::string,CDibSection*>::iterator it;
-  for (it = m_bitmaps.begin(); it != m_bitmaps.end(); ++it)
+  // Clear the bitmap and font caches
+  for (auto it = m_bitmaps.begin(); it != m_bitmaps.end(); ++it)
+    delete it->second;
+  for (auto it = m_fonts.begin(); it != m_fonts.end(); ++it)
     delete it->second;
 
   GameWindow::ExitInstance();
