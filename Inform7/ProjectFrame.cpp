@@ -390,6 +390,7 @@ void ProjectFrame::OnDestroy()
   for (int i = 0; i < m_processes.GetSize(); i++)
     m_processes.GetAt(i).cp.close();
   m_processes.RemoveAll();
+  ReportHtml::RemoveContext(this);
 
   MenuBarFrameWnd::OnDestroy();
 }
@@ -668,6 +669,7 @@ LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
   m_coolBar.GetReBarCtrl().SetBandInfo(2,&bandInfo);
   m_coolBar.GetReBarCtrl().MaximizeBand(1);
 
+  ReportHtml::UpdateWebBrowserPreferences(this);
   if (m_splitter.GetSafeHwnd() != 0)
   {
     for (int i = 0; i < 2; i++)

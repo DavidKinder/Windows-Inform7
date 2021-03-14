@@ -9,6 +9,8 @@ public:
   static void ShutWebBrowser(void);
   static void DoWebBrowserWork(void);
   static void UpdateWebBrowserPreferences(void);
+  static void UpdateWebBrowserPreferences(CFrameWnd* frame);
+  static void RemoveContext(CFrameWnd* frame);
 
   ReportHtml();
   ~ReportHtml();

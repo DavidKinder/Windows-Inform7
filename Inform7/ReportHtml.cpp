@@ -12,6 +12,7 @@
 #include "include/cef_app.h"
 #include "include/cef_browser.h"
 #include "include/cef_client.h"
+#include "include/cef_request_context_handler.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -19,6 +20,9 @@
 
 // Settings for all browser instances
 CefSettings cefSettings;
+
+// Map of request contexts, one per window frame
+static std::map<CFrameWnd*,CefRefPtr<CefRequestContext>>* g_requestContexts;
 
 // Test whether the given file exists
 static bool FileExists(const char* path)
@@ -783,6 +787,9 @@ bool ReportHtml::InitWebBrowser(void)
   if (CefExecuteProcess(cefArgs,app.get(),NULL) >= 0)
     return false;
 
+  // Create the map of request contexts
+  g_requestContexts = new std::map<CFrameWnd*,CefRefPtr<CefRequestContext>>();
+
   // Initialize settings
   cefSettings.no_sandbox = true;
   cefSettings.command_line_args_disabled = true;
@@ -805,6 +812,9 @@ bool ReportHtml::InitWebBrowser(void)
 // Shut down CEF
 void ReportHtml::ShutWebBrowser(void)
 {
+  delete g_requestContexts;
+  g_requestContexts = NULL;
+
   CefShutdown();
 }
 
@@ -828,22 +838,37 @@ void ReportHtml::DoWebBrowserWork(void)
 // Update preferences that affect all web browser instances
 void ReportHtml::UpdateWebBrowserPreferences(void)
 {
-  CefRefPtr<CefValue> cefFontSize = CefValue::Create();
-  cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),DPI::getSystemDPI(),64));
-  CefRefPtr<CefValue> cefFontName = CefValue::Create();
-  cefFontName->SetString(theApp.GetFontName(InformApp::FontDisplay));
-  CefRefPtr<CefValue> cefFixedFontName = CefValue::Create();
-  cefFixedFontName->SetString(theApp.GetFontName(InformApp::FontFixedWidth));
+  for (auto it = g_requestContexts->begin(); it != g_requestContexts->end(); ++it)
+    UpdateWebBrowserPreferences(it->first);
+}
 
-  // Set font settings as preferences in the global context
-  CefString err;
-  CefRefPtr<CefRequestContext> context = CefRequestContext::GetGlobalContext();
-  VERIFY(context->SetPreference("webkit.webprefs.default_font_size",cefFontSize,err));
-  VERIFY(context->SetPreference("webkit.webprefs.default_fixed_font_size",cefFontSize,err));
-  VERIFY(context->SetPreference("webkit.webprefs.fonts.standard.Zyyy",cefFontName,err));
-  VERIFY(context->SetPreference("webkit.webprefs.fonts.fixed.Zyyy",cefFixedFontName,err));
-  VERIFY(context->SetPreference("webkit.webprefs.fonts.serif.Zyyy",cefFontName,err));
-  VERIFY(context->SetPreference("webkit.webprefs.fonts.sansserif.Zyyy",cefFontName,err));
+// Update preferences for the web browser instances under one frame window
+void ReportHtml::UpdateWebBrowserPreferences(CFrameWnd* frame)
+{
+  auto it = g_requestContexts->find(frame);
+  if (it != g_requestContexts->end())
+  {
+    CefRefPtr<CefValue> cefFontName = CefValue::Create();
+    cefFontName->SetString(theApp.GetFontName(InformApp::FontDisplay));
+    CefRefPtr<CefValue> cefFixedFontName = CefValue::Create();
+    cefFixedFontName->SetString(theApp.GetFontName(InformApp::FontFixedWidth));
+    CefRefPtr<CefValue> cefFontSize = CefValue::Create();
+    cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),DPI::getWindowDPI(it->first),64));
+
+    CefString err;
+    auto context = it->second;
+    VERIFY(context->SetPreference("webkit.webprefs.default_font_size",cefFontSize,err));
+    VERIFY(context->SetPreference("webkit.webprefs.default_fixed_font_size",cefFontSize,err));
+    VERIFY(context->SetPreference("webkit.webprefs.fonts.standard.Zyyy",cefFontName,err));
+    VERIFY(context->SetPreference("webkit.webprefs.fonts.fixed.Zyyy",cefFixedFontName,err));
+    VERIFY(context->SetPreference("webkit.webprefs.fonts.serif.Zyyy",cefFontName,err));
+    VERIFY(context->SetPreference("webkit.webprefs.fonts.sansserif.Zyyy",cefFontName,err));
+  }
+}
+
+void ReportHtml::RemoveContext(CFrameWnd* frame)
+{
+  g_requestContexts->erase(frame);
 }
 
 ReportHtml::ReportHtml() : m_setFocus(false), m_consumer(NULL)
@@ -863,6 +888,20 @@ ReportHtml::~ReportHtml()
 BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
   const RECT& rect, CWnd* parentWnd, UINT id, CCreateContext*)
 {
+  CefRefPtr<CefRequestContext> context;
+  {
+    CFrameWnd* frame = parentWnd->GetParentFrame();
+    auto it = g_requestContexts->find(frame);
+    if (it != g_requestContexts->end())
+      context = it->second;
+    else
+    {
+      g_requestContexts->insert(std::make_pair(frame,
+        CefRequestContext::CreateContext(CefRequestContext::GetGlobalContext(),NULL)));
+      UpdateWebBrowserPreferences(frame);
+    }
+  }
+
   CefWindowInfo windowInfo;
   windowInfo.SetAsChild(parentWnd->GetSafeHwnd(),rect);
   windowInfo.style = style;
@@ -871,7 +910,7 @@ BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
   CefBrowserSettings browserSettings;
   CefRefPtr<I7CefClient> client(new I7CefClient());
   CefRefPtr<CefBrowser> browser = CefBrowserHost::CreateBrowserSync(
-    windowInfo,client,"",browserSettings,NULL,NULL);
+    windowInfo,client,"",browserSettings,NULL,context);
   if (browser.get() == NULL)
     return FALSE;
 
