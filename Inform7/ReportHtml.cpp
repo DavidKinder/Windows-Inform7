@@ -19,7 +19,7 @@
 #endif
 
 // Settings for all browser instances
-CefSettings cefSettings;
+static CefSettings cefSettings;
 
 // Map of request contexts, one per window frame
 static std::map<CFrameWnd*,CefRefPtr<CefRequestContext>>* g_requestContexts;
@@ -372,8 +372,8 @@ private:
 
 // Application level callbacks for all browser instances
 class I7CefApp : public CefApp,
-  public CefBrowserProcessHandler,
   public CefRenderProcessHandler,
+  public CefRequestContextHandler,
   public CefSchemeHandlerFactory
 {
 public:
@@ -381,7 +381,7 @@ public:
   {
   }
 
-  // Register our custom inform: scheme
+  // Register our custom "inform:" scheme
   void OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar)
   {
     registrar->AddCustomScheme(
@@ -393,18 +393,6 @@ public:
   {
     cmdLine->AppendSwitchWithValue("force-device-scale-factor","1");
     cmdLine->AppendSwitch("disable-gpu-shader-disk-cache");
-  }
-
-  CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler()
-  {
-    return this;
-  }
-
-  // Implement CefBrowserProcessHandler to register our custom scheme and preferences
-  void OnContextInitialized()
-  {
-    CefRegisterSchemeHandlerFactory("inform","",this);
-    ReportHtml::UpdateWebBrowserPreferences();
   }
 
   CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler()
@@ -437,6 +425,13 @@ public:
     context->GetGlobal()->SetValue("external",extObj,V8_PROPERTY_ATTRIBUTE_NONE);
   }
 
+  // Implement CefRequestContextHandler to register our custom scheme
+  void OnRequestContextInitialized(CefRefPtr<CefRequestContext> request_context)
+  {
+    request_context->RegisterSchemeHandlerFactory("inform","",this);
+  }
+
+  // Implement CefSchemeHandlerFactory to create our custom scheme
   CefRefPtr<CefResourceHandler> Create(CefRefPtr<CefBrowser>,
     CefRefPtr<CefFrame>, const CefString&, CefRefPtr<CefRequest>)
   {
@@ -452,6 +447,9 @@ private:
 
   IMPLEMENT_REFCOUNTING(I7CefApp);
 };
+
+// The CEF application instance
+static CefRefPtr<I7CefApp> cefApp;
 
 // Handler implementations for each browser instance
 class I7CefClient : public CefClient,
@@ -783,8 +781,8 @@ bool ReportHtml::InitWebBrowser(void)
 
   // If this is a CEF sub-process, call CEF straight away
   CefMainArgs cefArgs(::GetModuleHandle(0));
-  CefRefPtr<CefApp> app(new I7CefApp());
-  if (CefExecuteProcess(cefArgs,app.get(),NULL) >= 0)
+  cefApp = new I7CefApp();
+  if (CefExecuteProcess(cefArgs,cefApp,NULL) >= 0)
     return false;
 
   // Create the map of request contexts
@@ -801,7 +799,7 @@ bool ReportHtml::InitWebBrowser(void)
   CefString(&cefSettings.log_file).FromString(GetUTF8Path(dir,""));
 
   // Initialize CEF
-  if (!CefInitialize(cefArgs,cefSettings,app.get(),NULL))
+  if (!CefInitialize(cefArgs,cefSettings,cefApp,NULL))
   {
     AfxMessageBox("Failed to initialize Chrome Extension Framework",MB_ICONSTOP|MB_OK);
     exit(0);
@@ -812,6 +810,7 @@ bool ReportHtml::InitWebBrowser(void)
 // Shut down CEF
 void ReportHtml::ShutWebBrowser(void)
 {
+  cefApp = NULL;
   delete g_requestContexts;
   g_requestContexts = NULL;
 
@@ -896,8 +895,9 @@ BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
       context = it->second;
     else
     {
-      g_requestContexts->insert(std::make_pair(frame,
-        CefRequestContext::CreateContext(CefRequestContext::GetGlobalContext(),NULL)));
+      CefRequestContextSettings cefReqSettings;
+      context = CefRequestContext::CreateContext(cefReqSettings,cefApp);
+      g_requestContexts->insert(std::make_pair(frame,context));
       UpdateWebBrowserPreferences(frame);
     }
   }
