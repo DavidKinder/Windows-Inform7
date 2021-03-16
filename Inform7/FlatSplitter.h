@@ -16,5 +16,7 @@ public:
   void SetRows(int rows);
 
   double GetColumnFraction(int col);
+  double GetRowFraction(int row);
   void SetColumnFraction(int col, double fraction, int min);
+  void SetRowFraction(int row, double fraction, int min);
 };

@@ -38,11 +38,27 @@ double FlatSplitter::GetColumnFraction(int col)
   return (double)size / (double)client.Width();
 }
 
+double FlatSplitter::GetRowFraction(int row)
+{
+  CRect client;
+  GetClientRect(client);
+  int size, minSize;
+  GetRowInfo(row,size,minSize);
+  return (double)size / (double)client.Height();
+}
+
 void FlatSplitter::SetColumnFraction(int col, double fraction, int min)
 {
   CRect client;
   GetClientRect(client);
   SetColumnInfo(col,(int)(fraction*client.Width()),min);
+}
+
+void FlatSplitter::SetRowFraction(int row, double fraction, int min)
+{
+  CRect client;
+  GetClientRect(client);
+  SetRowInfo(row,(int)(fraction*client.Height()),min);
 }
 
 BOOL FlatSplitter::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)

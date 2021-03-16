@@ -94,9 +94,9 @@ void TabTranscript::PrefsChanged(CRegKey& key)
   m_window.PrefsChanged();
 }
 
-void TabTranscript::UpdateDPI(void)
+void TabTranscript::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
-  TabBase::UpdateDPI();
+  TabBase::UpdateDPI(layout);
   CFont* font = theApp.GetFont(this,InformApp::FontPanel);
   m_nextSkein.SetFont(font);
   m_nextDiff.SetFont(font);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 // Structure describing the tab state for the history
 struct TabState
 {
@@ -76,8 +78,10 @@ public:
   virtual void SaveSettings(CRegKey& key, bool primary) = 0;
   // Notification that the user preferences have changed
   virtual void PrefsChanged(CRegKey& key) = 0;
+  // Prepare for processing a DPI change
+  virtual void BeforeUpdateDPI(std::map<CWnd*,double>& layout) = 0;
   // Update the tab after the DPI has changed
-  virtual void UpdateDPI(void) = 0;
+  virtual void UpdateDPI(const std::map<CWnd*,double>& layout) = 0;
 
   class LinkNotify
   {

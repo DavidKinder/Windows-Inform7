@@ -55,7 +55,8 @@ public:
   void LoadSettings(CRegKey& key, bool primary);
   void SaveSettings(CRegKey& key, bool primary);
   void PrefsChanged(CRegKey& key);
-  void UpdateDPI(void);
+  void BeforeUpdateDPI(std::map<CWnd*,double>& layout);
+  void UpdateDPI(const std::map<CWnd*,double>& layout);
 
   virtual bool IsTabEnabled(int tab);
 

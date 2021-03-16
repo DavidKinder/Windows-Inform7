@@ -23,7 +23,7 @@ public:
   bool SaveProject(const char* path, bool primary);
   void CompileProject(CompileStage stage, int code);
   void PrefsChanged(CRegKey& key);
-  void UpdateDPI(void);
+  void UpdateDPI(const std::map<CWnd*,double>& layout);
 
   // Implementation of ReportHtml::LinkConsumer
   void SourceLink(const char* url);

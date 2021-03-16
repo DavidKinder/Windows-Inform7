@@ -117,7 +117,11 @@ void TabBase::PrefsChanged(CRegKey& key)
 {
 }
 
-void TabBase::UpdateDPI(void)
+void TabBase::BeforeUpdateDPI(std::map<CWnd*,double>& layout)
+{
+}
+
+void TabBase::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
   CFont* font = theApp.GetFont(this,InformApp::FontPanel);
   m_navigate[0].SetFont(font);

@@ -101,9 +101,9 @@ bool TabStory::IsEnabled(void)
   return false;
 }
 
-void TabStory::UpdateDPI(void)
+void TabStory::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
-  TabBase::UpdateDPI();
+  TabBase::UpdateDPI(layout);
   m_stop.SetFont(theApp.GetFont(this,InformApp::FontPanel));
   Resize();
 }

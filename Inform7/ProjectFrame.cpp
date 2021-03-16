@@ -623,9 +623,13 @@ LRESULT ProjectFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 
 LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 {
-  double splitFraction = 0.0;
+  std::map<CWnd*,double> layout;
   if (m_splitter.GetSafeHwnd() != 0)
-    splitFraction = m_splitter.GetColumnFraction(0);
+  {
+    layout.insert(std::make_pair(&m_splitter,m_splitter.GetColumnFraction(0)));
+    for (int i = 0; i < 2; i++)
+      GetPanel(i)->BeforeUpdateDPI(layout);
+  }
 
   UINT newDpi = (int)HIWORD(wparam);
   MoveWindow((LPRECT)lparam,TRUE);
@@ -667,10 +671,14 @@ LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
   if (m_splitter.GetSafeHwnd() != 0)
   {
     for (int i = 0; i < 2; i++)
-      GetPanel(i)->UpdateDPI();
+      GetPanel(i)->UpdateDPI(layout);
 
-    m_splitter.SetColumnFraction(0,splitFraction,16);
-    m_splitter.RecalcLayout();
+    auto layoutIt = layout.find(&m_splitter);
+    if (layoutIt != layout.end())
+    {
+      m_splitter.SetColumnFraction(0,layoutIt->second,16);
+      m_splitter.RecalcLayout();
+    }
   }
 
   m_progress.UpdateDPI();

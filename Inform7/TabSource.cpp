@@ -526,9 +526,9 @@ void TabSource::PrefsChanged(CRegKey& key)
   m_contents.PrefsChanged();
 }
 
-void TabSource::UpdateDPI(void)
+void TabSource::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
-  TabBase::UpdateDPI();
+  TabBase::UpdateDPI(layout);
   m_tab.UpdateDPI();
   m_source.PrefsChanged();
   m_contents.PrefsChanged();

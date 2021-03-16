@@ -267,9 +267,9 @@ void TabResults::PrefsChanged(CRegKey& key)
   m_console.FontChanged();
 }
 
-void TabResults::UpdateDPI(void)
+void TabResults::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
-  TabBase::UpdateDPI();
+  TabBase::UpdateDPI(layout);
   m_tab.UpdateDPI();
   m_console.PrefsChanged();
   Resize();

@@ -25,7 +25,7 @@ public:
   void CompileProject(CompileStage stage, int code);
   void Progress(const char* msg);
   void PrefsChanged(CRegKey& key);
-  void UpdateDPI(void);
+  void UpdateDPI(const std::map<CWnd*,double>& layout);
 
   // Implementation of ReportHtml::LinkConsumer
   void SourceLink(const char* url);

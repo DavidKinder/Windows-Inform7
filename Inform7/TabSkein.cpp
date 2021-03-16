@@ -166,15 +166,31 @@ void TabSkein::PrefsChanged(CRegKey& key)
   m_helpWindow->Refresh();
 }
 
-void TabSkein::UpdateDPI(void)
+void TabSkein::BeforeUpdateDPI(std::map<CWnd*,double>& layout)
 {
-  TabBase::UpdateDPI();
+  TabBase::BeforeUpdateDPI(layout);
+  layout.insert(std::make_pair(&m_splitter,m_splitter.GetRowFraction(0)));
+}
+
+void TabSkein::UpdateDPI(const std::map<CWnd*,double>& layout)
+{
+  TabBase::UpdateDPI(layout);
+
   CFont* font = theApp.GetFont(this,InformApp::FontPanel);
   m_label.SetFont(font);
   m_play.SetFont(font);
   m_save.SetFont(font);
   m_help.SetFont(font);
   Resize();
+
+  auto layoutIt = layout.find(&m_splitter);
+  if (layoutIt != layout.end())
+  {
+    m_splitter.SetRowFraction(0,layoutIt->second,16);
+    m_splitter.RecalcLayout();
+  }
+
+  m_skeinWindow->PrefsChanged();
 }
 
 void TabSkein::SourceLink(const char* url)

@@ -106,9 +106,9 @@ void TabExtensions::PrefsChanged(CRegKey& key)
   m_html.Refresh();
 }
 
-void TabExtensions::UpdateDPI(void)
+void TabExtensions::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
-  TabBase::UpdateDPI();
+  TabBase::UpdateDPI(layout);
   m_tab.UpdateDPI();
   Resize();
 }

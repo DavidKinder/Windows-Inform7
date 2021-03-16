@@ -21,7 +21,7 @@ public:
 
   void OpenProject(const char* path, bool primary);
   void PrefsChanged(CRegKey& key);
-  void UpdateDPI(void);
+  void UpdateDPI(const std::map<CWnd*,double>& layout);
 
   void SetSkein(Skein* skein);
   void ShowNode(Skein::Node* node, Skein::Show why);

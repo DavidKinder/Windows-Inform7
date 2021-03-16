@@ -210,7 +210,11 @@ void TabSettings::PrefsChanged(CRegKey& key)
 {
 }
 
-void TabSettings::UpdateDPI(void)
+void TabSettings::BeforeUpdateDPI(std::map<CWnd*,double>& layout)
+{
+}
+
+void TabSettings::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
   m_labelFont.DeleteObject();
   Layout();

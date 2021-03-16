@@ -128,9 +128,9 @@ void TabIndex::PrefsChanged(CRegKey& key)
   m_index.Refresh();
 }
 
-void TabIndex::UpdateDPI(void)
+void TabIndex::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
-  TabBase::UpdateDPI();
+  TabBase::UpdateDPI(layout);
   m_tab.UpdateDPI();
   Resize();
 }

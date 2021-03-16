@@ -239,11 +239,17 @@ void Panel::PrefsChanged(CRegKey& key)
     m_tabs[i]->PrefsChanged(key);
 }
 
-void Panel::UpdateDPI(void)
+void Panel::BeforeUpdateDPI(std::map<CWnd*,double>& layout)
+{
+  for (int i = 0; i < Number_Tabs; i++)
+    m_tabs[i]->BeforeUpdateDPI(layout);
+}
+
+void Panel::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
   m_tab.UpdateDPI();
   for (int i = 0; i < Number_Tabs; i++)
-    m_tabs[i]->UpdateDPI();
+    m_tabs[i]->UpdateDPI(layout);
 }
 
 bool Panel::IsTabEnabled(int tab)

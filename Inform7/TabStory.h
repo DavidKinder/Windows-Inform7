@@ -21,7 +21,7 @@ public:
   void MakeActive(TabState& state);
   void MakeInactive(void);
   bool IsEnabled(void);
-  void UpdateDPI(void);
+  void UpdateDPI(const std::map<CWnd*,double>& layout);
 
   BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 

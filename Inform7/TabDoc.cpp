@@ -104,9 +104,9 @@ void TabDoc::PrefsChanged(CRegKey& key)
   m_html.Refresh();
 }
 
-void TabDoc::UpdateDPI(void)
+void TabDoc::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
-  TabBase::UpdateDPI();
+  TabBase::UpdateDPI(layout);
   m_tab.UpdateDPI();
   Resize();
 }
