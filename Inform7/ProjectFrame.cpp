@@ -625,13 +625,7 @@ LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 {
   double splitFraction = 0.0;
   if (m_splitter.GetSafeHwnd() != 0)
-  {
-    CRect client;
-    GetClientRect(client);
-    int size0, min;
-    m_splitter.GetColumnInfo(0,size0,min);
-    splitFraction = (double)size0 / (double)client.Width();
-  }
+    splitFraction = m_splitter.GetColumnFraction(0);
 
   UINT newDpi = (int)HIWORD(wparam);
   MoveWindow((LPRECT)lparam,TRUE);
@@ -675,9 +669,7 @@ LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
     for (int i = 0; i < 2; i++)
       GetPanel(i)->UpdateDPI();
 
-    CRect client;
-    GetClientRect(client);
-    m_splitter.SetColumnInfo(0,(int)(splitFraction*client.Width()),16);
+    m_splitter.SetColumnFraction(0,splitFraction,16);
     m_splitter.RecalcLayout();
   }
 

@@ -29,6 +29,22 @@ void FlatSplitter::SetRows(int rows)
   }
 }
 
+double FlatSplitter::GetColumnFraction(int col)
+{
+  CRect client;
+  GetClientRect(client);
+  int size, minSize;
+  GetColumnInfo(col,size,minSize);
+  return (double)size / (double)client.Width();
+}
+
+void FlatSplitter::SetColumnFraction(int col, double fraction, int min)
+{
+  CRect client;
+  GetClientRect(client);
+  SetColumnInfo(col,(int)(fraction*client.Width()),min);
+}
+
 BOOL FlatSplitter::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
   if (theApp.IsWaitCursor())

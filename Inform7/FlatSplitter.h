@@ -9,9 +9,12 @@ protected:
 
   afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 
+  virtual void OnDrawSplitter(CDC* pDC, ESplitType nType, const CRect& rect);
+
 public:
   FlatSplitter(bool border);
   void SetRows(int rows);
 
-  virtual void OnDrawSplitter(CDC* pDC, ESplitType nType, const CRect& rect);
+  double GetColumnFraction(int col);
+  void SetColumnFraction(int col, double fraction, int min);
 };
