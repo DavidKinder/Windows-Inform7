@@ -13,6 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9B6F4174-A3CE-4559-887E-FD4A2CF2CC38}</ProjectGuid>
     <Keyword>MFCProj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -51,13 +52,13 @@
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <GenerateManifest>false</GenerateManifest>
-    <OutDir>ReleaseX64\</OutDir>
+    <OutDir>../Build/</OutDir>
     <IntDir>ReleaseX64\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\Libraries\mfc;..\..\..\Libraries\libpng;..\..\..\Libraries\zlib;..\..\..\Libraries\jpeg;..\..\..\Libraries\libogg\include;..\..\..\Libraries\libvorbis\include;..\..\..\Libraries\hunspell;..\..\..\Libraries\libmodplug;..\..\..\Libraries\libcef;..\..\..\Libraries\scalegfx;Scintilla\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\Libraries\mfc;..\..\..\Libraries\libpng;..\..\..\Libraries\zlib;..\..\..\Libraries\jpeg;..\..\..\Libraries\libogg\include;..\..\..\Libraries\libvorbis\include;..\..\..\Libraries\hunspell;..\..\..\Libraries\libmodplug;..\..\..\Libraries\libcef;Scintilla\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;I7GLK;HUNSPELL_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -108,7 +109,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\..\..\Libraries\mfc;..\..\..\Libraries\libpng;..\..\..\Libraries\zlib;..\..\..\Libraries\jpeg;..\..\..\Libraries\libogg\include;..\..\..\Libraries\libvorbis\include;..\..\..\Libraries\hunspell;..\..\..\Libraries\libmodplug;..\..\..\Libraries\libcef;..\..\..\Libraries\scalegfx;Scintilla\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\Libraries\mfc;..\..\..\Libraries\libpng;..\..\..\Libraries\zlib;..\..\..\Libraries\jpeg;..\..\..\Libraries\libogg\include;..\..\..\Libraries\libvorbis\include;..\..\..\Libraries\hunspell;..\..\..\Libraries\libmodplug;..\..\..\Libraries\libcef;Scintilla\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;I7GLK;HUNSPELL_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
