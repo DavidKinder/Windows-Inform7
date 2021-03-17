@@ -2,6 +2,7 @@
 #include "Inform.h"
 #include "Messages.h"
 #include "RichEdit.h"
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -265,7 +266,7 @@ void RichEdit::FontChanged(void)
   ::ZeroMemory(&format,sizeof format);
   format.cbSize = sizeof format;
   format.dwMask = CFM_FACE|CFM_SIZE|CFM_EFFECTS;
-  format.yHeight = 20*theApp.GetFontSize(InformApp::FontDisplay);
+  format.yHeight = 20 * theApp.GetFontSize(InformApp::FontDisplay);
   strcpy(format.szFaceName,theApp.GetFontName(InformApp::FontDisplay));
   SetDefaultCharFormat(format);
 }
@@ -426,9 +427,9 @@ void RichDrawText::DrawText(CDC& dc, const CRect& rect)
   ASSERT(SUCCEEDED(hr));
 }
 
-void RichDrawText::FontChanged(void)
+void RichDrawText::FontChanged(int dpi)
 {
-  m_charFormat.yHeight = 20 * theApp.GetFontSize(InformApp::FontDisplay);
+  m_charFormat.yHeight = (20 * dpi * theApp.GetFontSize(InformApp::FontDisplay)) / DPI::getSystemDPI();
   CStringW fontName(theApp.GetFontName(InformApp::FontDisplay));
   wcscpy(m_charFormat.szFaceName,fontName);
   HRESULT hr = m_textServ->OnTxPropertyBitsChange(TXTBIT_CHARFORMATCHANGE,TXTBIT_CHARFORMATCHANGE);

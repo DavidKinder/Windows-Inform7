@@ -2,6 +2,7 @@
 #include "TranscriptWindow.h"
 #include "Inform.h"
 #include "Messages.h"
+#include "DpiFunctions.h"
 
 #include <math.h>
 
@@ -60,6 +61,8 @@ int TranscriptWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
   m_edit.SetMargins(theApp.MeasureFont(this,m_edit.GetFont()).cx/4);
 
+  // Make sure that the font is correct for this window
+  m_draw.FontChanged(DPI::getWindowDPI(this));
   return 0;
 }
 
@@ -546,7 +549,7 @@ void TranscriptWindow::Layout(void)
 
 void TranscriptWindow::PrefsChanged(void)
 {
-  m_draw.FontChanged();
+  m_draw.FontChanged(DPI::getWindowDPI(this));
   m_edit.FontChanged();
   Layout();
   Invalidate();

@@ -68,7 +68,7 @@ public:
   void SizeText(CDC& dc, CRect& rect);
   void DrawText(CDC& dc, const CRect& rect);
 
-  void FontChanged(void);
+  void FontChanged(int dpi);
 
   DECLARE_INTERFACE_MAP()
 

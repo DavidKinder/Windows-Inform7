@@ -103,6 +103,7 @@ void TabTranscript::UpdateDPI(const std::map<CWnd*,double>& layout)
   m_prevDiff.SetFont(font);
   m_blessAll.SetFont(font);
   Resize();
+  m_window.PrefsChanged();
 }
 
 void TabTranscript::SetSkein(Skein* skein)
