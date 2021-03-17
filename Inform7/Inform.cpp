@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Inform.h"
 #include "DpiFunctions.h"
+#include "ScaleGfx.h"
 
 #include "ProjectFrame.h"
 #include "ExtensionFrame.h"
@@ -1577,14 +1578,3 @@ void InformApp::CreatedProcess::close()
     processId = -1;
   }
 }
-
-#ifdef _WIN64
-namespace {
-#include "2PassScale.h"
-}
-void ScaleGfx(COLORREF* srcImage, UINT srcWidth, UINT srcHeight, COLORREF* destImage, UINT destWidth, UINT destHeight)
-{
-  TwoPassScale<BilinearFilter> scaler;
-  scaler.Scale(srcImage,srcWidth,srcHeight,destImage,destWidth,destHeight);
-}
-#endif

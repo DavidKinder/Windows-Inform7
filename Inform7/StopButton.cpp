@@ -3,6 +3,7 @@
 #include "Inform.h"
 #include "Dib.h"
 #include "DpiFunctions.h"
+#include "ScaleGfx.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

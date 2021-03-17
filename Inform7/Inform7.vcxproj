@@ -162,6 +162,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="..\..\..\Libraries\mfc\DSoundEngine.h" />
     <ClInclude Include="..\..\..\Libraries\mfc\ImagePNG.h" />
     <ClInclude Include="..\..\..\Libraries\mfc\MenuBar.h" />
+    <ClInclude Include="..\..\..\Libraries\mfc\ScaleGfx.h" />
     <ClInclude Include="..\..\Glk\GlkDll\GlkSound.h" />
     <ClInclude Include="..\..\Glk\GlkDll\GlkSoundAIFF.h" />
     <ClInclude Include="..\..\Glk\GlkDll\GlkSoundMOD.h" />
@@ -1982,6 +1983,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="..\..\..\Libraries\mfc\DSoundEngine.cpp" />
     <ClCompile Include="..\..\..\Libraries\mfc\ImagePNG.cpp" />
     <ClCompile Include="..\..\..\Libraries\mfc\MenuBar.cpp" />
+    <ClCompile Include="..\..\..\Libraries\mfc\ScaleGfx.cpp" />
     <ClCompile Include="..\..\..\Libraries\zlib\adler32.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </PrecompiledHeader>

@@ -3,6 +3,7 @@
 #include "TabSource.h"
 #include "Inform.h"
 #include "DpiFunctions.h"
+#include "ScaleGfx.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

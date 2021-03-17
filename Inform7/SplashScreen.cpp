@@ -3,6 +3,7 @@
 #include "Inform.h"
 #include "ProjectFrame.h"
 #include "DpiFunctions.h"
+#include "ScaleGfx.h"
 
 IMPLEMENT_DYNAMIC(SplashScreen, I7BaseDialog)
 

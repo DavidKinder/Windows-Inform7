@@ -319,6 +319,9 @@
     <ClInclude Include="FindInFiles.h">
       <Filter>Search</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Libraries\mfc\ScaleGfx.h">
+      <Filter>Bitmaps</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1427,6 +1430,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\media_sink_device_info_callback_cpptoc.cc">
       <Filter>Libraries\libcef\cpptoc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\mfc\ScaleGfx.cpp">
+      <Filter>Bitmaps</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
