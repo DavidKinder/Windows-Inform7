@@ -68,12 +68,11 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>libcef.lib;msxml2.lib;rpcrt4.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;dbghelp.lib;dwmapi.lib;nafxcwd.lib;libcmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>afxnmcdd.lib;nafxcwd.lib;libcmtd.lib;libcef.lib;msxml2.lib;rpcrt4.lib;version.lib;dsound.lib;imm32.lib;wininet.lib;dbghelp.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>../../../Libraries/libcef/release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <IgnoreSpecificDefaultLibraries>nafxcwd.lib;libcmtd.lib</IgnoreSpecificDefaultLibraries>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -120,14 +119,13 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>libcef.lib;msxml2.lib;rpcrt4.lib;version.lib;dsound.lib;imm32.lib;dbghelp.lib;wininet.lib;dwmapi.lib;nafxcw.lib;libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>afxnmcd.lib;nafxcw.lib;libcmt.lib;libcef.lib;msxml2.lib;rpcrt4.lib;version.lib;dsound.lib;imm32.lib;dbghelp.lib;wininet.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>../Build/$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>../../../Libraries/libcef/release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <IgnoreSpecificDefaultLibraries>nafxcw.lib;libcmt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
