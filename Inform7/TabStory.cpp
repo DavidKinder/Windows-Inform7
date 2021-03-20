@@ -101,11 +101,19 @@ bool TabStory::IsEnabled(void)
   return false;
 }
 
+void TabStory::PrefsChanged(CRegKey& key)
+{
+  if (m_game != NULL)
+    m_game->PrefsChanged();
+}
+
 void TabStory::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
   TabBase::UpdateDPI(layout);
   m_stop.SetFont(theApp.GetFont(this,InformApp::FontPanel));
   Resize();
+  if (m_game != NULL)
+    m_game->PrefsChanged();
 }
 
 CString TabStory::GetToolTip(UINT_PTR id)

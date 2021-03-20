@@ -266,7 +266,7 @@ void RichEdit::FontChanged(void)
   ::ZeroMemory(&format,sizeof format);
   format.cbSize = sizeof format;
   format.dwMask = CFM_FACE|CFM_SIZE|CFM_EFFECTS;
-  format.yHeight = 20 * theApp.GetFontSize(InformApp::FontDisplay);
+  format.yHeight = (20 * DPI::getWindowDPI(this) * theApp.GetFontSize(InformApp::FontDisplay)) / DPI::getSystemDPI();
   strcpy(format.szFaceName,theApp.GetFontName(InformApp::FontDisplay));
   SetDefaultCharFormat(format);
 }
