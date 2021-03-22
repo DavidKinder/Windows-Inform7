@@ -7,6 +7,7 @@
 #include "TextFormat.h"
 #include "NewDialogs.h"
 #include "Dialogs.h"
+#include "DpiFunctions.h"
 #include "Build.h"
 
 #ifdef _DEBUG
@@ -976,7 +977,12 @@ void ExtensionFrame::SetFromRegistryPath(const char* path)
     // Restore the window state
     WINDOWPLACEMENT place;
     ULONG len = sizeof WINDOWPLACEMENT;
-    if (registryKey.QueryBinaryValue("Placement",&place,&len) == ERROR_SUCCESS)
+    if (registryKey.QueryBinaryValue("Placement 96dpi",&place,&len) == ERROR_SUCCESS)
+    {
+      DPI::ContextUnaware dpiUnaware;
+      SetWindowPlacement(&place);
+    }
+    else if (registryKey.QueryBinaryValue("Placement",&place,&len) == ERROR_SUCCESS)
       SetWindowPlacement(&place);
 
     // Allow the source editor to load settings

@@ -175,7 +175,13 @@ void FindInFiles::Show(void)
       // Restore the window state
       WINDOWPLACEMENT place;
       ULONG len = sizeof WINDOWPLACEMENT;
-      if (registryKey.QueryBinaryValue("Find in Files Placement",&place,&len) == ERROR_SUCCESS)
+      if (registryKey.QueryBinaryValue("Find in Files Placement 96dpi",&place,&len) == ERROR_SUCCESS)
+      {
+        DPI::ContextUnaware dpiUnaware;
+        SetWindowPlacement(&place);
+        placementSet = true;
+      }
+      else if (registryKey.QueryBinaryValue("Find in Files Placement",&place,&len) == ERROR_SUCCESS)
       {
         SetWindowPlacement(&place);
         placementSet = true;
@@ -476,8 +482,11 @@ void FindInFiles::OnDestroy()
   {
     WINDOWPLACEMENT place;
     place.length = sizeof place;
-    GetWindowPlacement(&place);
-    registryKey.SetBinaryValue("Find in Files Placement",&place,sizeof WINDOWPLACEMENT);
+    {
+      DPI::ContextUnaware dpiUnaware;
+      GetWindowPlacement(&place);
+    }
+    registryKey.SetBinaryValue("Find in Files Placement 96dpi",&place,sizeof WINDOWPLACEMENT);
   }
 
   I7BaseDialog::OnDestroy();

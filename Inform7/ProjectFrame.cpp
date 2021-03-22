@@ -2092,7 +2092,12 @@ void ProjectFrame::SetFromRegistryPath(const char* path)
     // Restore the window state
     WINDOWPLACEMENT place;
     ULONG len = sizeof WINDOWPLACEMENT;
-    if (m_registryKey.QueryBinaryValue("Placement",&place,&len) == ERROR_SUCCESS)
+    if (m_registryKey.QueryBinaryValue("Placement 96dpi",&place,&len) == ERROR_SUCCESS)
+    {
+      DPI::ContextUnaware dpiUnaware;
+      SetWindowPlacement(&place);
+    }
+    else if (m_registryKey.QueryBinaryValue("Placement",&place,&len) == ERROR_SUCCESS)
       SetWindowPlacement(&place);
     else
     {
@@ -2140,8 +2145,11 @@ void ProjectFrame::SaveSettings(void)
     // Save the window state
     WINDOWPLACEMENT place;
     place.length = sizeof place;
-    GetWindowPlacement(&place);
-    m_registryKey.SetBinaryValue("Placement",&place,sizeof WINDOWPLACEMENT);
+    {
+      DPI::ContextUnaware dpiUnaware;
+      GetWindowPlacement(&place);
+    }
+    m_registryKey.SetBinaryValue("Placement 96dpi",&place,sizeof WINDOWPLACEMENT);
 
     // Save the splitter position
     int current, minimum;
