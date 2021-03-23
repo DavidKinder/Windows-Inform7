@@ -2110,15 +2110,12 @@ void ProjectFrame::SetFromRegistryPath(const char* path)
 
     // Restore the splitter position
     DWORD splitter;
-    if (m_registryKey.QueryDWORDValue("Splitter",splitter) == ERROR_SUCCESS)
+    if (m_registryKey.QueryDWORDValue("Splitter2",splitter) == ERROR_SUCCESS)
+      m_splitter.SetColumnFraction(0,0.001*splitter,16);
+    else if (m_registryKey.QueryDWORDValue("Splitter",splitter) == ERROR_SUCCESS)
       m_splitter.SetColumnInfo(0,splitter,16);
     else
-    {
-      int size0, size1, min;
-      m_splitter.GetColumnInfo(0,size0,min);
-      m_splitter.GetColumnInfo(1,size1,min);
-      m_splitter.SetColumnInfo(0,(size0+size1)/2,16);
-    }
+      m_splitter.SetColumnFraction(0,0.5,16);
     m_splitter.RecalcLayout();
 
     // Restore the default project directory for the file dialog
@@ -2152,9 +2149,7 @@ void ProjectFrame::SaveSettings(void)
     m_registryKey.SetBinaryValue("Placement 96dpi",&place,sizeof WINDOWPLACEMENT);
 
     // Save the splitter position
-    int current, minimum;
-    m_splitter.GetColumnInfo(0,current,minimum);
-    m_registryKey.SetDWORDValue("Splitter",current);
+    m_registryKey.SetDWORDValue("Splitter2",(DWORD)(0.5+(1000*m_splitter.GetColumnFraction(0))));
 
     // Save the default project directory for the file dialog
     m_registryKey.SetStringValue("Last Project",m_projectDir);

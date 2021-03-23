@@ -134,28 +134,15 @@ void TabSkein::LoadSettings(CRegKey& key, bool primary)
     heightPercent = 75;
   }
 
-  CRect allRect;
-  m_splitter.GetClientRect(allRect);
-  m_splitter.SetRowInfo(0,(int)((allRect.Height()*heightPercent)/100),16);
+  m_splitter.SetRowFraction(0,0.01*heightPercent,16);
   ShowHideHelp(showHelp);
 }
 
 void TabSkein::SaveSettings(CRegKey& key, bool primary)
 {
   DWORD heightPercent = 100;
-
   if (m_splitter.GetRowCount() == 2)
-  {
-    CRect allRect;
-    m_splitter.GetClientRect(allRect);
-    if (allRect.Height() > 0)
-    {
-      int skeinHeight, minHeight;
-      m_splitter.GetRowInfo(0,skeinHeight,minHeight);
-      heightPercent = (DWORD)(((skeinHeight*100.0)/allRect.Height())+0.5);
-    }
-  }
-
+    heightPercent = (DWORD)(0.5+(100*m_splitter.GetRowFraction(0)));
   key.SetDWORDValue(primary ?
     "Left Skein Height" : "Right Skein Height",heightPercent);
 }
