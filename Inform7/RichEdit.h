@@ -29,13 +29,6 @@ public:
   void GetIRichEditOle(IRichEditOle** reo) const;
   BOOL SetOLECallback(IRichEditOleCallback* callback);
 
-  enum RichVersion
-  {
-    RichEditNotLoaded,
-    RichEdit20,
-    RichEdit41
-  };
-
 protected:
   DECLARE_MESSAGE_MAP()
 

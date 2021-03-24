@@ -34,26 +34,14 @@ BEGIN_MESSAGE_MAP(RichEdit, CWnd)
 END_MESSAGE_MAP()
 
 namespace {
-  RichEdit::RichVersion richVersion = RichEdit::RichEditNotLoaded;
   HMODULE richLib = 0;
 }
 
 RichEdit::RichEdit()
 {
-  if (richVersion != RichEditNotLoaded)
-    return;
-
-  // Load the usual RichEdit 2/3 DLL
-  richLib = ::LoadLibrary("riched20.dll");
-  richVersion = RichEdit20;
-
   // Attempt to load RichEdit 4.1
-  HMODULE rich41Lib = ::LoadLibrary("msftedit.dll");
-  if (rich41Lib != 0)
-  {
-    richLib = rich41Lib;
-    richVersion = RichEdit41;
-  }
+  if (richLib == 0)
+    richLib = ::LoadLibrary("msftedit.dll");
 }
 
 void RichEdit::OnDestroy()
@@ -116,10 +104,7 @@ void RichEdit::OnEditSelectAll()
 BOOL RichEdit::Create(DWORD style, CWnd* parent, UINT id)
 {
   CRect zeroRect(0,0,0,0);
-
-  if (richVersion == RichEdit41)
-    return CWnd::Create("RICHEDIT50W",NULL,style,zeroRect,parent,id);
-  return CWnd::Create("RichEdit20A",NULL,style,zeroRect,parent,id);
+  return CWnd::Create("RICHEDIT50W",NULL,style,zeroRect,parent,id);
 }
 
 DWORD RichEdit::SetEventMask(DWORD eventMask)
