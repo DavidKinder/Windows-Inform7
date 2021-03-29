@@ -107,6 +107,26 @@ BOOL RichEdit::Create(DWORD style, CWnd* parent, UINT id)
   return CWnd::Create("RICHEDIT50W",NULL,style,zeroRect,parent,id);
 }
 
+BOOL RichEdit::SubclassDlgItem(UINT id, CWnd* parent)
+{
+  if (CWnd::SubclassDlgItem(id,parent))
+  {
+    if (Setup())
+      return TRUE;
+  }
+  return FALSE;
+}
+
+BOOL RichEdit::SubclassWindow(HWND wnd)
+{
+  if (CWnd::SubclassWindow(wnd))
+  {
+    if (Setup())
+      return TRUE;
+  }
+  return FALSE;
+}
+
 DWORD RichEdit::SetEventMask(DWORD eventMask)
 {
   return (DWORD)SendMessage(EM_SETEVENTMASK,0,eventMask);
@@ -228,11 +248,16 @@ bool RichEdit::Setup(void)
     return false;
 
   // Setting the undo limit to zero causes crashes in the rich edit
-  // code, which seems to be a Microsoft bug
+  // code, which seems to be a Microsoft bug.
   SendMessage(EM_SETUNDOLIMIT,1);
 
-  // Effectively remove the limit on the amount of text that can be entered
+  // Effectively remove the limit on the amount of text that can be entered.
   SendMessage(EM_EXLIMITTEXT,0,1024*1024*16);
+
+  // The control doesn't seem to notice if the DPI of the parent is different from
+  // the system DPI when it is created, so these messages are sent to tell it.
+  SendMessage(WM_DPICHANGED_BEFOREPARENT);
+  SendMessage(WM_DPICHANGED_AFTERPARENT);
 
   // Set font and colour
   FontChanged();
@@ -250,8 +275,8 @@ void RichEdit::FontChanged(void)
   CHARFORMAT format;
   ::ZeroMemory(&format,sizeof format);
   format.cbSize = sizeof format;
-  format.dwMask = CFM_FACE|CFM_SIZE|CFM_EFFECTS;
-  format.yHeight = (20 * DPI::getWindowDPI(this) * theApp.GetFontSize(InformApp::FontDisplay)) / DPI::getSystemDPI();
+  format.dwMask = CFM_FACE|CFM_SIZE;
+  format.yHeight = 20 * theApp.GetFontSize(InformApp::FontDisplay);
   strcpy(format.szFaceName,theApp.GetFontName(InformApp::FontDisplay));
   SetDefaultCharFormat(format);
 }
@@ -296,6 +321,21 @@ bool RichEdit::RejectMsg(MSG* msg)
     }
   }
   return false;
+}
+
+void AFXAPI DDX_Control(CDataExchange* dx, int idc, RichEdit& control)
+{
+  if ((control.GetSafeHwnd() == 0) && (control.GetControlUnknown() == NULL))
+  {
+    dx->PrepareCtrl(idc);
+    HWND wnd;
+    dx->m_pDlgWnd->GetDlgItem(idc,&wnd);
+    if ((wnd != 0) && !control.SubclassWindow(wnd))
+    {
+      ASSERT(FALSE);
+      AfxThrowNotSupportedException();
+    }
+  }
 }
 
 // Functions for Rich Edit, as the linker library is not present in later Windows SDKs

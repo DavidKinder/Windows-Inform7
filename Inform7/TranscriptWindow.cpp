@@ -63,6 +63,7 @@ int TranscriptWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
   // Make sure that the font is correct for this window
   m_draw.FontChanged(DPI::getWindowDPI(this));
+  m_edit.FontChanged();
   return 0;
 }
 

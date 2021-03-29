@@ -7,6 +7,9 @@ class RichEdit : public CWnd
 public:
   RichEdit();
   BOOL Create(DWORD style, CWnd* parent, UINT id);
+  BOOL SubclassDlgItem(UINT id, CWnd* parent);
+  BOOL SubclassWindow(HWND wnd);
+
   void FontChanged(void);
 
   DWORD SetEventMask(DWORD eventMask);
@@ -47,6 +50,8 @@ protected:
 
   CComQIPtr<ITextDocument> m_textDoc;
 };
+
+void AFXAPI DDX_Control(CDataExchange* dx, int idc, RichEdit& control);
 
 class RichDrawText : public CCmdTarget
 {
