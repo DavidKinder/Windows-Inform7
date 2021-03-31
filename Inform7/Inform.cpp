@@ -130,6 +130,22 @@ BOOL InformApp::InitInstance()
   if (!Scintilla_RegisterClasses(AfxGetInstanceHandle()))
     return FALSE;
 
+  // Is this the main application, or a CEF worker process?
+  if (__argc == 1)
+  {
+    // If possible, create a job to assign child processes to. Since the
+    // job will be closed when this process exits, this ensures that any
+    // child processes still running will also exit.
+    m_job = ::CreateJobObject(NULL,NULL);
+    if (m_job)
+    {
+      JOBOBJECT_EXTENDED_LIMIT_INFORMATION jeli = { 0 };
+      jeli.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+      VERIFY(::SetInformationJobObject(m_job,
+        JobObjectExtendedLimitInformation,&jeli,sizeof(jeli)));
+    }
+  }
+
   // Set the HOME environment variable to the My Documents folder,
   // used by the Natural Inform compiler, and make sure directories
   // under My Documents exist.
@@ -148,18 +164,6 @@ BOOL InformApp::InitInstance()
   // Load the recently used project list
   m_pRecentFileList = new RecentProjectList(9);
   m_pRecentFileList->ReadList();
-
-  // If possible, create a job to assign child processes to. Since the
-  // job will be closed when this process exits, this ensures that any
-  // child processes still running will also exit.
-  m_job = ::CreateJobObject(NULL,NULL);
-  if (m_job)
-  {
-    JOBOBJECT_EXTENDED_LIMIT_INFORMATION jeli = { 0 };
-    jeli.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-    VERIFY(::SetInformationJobObject(m_job,
-      JobObjectExtendedLimitInformation,&jeli,sizeof(jeli)));
-  }
 
   // Discard any log file from a previous run
   /*::DeleteFile(m_home+LOG_FILE);*/
