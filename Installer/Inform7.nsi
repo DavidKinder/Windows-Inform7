@@ -58,6 +58,7 @@ FunctionEnd
 Section "DoInstall"
 
   SetOutPath "$INSTDIR"
+  Delete "$INSTDIR\natives_blob.bin" ; Only in older CEF-based versions
   File /r "..\Build\*.*"
   WriteUninstaller "Uninstall.exe"
 
@@ -94,7 +95,6 @@ Section "Uninstall"
   Delete "$INSTDIR\chrome_elf.dll"
   Delete "$INSTDIR\libcef.dll"
   Delete "$INSTDIR\icudtl.dat"
-  Delete "$INSTDIR\natives_blob.bin"
   Delete "$INSTDIR\snapshot_blob.bin"
   Delete "$INSTDIR\v8_context_snapshot.bin"
   Delete "$INSTDIR\Inform7.VisualElementsManifest.xml"

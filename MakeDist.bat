@@ -1,7 +1,4 @@
 @echo off
-
-del Build\Inform7.pdb
-
 pushd \Programs
 "%ProgramFiles(x86)%\Zip\zip" -j \Temp\Windows_UI_source.zip Adv\Inform7\COPYING
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\MakeDist.bat
@@ -20,7 +17,7 @@ pushd \Programs
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Glk\Git\*.c Adv\Glk\Git\*.h Adv\Glk\Git\README*
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Glk\Include\g*.h
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Glk\GlkDll\*.c Adv\Glk\GlkDll\Glk*.cpp Adv\Glk\GlkDll\Glk*.h
-"%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Libraries\mfc\* Libraries\scalegfx\*.h
+"%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Libraries\mfc\*
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Libraries\libmodplug\*
 popd
 
