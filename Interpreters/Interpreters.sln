@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Frotz", "Frotz\Frotz.vcxproj", "{29C4300B-B857-4808-A8A1-64B0E6B03E09}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Glulxe", "Glulxe\Glulxe.vcxproj", "{9AE2DE87-B817-45F6-AEEF-D180B27BE454}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{29C4300B-B857-4808-A8A1-64B0E6B03E09}.Debug|x86.ActiveCfg = Debug|Win32
+		{29C4300B-B857-4808-A8A1-64B0E6B03E09}.Debug|x86.Build.0 = Debug|Win32
+		{29C4300B-B857-4808-A8A1-64B0E6B03E09}.Release|x86.ActiveCfg = Release|Win32
+		{29C4300B-B857-4808-A8A1-64B0E6B03E09}.Release|x86.Build.0 = Release|Win32
+		{9AE2DE87-B817-45F6-AEEF-D180B27BE454}.Debug|x86.ActiveCfg = Debug|Win32
+		{9AE2DE87-B817-45F6-AEEF-D180B27BE454}.Debug|x86.Build.0 = Debug|Win32
+		{9AE2DE87-B817-45F6-AEEF-D180B27BE454}.Release|x86.ActiveCfg = Release|Win32
+		{9AE2DE87-B817-45F6-AEEF-D180B27BE454}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FF4BF27D-DCD0-492C-B20D-CE70D638FBCF}
+	EndGlobalSection
+EndGlobal

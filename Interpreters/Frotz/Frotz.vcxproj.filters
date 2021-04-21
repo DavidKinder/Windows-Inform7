@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Interface">
+      <UniqueIdentifier>{7abc83dc-b964-474c-b037-6c07659faa8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generic">
+      <UniqueIdentifier>{9cf7d74b-06b4-4597-9241-6d99f8668c19}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="FrotzCore.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Blorb\blorblib.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\buffer.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\err.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\fastmem.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\files.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\getopt.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\hotkey.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\input.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\main.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\math.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\object.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\process.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\quetzal.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\random.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\redirect.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\screen.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\sound.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\stream.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\table.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\text.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Frotz\Generic\variable.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Inform7\InterpreterCommands.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Frotz\Generic\frotz.h">
+      <Filter>Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Frotz\Generic\getopt.h">
+      <Filter>Generic</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

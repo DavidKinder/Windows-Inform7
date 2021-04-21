@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9AE2DE87-B817-45F6-AEEF-D180B27BE454}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>16.0.31201.295</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>Debug\</OutDir>
+    <IntDir>Debug\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>../../Build/Interpreters/</OutDir>
+    <IntDir>Release\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../../../Glk/Include;../../../Glk/GlkDll;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader />
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>../../../Glk/Include;../../../Glk/GlkDll;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader />
+    </ClCompile>
+    <Link>
+      <OutputFile>../../Build/Interpreters/glulxe.exe</OutputFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Glk\GlkDll\gi_blorb.c" />
+    <ClCompile Include="..\..\..\Glk\GlkDll\gi_dispa.c" />
+    <ClCompile Include="..\..\..\Glk\GlkDll\GlkTime.cpp" />
+    <ClCompile Include="..\..\..\Glk\GlkDll\GlkUnicode.cpp" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\accel.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\exec.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\files.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\float.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\funcs.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\gestalt.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\glkop.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\heap.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\main.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\operand.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\osdepend.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\profile.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\search.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\serial.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\string.c" />
+    <ClCompile Include="..\..\..\Glk\Glulxe\vm.c" />
+    <ClCompile Include="I7Glk.cpp" />
+    <ClCompile Include="I7GlkBlankWindow.cpp" />
+    <ClCompile Include="I7GlkChannel.cpp" />
+    <ClCompile Include="I7GlkFile.cpp" />
+    <ClCompile Include="I7GlkGfxWindow.cpp" />
+    <ClCompile Include="I7GlkGridWindow.cpp" />
+    <ClCompile Include="I7GlkPairWindow.cpp" />
+    <ClCompile Include="I7GlkStream.cpp" />
+    <ClCompile Include="I7GlkTextWindow.cpp" />
+    <ClCompile Include="I7GlkWindow.cpp" />
+    <ClCompile Include="Startup.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Inform7\InterpreterCommands.h" />
+    <ClInclude Include="I7GlkBlankWindow.h" />
+    <ClInclude Include="I7GlkChannel.h" />
+    <ClInclude Include="I7GlkFile.h" />
+    <ClInclude Include="I7GlkGfxWindow.h" />
+    <ClInclude Include="I7GlkGridWindow.h" />
+    <ClInclude Include="I7GlkPairWindow.h" />
+    <ClInclude Include="I7GlkStream.h" />
+    <ClInclude Include="I7GlkTextWindow.h" />
+    <ClInclude Include="I7GlkWindow.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

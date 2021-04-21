@@ -1,3 +1,7 @@
+#include <malloc.h>
+#include <windows.h>
+#include "../../Inform7/InterpreterCommands.h"
+
 extern "C"
 {
 typedef int f_bool;
@@ -11,10 +15,6 @@ int colour_in_use(zword colour);
 #include "blorb.h"
 #include "blorblow.h"
 }
-
-#include <malloc.h>
-#include <windows.h>
-#include "../../Inform7/InterpreterCommands.h"
 
 bb_map_t* blorbMap;
 
