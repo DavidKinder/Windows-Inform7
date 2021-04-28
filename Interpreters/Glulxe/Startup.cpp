@@ -101,13 +101,12 @@ int main(int argc, char** argv)
   if (glk_get_buffer_stream(gamefile,start,12) < 12)
     exit(4);
 
-  if (start[0] == 'G' && start[1] == 'l' && start[2] == 'u' && start[3] == 'l')
+  if (memcmp(start,"Glul",4) == 0)
   {
     if (locate_gamefile(0) == 0)
       exit(5);
   }
-  else if (start[0] == 'F' && start[1] == 'O' &&  start[2] == 'R' &&  start[3] == 'M'
-        && start[8] == 'I' && start[9] == 'F' && start[10] == 'R' && start[11] == 'S')
+  else if ((memcmp(start,"FORM",4) == 0) && (memcmp(start+8,"IFRS",4) == 0))
   {
     if (locate_gamefile(1) == 0)
       exit(6);
@@ -125,17 +124,3 @@ int main(int argc, char** argv)
   glk_main();
   glk_exit();
 }
-
-#ifdef FLOAT_SUPPORT
-/* pow() replacement that handles all special cases */
-extern "C" double MathPow(double x, double y)
-{
-  if (x == 1.0)
-    return 1.0;
-  else if ((y == 0.0) || (y == -0.0))
-    return 1.0;
-  else if ((x == -1.0) && isinf(y))
-    return 1.0;
-  return pow(x,y);
-}
-#endif /* FLOAT_SUPPORT */
