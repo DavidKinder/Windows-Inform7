@@ -10,11 +10,13 @@ Download and install Visual Studio 2019 Community edition from https://visualstu
 
 Install git. I use the version of git that is part of Cygwin, a Linux-like environment for Windows, but Git for Windows can be used from a Windows command prompt.
 
-Open the environment that you are using git from (e.g. Cygwin), and switch to the root directory that the build environment will be created under (from here referred to as "\<root>"). Clone this and the other required repositories of mine with git:
+Open the environment that you are using git from (e.g. Cygwin), and switch to the root directory that the build environment will be created under (from here referred to as "\<root>"). Clone this and the other required repositories with git:
 ```
 git clone https://github.com/DavidKinder/Windows-Inform7.git Adv/Inform7
 git clone https://github.com/DavidKinder/Windows-Glk.git Adv/Glk
+git clone https://github.com/DavidKinder/Windows-Frotz.git Adv/Frotz
 git clone https://github.com/DavidKinder/Libraries.git Libraries
+git clone https://github.com/erkyrath/glulxe.git Adv/Glk/Glulxe/glulxe
 ```
 
 Download and install the latest release of Windows Inform 7 from https://github.com/DavidKinder/Windows-Inform7/releases/ and copy everything in the installation directory to "\<root>/Adv/Inform7/Build", but do not over-write any existing files.
@@ -78,7 +80,8 @@ Download the latest release of hunspell from https://github.com/hunspell/hunspel
 
 Download the latest stable build of CEF for Windows 64-bit from https://cef-builds.spotifycdn.com/index.html. The minimal distribution is sufficient. Unpack the archive and copy the contents of it to "\<root>/Libraries/libcef".
 
-### Compiling the project
+### Compiling the projects
 
 Start Visual Studio, open the solution "\<root>/Adv/Inform7/Inform7/Inform7.sln", then build and run the "Inform7" project.
 
+To build the Frotz and Glulxe interpreters that drive the "Story" tab, in Visual Studio open the solution "\<root>/Adv/Inform7/Interpreters/Interpreters.sln", then build projects it contains.
