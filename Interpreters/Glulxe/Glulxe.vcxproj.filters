@@ -45,19 +45,19 @@
     <ClCompile Include="Startup.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\accel.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\accel.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\exec.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\exec.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\files.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\files.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\funcs.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\funcs.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\gestalt.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\gestalt.c">
       <Filter>Generic</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Glk\GlkDll\gi_blorb.c">
@@ -66,37 +66,37 @@
     <ClCompile Include="..\..\..\Glk\GlkDll\gi_dispa.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\glkop.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\glkop.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\heap.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\heap.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\main.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\main.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\operand.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\operand.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\osdepend.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\osdepend.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\profile.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\profile.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\search.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\search.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\serial.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\serial.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\string.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\string.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\vm.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\vm.c">
       <Filter>Generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Glk\Glulxe\float.c">
+    <ClCompile Include="..\..\..\Glk\Glulxe\glulxe\float.c">
       <Filter>Generic</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Glk\GlkDll\GlkTime.cpp">
