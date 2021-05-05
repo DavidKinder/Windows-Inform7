@@ -10,6 +10,7 @@ Build/Documentation/scene_icons
 Build/Documentation/sections
 Build/Internal/
 Build/Interpreters/
+Build/Retrospective/
 Build/Symbols/
 Build/Web/
 *.user
