@@ -16,7 +16,7 @@ git clone https://github.com/DavidKinder/Windows-Inform7.git Adv/Inform7
 git clone https://github.com/DavidKinder/Windows-Glk.git Adv/Glk
 git clone https://github.com/DavidKinder/Windows-Frotz.git Adv/Frotz
 git clone https://github.com/DavidKinder/Libraries.git Libraries
-git clone https://github.com/erkyrath/glulxe.git Adv/Glk/Glulxe/glulxe
+git clone https://github.com/erkyrath/glulxe.git Adv/Glulxe/Generic
 ```
 
 Download and install the latest release of Windows Inform 7 from https://github.com/DavidKinder/Windows-Inform7/releases/ and copy everything in the installation directory to "\<root>/Adv/Inform7/Build", but do not over-write any existing files.
