@@ -6,7 +6,7 @@
 #include "../../Inform7/InterpreterCommands.h"
 
 extern "C" {
-#include "Glk.h"
+#include "glk.h"
 
 int locate_gamefile(int isblorb);
 extern strid_t gamefile;

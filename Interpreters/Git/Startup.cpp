@@ -7,7 +7,7 @@
 #include "../../Inform7/InterpreterCommands.h"
 
 extern "C" {
-#include "Glk.h"
+#include "glk.h"
 #include "git.h"
 }
 
@@ -111,7 +111,7 @@ int main(int argc, char** argv)
     ptr = MapViewOfFile(mapping,FILE_MAP_READ,0,0,0);
 
   if (ptr != NULL)
-    git((const git_uint8*)ptr,size,CACHE_SIZE,UNDO_SIZE);
+    git((git_uint8*)ptr,size,CACHE_SIZE,UNDO_SIZE);
 
   if (ptr != NULL)
     UnmapViewOfFile(ptr);
@@ -122,15 +122,3 @@ int main(int argc, char** argv)
 
   glk_exit();
 }
-
-extern "C" float git_powf(float x, float y)
-{
-  if (x == 1.0f)
-    return 1.0f;
-  else if ((y == 0.0f) || (y == -0.0f))
-    return 1.0f;
-  else if ((x == -1.0f) && isinf(y))
-    return 1.0;
-  return powf(x,y);
-}
-

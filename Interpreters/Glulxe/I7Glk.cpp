@@ -1,5 +1,5 @@
 extern "C" {
-#include "Glk.h"
+#include "glk.h"
 #include "gi_blorb.h"
 #include "gi_dispa.h"
 }
@@ -218,46 +218,46 @@ extern "C" glui32 glk_gestalt_ext(glui32 sel, glui32 val, glui32 *arr, glui32 ar
   return 0;
 }
 
+static unsigned char char_tolower_table[256] = { 0 };
+static unsigned char char_toupper_table[256] = { 0 };
+
+static void init_char_tables(void)
+{
+  for (int i = 0; i < 256; i++)
+  {
+    char_toupper_table[i] = i;
+    char_tolower_table[i] = i;
+  }
+
+  int c = 0;
+  for (int i = 0; i < 256; i++)
+  {
+    if ((i >= 'A') && (i <= 'Z'))
+      c = i + ('a' - 'A');
+    else if ((i >= 0xC0) && (i <= 0xDE) && (i != 0xD7))
+      c = i + 0x20;
+    else
+      c = 0;
+    if (c != 0)
+    {
+      char_tolower_table[i] = c;
+      char_toupper_table[c] = i;
+    }
+  }
+}
+
 extern "C" unsigned char glk_char_to_lower(unsigned char ch)
 {
-  static const char* pszLoTable1 =
-    " !\"#$%&'()*+,-./0123456789:;<=>?"
-    "@abcdefghijklmnopqrstuvwxyz[\\]^_"
-    "`abcdefghijklmnopqrstuvwxyz{|}~ ";
-
-  static const char* pszLoTable2 =
-    " ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿"
-    "àáâãäåæçèéêëìíîïðñòóôõö×øùúûüýþß"
-    "àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ";
-
-  unsigned char new_ch = ch;
-
-  if (ch >= 32 && ch <= 126)
-    new_ch = pszLoTable1[ch-32];
-  if (ch >= 160)
-    new_ch = pszLoTable2[ch-160];
-
-  return new_ch;
+  if (char_tolower_table[1] == 0)
+    init_char_tables();
+  return char_tolower_table[ch];
 }
 
 extern "C" unsigned char glk_char_to_upper(unsigned char ch)
 {
-  static const char* hiTable1 =
-    " !\"#$%&'()*+,-./0123456789:;<=>?"
-    "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
-    "`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~ ";
-
-  static const char* hiTable2 =
-    " ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿"
-    "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß"
-    "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ÷ØÙÚÛÜÝÞÿ";
-
-  unsigned char newCh = ch;
-  if (ch >= 32 && ch <= 126)
-    newCh = hiTable1[ch-32];
-  if (ch >= 160)
-    newCh = hiTable2[ch-160];
-  return newCh;
+  if (char_toupper_table[1] == 0)
+    init_char_tables();
+  return char_toupper_table[ch];
 }
 
 extern "C" winid_t glk_window_get_root(void)

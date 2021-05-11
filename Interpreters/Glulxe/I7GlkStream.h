@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 extern "C" {
-#include "Glk.h"
+#include "glk.h"
 #include "gi_dispa.h"
 }
 
