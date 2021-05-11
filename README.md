@@ -6,7 +6,10 @@
 
 ## Building
 
-Download and install Visual Studio 2019 Community edition from https://visualstudio.microsoft.com/. In the installer, under "Workloads", make sure that "Desktop development with C++" is selected, and under "Individual components" that "C++ MFC for latest build tools (x86 & x64)" is selected.
+Download and install Visual Studio 2019 Community edition from https://visualstudio.microsoft.com/. In the installer, under "Workloads", make sure that "Desktop development with C++" is selected, and under "Individual components" that the following are selected:
+- C++ MFC for latest build tools (x86 & x64)
+- C++ Clang Compiler for Windows
+- C++ Clang-cl
 
 Install git. I use the version of git that is part of Cygwin, a Linux-like environment for Windows, but Git for Windows can be used from a Windows command prompt.
 
@@ -15,6 +18,7 @@ Open the environment that you are using git from (e.g. Cygwin), and switch to th
 git clone https://github.com/DavidKinder/Windows-Inform7.git Adv/Inform7
 git clone https://github.com/DavidKinder/Windows-Glk.git Adv/Glk
 git clone https://github.com/DavidKinder/Windows-Frotz.git Adv/Frotz
+git clone https://github.com/DavidKinder/Git.git Adv/Git
 git clone https://github.com/DavidKinder/Libraries.git Libraries
 git clone https://github.com/erkyrath/glulxe.git Adv/Glulxe/Generic
 ```
@@ -84,4 +88,4 @@ Download the latest stable build of CEF for Windows 64-bit from https://cef-buil
 
 Start Visual Studio, open the solution "\<root>/Adv/Inform7/Inform7/Inform7.sln", then build and run the "Inform7" project.
 
-To build the Frotz and Glulxe interpreters that drive the "Story" tab, in Visual Studio open the solution "\<root>/Adv/Inform7/Interpreters/Interpreters.sln", then build projects it contains.
+To build the interpreters that drive the "Story" tab, in Visual Studio open the solution "\<root>/Adv/Inform7/Interpreters/Interpreters.sln", then build projects it contains.
