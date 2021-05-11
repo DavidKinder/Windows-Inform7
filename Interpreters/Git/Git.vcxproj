@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E38BE2F3-D8C7-4B90-8393-47E9135548EA}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>ClangCL</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>ClangCL</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>16.0.31201.295</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>Debug\</OutDir>
+    <IntDir>Debug\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>../../Build/Interpreters/</OutDir>
+    <IntDir>Release\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../../../Git;../../../Glk/Include;../../../Glk/GlkDll;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_INLINE;USE_DIRECT_THREADING;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader />
+      <AdditionalOptions>-Wno-unused-function %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>../../../Git;../../../Glk/Include;../../../Glk/GlkDll;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_INLINE;USE_DIRECT_THREADING;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader />
+      <AdditionalOptions>-Wno-unused-function %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <OutputFile>../../Build/Interpreters/git.exe</OutputFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Git\accel.c" />
+    <ClCompile Include="..\..\..\Git\compiler.c" />
+    <ClCompile Include="..\..\..\Git\gestalt.c" />
+    <ClCompile Include="..\..\..\Git\git.c" />
+    <ClCompile Include="..\..\..\Git\glkop.c" />
+    <ClCompile Include="..\..\..\Git\heap.c" />
+    <ClCompile Include="..\..\..\Git\memory.c" />
+    <ClCompile Include="..\..\..\Git\opcodes.c" />
+    <ClCompile Include="..\..\..\Git\operands.c" />
+    <ClCompile Include="..\..\..\Git\peephole.c" />
+    <ClCompile Include="..\..\..\Git\savefile.c" />
+    <ClCompile Include="..\..\..\Git\saveundo.c" />
+    <ClCompile Include="..\..\..\Git\search.c" />
+    <ClCompile Include="..\..\..\Git\terp.c" />
+    <ClCompile Include="..\..\..\Glk\GlkDll\gi_blorb.c" />
+    <ClCompile Include="..\..\..\Glk\GlkDll\gi_dispa.c" />
+    <ClCompile Include="..\..\..\Glk\GlkDll\GlkTime.cpp" />
+    <ClCompile Include="..\..\..\Glk\GlkDll\GlkUnicode.cpp" />
+    <ClCompile Include="..\Glulxe\I7Glk.cpp" />
+    <ClCompile Include="..\Glulxe\I7GlkBlankWindow.cpp" />
+    <ClCompile Include="..\Glulxe\I7GlkChannel.cpp" />
+    <ClCompile Include="..\Glulxe\I7GlkFile.cpp" />
+    <ClCompile Include="..\Glulxe\I7GlkGfxWindow.cpp" />
+    <ClCompile Include="..\Glulxe\I7GlkGridWindow.cpp" />
+    <ClCompile Include="..\Glulxe\I7GlkPairWindow.cpp" />
+    <ClCompile Include="..\Glulxe\I7GlkStream.cpp" />
+    <ClCompile Include="..\Glulxe\I7GlkTextWindow.cpp" />
+    <ClCompile Include="..\Glulxe\I7GlkWindow.cpp" />
+    <ClCompile Include="Startup.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Inform7\InterpreterCommands.h" />
+    <ClInclude Include="..\Glulxe\I7GlkBlankWindow.h" />
+    <ClInclude Include="..\Glulxe\I7GlkChannel.h" />
+    <ClInclude Include="..\Glulxe\I7GlkFile.h" />
+    <ClInclude Include="..\Glulxe\I7GlkGfxWindow.h" />
+    <ClInclude Include="..\Glulxe\I7GlkGridWindow.h" />
+    <ClInclude Include="..\Glulxe\I7GlkPairWindow.h" />
+    <ClInclude Include="..\Glulxe\I7GlkStream.h" />
+    <ClInclude Include="..\Glulxe\I7GlkTextWindow.h" />
+    <ClInclude Include="..\Glulxe\I7GlkWindow.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

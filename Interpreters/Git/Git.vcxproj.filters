@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Glk\GlkDll\gi_blorb.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Glk\GlkDll\gi_dispa.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Glk\GlkDll\GlkTime.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Glk\GlkDll\GlkUnicode.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Startup.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\accel.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\compiler.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\gestalt.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\git.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\glkop.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\heap.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\memory.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\opcodes.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\operands.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\peephole.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\savefile.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\saveundo.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\search.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Git\terp.c">
+      <Filter>Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Glulxe\I7Glk.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Glulxe\I7GlkBlankWindow.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Glulxe\I7GlkChannel.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Glulxe\I7GlkFile.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Glulxe\I7GlkGfxWindow.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Glulxe\I7GlkGridWindow.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Glulxe\I7GlkPairWindow.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Glulxe\I7GlkStream.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Glulxe\I7GlkTextWindow.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Glulxe\I7GlkWindow.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Inform7\InterpreterCommands.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Glulxe\I7GlkBlankWindow.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Glulxe\I7GlkChannel.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Glulxe\I7GlkFile.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Glulxe\I7GlkGfxWindow.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Glulxe\I7GlkGridWindow.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Glulxe\I7GlkPairWindow.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Glulxe\I7GlkStream.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Glulxe\I7GlkTextWindow.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Glulxe\I7GlkWindow.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generic">
+      <UniqueIdentifier>{fcdc5b9b-a3d1-42f7-bad8-1e75e4844bcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interface">
+      <UniqueIdentifier>{dac098a6-ec64-45bf-ba36-91e1dff6e6a3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
