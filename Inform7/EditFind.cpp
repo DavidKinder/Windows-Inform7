@@ -110,7 +110,7 @@ LRESULT EditFind::FindReplaceCmd(WPARAM wParam, LPARAM lParam)
     }
     catch (std::regex_error& ex)
     {
-      current->MessageBox(FindInFiles::RegexError(ex),INFORM_TITLE,MB_ICONERROR|MB_OK);
+      current->MessageBox(FindAllHelper::RegexError(ex),INFORM_TITLE,MB_ICONERROR|MB_OK);
     }
   }
 
@@ -140,7 +140,7 @@ void EditFind::RepeatFind(bool forward)
   }
   catch (std::regex_error& ex)
   {
-    m_edit->MessageBox(FindInFiles::RegexError(ex),INFORM_TITLE,MB_ICONERROR|MB_OK);
+    m_edit->MessageBox(FindAllHelper::RegexError(ex),INFORM_TITLE,MB_ICONERROR|MB_OK);
   }
 }
 

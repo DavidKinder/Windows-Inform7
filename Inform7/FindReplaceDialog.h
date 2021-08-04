@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BaseDialog.h"
-#include "FindInFiles.h"
+#include "FindAllHelper.h"
 
 class RichDrawText;
 
@@ -20,7 +20,7 @@ public:
 
 protected:
   FindReplaceDialog(UINT id, CWnd* parentWnd);
-  void PrepareHelp(void);
+  void InitDialog(void);
 
   virtual void DoDataExchange(CDataExchange* pDX);
   virtual void OnCancel();
@@ -34,22 +34,30 @@ protected:
 
   afx_msg void OnFindNext();
   afx_msg void OnFindPrevious();
+  afx_msg void OnFindAll();
   afx_msg void OnChangeFindText();
   afx_msg void OnReplace();
   afx_msg void OnReplaceAll();
   afx_msg void OnChangeReplaceWith();
   afx_msg void OnChangeFindRule();
 
+  afx_msg void OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result);
+  afx_msg void OnResultsSelect(NMHDR* pNotifyStruct, LRESULT* result);
+  afx_msg LRESULT OnResultsResize(WPARAM, LPARAM);
+
 private:
   void EnableActions(void);
   void SetRichTextRTF(const char* fragment);
+  void ShowResult(const FindResult& result);
 
   CStringW m_findText, m_replaceWith;
   BOOL m_ignoreCase;
   FindRule m_findRule;
+  FindAllHelper m_findHelper;
 
+  FindResultsCtrl m_resultsList;
   CStatic m_regexHelp;
   RichDrawText* m_richText;
-  int m_heightNormal, m_heightHelp;
+  int m_heightNormal, m_heightLong;
   UINT m_dpi;
 };

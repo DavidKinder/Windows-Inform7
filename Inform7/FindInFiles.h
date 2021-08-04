@@ -1,32 +1,12 @@
 #pragma once
 
-#include "Inform.h"
 #include "BaseDialog.h"
+#include "FindAllHelper.h"
 
-#include <regex>
 #include <vector>
 
 class ProjectFrame;
 class RichDrawText;
-
-enum FindRule
-{
-  FindRule_Contains = 0,
-  FindRule_StartsWith = 1,
-  FindRule_FullWord = 2,
-  FindRule_Regex = 3
-};
-
-class FindResultsCtrl : public CListCtrl
-{
-public:
-  FindResultsCtrl();
-
-protected:
-  DECLARE_MESSAGE_MAP()
-
-  afx_msg void OnHeaderDividerDblClick(NMHDR* pNotifyStruct, LRESULT* result);
-};
 
 class FindInFiles : public I7BaseDialog
 {
@@ -43,7 +23,6 @@ public:
   static void ExitInstance(void);
 
   static LPCWSTR GetAutoComplete(int index);
-  static const char* RegexError(const std::regex_error& ex);
 
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);
@@ -68,17 +47,6 @@ protected:
   afx_msg LRESULT OnResultsResize(WPARAM, LPARAM);
 
 private:
-  enum FoundIn
-  {
-    FoundInSource,
-    FoundInExtension,
-    FoundInWritingWithInform,
-    FoundInRecipeBook,
-    FoundInUnknown
-  };
-
-  void Find(const CString& text, const char* doc, const char* docSort,
-    const char* path, const char* prefix, FoundIn type);
   void FindInExtensions(void);
   size_t CountExtensions(void);
   void WaitForCensus(void);
@@ -87,34 +55,7 @@ private:
   void WaitForDocThread(void);
   void UpdateProgress(void);
 
-  int FindLineStart(const CString& text, int pos);
-  int FindLineEnd(const CString& text, int pos);
-  CStringW GetMatchRange(const CString& text, int start, int end);
-
-  void DrawText(CDC* dc, LPCWSTR text, int length, CRect& rect, UINT format);
-  int MeasureText(CDC* dc, LPCWSTR text, int length);
-  COLORREF Darken(COLORREF colour);
   void SetRichTextRTF(const char* fragment);
-
-  struct FindResult
-  {
-    FindResult();
-    bool operator<(const FindResult& fr) const;
-
-    CString TypeName(void);
-    COLORREF Colour(void);
-
-    CStringW prefix;
-    CStringW context;
-    CHARRANGE inContext;
-
-    FoundIn type;
-    CString doc;
-    CString docSort;
-    CString path;
-    CHARRANGE loc;
-  };
-
   void ShowResult(const FindResult& result);
 
   ProjectFrame* m_project;
@@ -138,7 +79,7 @@ private:
   size_t m_total;
   size_t m_current;
 
-  std::vector<FindResult> m_results;
+  FindAllHelper m_findHelper;
   FindResultsCtrl m_resultsList;
   CSize m_gapBottomRight;
 

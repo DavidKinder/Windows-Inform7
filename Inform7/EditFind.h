@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FindInFiles.h"
+#include "FindAllHelper.h"
 
 class SourceEdit;
 class FindReplaceDialog;

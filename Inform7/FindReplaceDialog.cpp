@@ -1,11 +1,14 @@
 #include "stdafx.h"
 #include "FindReplaceDialog.h"
+#include "DpiFunctions.h"
+#include "ExtensionFrame.h"
 #include "Inform.h"
 #include "Messages.h"
+#include "ProjectFrame.h"
 #include "RichEdit.h"
+#include "SourceEdit.h"
 #include "UnicodeEdit.h"
 #include "Resource.h"
-#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -20,11 +23,16 @@ BEGIN_MESSAGE_MAP(FindReplaceDialog, I7BaseDialog)
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
   ON_BN_CLICKED(IDC_FIND_NEXT, OnFindNext)
   ON_BN_CLICKED(IDC_FIND_PREVIOUS, OnFindPrevious)
+  ON_BN_CLICKED(IDC_FIND_ALL, OnFindAll)
   ON_EN_CHANGE(IDC_FIND, OnChangeFindText)
   ON_BN_CLICKED(IDC_REPLACE, OnReplace)
   ON_BN_CLICKED(IDC_REPLACE_ALL, OnReplaceAll)
   ON_EN_CHANGE(IDC_REPLACE_WITH, OnChangeReplaceWith)
   ON_CBN_SELCHANGE(IDC_FIND_RULE, OnChangeFindRule)
+  ON_NOTIFY(NM_CUSTOMDRAW, IDC_RESULTS, OnResultsDraw)
+  ON_NOTIFY(NM_DBLCLK, IDC_RESULTS, OnResultsSelect)
+  ON_NOTIFY(NM_RETURN, IDC_RESULTS, OnResultsSelect)
+  ON_MESSAGE(WM_RESIZERESULTS, OnResultsResize)
 END_MESSAGE_MAP()
 
 FindReplaceDialog* FindReplaceDialog::Create(UINT id, CWnd* parentWnd)
@@ -36,9 +44,7 @@ FindReplaceDialog* FindReplaceDialog::Create(UINT id, CWnd* parentWnd)
     delete dialog;
     return NULL;
   }
-  theApp.SetIcon(dialog);
-  dialog->m_dpi = DPI::getWindowDPI(dialog);
-  dialog->PrepareHelp();
+  dialog->InitDialog();
   return dialog;
 }
 
@@ -68,15 +74,20 @@ FindReplaceDialog::FindReplaceDialog(UINT id, CWnd* parentWnd) : I7BaseDialog(id
   m_findRule = FindRule_Contains;
   m_richText = NULL;
   m_heightNormal = 0;
-  m_heightHelp = 0;
+  m_heightLong = 0;
 }
 
-void FindReplaceDialog::PrepareHelp(void)
+void FindReplaceDialog::InitDialog(void)
 {
+  m_dpi = DPI::getWindowDPI(this);
+  theApp.SetIcon(this);
+  if (m_resultsList.GetSafeHwnd() != 0)
+    m_findHelper.InitResultsCtrl(&m_resultsList);
+
   CRect dlgRect;
   GetWindowRect(dlgRect);
   m_heightNormal = dlgRect.Height();
-  m_heightHelp = m_heightNormal;
+  m_heightLong = m_heightNormal;
 
   // Figure out sizes for showing regular expression help
   if (m_regexHelp.GetSafeHwnd())
@@ -93,10 +104,13 @@ void FindReplaceDialog::PrepareHelp(void)
 
     ScreenToClient(helpRect);
     helpRect.top = gap + helpRect.bottom;
-    helpRect.right = dlgRect.Width() - helpRect.left*2;
-    helpRect.bottom = helpRect.top + textSize.cy*helpLines;
+    helpRect.right = dlgRect.Width() - (2*helpRect.left);
+    helpRect.bottom = helpRect.top + (textSize.cy*helpLines);
     m_regexHelp.MoveWindow(helpRect);
-    m_heightHelp += (gap + helpRect.Height());
+    m_heightLong += (gap + helpRect.Height());
+
+    if (m_resultsList.GetSafeHwnd() != 0)
+      m_resultsList.MoveWindow(helpRect);
   }
 }
 
@@ -109,6 +123,8 @@ void FindReplaceDialog::DoDataExchange(CDataExchange* pDX)
     DDX_CBIndex(pDX,IDC_FIND_RULE,(int&)m_findRule);
   if (GetDlgItem(IDC_REPLACE_WITH))
     DDX_TextW(pDX, IDC_REPLACE_WITH, m_replaceWith);
+  if (GetDlgItem(IDC_RESULTS))
+    DDX_Control(pDX, IDC_RESULTS, m_resultsList);
   if (GetDlgItem(IDC_REGEX_HELP))
     DDX_Control(pDX, IDC_REGEX_HELP, m_regexHelp);
 }
@@ -226,16 +242,55 @@ void FindReplaceDialog::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
 LRESULT FindReplaceDialog::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 {
   int newDpi = (int)HIWORD(wparam);
-  m_heightNormal = MulDiv(m_heightNormal,newDpi,m_dpi);
-  m_heightHelp = MulDiv(m_heightHelp,newDpi,m_dpi);
+
+  // Get the positon of the results control before default processing
+  CRect resultsRectBefore;
+  if (m_resultsList.GetSafeHwnd() != 0)
+  {
+    m_resultsList.GetWindowRect(resultsRectBefore);
+    ScreenToClient(resultsRectBefore);
+  }
 
   Default();
-  m_dpi = newDpi;
+
+  if (newDpi != m_dpi)
+  {
+    m_heightNormal = MulDiv(m_heightNormal,newDpi,m_dpi);
+    m_heightLong = MulDiv(m_heightLong,newDpi,m_dpi);
+
+    if (m_resultsList.GetSafeHwnd() != 0)
+    {
+      CRect resultsRectAfter, findNextRect;
+      GetDlgItem(IDC_FIND_NEXT)->GetWindowRect(findNextRect);
+      ScreenToClient(findNextRect);
+      m_resultsList.GetWindowRect(resultsRectAfter);
+      ScreenToClient(resultsRectAfter);
+
+      resultsRectAfter.right = findNextRect.right;
+      m_resultsList.MoveWindow(resultsRectAfter);
+
+      double scaleX = (double)resultsRectAfter.right / (double)resultsRectBefore.right;
+      m_resultsList.SetFont(theApp.GetFont(this,InformApp::FontSmall));
+      for (int i = 0; i < 3; i++)
+        m_resultsList.SetColumnWidth(i,(int)(scaleX*m_resultsList.GetColumnWidth(i)));
+    }
+
+    m_dpi = newDpi;
+  }
   return 0;
 }
 
 void FindReplaceDialog::OnFindNext()
 {
+  // Handle the return key being pressed on the results list as a select action
+  if ((GetFocus() == &m_resultsList) && (GetKeyState(VK_RETURN) != 0))
+  {
+    int item = m_resultsList.GetNextItem(-1,LVNI_SELECTED);
+    if ((item >= 0) && (item < (int)m_findHelper.results.size()))
+      ShowResult(m_findHelper.results.at(item));
+    return;
+  }
+
   UpdateData(TRUE);
   m_pParentWnd->SendMessage(WM_FINDREPLACECMD,FindCmd_Next);
 }
@@ -244,6 +299,51 @@ void FindReplaceDialog::OnFindPrevious()
 {
   UpdateData(TRUE);
   m_pParentWnd->SendMessage(WM_FINDREPLACECMD,FindCmd_Previous);
+}
+
+void FindReplaceDialog::OnFindAll()
+{
+  UpdateData(TRUE);
+  if (m_findText.IsEmpty())
+    return;
+
+  // Search for the text
+  m_findHelper.results.clear();
+  try
+  {
+    if (m_pParentWnd->IsKindOf(RUNTIME_CLASS(SourceEdit)))
+    {
+      SourceEdit* edit = (SourceEdit*)m_pParentWnd;
+      CFrameWnd* frame = edit->GetParentFrame();
+
+      CString docName;
+      if (frame->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
+        docName = ((ProjectFrame*)frame)->GetDisplayName(true);
+      else if (frame->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
+        docName = ((ExtensionFrame*)frame)->GetDisplayName(true);
+
+      m_findHelper.Find(edit->GetSource(),m_findText,m_ignoreCase,m_findRule,
+        docName,"","","",FoundIn_Source);
+    }
+  }
+  catch (std::regex_error& ex)
+  {
+    MessageBox(FindAllHelper::RegexError(ex),INFORM_TITLE,MB_ICONERROR|MB_OK);
+  }
+  std::sort(m_findHelper.results.begin(),m_findHelper.results.end());
+  m_findHelper.UpdateResultsCtrl(&m_resultsList);
+
+  // Set the height of the dialog
+  CRect dlgRect;
+  GetWindowRect(dlgRect);
+  dlgRect.bottom = dlgRect.top + m_heightLong;
+  MoveWindow(dlgRect);
+
+  // Show the results and hide the regular expression help
+  m_regexHelp.ModifyStyle(WS_VISIBLE,0);
+  m_resultsList.ModifyStyle(0,WS_VISIBLE);
+  m_resultsList.SetFocus();
+  Invalidate();
 }
 
 void FindReplaceDialog::OnChangeFindText()
@@ -277,9 +377,11 @@ void FindReplaceDialog::OnChangeFindRule()
   {
     CRect dlgRect;
     GetWindowRect(dlgRect);
-    dlgRect.bottom = dlgRect.top + m_heightHelp;
+    dlgRect.bottom = dlgRect.top + m_heightLong;
     MoveWindow(dlgRect);
 
+    if (m_resultsList.GetSafeHwnd() != 0)
+      m_resultsList.ModifyStyle(WS_VISIBLE,0);
     m_regexHelp.ModifyStyle(0,WS_VISIBLE);
     Invalidate();
   }
@@ -295,14 +397,36 @@ void FindReplaceDialog::OnChangeFindRule()
   }
 }
 
+void FindReplaceDialog::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)
+{
+  m_findHelper.OnResultsDraw(&m_resultsList,(NMLVCUSTOMDRAW*)pNotifyStruct,result);
+}
+
+void FindReplaceDialog::OnResultsSelect(NMHDR*, LRESULT* result)
+{
+  int item = m_resultsList.GetNextItem(-1,LVNI_SELECTED);
+  if ((item >= 0) && (item < (int)m_findHelper.results.size()))
+    ShowResult(m_findHelper.results.at(item));
+  *result = 0;
+}
+
+LRESULT FindReplaceDialog::OnResultsResize(WPARAM, LPARAM)
+{
+  m_findHelper.OnResultsResize(&m_resultsList);
+  return 0;
+}
+
 void FindReplaceDialog::EnableActions(void)
 {
   BOOL canFind = !m_findText.IsEmpty();
   GetDlgItem(IDC_FIND_NEXT)->EnableWindow(canFind);
   GetDlgItem(IDC_FIND_PREVIOUS)->EnableWindow(canFind);
+  CWnd* button = GetDlgItem(IDC_FIND_ALL);
+  if (button)
+    button->EnableWindow(canFind);
 
   BOOL canReplace = !m_findText.IsEmpty() && !m_replaceWith.IsEmpty();
-  CWnd* button = GetDlgItem(IDC_REPLACE);
+  button = GetDlgItem(IDC_REPLACE);
   if (button)
     button->EnableWindow(canReplace);
   button = GetDlgItem(IDC_REPLACE_ALL);
@@ -319,4 +443,26 @@ void FindReplaceDialog::SetRichTextRTF(const char* fragment)
   rtfText.Format("{\\rtf1\\ansi{\\fs%d%s}}",
     (2*theApp.GetFontSize(InformApp::FontSystem)*wndDpi)/sysDpi,fragment);
   m_richText->SetTextRTF(rtfText);
+}
+
+void FindReplaceDialog::ShowResult(const FindResult& result)
+{
+  if (m_pParentWnd->IsKindOf(RUNTIME_CLASS(SourceEdit)))
+  {
+    SourceEdit* edit = (SourceEdit*)m_pParentWnd;
+
+    // If the SourceEdit is in a SourceWindow, use that to highlight the result, as that will
+    // show the whole of the source if needed, if only part of it is currently visible.
+    CWnd* editParent = edit->GetParent();
+    if (editParent->IsKindOf(RUNTIME_CLASS(SourceWindow)))
+    {
+      SourceWindow* source = (SourceWindow*)editParent;
+      source->Highlight(result.loc,true);
+    }
+    else
+      edit->Select(result.loc,true);
+
+    // Move the dialog if necessary, so that the result is visible
+    edit->MoveShowSelect(this);
+  }
 }
