@@ -57,7 +57,6 @@ void FlatTab::OnPaint()
   CRect below(client);
   AdjustRect(FALSE,below);
   client.bottom = below.top;
-  CRect clientPaint(client);
 
   CPaintDC dcPaint(this);
   CDC dc;
@@ -205,7 +204,7 @@ void FlatTab::OnPaint()
   dc.SelectObject(oldFont);
   dc.SelectObject(oldPen);
 
-  dcPaint.BitBlt(0,0,clientPaint.Width(),clientPaint.Height(),&dc,0,0,SRCCOPY);
+  dcPaint.BitBlt(0,0,client.Width(),client.Height(),&dc,0,0,SRCCOPY);
   dc.SelectObject(oldBitmap);
 }
 

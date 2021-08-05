@@ -43,7 +43,6 @@ public:
 protected:
   DECLARE_MESSAGE_MAP()
 
-  afx_msg void OnPaint();
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg LRESULT OnSourceRange(WPARAM, LPARAM);
   afx_msg LRESULT OnNextRange(WPARAM, LPARAM);

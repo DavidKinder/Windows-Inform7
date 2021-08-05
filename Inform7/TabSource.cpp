@@ -14,7 +14,6 @@
 IMPLEMENT_DYNAMIC(TabSource, TabBase)
 
 BEGIN_MESSAGE_MAP(TabSource, TabBase)
-  ON_WM_PAINT()
   ON_WM_SIZE()
   ON_MESSAGE(WM_SOURCERANGE, OnSourceRange)
   ON_MESSAGE(WM_NEXTRANGE, OnNextRange)
@@ -119,18 +118,6 @@ BOOL TabSource::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
     SetActiveTab(GetActiveTab(),true);
 
   return TabBase::OnNotify(wParam, lParam, pResult);
-}
-
-void TabSource::OnPaint()
-{
-  CPaintDC dc(this);
-
-  CRect client;
-  GetClientRect(client);
-
-  // Paint the area containing the buttons
-  int heading = (int)GetParentFrame()->SendMessage(WM_PANEHEADING);
-  dc.FillSolidRect(0,client.top,client.Width(),heading,::GetSysColor(COLOR_BTNFACE));
 }
 
 void TabSource::OnSize(UINT nType, int cx, int cy)
