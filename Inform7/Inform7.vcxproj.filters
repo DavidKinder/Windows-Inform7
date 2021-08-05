@@ -322,6 +322,9 @@
     <ClInclude Include="..\..\..\Libraries\mfc\ScaleGfx.h">
       <Filter>Bitmaps</Filter>
     </ClInclude>
+    <ClInclude Include="FindAllHelper.h">
+      <Filter>Search</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1433,6 +1436,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\mfc\ScaleGfx.cpp">
       <Filter>Bitmaps</Filter>
+    </ClCompile>
+    <ClCompile Include="FindAllHelper.cpp">
+      <Filter>Search</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
