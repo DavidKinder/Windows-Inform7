@@ -21,7 +21,7 @@ BEGIN_MESSAGE_MAP(TabResults, TabBase)
   ON_MESSAGE(WM_FINDREPLACECMD, OnFindReplaceCmd)
 END_MESSAGE_MAP()
 
-TabResults::TabResults() : m_tab(true), m_notify(NULL), m_inform6(NoError)
+TabResults::TabResults() : m_notify(NULL), m_inform6(NoError)
 {
 }
 

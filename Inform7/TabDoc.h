@@ -2,7 +2,7 @@
 
 #include "TabBase.h"
 #include "ReportHtml.h"
-#include "FlatTab.h"
+#include "ButtonTab.h"
 
 class TabDoc : public TabBase
 {
@@ -53,7 +53,7 @@ private:
   void GetTabState(TabState& state);
   void ShowFile(DocTabs tab);
 
-  FlatTab m_tab;
+  ButtonTab m_tab;
   ReportHtml m_html;
   bool m_initialised;
 };

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "TabInterface.h"
-#include "FlatTab.h"
+#include "PanelTab.h"
 
-class Panel : public CWnd, public FlatTab::TabController
+class Panel : public CWnd, public PanelTab::TabController
 {
 protected: 
   DECLARE_DYNCREATE(Panel)
@@ -68,7 +68,7 @@ protected:
   TabState GetTabNavigate(bool forward);
   CRect GetTabSize(void);
 
-  FlatTab m_tab;
+  PanelTab m_tab;
   TabInterface* m_tabs[Number_Tabs];
 
   // Position in tab history, counting from the end of the array

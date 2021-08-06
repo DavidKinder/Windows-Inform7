@@ -25,7 +25,7 @@ BEGIN_MESSAGE_MAP(Panel, CWnd)
   ON_WM_SIZE()
 END_MESSAGE_MAP()
 
-Panel::Panel() : m_tab(false)
+Panel::Panel()
 {
   m_tabs[Tab_Source] = new TabSource;
   m_tabs[Tab_Results] = new TabResults;

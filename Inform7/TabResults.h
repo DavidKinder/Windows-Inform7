@@ -2,7 +2,7 @@
 
 #include "TabBase.h"
 #include "ReportHtml.h"
-#include "FlatTab.h"
+#include "ButtonTab.h"
 #include "ReportEdit.h"
 
 class TabResults : public TabBase, public ReportHtml::LinkConsumer
@@ -56,7 +56,7 @@ private:
 
   void SetFocusOnContent(void);
 
-  FlatTab m_tab;
+  ButtonTab m_tab;
   ReportHtml m_report;
   ReportEdit m_console;
 

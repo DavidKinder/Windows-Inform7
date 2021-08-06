@@ -2,7 +2,7 @@
 
 #include "TabBase.h"
 #include "ReportHtml.h"
-#include "FlatTab.h"
+#include "ButtonTab.h"
 
 class TabIndex : public TabBase, public ReportHtml::LinkConsumer
 {
@@ -60,7 +60,7 @@ private:
   void SetActiveTab(IndexTabs tab, bool focus);
   void GetTabState(TabState& state);
 
-  FlatTab m_tab;
+  ButtonTab m_tab;
   ReportHtml m_index;
 
   CString m_projectDir;

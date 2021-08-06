@@ -27,7 +27,7 @@ const char* TabExtensions::m_files[TabExtensions::Number_ExtTabs] =
   "http://www.emshort.com/pl/"
 };
 
-TabExtensions::TabExtensions() : m_tab(true), m_initialised(false), m_notify(NULL)
+TabExtensions::TabExtensions() : m_initialised(false), m_notify(NULL)
 {
 }
 

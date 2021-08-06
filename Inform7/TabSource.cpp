@@ -26,10 +26,6 @@ BEGIN_MESSAGE_MAP(TabSource, TabBase)
   ON_COMMAND(ID_HEAD_NEXT, OnHeadingsNext)
 END_MESSAGE_MAP()
 
-TabSource::TabSource() : m_tab(true)
-{
-}
-
 const char* TabSource::GetName(void)
 {
   return "Source";

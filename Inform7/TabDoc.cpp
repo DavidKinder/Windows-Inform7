@@ -26,7 +26,7 @@ const char* TabDoc::m_files[TabDoc::Number_DocTabs] =
   "\\Documentation\\general_index.html"
 };
 
-TabDoc::TabDoc() : m_tab(true), m_initialised(false)
+TabDoc::TabDoc() : m_initialised(false)
 {
 }
 

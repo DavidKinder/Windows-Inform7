@@ -31,7 +31,7 @@ BEGIN_MESSAGE_MAP(TabIndex, TabBase)
   ON_MESSAGE(WM_USERNAVIGATE, OnUserNavigate)
 END_MESSAGE_MAP()
 
-TabIndex::TabIndex() : m_tab(true), m_notify(NULL)
+TabIndex::TabIndex() : m_notify(NULL)
 {
 }
 

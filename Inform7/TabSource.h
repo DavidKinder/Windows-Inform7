@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TabBase.h"
-#include "FlatTab.h"
+#include "ButtonTab.h"
 #include "ContentsWindow.h"
 #include "SourceWindow.h"
 
@@ -10,8 +10,6 @@ class TabSource : public TabBase
   DECLARE_DYNAMIC(TabSource)
 
 public:
-  TabSource();
-
   // Implementation of TabInterface
   const char* GetName(void);
   void CreateTab(CWnd* parent);
@@ -75,7 +73,7 @@ private:
   void ShowHeading(const CArray<SourceLexer::Heading>& headings, int idx);
   CString GetSourcePath(const char* path);
 
-  FlatTab m_tab;
+  ButtonTab m_tab;
 
   CString m_sourceFile;
   SourceWindow m_source;
