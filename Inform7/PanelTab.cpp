@@ -54,9 +54,12 @@ void PanelTab::OnPaint()
 {
   CRect client;
   GetClientRect(client);
-  CRect below(client);
-  AdjustRect(FALSE,below);
-  client.bottom = below.top;
+
+  CSize headerSize = GetTabHeaderSize();
+  if (headerSize.cx > 0)
+    client.left = client.right - headerSize.cx;
+  if (headerSize.cy > 0)
+    client.bottom = client.top + headerSize.cy;
 
   CPaintDC dcPaint(this);
   CDC dc;
@@ -167,6 +170,15 @@ void PanelTab::UpdateDPI(void)
 void PanelTab::SetTabController(TabController* controller)
 {
   m_controller = controller;
+}
+
+CSize PanelTab::GetTabHeaderSize(void)
+{
+  // Get the size of the row of tab buttons
+  CRect tabSize(0,0,100,100);
+  CRect tabArea = tabSize;
+  AdjustRect(FALSE,tabArea);
+  return CSize(0,tabArea.top);
 }
 
 bool PanelTab::SetActiveTab(int tab)

@@ -66,7 +66,6 @@ public:
 
 protected:
   TabState GetTabNavigate(bool forward);
-  CRect GetTabSize(void);
 
   PanelTab m_tab;
   TabInterface* m_tabs[Number_Tabs];

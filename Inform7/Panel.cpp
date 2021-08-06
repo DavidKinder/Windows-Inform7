@@ -91,8 +91,14 @@ void Panel::OnSize(UINT nType, int cx, int cy)
   GetClientRect(client);
   m_tab.MoveWindow(client,TRUE);
 
+  // Get the rectangle to resize the tabs to
+  CRect tabSize;
+  GetClientRect(tabSize);
+  CSize tabHeaderSize = m_tab.GetTabHeaderSize();
+  tabSize.right -= tabHeaderSize.cx;
+  tabSize.top += tabHeaderSize.cy;
+
   // Update the tabs
-  CRect tabSize = GetTabSize();
   for (int i = 0; i < Number_Tabs; i++)
     m_tabs[i]->MoveTab(tabSize);
 }
@@ -121,21 +127,6 @@ BOOL Panel::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHan
   }
 
   return CWnd::OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
-}
-
-// Get the rectangle for a tab window
-CRect Panel::GetTabSize(void)
-{
-  CRect client;
-  GetClientRect(client);
-
-  // Work out the display area of the tab control
-  CRect tabArea = client;
-  m_tab.AdjustRect(FALSE,tabArea);
-
-  // Have the tab overlay all but the tab pane
-  client.top = tabArea.top;
-  return client;
 }
 
 TabInterface* Panel::GetTab(Tabs tab)

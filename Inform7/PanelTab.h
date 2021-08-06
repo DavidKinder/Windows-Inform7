@@ -25,6 +25,7 @@ public:
 
   void UpdateDPI(void);
   void SetTabController(TabController* controller);
+  CSize GetTabHeaderSize(void);
 
   virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 
