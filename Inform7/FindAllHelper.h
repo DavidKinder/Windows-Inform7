@@ -48,6 +48,8 @@ public:
 protected:
   DECLARE_MESSAGE_MAP()
 
+  virtual BOOL PreTranslateMessage(MSG* pMsg);
+
   afx_msg void OnHeaderDividerDblClick(NMHDR* pNotifyStruct, LRESULT* result);
 };
 

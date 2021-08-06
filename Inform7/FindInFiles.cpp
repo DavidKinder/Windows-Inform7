@@ -569,7 +569,7 @@ LRESULT FindInFiles::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 void FindInFiles::OnFindAll()
 {
   // Handle the return key being pressed on the results list as a select action
-  if ((GetFocus() == &m_resultsList) && (GetKeyState(VK_RETURN) != 0))
+  if ((GetFocus() == &m_resultsList) && (::GetKeyState(VK_RETURN) != 0))
   {
     int item = m_resultsList.GetNextItem(-1,LVNI_SELECTED);
     if ((item >= 0) && (item < (int)m_findHelper.results.size()))

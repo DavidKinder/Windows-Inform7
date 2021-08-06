@@ -60,6 +60,17 @@ BEGIN_MESSAGE_MAP(FindResultsCtrl, CListCtrl)
   ON_NOTIFY(HDN_DIVIDERDBLCLICKW, 0, OnHeaderDividerDblClick)
 END_MESSAGE_MAP()
 
+BOOL FindResultsCtrl::PreTranslateMessage(MSG* pMsg)
+{
+  if ((pMsg->hwnd == GetSafeHwnd()) || IsChild(CWnd::FromHandle(pMsg->hwnd)))
+  {
+    // Ctrl+(NumPad+) resizes the columns of a listview to fit, so send a message to get the first column width right
+    if ((pMsg->message == WM_KEYDOWN) && (pMsg->wParam == VK_ADD) && ((::GetKeyState(VK_CONTROL) & 0x8000) != 0))
+      GetParent()->PostMessage(WM_RESIZERESULTS);
+  }
+  return CListCtrl::PreTranslateMessage(pMsg);
+}
+
 void FindResultsCtrl::OnHeaderDividerDblClick(NMHDR* pNotifyStruct, LRESULT* result)
 {
   NMHEADER* hdr = (NMHEADER*)pNotifyStruct;
@@ -91,12 +102,22 @@ void FindAllHelper::UpdateResultsCtrl(FindResultsCtrl* ctrl)
   }
   ctrl->SetRedraw(TRUE);
 
-  // Resize the results columns
   CRect resultsRect;
   ctrl->GetClientRect(resultsRect);
-  ctrl->SetColumnWidth(0,(int)(0.54 * resultsRect.Width()));
-  ctrl->SetColumnWidth(1,(int)(0.24 * resultsRect.Width()));
-  ctrl->SetColumnWidth(2,LVSCW_AUTOSIZE_USEHEADER);
+
+  // Resize all but the first column to be as wide as the least of their contents, or 25%
+  int remain = resultsRect.Width() - (::GetSystemMetrics(SM_CXVSCROLL)+8);
+  int max = (int)(0.25 * resultsRect.Width());
+  for (int i = 1; i <= 2; i++)
+  {
+    ctrl->SetColumnWidth(i,LVSCW_AUTOSIZE);
+    if (ctrl->GetColumnWidth(i) > max)
+      ctrl->SetColumnWidth(i,max);
+    remain -= ctrl->GetColumnWidth(i);
+  }
+
+  // Resize the first column to take up the remaining space
+  ctrl->SetColumnWidth(0,remain);
 }
 
 void FindAllHelper::OnResultsDraw(FindResultsCtrl* ctrl, NMLVCUSTOMDRAW* custom, LRESULT* result)

@@ -110,7 +110,13 @@ void FindReplaceDialog::InitDialog(void)
     m_heightLong += (gap + helpRect.Height());
 
     if (m_resultsList.GetSafeHwnd() != 0)
-      m_resultsList.MoveWindow(helpRect);
+    {
+      CRect resultsRect(helpRect), findNextRect;
+      GetDlgItem(IDC_FIND_NEXT)->GetWindowRect(findNextRect);
+      ScreenToClient(findNextRect);
+      resultsRect.right = findNextRect.right;
+      m_resultsList.MoveWindow(resultsRect);
+    }
   }
 }
 
@@ -283,7 +289,7 @@ LRESULT FindReplaceDialog::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 void FindReplaceDialog::OnFindNext()
 {
   // Handle the return key being pressed on the results list as a select action
-  if ((GetFocus() == &m_resultsList) && (GetKeyState(VK_RETURN) != 0))
+  if ((GetFocus() == &m_resultsList) && (::GetKeyState(VK_RETURN) != 0))
   {
     int item = m_resultsList.GetNextItem(-1,LVNI_SELECTED);
     if ((item >= 0) && (item < (int)m_findHelper.results.size()))
