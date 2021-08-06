@@ -170,6 +170,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="ArrowButton.h" />
     <ClInclude Include="BaseDialog.h" />
     <ClInclude Include="Build.h" />
+    <ClInclude Include="ButtonTab.h" />
     <ClInclude Include="ContentsWindow.h" />
     <ClInclude Include="Diff.h" />
     <ClInclude Include="EditFind.h" />
@@ -179,7 +180,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="FindReplaceDialog.h" />
     <ClInclude Include="FlatButton.h" />
     <ClInclude Include="FlatSplitter.h" />
-    <ClInclude Include="FlatTab.h" />
     <ClInclude Include="GameBase.h" />
     <ClInclude Include="GameBlank.h" />
     <ClInclude Include="GameGraphics.h" />
@@ -194,6 +194,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="NewDialogs.h" />
     <ClInclude Include="NoFocusCheck.h" />
     <ClInclude Include="Panel.h" />
+    <ClInclude Include="PanelTab.h" />
     <ClInclude Include="PrefsDialog.h" />
     <ClInclude Include="ProgressWnd.h" />
     <ClInclude Include="ProjectDirDialog.h" />
@@ -2051,6 +2052,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="AboutDialog.cpp" />
     <ClCompile Include="ArrowButton.cpp" />
     <ClCompile Include="BaseDialog.cpp" />
+    <ClCompile Include="ButtonTab.cpp" />
     <ClCompile Include="ContentsWindow.cpp" />
     <ClCompile Include="Diff.cpp" />
     <ClCompile Include="EditFind.cpp" />
@@ -2061,7 +2063,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="FindReplaceDialog.cpp" />
     <ClCompile Include="FlatButton.cpp" />
     <ClCompile Include="FlatSplitter.cpp" />
-    <ClCompile Include="FlatTab.cpp" />
     <ClCompile Include="GameBlank.cpp" />
     <ClCompile Include="GameGraphics.cpp" />
     <ClCompile Include="GameGrid.cpp" />
@@ -2075,6 +2076,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="NewDialogs.cpp" />
     <ClCompile Include="NoFocusCheck.cpp" />
     <ClCompile Include="Panel.cpp" />
+    <ClCompile Include="PanelTab.cpp" />
     <ClCompile Include="PrefsDialog.cpp" />
     <ClCompile Include="ProgressWnd.cpp" />
     <ClCompile Include="ProjectDirDialog.cpp" />

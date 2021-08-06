@@ -115,9 +115,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="FlatTab.h">
-      <Filter>Tabs</Filter>
-    </ClInclude>
     <ClInclude Include="TabBase.h">
       <Filter>Tabs</Filter>
     </ClInclude>
@@ -325,6 +322,12 @@
     <ClInclude Include="FindAllHelper.h">
       <Filter>Search</Filter>
     </ClInclude>
+    <ClInclude Include="ButtonTab.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="PanelTab.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -347,9 +350,6 @@
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="FlatTab.cpp">
-      <Filter>Tabs</Filter>
     </ClCompile>
     <ClCompile Include="TabBase.cpp">
       <Filter>Tabs</Filter>
@@ -1439,6 +1439,12 @@
     </ClCompile>
     <ClCompile Include="FindAllHelper.cpp">
       <Filter>Search</Filter>
+    </ClCompile>
+    <ClCompile Include="ButtonTab.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="PanelTab.cpp">
+      <Filter>Controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
