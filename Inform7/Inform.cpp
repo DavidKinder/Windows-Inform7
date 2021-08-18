@@ -430,9 +430,19 @@ CFont* InformApp::GetFont(CWnd* wnd, Fonts font)
     ASSERT(frame);
 
     LOGFONT fontInfo;
-    ::ZeroMemory(&fontInfo,sizeof fontInfo);
     GetFont(frame,InformApp::FontSystem)->GetLogFont(&fontInfo);
     fontInfo.lfHeight = (LONG)(Panel::GetFontScale(frame) * fontInfo.lfHeight);
+    theFont->CreateFontIndirect(&fontInfo);
+  }
+  else if (font == FontVertical)
+  {
+    CWnd* frame = wnd->GetParentFrame();
+    ASSERT(frame);
+
+    LOGFONT fontInfo;
+    GetFont(frame,InformApp::FontSystem)->GetLogFont(&fontInfo);
+    fontInfo.lfEscapement = 2700;
+    fontInfo.lfOrientation = fontInfo.lfEscapement;
     theFont->CreateFontIndirect(&fontInfo);
   }
   else

@@ -70,7 +70,7 @@ int Panel::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
 
   // Create a tab control
-  if (!m_tab.Create(WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,CRect(0,0,0,0),this,0))
+  if (!m_tab.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,CRect(0,0,0,0),this,0))
     return -1;
 
   // Add the individual tabs
@@ -238,7 +238,6 @@ void Panel::BeforeUpdateDPI(std::map<CWnd*,double>& layout)
 
 void Panel::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
-  m_tab.UpdateDPI();
   for (int i = 0; i < Number_Tabs; i++)
     m_tabs[i]->UpdateDPI(layout);
 }
