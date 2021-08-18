@@ -38,7 +38,7 @@ void TabTranscript::CreateTab(CWnd* parent)
   Create(parent);
 
   // Create the command buttons
-  CFont* font = theApp.GetFont(this,InformApp::FontPanel);
+  CFont* font = theApp.GetFont(this,InformApp::FontSystem);
   m_nextSkein.Create("Next in skein",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_REPLAY_DIFF_NEXT_SKEIN);
   m_nextSkein.SetFont(font);
   m_nextDiff.Create("Next diff",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_REPLAY_DIFF_NEXT);
@@ -97,7 +97,7 @@ void TabTranscript::PrefsChanged(CRegKey& key)
 void TabTranscript::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
   TabBase::UpdateDPI(layout);
-  CFont* font = theApp.GetFont(this,InformApp::FontPanel);
+  CFont* font = theApp.GetFont(this,InformApp::FontSystem);
   m_nextSkein.SetFont(font);
   m_nextDiff.SetFont(font);
   m_prevDiff.SetFont(font);

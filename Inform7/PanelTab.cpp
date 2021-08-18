@@ -21,7 +21,7 @@ PanelTab::PanelTab() : m_vertical(false), m_currentItem(-1), m_controller(NULL)
 
 CFont* PanelTab::GetFont(void)
 {
-  return theApp.GetFont(this,m_vertical ? InformApp::FontVertical : InformApp::FontPanel);
+  return theApp.GetFont(this,m_vertical ? InformApp::FontVertical : InformApp::FontSystem);
 }
 
 int PanelTab::GetItemCount(void) const
@@ -41,19 +41,21 @@ CRect PanelTab::GetItemRect(int item)
   CRect r(0,0,0,0);
   if ((item >= 0) && (item < m_items.size()))
   {
+    CRect client;
+    GetClientRect(client);
+
     CSize fontSize = theApp.MeasureFont(this,GetFont());
     CDC* dc = GetDC();
     CFont* oldFont = dc->SelectObject(GetFont());
 
     if (m_vertical)
     {
-      CRect client;
-      GetClientRect(client);
       r.right = client.right;
       r.left = r.right - GetTabHeaderSize().cx;
 
       const double spaceFactor = 2.5;
 
+      // Get the total size of all the tabs
       std::vector<int> sizes;
       sizes.resize(m_items.size());
       int totalSize = 0;
@@ -64,6 +66,7 @@ CRect PanelTab::GetItemRect(int item)
         totalSize += (int)(spaceFactor*fontSize.cx);
       }
 
+      // Get the rectangle for the tab so that the overall set of tabs are centred vertically
       r.top = (client.Height() - totalSize)/2;
       for (int i = 0; i < item; i++)
         r.top += sizes[i] + (int)(spaceFactor*fontSize.cx);
@@ -71,13 +74,29 @@ CRect PanelTab::GetItemRect(int item)
     }
     else
     {
-      const double spaceFactor = 1.8;
+      // Get the total size of all the tabs. without spacing
+      std::vector<int> sizes;
+      sizes.resize(m_items.size());
+      int totalSize = 0;
+      for (int i = 0; i < m_items.size(); i++)
+      {
+        sizes[i] = dc->GetTextExtent(GetItem(i)).cx;
+        totalSize += sizes[i];
+      }
 
+      // Work out a suitable spacing factor, depending on how much space there is
+      double spaceFactor = (double)(client.Width()-totalSize-4) / (double)(m_items.size()*fontSize.cx);
+      if (spaceFactor > 3.0)
+        spaceFactor = 3.0;
+      if (spaceFactor < 1.0)
+        spaceFactor = 1.0;
+
+      // Get the rectangle for the tab
       r.bottom = GetTabHeaderSize().cy;
       for (int i = 0; i <= item; i++)
       {
         r.left = r.right;
-        r.right += dc->GetTextExtent(GetItem(i)).cx;
+        r.right += sizes[i];
         r.right += (int)(spaceFactor*fontSize.cx);
       }
     }
@@ -172,6 +191,7 @@ void PanelTab::OnPaint()
 
       if (i == sel)
       {
+        // Draw as a pushed menu bar button
         bool drawn = false;
         if (::IsAppThemed())
         {

@@ -43,7 +43,7 @@ void TabStory::CreateTab(CWnd* parent)
   m_parent = parent;
   Create(parent);
   m_stop.Create("Stop",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_PLAY_STOP);
-  m_stop.SetFont(theApp.GetFont(this,InformApp::FontPanel));
+  m_stop.SetFont(theApp.GetFont(this,InformApp::FontSystem));
 }
 
 void TabStory::MoveTab(CRect& rect)
@@ -110,7 +110,7 @@ void TabStory::PrefsChanged(CRegKey& key)
 void TabStory::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
   TabBase::UpdateDPI(layout);
-  m_stop.SetFont(theApp.GetFont(this,InformApp::FontPanel));
+  m_stop.SetFont(theApp.GetFont(this,InformApp::FontSystem));
   Resize();
   if (m_game != NULL)
     m_game->PrefsChanged();

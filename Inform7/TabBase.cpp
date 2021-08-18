@@ -29,7 +29,7 @@ void TabBase::Create(CWnd* parent)
   EnableToolTips();
 
   // Create the navigation buttons
-  CFont* font = theApp.GetFont(this,InformApp::FontPanel);
+  CFont* font = theApp.GetFont(this,InformApp::FontSystem);
   m_navigate[0].Create("?<",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_NAVIGATE_BACK);
   m_navigate[0].SetFont(font);
   m_navigate[1].Create("?>",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_NAVIGATE_FORE);
@@ -123,7 +123,7 @@ void TabBase::BeforeUpdateDPI(std::map<CWnd*,double>& layout)
 
 void TabBase::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
-  CFont* font = theApp.GetFont(this,InformApp::FontPanel);
+  CFont* font = theApp.GetFont(this,InformApp::FontSystem);
   m_navigate[0].SetFont(font);
   m_navigate[1].SetFont(font);
 }

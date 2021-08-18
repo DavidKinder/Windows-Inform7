@@ -47,7 +47,7 @@ void TabSkein::CreateTab(CWnd* parent)
   Create(parent);
 
   // Create the command buttons
-  CFont* font = theApp.GetFont(this,InformApp::FontPanel);
+  CFont* font = theApp.GetFont(this,InformApp::FontSystem);
   m_label.Create("Labels",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_LABEL);
   m_label.SetFont(font);
   m_play.Create("Play All",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_PLAY_ALL);
@@ -163,7 +163,7 @@ void TabSkein::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
   TabBase::UpdateDPI(layout);
 
-  CFont* font = theApp.GetFont(this,InformApp::FontPanel);
+  CFont* font = theApp.GetFont(this,InformApp::FontSystem);
   m_label.SetFont(font);
   m_play.SetFont(font);
   m_save.SetFont(font);

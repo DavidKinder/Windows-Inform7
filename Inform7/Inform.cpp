@@ -424,17 +424,7 @@ CFont* InformApp::GetFont(CWnd* wnd, Fonts font)
     return it->second;
 
   CFont* theFont = new CFont();
-  if (font == FontPanel)
-  {
-    CWnd* frame = wnd->GetParentFrame();
-    ASSERT(frame);
-
-    LOGFONT fontInfo;
-    GetFont(frame,InformApp::FontSystem)->GetLogFont(&fontInfo);
-    fontInfo.lfHeight = (LONG)(Panel::GetFontScale(frame) * fontInfo.lfHeight);
-    theFont->CreateFontIndirect(&fontInfo);
-  }
-  else if (font == FontVertical)
+  if (font == FontVertical)
   {
     CWnd* frame = wnd->GetParentFrame();
     ASSERT(frame);

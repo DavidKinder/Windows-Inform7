@@ -91,10 +91,9 @@ public:
     FontSystem = 0,
     FontDisplay = 1,
     FontFixedWidth = 2,
-    FontPanel = 3,
-    FontSmall = 4,
-    FontVertical = 5,
-    FONT_COUNT = 6
+    FontSmall = 3,
+    FontVertical = 4,
+    FONT_COUNT = 5
   };
 
   CFont* GetFont(CWnd* wnd, Fonts font);

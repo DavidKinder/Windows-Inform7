@@ -19,7 +19,7 @@ int ButtonTab::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
   if (CTabCtrl::OnCreate(lpCreateStruct) == -1)
     return -1;
-  SetFont(theApp.GetFont(this,InformApp::FontPanel));
+  SetFont(theApp.GetFont(this,InformApp::FontSystem));
   return 0;
 }
 
@@ -127,7 +127,7 @@ void ButtonTab::OnPaint()
 
 void ButtonTab::UpdateDPI(void)
 {
-  SetFont(theApp.GetFont(this,InformApp::FontPanel));
+  SetFont(theApp.GetFont(this,InformApp::FontSystem));
 }
 
 CDibSection* ButtonTab::GetImage(const char* name, const CSize& size)
