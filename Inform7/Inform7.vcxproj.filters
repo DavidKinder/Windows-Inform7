@@ -1448,9 +1448,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\TabSelect.bmp">
-      <Filter>Resources</Filter>
-    </Image>
     <Image Include="res\Inform7.ico">
       <Filter>Resources</Filter>
     </Image>

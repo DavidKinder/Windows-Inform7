@@ -13,6 +13,8 @@ protected:
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
   afx_msg void OnPaint();
   afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+  afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+  afx_msg LRESULT OnMouseLeave(WPARAM, LPARAM);
 
 public:
   PanelTab();
@@ -45,5 +47,9 @@ protected:
   bool m_vertical;
   std::vector<CString> m_items;
   int m_currentItem;
+
   TabController* m_controller;
+
+  int m_mouseOverItem;
+  bool m_mouseTrack;
 };

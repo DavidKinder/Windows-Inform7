@@ -348,7 +348,7 @@ void TranscriptWindow::OnMouseMove(UINT nFlags, CPoint point)
     tme.cbSize = sizeof tme;
     tme.dwFlags = TME_LEAVE;
     tme.hwndTrack = GetSafeHwnd();
-    ::_TrackMouseEvent(&tme);
+    ::TrackMouseEvent(&tme);
   }
 
   CView::OnMouseMove(nFlags,point);

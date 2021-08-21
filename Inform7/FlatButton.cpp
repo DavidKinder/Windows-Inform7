@@ -10,7 +10,13 @@
 IMPLEMENT_DYNAMIC(FlatButton, CButton)
 
 BEGIN_MESSAGE_MAP(FlatButton, CButton)
+  ON_WM_MOUSEMOVE()
+  ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
 END_MESSAGE_MAP()
+
+FlatButton::FlatButton() : m_mouseOver(false)
+{
+}
 
 BOOL FlatButton::PreCreateWindow(CREATESTRUCT& cs)
 {
@@ -35,23 +41,9 @@ void FlatButton::DrawItem(LPDRAWITEMSTRUCT dis)
 
   // Draw the background
   if (dis->itemState & ODS_SELECTED)
-  {
-    // Get the bitmap to indicate a selected button
-    CBitmap selectBitmap;
-    selectBitmap.LoadBitmap(IDR_FLAT_SELECT);
-    CDC selectDC;
-    selectDC.CreateCompatibleDC(&dc);
-    CBitmap* oldBitmap = selectDC.SelectObject(&selectBitmap);
-
-    // Get the bitmap's dimensions
-    BITMAP bitmapInfo;
-    selectBitmap.GetBitmap(&bitmapInfo);
-
-    // Stretch the bitmap into the selected item's background
-    dc.StretchBlt(0,0,rect.Width(),rect.Height(),
-      &selectDC,0,0,bitmapInfo.bmWidth,bitmapInfo.bmHeight,SRCCOPY);
-    selectDC.SelectObject(oldBitmap);
-  }
+    theApp.DrawSelectRect(dc,rect,false);
+  else if (m_mouseOver && !disabled)
+    theApp.DrawSelectRect(dc,rect,true);
   else
     dc.FillSolidRect(rect,::GetSysColor(COLOR_BTNFACE));
 
@@ -81,16 +73,37 @@ void FlatButton::DrawItem(LPDRAWITEMSTRUCT dis)
     bitmap.AlphaBlend(dib,gap,gap,FALSE);
   }
 
-  // Draw the separator
-  CPen shadowPen(PS_SOLID,0,::GetSysColor(COLOR_BTNSHADOW));
-  dc.SelectObject(shadowPen);
-  int gap = rect.Height()/6;
-  dc.MoveTo(rect.right-1,gap);
-  dc.LineTo(rect.right-1,rect.bottom-gap);
-
   // Draw the control from the bitmap
   dcPaint->BitBlt(rectPaint.left,rectPaint.top,rectPaint.Width(),rectPaint.Height(),&dc,0,0,SRCCOPY);
   dc.SelectObject(oldBitmap);
+}
+
+void FlatButton::OnMouseMove(UINT nFlags, CPoint point)
+{
+  if (m_mouseOver == false)
+  {
+    m_mouseOver = true;
+    Invalidate();
+
+    // Listen for the mouse leaving this control
+    TRACKMOUSEEVENT tme;
+    ::ZeroMemory(&tme,sizeof tme);
+    tme.cbSize = sizeof tme;
+    tme.dwFlags = TME_LEAVE;
+    tme.hwndTrack = GetSafeHwnd();
+    ::TrackMouseEvent(&tme);
+  }
+  CButton::OnMouseMove(nFlags,point);
+}
+
+LRESULT FlatButton::OnMouseLeave(WPARAM, LPARAM)
+{
+  if (m_mouseOver == true)
+  {
+    m_mouseOver = false;
+    Invalidate();
+  }
+  return Default();
 }
 
 CDibSection* FlatButton::GetImage(const char* name, const CSize& size, bool light)

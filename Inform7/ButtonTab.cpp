@@ -7,20 +7,84 @@
 #define new DEBUG_NEW
 #endif
 
-IMPLEMENT_DYNAMIC(ButtonTab, CTabCtrl)
+IMPLEMENT_DYNAMIC(ButtonTab, CWnd)
 
-BEGIN_MESSAGE_MAP(ButtonTab, CTabCtrl)
-  ON_WM_CREATE()
+BEGIN_MESSAGE_MAP(ButtonTab, CWnd)
   ON_WM_ERASEBKGND()
   ON_WM_PAINT()
+  ON_WM_LBUTTONDOWN()
+  ON_WM_MOUSEMOVE()
+  ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
 END_MESSAGE_MAP()
 
-int ButtonTab::OnCreate(LPCREATESTRUCT lpCreateStruct)
+ButtonTab::ButtonTab() : m_currentItem(-1), m_mouseOverItem(-1), m_mouseTrack(false)
 {
-  if (CTabCtrl::OnCreate(lpCreateStruct) == -1)
-    return -1;
-  SetFont(theApp.GetFont(this,InformApp::FontSystem));
-  return 0;
+}
+
+int ButtonTab::GetDefaultHeight(void)
+{
+  CSize fontSize = theApp.MeasureFont(this,GetFont());
+  return (int)(1.4*fontSize.cy);
+}
+
+CFont* ButtonTab::GetFont(void)
+{
+  return theApp.GetFont(this,InformApp::FontSystem);
+}
+
+int ButtonTab::GetItemCount(void) const
+{
+  return (int)m_items.size();
+}
+
+CString ButtonTab::GetItem(int item) const
+{
+  if ((item >= 0) && (item < m_items.size()))
+    return m_items[item];
+  return "";
+}
+
+CRect ButtonTab::GetItemRect(int item)
+{
+  CRect r(0,0,0,0);
+  if ((item >= 0) && (item < m_items.size()))
+  {
+    CRect client;
+    GetClientRect(client);
+    r.bottom = client.Height();
+
+    CSize fontSize = theApp.MeasureFont(this,GetFont());
+    CDC* dc = GetDC();
+    CFont* oldFont = dc->SelectObject(GetFont());
+
+    for (int i = 0; i <= item; i++)
+    {
+      r.left = r.right;
+      r.right += dc->GetTextExtent(GetItem(i)).cx;
+      r.right += (int)(1.5*fontSize.cx);
+    }
+
+    dc->SelectObject(oldFont);
+    ReleaseDC(dc);
+  }
+  return r;
+}
+
+void ButtonTab::InsertItem(int item, LPCSTR name)
+{
+  if (item >= m_items.size())
+    m_items.resize(item+1);
+  m_items[item] = name;
+}
+
+int ButtonTab::GetCurSel(void) const
+{
+  return m_currentItem;
+}
+
+void ButtonTab::SetCurSel(int item)
+{
+  m_currentItem = item;
 }
 
 BOOL ButtonTab::OnEraseBkgnd(CDC* pDC)
@@ -32,9 +96,6 @@ void ButtonTab::OnPaint()
 {
   CRect client;
   GetClientRect(client);
-  CRect below(client);
-  AdjustRect(FALSE,below);
-  client.bottom = below.top;
 
   CPaintDC dcPaint(this);
   CDC dc;
@@ -46,62 +107,21 @@ void ButtonTab::OnPaint()
   CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&bitmap);
   dc.FillSolidRect(client,::GetSysColor(COLOR_BTNFACE));
 
-  CPen linePen(PS_SOLID,0,::GetSysColor(COLOR_BTNSHADOW));
   CFont* oldFont = dc.SelectObject(GetFont());
-  CPen* oldPen = dc.SelectObject(&linePen);
   dc.SetBkMode(TRANSPARENT);
 
   int sel = GetCurSel();
   for (int i = 0; i < GetItemCount(); i++)
   {
-    TCITEM item;
-    ::ZeroMemory(&item,sizeof item);
-    item.mask = TCIF_TEXT;
-
-    CString text;
-    item.pszText = text.GetBufferSetLength(256);
-    item.cchTextMax = 256;
-    GetItem(i,&item);
-    text.ReleaseBuffer();
-
-    CRect itemRect;
-    GetItemRect(i,itemRect);
+    CString text = GetItem(i);
+    CRect itemRect = GetItemRect(i);
     itemRect.top = client.top;
     itemRect.bottom = client.bottom;
 
     if (i == sel)
-    {
-      // Get the bitmap to indicate a selected button
-      CBitmap selectBitmap;
-      selectBitmap.LoadBitmap(IDR_FLAT_SELECT);
-      CDC selectDC;
-      selectDC.CreateCompatibleDC(&dc);
-      CBitmap* oldBitmap = selectDC.SelectObject(&selectBitmap);
-
-      // Get the bitmap's dimensions
-      BITMAP bitmapInfo;
-      selectBitmap.GetBitmap(&bitmapInfo);
-
-      // Stretch the bitmap into the selected item's background
-      dc.StretchBlt(itemRect.left,itemRect.top,itemRect.Width(),itemRect.Height(),
-        &selectDC,0,0,bitmapInfo.bmWidth,bitmapInfo.bmHeight,SRCCOPY);
-      selectDC.SelectObject(oldBitmap);
-    }
-    else
-    {
-      if (i == 0)
-      {
-        int gap = itemRect.Height()/6;
-        dc.MoveTo(itemRect.left,itemRect.top+gap);
-        dc.LineTo(itemRect.left,itemRect.bottom-gap);
-      }
-      if ((i != sel-1) && (i != GetItemCount()-1))
-      {
-        int gap = itemRect.Height()/6;
-        dc.MoveTo(itemRect.right,itemRect.top+gap);
-        dc.LineTo(itemRect.right,itemRect.bottom-gap);
-      }
-    }
+      theApp.DrawSelectRect(dc,itemRect,false);
+    else if (i == m_mouseOverItem)
+      theApp.DrawSelectRect(dc,itemRect,true);
 
     if (text == "?H")
     {
@@ -119,15 +139,78 @@ void ButtonTab::OnPaint()
   }
 
   dc.SelectObject(oldFont);
-  dc.SelectObject(oldPen);
-
   dcPaint.BitBlt(0,0,client.Width(),client.Height(),&dc,0,0,SRCCOPY);
   dc.SelectObject(oldBitmap);
 }
 
-void ButtonTab::UpdateDPI(void)
+void ButtonTab::OnLButtonDown(UINT nFlags, CPoint point)
 {
-  SetFont(theApp.GetFont(this,InformApp::FontSystem));
+  CWnd::OnLButtonDown(nFlags,point);
+
+  CPoint cursor = GetCurrentMessage()->pt;
+  ScreenToClient(&cursor);
+
+  int tab = -1;
+  for (int i = 0; i < GetItemCount(); i++)
+  {
+    if (GetItemRect(i).PtInRect(cursor))
+      tab = i;
+  }
+  if (tab >= 0)
+    SetActiveTab(tab);
+}
+
+void ButtonTab::OnMouseMove(UINT nFlags, CPoint point)
+{
+  int hotTab = -1;
+  for (int i = 0; i < GetItemCount(); i++)
+  {
+    if (GetItemRect(i).PtInRect(point))
+      hotTab = i;
+  }
+
+  if (m_mouseOverItem != hotTab)
+  {
+    m_mouseOverItem = hotTab;
+    Invalidate();
+
+    if (!m_mouseTrack)
+    {
+      // Listen for the mouse leaving this control
+      TRACKMOUSEEVENT tme;
+      ::ZeroMemory(&tme,sizeof tme);
+      tme.cbSize = sizeof tme;
+      tme.dwFlags = TME_LEAVE;
+      tme.hwndTrack = GetSafeHwnd();
+      ::TrackMouseEvent(&tme);
+      m_mouseTrack = true;
+    }
+  }
+  CWnd::OnMouseMove(nFlags,point);
+}
+
+LRESULT ButtonTab::OnMouseLeave(WPARAM, LPARAM)
+{
+  if (m_mouseOverItem >= 0)
+  {
+    m_mouseOverItem = -1;
+    m_mouseTrack = false;
+    Invalidate();
+  }
+  return Default();
+}
+
+void ButtonTab::SetActiveTab(int tab)
+{
+  SetCurSel(tab);
+  Invalidate();
+
+  // Send TCN_SELCHANGE to the parent
+  NMHDR hdr;
+  hdr.hwndFrom = GetSafeHwnd();
+  hdr.idFrom = GetDlgCtrlID();
+  hdr.code = TCN_SELCHANGE;
+  GetParent()->SendMessage(WM_NOTIFY,hdr.idFrom,(LPARAM)&hdr);
 }
 
 CDibSection* ButtonTab::GetImage(const char* name, const CSize& size)

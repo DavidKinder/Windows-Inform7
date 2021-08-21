@@ -38,7 +38,7 @@ void TabSource::CreateTab(CWnd* parent)
 
   // Create the tab control
   CRect zeroRect(0,0,0,0);
-  m_tab.Create(WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,zeroRect,this,0);
+  m_tab.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,zeroRect,this,0);
   m_tab.InsertItem(SrcTab_Contents,"Contents");
   m_tab.InsertItem(SrcTab_Source,"Source");
 
@@ -135,9 +135,8 @@ void TabSource::Resize(void)
     SizeTab(client,fontSize,heading);
 
     // Get the dimensions of the first and last tab buttons
-    CRect firstTabItem, lastTabItem;
-    m_tab.GetItemRect(SrcTab_Contents,firstTabItem);
-    m_tab.GetItemRect(SrcTab_Source,lastTabItem);
+    CRect firstTabItem = m_tab.GetItemRect(SrcTab_Contents);
+    CRect lastTabItem = m_tab.GetItemRect(SrcTab_Source);
     int w = lastTabItem.right - firstTabItem.left + 4;
 
     // Resize the tab control
@@ -149,10 +148,11 @@ void TabSource::Resize(void)
     if (tabSize.right > client.right)
       tabSize.right = client.right;
     tabSize.top = 0;
-    tabSize.bottom = client.Height()-tabSize.top;
+    tabSize.bottom = heading;
     m_tab.MoveWindow(tabSize,TRUE);
 
     // Resize the contents and edit windows
+    client.top = heading;
     m_contents.MoveWindow(client,m_contents.IsWindowVisible());
     m_source.MoveWindow(client,m_source.IsWindowVisible());
   }
@@ -512,7 +512,6 @@ void TabSource::PrefsChanged(CRegKey& key)
 void TabSource::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
   TabBase::UpdateDPI(layout);
-  m_tab.UpdateDPI();
   m_source.PrefsChanged();
   m_contents.PrefsChanged();
   Resize();
@@ -568,11 +567,7 @@ CString TabSource::GetSource(void)
 
 int TabSource::GetTabHeight(void)
 {
-  // Get the height of the row of tab buttons
-  CRect tabSize(0,0,100,100);
-  CRect tabArea = tabSize;
-  m_tab.AdjustRect(FALSE,tabArea);
-  return tabArea.top;
+  return m_tab.GetDefaultHeight();
 }
 
 bool TabSource::CheckNeedReopen(const char* path)

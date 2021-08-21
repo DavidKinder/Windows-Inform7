@@ -11,11 +11,13 @@ IMPLEMENT_DYNAMIC(PanelTab, CWnd)
 
 BEGIN_MESSAGE_MAP(PanelTab, CWnd)
   ON_WM_ERASEBKGND()
-  ON_WM_LBUTTONDOWN()
   ON_WM_PAINT()
+  ON_WM_LBUTTONDOWN()
+  ON_WM_MOUSEMOVE()
+  ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
 END_MESSAGE_MAP()
 
-PanelTab::PanelTab() : m_vertical(false), m_currentItem(-1), m_controller(NULL)
+PanelTab::PanelTab() : m_vertical(false), m_currentItem(-1), m_controller(NULL), m_mouseOverItem(-1), m_mouseTrack(false)
 {
 }
 
@@ -74,7 +76,7 @@ CRect PanelTab::GetItemRect(int item)
     }
     else
     {
-      // Get the total size of all the tabs. without spacing
+      // Get the total size of all the tabs, without spacing
       std::vector<int> sizes;
       sizes.resize(m_items.size());
       int totalSize = 0;
@@ -86,8 +88,8 @@ CRect PanelTab::GetItemRect(int item)
 
       // Work out a suitable spacing factor, depending on how much space there is
       double spaceFactor = (double)(client.Width()-totalSize-4) / (double)(m_items.size()*fontSize.cx);
-      if (spaceFactor > 3.0)
-        spaceFactor = 3.0;
+      if (spaceFactor > 2.5)
+        spaceFactor = 2.5;
       if (spaceFactor < 1.0)
         spaceFactor = 1.0;
 
@@ -158,25 +160,6 @@ void PanelTab::OnPaint()
   // Fill the background colour
   dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourTabBack));
 
-  // Get the colour for the lines around tabs: use the theme, if possible
-  COLORREF lineColour = ::GetSysColor(COLOR_BTNSHADOW);
-  if (::IsAppThemed())
-  {
-    HTHEME theme = ::OpenThemeData(GetSafeHwnd(),L"TAB");
-    if (theme != 0)
-    {
-      COLORREF themeColour = 0;
-      if (SUCCEEDED(::GetThemeColor(theme,TABP_TABITEM,TIBES_NORMAL,TMT_EDGEFILLCOLOR,&themeColour)))
-      {
-        if (themeColour != 0)
-          lineColour = themeColour;
-      }
-      ::CloseThemeData(theme);
-    }
-  }
-  CPen linePen(PS_SOLID,0,lineColour);
-  CPen* oldPen = dc.SelectObject(&linePen);
-
   if (m_vertical)
   {
     dc.SetTextAlign(TA_BOTTOM|TA_LEFT);
@@ -190,33 +173,11 @@ void PanelTab::OnPaint()
       itemRect.OffsetRect(CPoint(-bitmapX,0));
 
       if (i == sel)
-      {
-        // Draw as a pushed menu bar button
-        bool drawn = false;
-        if (::IsAppThemed())
-        {
-          HTHEME theme = ::OpenThemeData(GetSafeHwnd(),L"Menu");
-          if (theme)
-          {
-            ::DrawThemeBackground(theme,dc.GetSafeHdc(),MENU_BARITEM,MBI_PUSHED,itemRect,NULL);
-            ::CloseThemeData(theme);
-            drawn = true;
-          }
-        }
-        if (!drawn)
-          dc.FillSolidRect(itemRect,::GetSysColor(COLOR_HIGHLIGHT));
-      }
+        theApp.DrawSelectRect(dc,itemRect,false);
+      else if ((i == m_mouseOverItem) && IsTabEnabled(i))
+        theApp.DrawSelectRect(dc,itemRect,true);
       else
-      {
         dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNFACE));
-
-        dc.MoveTo(itemRect.left,itemRect.bottom);
-        dc.LineTo(itemRect.left,itemRect.top);
-        dc.LineTo(itemRect.right-1,itemRect.top);
-        dc.LineTo(itemRect.right-1,itemRect.bottom);
-        if (i == GetItemCount()-1)
-          dc.LineTo(itemRect.left,itemRect.bottom);
-      }
 
       dc.SetTextColor(::GetSysColor(IsTabEnabled(i) ? COLOR_BTNTEXT : COLOR_GRAYTEXT));
       CSize size = dc.GetTextExtent(text);
@@ -225,6 +186,27 @@ void PanelTab::OnPaint()
   }
   else
   {
+    dc.SetTextAlign(TA_TOP|TA_LEFT);
+
+    // Get the colour for the lines around tabs: use the theme, if possible
+    COLORREF lineColour = ::GetSysColor(COLOR_BTNSHADOW);
+    if (::IsAppThemed())
+    {
+      HTHEME theme = ::OpenThemeData(GetSafeHwnd(),L"TAB");
+      if (theme != 0)
+      {
+        COLORREF themeColour = 0;
+        if (SUCCEEDED(::GetThemeColor(theme,TABP_TABITEM,TIBES_NORMAL,TMT_EDGEFILLCOLOR,&themeColour)))
+        {
+          if (themeColour != 0)
+            lineColour = themeColour;
+        }
+        ::CloseThemeData(theme);
+      }
+    }
+    CPen linePen(PS_SOLID,0,lineColour);
+    CPen* oldPen = dc.SelectObject(&linePen);
+
     int base = client.bottom-1;
     dc.MoveTo(0,base);
     dc.LineTo(client.right,base);
@@ -246,13 +228,24 @@ void PanelTab::OnPaint()
         dc.LineTo(itemRect.left,itemRect.top);
         dc.LineTo(itemRect.left,itemRect.bottom);
       }
+      else if ((i == m_mouseOverItem) && IsTabEnabled(i))
+      {
+        itemRect.bottom--;
+        dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNHIGHLIGHT));
+
+        dc.MoveTo(itemRect.right,itemRect.bottom-1);
+        dc.LineTo(itemRect.right,itemRect.top);
+        dc.LineTo(itemRect.left,itemRect.top);
+        dc.LineTo(itemRect.left,itemRect.bottom);
+        itemRect.bottom++;
+      }
 
       dc.SetTextColor(::GetSysColor(IsTabEnabled(i) ? COLOR_BTNTEXT : COLOR_GRAYTEXT));
       dc.DrawText(text,itemRect,DT_SINGLELINE|DT_CENTER|DT_VCENTER);
     }
+    dc.SelectObject(oldPen);
   }
 
-  dc.SelectObject(oldPen);
   dc.SelectObject(oldFont);
   dcPaint.BitBlt(bitmapX,0,client.Width(),client.Height(),&dc,0,0,SRCCOPY);
   dc.SelectObject(oldBitmap);
@@ -273,6 +266,46 @@ void PanelTab::OnLButtonDown(UINT nFlags, CPoint point)
   }
   if (tab >= 0)
     SetActiveTab(tab);
+}
+
+void PanelTab::OnMouseMove(UINT nFlags, CPoint point)
+{
+  int hotTab = -1;
+  for (int i = 0; i < GetItemCount(); i++)
+  {
+    if (GetItemRect(i).PtInRect(point))
+      hotTab = i;
+  }
+
+  if (m_mouseOverItem != hotTab)
+  {
+    m_mouseOverItem = hotTab;
+    Invalidate();
+
+    if (!m_mouseTrack)
+    {
+      // Listen for the mouse leaving this control
+      TRACKMOUSEEVENT tme;
+      ::ZeroMemory(&tme,sizeof tme);
+      tme.cbSize = sizeof tme;
+      tme.dwFlags = TME_LEAVE;
+      tme.hwndTrack = GetSafeHwnd();
+      ::TrackMouseEvent(&tme);
+      m_mouseTrack = true;
+    }
+  }
+  CWnd::OnMouseMove(nFlags,point);
+}
+
+LRESULT PanelTab::OnMouseLeave(WPARAM, LPARAM)
+{
+  if (m_mouseOverItem >= 0)
+  {
+    m_mouseOverItem = -1;
+    m_mouseTrack = false;
+    Invalidate();
+  }
+  return Default();
 }
 
 BOOL PanelTab::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
@@ -313,6 +346,7 @@ bool PanelTab::SetActiveTab(int tab)
   if (IsTabEnabled(tab))
   {
     SetCurSel(tab);
+    Invalidate();
 
     // Send TCN_SELCHANGE to the parent
     NMHDR hdr;

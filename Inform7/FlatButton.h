@@ -12,5 +12,14 @@ protected:
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
   virtual void DrawItem(LPDRAWITEMSTRUCT dis);
 
+public:
+  FlatButton();
+
+  afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+  afx_msg LRESULT OnMouseLeave(WPARAM, LPARAM);
+
+protected:
   CDibSection* GetImage(const char* name, const CSize& size, bool light);
+
+  bool m_mouseOver;
 };

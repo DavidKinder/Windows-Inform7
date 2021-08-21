@@ -43,10 +43,11 @@ void TabBase::SizeTab(CRect& client, CSize& fontSize, int& heading)
   client.top += heading;
 
   // Resize the navigation buttons
+  m_navigate[0].MoveWindow(0,0,heading,heading,TRUE);
+  m_navigate[1].MoveWindow(heading,0,heading,heading,TRUE);
+
+  // Get the font size
   fontSize = theApp.MeasureFont(this,m_navigate[0].GetFont());
-  int nw = theApp.MeasureText(m_navigate).cx+(fontSize.cx*2);
-  m_navigate[0].MoveWindow(0,0,nw,heading,TRUE);
-  m_navigate[1].MoveWindow(nw,0,nw,heading,TRUE);
 }
 
 CString TabBase::GetToolTip(UINT_PTR id)

@@ -573,6 +573,25 @@ COLORREF InformApp::BlendedColour(COLORREF col1, int rel1, COLORREF col2, int re
   return RGB(min(r,255),min(g,255),min(b,255));
 }
 
+void InformApp::DrawSelectRect(CDC& dc, CRect& rect, bool hot)
+{
+  if (::IsAppThemed())
+  {
+    HTHEME theme = ::OpenThemeData(AfxGetMainWnd()->GetSafeHwnd(),L"Menu");
+    if (theme)
+    {
+      // Start with a white rectangle, then use the menu theme to draw a selection rectangle
+      dc.FillSolidRect(rect,RGB(255,255,255));
+      ::DrawThemeBackground(theme,dc.GetSafeHdc(),MENU_BARITEM,hot ? MBI_HOT : MBI_PUSHED,rect,NULL);
+      ::CloseThemeData(theme);
+      return;
+    }
+  }
+
+  // Just draw a solid rectangle
+  dc.FillSolidRect(rect,::GetSysColor(COLOR_HIGHLIGHT));
+}
+
 void InformApp::SetIcon(CWnd* wnd)
 {
   wnd->SetIcon(LoadIcon(IDR_ICON),TRUE);

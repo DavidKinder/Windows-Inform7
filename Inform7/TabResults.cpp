@@ -37,7 +37,7 @@ void TabResults::CreateTab(CWnd* parent)
 
   // Create the tab control
   CRect zeroRect(0,0,0,0);
-  m_tab.Create(WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,zeroRect,this,0);
+  m_tab.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,zeroRect,this,0);
 
   // Add tabs
   m_tab.InsertItem(ResTab_Report,"Report");
@@ -270,7 +270,6 @@ void TabResults::PrefsChanged(CRegKey& key)
 void TabResults::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
   TabBase::UpdateDPI(layout);
-  m_tab.UpdateDPI();
   m_console.PrefsChanged();
   Resize();
 }
@@ -360,9 +359,8 @@ void TabResults::Resize(void)
     SizeTab(CRect(client),fontSize,heading);
 
     // Get the dimensions of the first and last tab buttons
-    CRect firstTabItem, lastTabItem;
-    m_tab.GetItemRect(ResTab_Report,firstTabItem);
-    m_tab.GetItemRect(ResTab_Console,lastTabItem);
+    CRect firstTabItem = m_tab.GetItemRect(ResTab_Report);
+    CRect lastTabItem = m_tab.GetItemRect(ResTab_Console);
     int w = lastTabItem.right - firstTabItem.left + 4;
 
     // Resize the tab control
@@ -374,15 +372,11 @@ void TabResults::Resize(void)
     if (tabSize.right > client.right)
       tabSize.right = client.right;
     tabSize.top = 0;
-    tabSize.bottom = client.Height()-tabSize.top;
+    tabSize.bottom = heading;
     m_tab.MoveWindow(tabSize,TRUE);
 
-    // Work out the display area of the tab control
-    CRect tabArea = tabSize;
-    m_tab.AdjustRect(FALSE,tabArea);
-    client.top = tabArea.top;
-
     // Resize the tab page controls
+    client.top = heading;
     m_report.MoveWindow(client,TRUE);
     m_console.MoveWindow(client,TRUE);
   }
