@@ -123,7 +123,12 @@ int PanelTab::GetCurSel(void) const
 
 void PanelTab::SetCurSel(int item)
 {
-  m_currentItem = item;
+  if (m_currentItem != item)
+  {
+    m_currentItem = item;
+    if (GetSafeHwnd() != 0)
+      Invalidate();
+  }
 }
 
 BOOL PanelTab::OnEraseBkgnd(CDC* pDC)
@@ -346,7 +351,6 @@ bool PanelTab::SetActiveTab(int tab)
   if (IsTabEnabled(tab))
   {
     SetCurSel(tab);
-    Invalidate();
 
     // Send TCN_SELCHANGE to the parent
     NMHDR hdr;

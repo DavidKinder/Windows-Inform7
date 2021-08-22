@@ -84,7 +84,12 @@ int ButtonTab::GetCurSel(void) const
 
 void ButtonTab::SetCurSel(int item)
 {
-  m_currentItem = item;
+  if (m_currentItem != item)
+  {
+    m_currentItem = item;
+    if (GetSafeHwnd() != 0)
+      Invalidate();
+  }
 }
 
 BOOL ButtonTab::OnEraseBkgnd(CDC* pDC)
@@ -203,7 +208,6 @@ LRESULT ButtonTab::OnMouseLeave(WPARAM, LPARAM)
 void ButtonTab::SetActiveTab(int tab)
 {
   SetCurSel(tab);
-  Invalidate();
 
   // Send TCN_SELCHANGE to the parent
   NMHDR hdr;
