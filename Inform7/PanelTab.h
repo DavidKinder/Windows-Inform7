@@ -18,6 +18,7 @@ protected:
 
 public:
   PanelTab();
+  bool UpdateOrientation(CRegKey& key);
 
   CFont* GetFont(void);
 

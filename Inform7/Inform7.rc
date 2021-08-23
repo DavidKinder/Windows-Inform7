@@ -542,7 +542,7 @@ BEGIN
     CTEXT           "Source text is controlled separately from the Editing tab.",IDC_STATIC,33,68,185,8
 END
 
-IDD_PREFS_ADVANCED DIALOGEX 0, 0, 250, 145
+IDD_PREFS_ADVANCED DIALOGEX 0, 0, 251, 141
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 CAPTION "Advanced"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -554,12 +554,13 @@ BEGIN
     GROUPBOX        "Interpreters",IDC_STATIC,5,45,187,31
     LTEXT           "Glul&x interpreter",IDC_STATIC,14,59,56,8
     COMBOBOX        IDC_GLULX,74,57,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Starting",IDC_STATIC,5,78,187,30
-    CONTROL         "&Start by loading the last opened project",IDC_STARTLAST,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,90,149,10
-    GROUPBOX        "Compiler",IDC_STATIC,5,110,187,30
-    CONTROL         "Generate Inform &6 debugging information",IDC_I6DEBUGGING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,122,158,10
+    GROUPBOX        "Windows specific settings",IDC_STATIC,5,79,187,55
+    CONTROL         "Show the list of panel choices horizontally",IDC_TABS_HORIZONTAL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,92,149,10
+    CONTROL         "Start by loading the last opened project",IDC_STARTLAST,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,104,149,10
+    CONTROL         "Generate Inform 6 debugging information",IDC_I6DEBUGGING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,116,158,10
 END
 
 IDD_FIND_FILES DIALOGEX 0, 0, 399, 262
@@ -730,6 +731,12 @@ BEGIN
         LEFTMARGIN, 6
         RIGHTMARGIN, 245
         TOPMARGIN, 3
+    END
+
+    IDD_PREFS_ADVANCED, DIALOG
+    BEGIN
+        RIGHTMARGIN, 250
+        BOTTOMMARGIN, 134
     END
 
     IDD_FIND_FILES, DIALOG
@@ -1006,6 +1013,11 @@ BEGIN
 END
 
 IDD_SPELLING AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PREFS_ADVANCED AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

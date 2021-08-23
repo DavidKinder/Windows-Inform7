@@ -135,13 +135,14 @@ protected:
   DECLARE_MESSAGE_MAP()
 
 private:
-  BOOL m_startWithLast;
   BOOL m_cleanFiles;
   BOOL m_cleanIndexes;
-  BOOL m_I6debug;
   CButton m_cleanFilesCheck;
   CButton m_cleanIndexCheck;
   CString m_glulxTerp;
+  BOOL m_tabsHorizontal;
+  BOOL m_startWithLast;
+  BOOL m_I6debug;
 
   CFont m_smallFont;
 };

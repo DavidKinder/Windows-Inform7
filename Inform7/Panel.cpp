@@ -86,7 +86,11 @@ int Panel::OnCreate(LPCREATESTRUCT lpCreateStruct)
 void Panel::OnSize(UINT nType, int cx, int cy)
 {
   CWnd::OnSize(nType, cx, cy);
+  Resize();
+}
 
+void Panel::Resize(void)
+{
   CRect client;
   GetClientRect(client);
   m_tab.MoveWindow(client,TRUE);
@@ -228,6 +232,8 @@ void Panel::PrefsChanged(CRegKey& key)
 {
   for (int i = 0; i < Number_Tabs; i++)
     m_tabs[i]->PrefsChanged(key);
+  if (m_tab.UpdateOrientation(key))
+    Resize();
 }
 
 void Panel::BeforeUpdateDPI(std::map<CWnd*,double>& layout)

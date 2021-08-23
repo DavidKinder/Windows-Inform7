@@ -361,7 +361,7 @@ void TabResults::Resize(void)
     // Get the dimensions of the first and last tab buttons
     CRect firstTabItem = m_tab.GetItemRect(ResTab_Report);
     CRect lastTabItem = m_tab.GetItemRect(ResTab_Console);
-    int w = lastTabItem.right - firstTabItem.left + 4;
+    int w = lastTabItem.right - firstTabItem.left;
 
     // Resize the tab control
     CRect tabSize;

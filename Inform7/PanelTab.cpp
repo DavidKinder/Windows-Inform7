@@ -17,8 +17,28 @@ BEGIN_MESSAGE_MAP(PanelTab, CWnd)
   ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
 END_MESSAGE_MAP()
 
-PanelTab::PanelTab() : m_vertical(false), m_currentItem(-1), m_controller(NULL), m_mouseOverItem(-1), m_mouseTrack(false)
+PanelTab::PanelTab() : m_vertical(true), m_currentItem(-1), m_controller(NULL), m_mouseOverItem(-1), m_mouseTrack(false)
 {
+  // Get the orientation immediately so that the panel is laid out correctly
+  CRegKey regKey;
+  if (regKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
+    UpdateOrientation(regKey);
+}
+
+bool PanelTab::UpdateOrientation(CRegKey& key)
+{
+  DWORD horiz = 0;
+  if (key.QueryDWORDValue("Tabs Horizontal",horiz) == ERROR_SUCCESS)
+  {
+    if (m_vertical != (horiz == 0))
+    {
+      m_vertical = (horiz == 0);
+      if (GetSafeHwnd() != 0)
+        Invalidate();
+      return true;
+    }
+  }
+  return false;
 }
 
 CFont* PanelTab::GetFont(void)

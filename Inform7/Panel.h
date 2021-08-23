@@ -66,6 +66,7 @@ public:
 
 protected:
   TabState GetTabNavigate(bool forward);
+  void Resize(void);
 
   PanelTab m_tab;
   TabInterface* m_tabs[Number_Tabs];

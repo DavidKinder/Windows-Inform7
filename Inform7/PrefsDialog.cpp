@@ -686,11 +686,12 @@ int CALLBACK PrefsTextPage::ListFonts(ENUMLOGFONTEX *font, NEWTEXTMETRICEX *metr
 PrefsAdvancedPage::PrefsAdvancedPage() : CPropertyPage(PrefsAdvancedPage::IDD)
 {
   // Set the default preferences values
-  m_startWithLast = FALSE;
   m_cleanFiles = TRUE;
   m_cleanIndexes = TRUE;
-  m_I6debug = FALSE;
   m_glulxTerp = "Glulxe";
+  m_tabsHorizontal = FALSE;
+  m_startWithLast = FALSE;
+  m_I6debug = FALSE;
 }
 
 BEGIN_MESSAGE_MAP(PrefsAdvancedPage, CPropertyPage)
@@ -709,6 +710,8 @@ void PrefsAdvancedPage::ReadSettings(void)
       m_cleanFiles = (value != 0);
     if (registryKey.QueryDWORDValue("Clean Up Indexes",value) == ERROR_SUCCESS)
       m_cleanIndexes = (value != 0);
+    if (registryKey.QueryDWORDValue("Tabs Horizontal",value) == ERROR_SUCCESS)
+      m_tabsHorizontal = (value != 0);
     if (registryKey.QueryDWORDValue("Generate I6 Debug",value) == ERROR_SUCCESS)
       m_I6debug = (value != 0);
   }
@@ -724,6 +727,7 @@ void PrefsAdvancedPage::WriteSettings(void)
   {
     registryKey.SetDWORDValue("Clean Up Files",m_cleanFiles);
     registryKey.SetDWORDValue("Clean Up Indexes",m_cleanIndexes);
+    registryKey.SetDWORDValue("Tabs Horizontal",m_tabsHorizontal);
     registryKey.SetDWORDValue("Generate I6 Debug",m_I6debug);
   }
   theApp.WriteProfileInt("Start","Open Last Project",m_startWithLast ? 1 : 0);
@@ -733,13 +737,14 @@ void PrefsAdvancedPage::WriteSettings(void)
 void PrefsAdvancedPage::DoDataExchange(CDataExchange* pDX)
 {
   CPropertyPage::DoDataExchange(pDX);
-  DDX_Check(pDX, IDC_STARTLAST, m_startWithLast);
   DDX_Check(pDX, IDC_CLEANFILES, m_cleanFiles);
   DDX_Check(pDX, IDC_CLEANINDEX, m_cleanIndexes);
-  DDX_Check(pDX, IDC_I6DEBUGGING, m_I6debug);
   DDX_Control(pDX, IDC_CLEANFILES, m_cleanFilesCheck);
   DDX_Control(pDX, IDC_CLEANINDEX, m_cleanIndexCheck);
   DDX_CBString(pDX, IDC_GLULX, m_glulxTerp);
+  DDX_Check(pDX, IDC_STARTLAST, m_startWithLast);
+  DDX_Check(pDX, IDC_TABS_HORIZONTAL, m_tabsHorizontal);
+  DDX_Check(pDX, IDC_I6DEBUGGING, m_I6debug);
 }
 
 BOOL PrefsAdvancedPage::OnInitDialog()
