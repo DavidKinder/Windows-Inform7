@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TabBase.h"
-#include "ButtonTab.h"
+#include "PageTab.h"
 #include "ContentsWindow.h"
 #include "SourceWindow.h"
 
@@ -73,7 +73,7 @@ private:
   void ShowHeading(const CArray<SourceLexer::Heading>& headings, int idx);
   CString GetSourcePath(const char* path);
 
-  ButtonTab m_tab;
+  PageTab m_tab;
 
   CString m_sourceFile;
   SourceWindow m_source;

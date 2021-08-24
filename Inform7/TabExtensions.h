@@ -2,7 +2,7 @@
 
 #include "TabBase.h"
 #include "ReportHtml.h"
-#include "ButtonTab.h"
+#include "PageTab.h"
 
 class TabExtensions : public TabBase, public ReportHtml::LinkConsumer
 {
@@ -64,7 +64,7 @@ private:
   void GetTabState(TabState& state);
   CString GetUrlForTab(ExtTabs tab);
 
-  ButtonTab m_tab;
+  PageTab m_tab;
   ReportHtml m_html;
   bool m_initialised;
   LinkNotify* m_notify;

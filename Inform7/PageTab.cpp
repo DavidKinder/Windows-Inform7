@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ButtonTab.h"
+#include "PageTab.h"
 #include "Inform.h"
 #include "DpiFunctions.h"
 
@@ -7,9 +7,9 @@
 #define new DEBUG_NEW
 #endif
 
-IMPLEMENT_DYNAMIC(ButtonTab, CWnd)
+IMPLEMENT_DYNAMIC(PageTab, CWnd)
 
-BEGIN_MESSAGE_MAP(ButtonTab, CWnd)
+BEGIN_MESSAGE_MAP(PageTab, CWnd)
   ON_WM_ERASEBKGND()
   ON_WM_PAINT()
   ON_WM_LBUTTONDOWN()
@@ -17,35 +17,35 @@ BEGIN_MESSAGE_MAP(ButtonTab, CWnd)
   ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
 END_MESSAGE_MAP()
 
-ButtonTab::ButtonTab() : m_currentItem(-1), m_mouseOverItem(-1), m_mouseTrack(false)
+PageTab::PageTab() : m_currentItem(-1), m_mouseOverItem(-1), m_mouseTrack(false)
 {
   EnableActiveAccessibility();
 }
 
-int ButtonTab::GetDefaultHeight(void)
+int PageTab::GetDefaultHeight(void)
 {
   CSize fontSize = theApp.MeasureFont(this,GetFont());
   return (int)(1.4*fontSize.cy);
 }
 
-CFont* ButtonTab::GetFont(void)
+CFont* PageTab::GetFont(void)
 {
   return theApp.GetFont(this,InformApp::FontSystem);
 }
 
-int ButtonTab::GetItemCount(void) const
+int PageTab::GetItemCount(void) const
 {
   return (int)m_items.size();
 }
 
-CString ButtonTab::GetItem(int item) const
+CString PageTab::GetItem(int item) const
 {
   if ((item >= 0) && (item < m_items.size()))
     return m_items[item];
   return "";
 }
 
-CRect ButtonTab::GetItemRect(int item)
+CRect PageTab::GetItemRect(int item)
 {
   CRect r(0,0,0,0);
   if ((item >= 0) && (item < m_items.size()))
@@ -71,19 +71,19 @@ CRect ButtonTab::GetItemRect(int item)
   return r;
 }
 
-void ButtonTab::InsertItem(int item, LPCSTR name)
+void PageTab::InsertItem(int item, LPCSTR name)
 {
   if (item >= m_items.size())
     m_items.resize(item+1);
   m_items[item] = name;
 }
 
-int ButtonTab::GetCurSel(void) const
+int PageTab::GetCurSel(void) const
 {
   return m_currentItem;
 }
 
-void ButtonTab::SetCurSel(int item)
+void PageTab::SetCurSel(int item)
 {
   if (m_currentItem != item)
   {
@@ -93,12 +93,12 @@ void ButtonTab::SetCurSel(int item)
   }
 }
 
-BOOL ButtonTab::OnEraseBkgnd(CDC* pDC)
+BOOL PageTab::OnEraseBkgnd(CDC* pDC)
 {
   return TRUE;
 }
 
-void ButtonTab::OnPaint()
+void PageTab::OnPaint()
 {
   CRect client;
   GetClientRect(client);
@@ -149,7 +149,7 @@ void ButtonTab::OnPaint()
   dc.SelectObject(oldBitmap);
 }
 
-void ButtonTab::OnLButtonDown(UINT nFlags, CPoint point)
+void PageTab::OnLButtonDown(UINT nFlags, CPoint point)
 {
   CWnd::OnLButtonDown(nFlags,point);
 
@@ -166,7 +166,7 @@ void ButtonTab::OnLButtonDown(UINT nFlags, CPoint point)
     SetActiveTab(tab);
 }
 
-void ButtonTab::OnMouseMove(UINT nFlags, CPoint point)
+void PageTab::OnMouseMove(UINT nFlags, CPoint point)
 {
   int hotTab = -1;
   for (int i = 0; i < GetItemCount(); i++)
@@ -195,7 +195,7 @@ void ButtonTab::OnMouseMove(UINT nFlags, CPoint point)
   CWnd::OnMouseMove(nFlags,point);
 }
 
-LRESULT ButtonTab::OnMouseLeave(WPARAM, LPARAM)
+LRESULT PageTab::OnMouseLeave(WPARAM, LPARAM)
 {
   if (m_mouseOverItem >= 0)
   {
@@ -206,7 +206,7 @@ LRESULT ButtonTab::OnMouseLeave(WPARAM, LPARAM)
   return Default();
 }
 
-void ButtonTab::SetActiveTab(int tab)
+void PageTab::SetActiveTab(int tab)
 {
   SetCurSel(tab);
 
@@ -218,7 +218,7 @@ void ButtonTab::SetActiveTab(int tab)
   GetParent()->SendMessage(WM_NOTIFY,hdr.idFrom,(LPARAM)&hdr);
 }
 
-CDibSection* ButtonTab::GetImage(const char* name, const CSize& size)
+CDibSection* PageTab::GetImage(const char* name, const CSize& size)
 {
   // Is the image in the cache?
   CString scaleName;
@@ -237,13 +237,13 @@ CDibSection* ButtonTab::GetImage(const char* name, const CSize& size)
   return dib;
 }
 
-HRESULT ButtonTab::get_accChildCount(long* count)
+HRESULT PageTab::get_accChildCount(long* count)
 {
   *count = GetItemCount();
   return S_OK;
 }
 
-HRESULT ButtonTab::get_accChild(VARIANT child, IDispatch** disp)
+HRESULT PageTab::get_accChild(VARIANT child, IDispatch** disp)
 {
   if (child.vt != VT_I4)
     return E_INVALIDARG;
@@ -251,14 +251,14 @@ HRESULT ButtonTab::get_accChild(VARIANT child, IDispatch** disp)
   return S_FALSE;
 }
 
-HRESULT ButtonTab::get_accName(VARIANT child, BSTR* accValue)
+HRESULT PageTab::get_accName(VARIANT child, BSTR* accValue)
 {
   if (child.vt != VT_I4)
     return E_INVALIDARG;
 
   CString name;
   if (child.lVal == CHILDID_SELF)
-    name = "Selector";
+    name = "Page selector";
   else
   {
     name = GetItem(child.lVal-1);
@@ -270,7 +270,7 @@ HRESULT ButtonTab::get_accName(VARIANT child, BSTR* accValue)
   return S_OK;
 }
 
-HRESULT ButtonTab::get_accRole(VARIANT child, VARIANT* role)
+HRESULT PageTab::get_accRole(VARIANT child, VARIANT* role)
 {
   if (child.vt != VT_I4)
     return E_INVALIDARG;
@@ -281,7 +281,7 @@ HRESULT ButtonTab::get_accRole(VARIANT child, VARIANT* role)
   return S_OK;
 }
 
-HRESULT ButtonTab::get_accState(VARIANT child, VARIANT* state)
+HRESULT PageTab::get_accState(VARIANT child, VARIANT* state)
 {
   if (child.vt != VT_I4)
     return E_INVALIDARG;
@@ -294,7 +294,7 @@ HRESULT ButtonTab::get_accState(VARIANT child, VARIANT* state)
   return S_OK;
 }
 
-HRESULT ButtonTab::accDoDefaultAction(VARIANT child)
+HRESULT PageTab::accDoDefaultAction(VARIANT child)
 {
   if (child.vt != VT_I4)
     return E_INVALIDARG;
@@ -307,7 +307,7 @@ HRESULT ButtonTab::accDoDefaultAction(VARIANT child)
   return S_FALSE;
 }
 
-HRESULT ButtonTab::accHitTest(long left, long top, VARIANT* child)
+HRESULT PageTab::accHitTest(long left, long top, VARIANT* child)
 {
   child->vt = VT_I4;
   child->lVal = CHILDID_SELF;
@@ -323,7 +323,7 @@ HRESULT ButtonTab::accHitTest(long left, long top, VARIANT* child)
   return S_OK;
 }
 
-HRESULT ButtonTab::accLocation(long* left, long* top, long* width, long* height, VARIANT child)
+HRESULT PageTab::accLocation(long* left, long* top, long* width, long* height, VARIANT child)
 {
   if (child.vt != VT_I4)
     return E_INVALIDARG;

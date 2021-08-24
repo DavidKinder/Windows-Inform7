@@ -5,9 +5,9 @@
 
 class CDibSection;
 
-class ButtonTab : public CWnd
+class PageTab : public CWnd
 {
-  DECLARE_DYNAMIC(ButtonTab)
+  DECLARE_DYNAMIC(PageTab)
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -19,7 +19,7 @@ protected:
   afx_msg LRESULT OnMouseLeave(WPARAM, LPARAM);
 
 public:
-  ButtonTab();
+  PageTab();
   int GetDefaultHeight(void);
 
   CFont* GetFont(void);

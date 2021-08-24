@@ -413,7 +413,7 @@ HRESULT PanelTab::get_accName(VARIANT child, BSTR* accValue)
 
   CString name;
   if (child.lVal == CHILDID_SELF)
-    name = "PanelSelector";
+    name = "Panel selector";
   else
     name = GetItem(child.lVal-1);
 
