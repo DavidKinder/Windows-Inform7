@@ -19,6 +19,8 @@ END_MESSAGE_MAP()
 
 PanelTab::PanelTab() : m_vertical(true), m_currentItem(-1), m_controller(NULL), m_mouseOverItem(-1), m_mouseTrack(false)
 {
+  EnableActiveAccessibility();
+
   // Get the orientation immediately so that the panel is laid out correctly
   CRegKey regKey;
   if (regKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
@@ -388,4 +390,109 @@ bool PanelTab::IsTabEnabled(int tab)
   if (m_controller != NULL)
     return m_controller->IsTabEnabled(tab);
   return true;
+}
+
+HRESULT PanelTab::get_accChildCount(long* count)
+{
+  *count = GetItemCount();
+  return S_OK;
+}
+
+HRESULT PanelTab::get_accChild(VARIANT child, IDispatch** disp)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  return S_FALSE;
+}
+
+HRESULT PanelTab::get_accName(VARIANT child, BSTR* accValue)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  CString name;
+  if (child.lVal == CHILDID_SELF)
+    name = "PanelSelector";
+  else
+    name = GetItem(child.lVal-1);
+
+  *accValue = name.AllocSysString();
+  return S_OK;
+}
+
+HRESULT PanelTab::get_accRole(VARIANT child, VARIANT* role)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  role->vt = VT_I4;
+  role->lVal = (child.lVal == CHILDID_SELF) ?
+    ROLE_SYSTEM_PAGETABLIST : ROLE_SYSTEM_PAGETAB;
+  return S_OK;
+}
+
+HRESULT PanelTab::get_accState(VARIANT child, VARIANT* state)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  state->vt = VT_I4;
+  state->lVal = 0;
+
+  if ((child.lVal > 0) && (m_currentItem == child.lVal-1))
+    state->lVal = STATE_SYSTEM_SELECTED;
+  return S_OK;
+}
+
+HRESULT PanelTab::accDoDefaultAction(VARIANT child)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  if (child.lVal != CHILDID_SELF)
+  {
+    if (SetActiveTab(child.lVal-1))
+      return S_OK;
+  }
+  return S_FALSE;
+}
+
+HRESULT PanelTab::accHitTest(long left, long top, VARIANT* child)
+{
+  child->vt = VT_I4;
+  child->lVal = CHILDID_SELF;
+
+  CPoint point(left,top);
+  ScreenToClient(&point);
+
+  for (int i = 0; i < GetItemCount(); i++)
+  {
+    if (GetItemRect(i).PtInRect(point))
+      child->lVal = i+1;
+  }
+  return S_OK;
+}
+
+HRESULT PanelTab::accLocation(long* left, long* top, long* width, long* height, VARIANT child)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  CRect rect;
+  if (child.lVal == CHILDID_SELF)
+    GetWindowRect(rect);
+  else
+  {
+    CRect winRect;
+    GetWindowRect(winRect);
+    rect = GetItemRect(child.lVal-1);
+    rect.OffsetRect(winRect.TopLeft());
+  }
+
+  *left = rect.left;
+  *top = rect.top;
+  *width = rect.Width();
+  *height = rect.Height();
+  return S_OK;
 }

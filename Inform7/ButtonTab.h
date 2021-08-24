@@ -41,4 +41,14 @@ protected:
 
   int m_mouseOverItem;
   bool m_mouseTrack;
+
+public:
+  virtual HRESULT get_accChildCount(long* count);
+  virtual HRESULT get_accChild(VARIANT child, IDispatch** disp);
+  virtual HRESULT get_accName(VARIANT child, BSTR* name);
+  virtual HRESULT get_accRole(VARIANT child, VARIANT* role);
+  virtual HRESULT get_accState(VARIANT child, VARIANT* state);
+  virtual HRESULT accDoDefaultAction(VARIANT child);
+  virtual HRESULT accHitTest(long left, long top, VARIANT* child);
+  virtual HRESULT accLocation(long* left, long* top, long* width, long* height, VARIANT child);
 };

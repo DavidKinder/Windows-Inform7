@@ -19,6 +19,7 @@ END_MESSAGE_MAP()
 
 ButtonTab::ButtonTab() : m_currentItem(-1), m_mouseOverItem(-1), m_mouseTrack(false)
 {
+  EnableActiveAccessibility();
 }
 
 int ButtonTab::GetDefaultHeight(void)
@@ -234,4 +235,113 @@ CDibSection* ButtonTab::GetImage(const char* name, const CSize& size)
   dib = theApp.CreateScaledImage(original_dib,scaleX,scaleY);
   theApp.CacheImage(scaleName,dib);
   return dib;
+}
+
+HRESULT ButtonTab::get_accChildCount(long* count)
+{
+  *count = GetItemCount();
+  return S_OK;
+}
+
+HRESULT ButtonTab::get_accChild(VARIANT child, IDispatch** disp)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  return S_FALSE;
+}
+
+HRESULT ButtonTab::get_accName(VARIANT child, BSTR* accValue)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  CString name;
+  if (child.lVal == CHILDID_SELF)
+    name = "Selector";
+  else
+  {
+    name = GetItem(child.lVal-1);
+    if (name == "?H")
+      name = "Home";
+  }
+
+  *accValue = name.AllocSysString();
+  return S_OK;
+}
+
+HRESULT ButtonTab::get_accRole(VARIANT child, VARIANT* role)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  role->vt = VT_I4;
+  role->lVal = (child.lVal == CHILDID_SELF) ?
+    ROLE_SYSTEM_PAGETABLIST : ROLE_SYSTEM_PAGETAB;
+  return S_OK;
+}
+
+HRESULT ButtonTab::get_accState(VARIANT child, VARIANT* state)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  state->vt = VT_I4;
+  state->lVal = 0;
+
+  if ((child.lVal > 0) && (m_currentItem == child.lVal-1))
+    state->lVal = STATE_SYSTEM_SELECTED;
+  return S_OK;
+}
+
+HRESULT ButtonTab::accDoDefaultAction(VARIANT child)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  if (child.lVal != CHILDID_SELF)
+  {
+    SetActiveTab(child.lVal-1);
+    return S_OK;
+  }
+  return S_FALSE;
+}
+
+HRESULT ButtonTab::accHitTest(long left, long top, VARIANT* child)
+{
+  child->vt = VT_I4;
+  child->lVal = CHILDID_SELF;
+
+  CPoint point(left,top);
+  ScreenToClient(&point);
+
+  for (int i = 0; i < GetItemCount(); i++)
+  {
+    if (GetItemRect(i).PtInRect(point))
+      child->lVal = i+1;
+  }
+  return S_OK;
+}
+
+HRESULT ButtonTab::accLocation(long* left, long* top, long* width, long* height, VARIANT child)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  CRect rect;
+  if (child.lVal == CHILDID_SELF)
+    GetWindowRect(rect);
+  else
+  {
+    CRect winRect;
+    GetWindowRect(winRect);
+    rect = GetItemRect(child.lVal-1);
+    rect.OffsetRect(winRect.TopLeft());
+  }
+
+  *left = rect.left;
+  *top = rect.top;
+  *width = rect.Width();
+  *height = rect.Height();
+  return S_OK;
 }
