@@ -322,7 +322,7 @@
     <ClInclude Include="FindAllHelper.h">
       <Filter>Search</Filter>
     </ClInclude>
-    <ClInclude Include="ButtonTab.h">
+    <ClInclude Include="PageTab.h">
       <Filter>Controls</Filter>
     </ClInclude>
     <ClInclude Include="PanelTab.h">
@@ -1440,7 +1440,7 @@
     <ClCompile Include="FindAllHelper.cpp">
       <Filter>Search</Filter>
     </ClCompile>
-    <ClCompile Include="ButtonTab.cpp">
+    <ClCompile Include="PageTab.cpp">
       <Filter>Controls</Filter>
     </ClCompile>
     <ClCompile Include="PanelTab.cpp">
