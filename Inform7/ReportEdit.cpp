@@ -20,6 +20,7 @@ END_MESSAGE_MAP()
 
 ReportEdit::ReportEdit()
 {
+  EnableActiveAccessibility();
   m_fixed = false;
 }
 
@@ -54,6 +55,11 @@ BOOL ReportEdit::Create(CWnd* parent, UINT id)
   SetFonts();
 
   return TRUE;
+}
+
+void ReportEdit::SetAccName(LPCSTR name)
+{
+  m_accName = name;
 }
 
 void ReportEdit::FontChanged(void)
@@ -124,4 +130,36 @@ extern "C" sptr_t __stdcall Scintilla_DirectFunction(sptr_t, UINT, uptr_t, sptr_
 LONG_PTR ReportEdit::CallEdit(UINT msg, DWORD wp, LONG_PTR lp)
 {
   return Scintilla_DirectFunction(m_editPtr,msg,wp,lp);
+}
+
+HRESULT ReportEdit::get_accName(VARIANT child, BSTR* accName)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  if (child.lVal == CHILDID_SELF)
+  {
+    *accName = m_accName.AllocSysString();
+    return S_OK;
+  }
+  return S_FALSE;
+}
+
+HRESULT ReportEdit::get_accValue(VARIANT child, BSTR* accValue)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  if (child.lVal == CHILDID_SELF)
+  {
+    int len = (int)CallEdit(SCI_GETLENGTH);
+    CString text;
+    LPSTR textPtr = text.GetBufferSetLength(len+1);
+    CallEdit(SCI_GETTEXT,len+1,(sptr_t)textPtr);
+    text.ReleaseBuffer();
+
+    *accValue = text.AllocSysString();
+    return S_OK;
+  }
+  return S_FALSE;
 }

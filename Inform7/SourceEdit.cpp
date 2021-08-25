@@ -70,6 +70,8 @@ END_MESSAGE_MAP()
 
 SourceEdit::SourceEdit() : m_fileTime(CTime::GetCurrentTime()), m_spell(this)
 {
+  EnableActiveAccessibility();
+
   m_editPtr = 0;
   m_marker = 0;
   m_markSel.cpMin = -1;
@@ -1497,4 +1499,36 @@ void SourceEdit::SetSourceStyle(int style, int boldItalic, bool underline, int s
 
   int sizeShift = (size == 1) ? -m_fontSize : 0;
   CallEdit(SCI_STYLESETSIZE,style,(10 * m_fontSize) + sizeShift);
+}
+
+HRESULT SourceEdit::get_accName(VARIANT child, BSTR* accName)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  if (child.lVal == CHILDID_SELF)
+  {
+    CString name("Source editor");
+    *accName = name.AllocSysString();
+    return S_OK;
+  }
+  return S_FALSE;
+}
+
+HRESULT SourceEdit::get_accValue(VARIANT child, BSTR* accValue)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  if (child.lVal == CHILDID_SELF)
+  {
+    CStringW srcW = GetTextRange(
+      (int)CallEdit(SCIX_VISIBLEREGIONSTART),
+      (int)CallEdit(SCIX_VISIBLEREGIONEND),
+      (int)CallEdit(SCI_GETLENGTH));
+
+    *accValue = srcW.AllocSysString();
+    return S_OK;
+  }
+  return S_FALSE;
 }

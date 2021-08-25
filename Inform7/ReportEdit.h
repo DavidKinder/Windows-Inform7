@@ -7,6 +7,7 @@ class ReportEdit : public CWnd
 public:
   ReportEdit();
   BOOL Create(CWnd* parent, UINT id);
+  void SetAccName(LPCSTR name);
   void FontChanged(void);
   void PrefsChanged(void);
 
@@ -29,4 +30,9 @@ private:
 
   LONG_PTR m_editPtr;
   bool m_fixed;
+  CString m_accName;
+
+public:
+  virtual HRESULT get_accName(VARIANT child, BSTR* name);
+  virtual HRESULT get_accValue(VARIANT child, BSTR* value);
 };

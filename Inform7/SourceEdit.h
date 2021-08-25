@@ -155,4 +155,8 @@ private:
   SpellCheck m_spell;
 
   friend class SourceLexer;
+
+public:
+  virtual HRESULT get_accName(VARIANT child, BSTR* name);
+  virtual HRESULT get_accValue(VARIANT child, BSTR* value);
 };

@@ -56,6 +56,10 @@ void TabResults::CreateTab(CWnd* parent)
   // Make the report the initial tab
   Panel::FreezeHistory freeze(Panel::GetPanel(this));
   SetActiveTab(ResTab_Report,false);
+
+  // Set window text for accessibility
+  m_report.SetWindowText("Report");
+  m_console.SetAccName("Console");
 }
 
 void TabResults::MoveTab(CRect& rect)
