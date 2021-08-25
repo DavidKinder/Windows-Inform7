@@ -61,6 +61,10 @@ void TabSource::CreateTab(CWnd* parent)
     ASSERT(0);
     break;
   }
+
+  // Set window text for accessibility
+  m_source.SetWindowText("Source");
+  m_contents.SetWindowText("Contents");
 }
 
 void TabSource::MoveTab(CRect& rect)

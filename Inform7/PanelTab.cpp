@@ -406,18 +406,18 @@ HRESULT PanelTab::get_accChild(VARIANT child, IDispatch** disp)
   return S_FALSE;
 }
 
-HRESULT PanelTab::get_accName(VARIANT child, BSTR* accValue)
+HRESULT PanelTab::get_accName(VARIANT child, BSTR* accName)
 {
   if (child.vt != VT_I4)
     return E_INVALIDARG;
 
   CString name;
   if (child.lVal == CHILDID_SELF)
-    name = "Panel selector";
+    name = "Panels";
   else
     name = GetItem(child.lVal-1);
 
-  *accValue = name.AllocSysString();
+  *accName = name.AllocSysString();
   return S_OK;
 }
 

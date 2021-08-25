@@ -34,6 +34,9 @@ void TabBase::Create(CWnd* parent)
   m_navigate[0].SetFont(font);
   m_navigate[1].Create("?>",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_NAVIGATE_FORE);
   m_navigate[1].SetFont(font);
+
+  // Set window text for accessibility
+  SetWindowText(GetName());
 }
 
 void TabBase::SizeTab(CRect& client, CSize& fontSize, int& heading)

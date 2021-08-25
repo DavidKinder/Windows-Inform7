@@ -251,14 +251,14 @@ HRESULT PageTab::get_accChild(VARIANT child, IDispatch** disp)
   return S_FALSE;
 }
 
-HRESULT PageTab::get_accName(VARIANT child, BSTR* accValue)
+HRESULT PageTab::get_accName(VARIANT child, BSTR* accName)
 {
   if (child.vt != VT_I4)
     return E_INVALIDARG;
 
   CString name;
   if (child.lVal == CHILDID_SELF)
-    name = "Page selector";
+    name = "Pages";
   else
   {
     name = GetItem(child.lVal-1);
@@ -266,7 +266,7 @@ HRESULT PageTab::get_accName(VARIANT child, BSTR* accValue)
       name = "Home";
   }
 
-  *accValue = name.AllocSysString();
+  *accName = name.AllocSysString();
   return S_OK;
 }
 

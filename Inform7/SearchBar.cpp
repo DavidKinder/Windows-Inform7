@@ -15,7 +15,8 @@ BEGIN_MESSAGE_MAP(SearchBar, CDialogBar)
 END_MESSAGE_MAP()
 
 SearchBar::SearchBar()
-  : m_source(WM_SEARCHSOURCE,L"Source"), m_docs(WM_SEARCHDOC,L"Documentation")
+  : m_source(WM_SEARCHSOURCE,L"Source","Search source"),
+    m_docs(WM_SEARCHDOC,L"Documentation","Search documentation")
 {
 }
 

@@ -334,6 +334,13 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     GetMenu()->RemoveMenu(ID_PLAY_LOAD,MF_BYCOMMAND);
   }
 
+  // Set window text for accessibility
+  m_coolBar.SetWindowText("Toolbar area");
+  m_menuBar.SetWindowText("Menus");
+  m_toolBar.SetWindowText("Actions");
+  m_searchBar.SetWindowText("Search");
+  GetPanel(0)->SetWindowText("Left");
+  GetPanel(1)->SetWindowText("Right");
   return 0;
 }
 
@@ -3228,6 +3235,7 @@ bool ProjectFrame::LoadToolBar(void)
       for (int i = 0; i < I7XP_TBAR_SPACER_COUNT; i++)
       {
         TBBUTTON spacer = { -1,0 };
+        spacer.iString = -1;
         ctrl.InsertButton(I7XP_TBAR_SPACER_POS,&spacer);
       }
 
@@ -3438,4 +3446,23 @@ void ProjectFrame::TestCurrentExample(bool testAll)
     else
       GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
   }
+}
+
+ExampleComboBox::ExampleComboBox()
+{
+  EnableActiveAccessibility();
+}
+
+HRESULT ExampleComboBox::get_accName(VARIANT child, BSTR* accName)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  if (child.lVal == CHILDID_SELF)
+  {
+    CString name("Examples");
+    *accName = name.AllocSysString();
+    return S_OK;
+  }
+  return S_FALSE;
 }

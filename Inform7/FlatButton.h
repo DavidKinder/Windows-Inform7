@@ -22,4 +22,7 @@ protected:
   CDibSection* GetImage(const char* name, const CSize& size, bool light);
 
   bool m_mouseOver;
+
+public:
+  virtual HRESULT get_accName(VARIANT child, BSTR* name);
 };

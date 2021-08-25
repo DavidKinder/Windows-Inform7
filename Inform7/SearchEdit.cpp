@@ -20,8 +20,10 @@ BEGIN_MESSAGE_MAP(SearchEdit, UnicodeEdit)
   ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
 END_MESSAGE_MAP()
 
-SearchEdit::SearchEdit(UINT msg, LPCWSTR displayText) : m_msg(msg), m_displayText(displayText)
+SearchEdit::SearchEdit(UINT msg, LPCWSTR displayText, LPCSTR accName)
+  : m_msg(msg), m_displayText(displayText), m_accName(accName)
 {
+  EnableActiveAccessibility();
   m_editing = false;
   m_image = theApp.GetCachedImage("Search");
   m_image->AlphaBlend(::GetSysColor(COLOR_WINDOW));
@@ -130,4 +132,17 @@ BOOL SearchEdit::PreTranslateMessage(MSG* pMsg)
     }
   }
   return UnicodeEdit::PreTranslateMessage(pMsg);
+}
+
+HRESULT SearchEdit::get_accName(VARIANT child, BSTR* accName)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  if (child.lVal == CHILDID_SELF)
+  {
+    *accName = m_accName.AllocSysString();
+    return S_OK;
+  }
+  return S_FALSE;
 }

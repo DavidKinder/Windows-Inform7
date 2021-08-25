@@ -15,6 +15,13 @@
 
 #include <queue>
 
+class ExampleComboBox : public CComboBox
+{
+public:
+  ExampleComboBox();
+  virtual HRESULT get_accName(VARIANT child, BSTR* name);
+};
+
 class ProjectFrame :
   public MenuBarFrameWnd,
   public InformApp::OutputSink,
@@ -35,7 +42,7 @@ public:
 protected:
   CToolBar m_toolBar;
   SearchBar m_searchBar;
-  CComboBox m_exampleList;
+  ExampleComboBox m_exampleList;
   ProgressWnd m_progress;
   FlatSplitter m_splitter;
 

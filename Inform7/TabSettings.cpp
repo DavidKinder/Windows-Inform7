@@ -136,6 +136,9 @@ void TabSettings::CreateTab(CWnd* parent)
   m_outputZ8.SubclassDlgItem(IDC_OUTPUT_Z8,this);
   m_outputGlulx.SubclassDlgItem(IDC_OUTPUT_GLULX,this);
   m_version.SubclassDlgItem(IDC_VERSION_COMBO,this);
+
+  // Set window text for accessibility
+  SetWindowText(GetName());
 }
 
 void TabSettings::MoveTab(CRect& rect)

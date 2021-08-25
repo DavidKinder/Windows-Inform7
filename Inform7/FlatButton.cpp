@@ -16,6 +16,7 @@ END_MESSAGE_MAP()
 
 FlatButton::FlatButton() : m_mouseOver(false)
 {
+  EnableActiveAccessibility();
 }
 
 BOOL FlatButton::PreCreateWindow(CREATESTRUCT& cs)
@@ -153,4 +154,24 @@ CDibSection* FlatButton::GetImage(const char* name, const CSize& size, bool ligh
   }
   theApp.CacheImage(scaleName,dib);
   return dib;
+}
+
+HRESULT FlatButton::get_accName(VARIANT child, BSTR* accName)
+{
+  if (child.vt != VT_I4)
+    return E_INVALIDARG;
+
+  if (child.lVal == CHILDID_SELF)
+  {
+    CString name;
+    GetWindowText(name);
+
+    if (name == "?<")
+      name = "Go back";
+    else if (name == "?>")
+      name = "Go forward";
+    *accName = name.AllocSysString();
+    return S_OK;
+  }
+  return S_FALSE;
 }

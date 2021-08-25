@@ -64,6 +64,9 @@ int ExtensionFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   // Set the application icon
   theApp.SetIcon(this);
 
+  // Set window text for accessibility
+  m_coolBar.SetWindowText("Toolbar area");
+  m_menuBar.SetWindowText("Menus");
   return 0;
 }
 

@@ -21,13 +21,17 @@ protected:
   bool m_editing;
   CStringW m_editText;
   const CStringW m_displayText;
+  const CString m_accName;
 
   CDibSection* m_image;
 
 public:
-  SearchEdit(UINT msg, LPCWSTR displayText);
+  SearchEdit(UINT msg, LPCWSTR displayText, LPCSTR accName);
   void Init(UINT id, CWnd* parent);
   void SetEditRect(void);
 
   virtual BOOL PreTranslateMessage(MSG* pMsg);
+
+public:
+  virtual HRESULT get_accName(VARIANT child, BSTR* name);
 };
