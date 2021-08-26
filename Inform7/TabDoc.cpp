@@ -55,6 +55,7 @@ void TabDoc::CreateTab(CWnd* parent)
   {
     TRACE("Failed to create HTML control\n");
   }
+  m_html.SetWindowText("Documentation page");
 }
 
 void TabDoc::MoveTab(CRect& rect)

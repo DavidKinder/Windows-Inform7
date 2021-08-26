@@ -57,6 +57,7 @@ void TabExtensions::CreateTab(CWnd* parent)
     TRACE("Failed to create HTML control\n");
   }
   m_html.SetLinkConsumer(this);
+  m_html.SetWindowText("Extensions page");
 }
 
 void TabExtensions::MoveTab(CRect& rect)

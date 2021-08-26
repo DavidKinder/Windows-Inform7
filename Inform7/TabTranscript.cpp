@@ -50,6 +50,7 @@ void TabTranscript::CreateTab(CWnd* parent)
 
   // Create the window containing the actual transcript
   m_window.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE,CRect(0,0,0,0),this,1);
+  m_window.SetWindowText("Transcript");
 }
 
 void TabTranscript::MoveTab(CRect& rect)

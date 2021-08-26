@@ -66,6 +66,7 @@ void TabIndex::CreateTab(CWnd* parent)
     TRACE("Failed to create index HTML control\n");
   }
   m_index.SetLinkConsumer(this);
+  m_index.SetWindowText("Index page");
 
   // Make contents the initial tab
   Panel::FreezeHistory freeze(Panel::GetPanel(this));

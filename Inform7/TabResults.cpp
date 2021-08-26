@@ -58,8 +58,8 @@ void TabResults::CreateTab(CWnd* parent)
   SetActiveTab(ResTab_Report,false);
 
   // Set window text for accessibility
-  m_report.SetWindowText("Report");
-  m_console.SetAccName("Console");
+  m_report.SetWindowText("Report page");
+  m_console.SetAccName("Console page");
 }
 
 void TabResults::MoveTab(CRect& rect)

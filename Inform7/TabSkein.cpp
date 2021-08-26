@@ -66,6 +66,11 @@ void TabSkein::CreateTab(CWnd* parent)
   m_helpWindow->SetLinkConsumer(this);
   m_helpWindow->Navigate(TextFormat::AnsiToUTF8(
     theApp.GetAppDir()+"\\Documentation\\windows\\TestingTemplate.html"),false);
+
+  // Set window text for accessibility
+  m_splitter.SetWindowText("Skein split window");
+  m_skeinWindow->SetWindowText("Skein");
+  m_helpWindow->SetWindowText("Skein help");
 }
 
 void TabSkein::MoveTab(CRect& rect)
