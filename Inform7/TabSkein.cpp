@@ -68,7 +68,7 @@ void TabSkein::CreateTab(CWnd* parent)
     theApp.GetAppDir()+"\\Documentation\\windows\\TestingTemplate.html"),false);
 
   // Set window text for accessibility
-  m_splitter.SetWindowText("Skein split window");
+  m_splitter.SetWindowText("Skein page");
   m_skeinWindow->SetWindowText("Skein");
   m_helpWindow->SetWindowText("Skein help");
 }
