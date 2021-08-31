@@ -346,26 +346,6 @@ Panel* Panel::GetPanel(CWnd* wnd)
   return NULL;
 }
 
-double Panel::GetFontScale(CWnd* wnd)
-{
-  // Get the approximate width of the tabs
-  CDC* dc = wnd->GetDC();
-  int tabWidth = dc->GetTextExtent(
-    " Source | Results | Index | Skein | Transcript | Story | Documentation | Extensions | Settings |").cx;
-  wnd->ReleaseDC(dc);
-
-  // Get the width of the monitor
-  int monWidth = DPI::getMonitorWorkRect(wnd).Width();
-
-  // Work out a scaling factor for the tab font
-  double scale = monWidth / (2.1*tabWidth);
-  if (scale > 1.0)
-    scale = 1.0;
-  else if (scale < 0.6)
-    scale = 0.6;
-  return scale;
-}
-
 Panel::FreezeHistory::FreezeHistory(Panel* panel) : m_panel(panel)
 {
   m_panel->m_tabHistoryFrozen = true;
