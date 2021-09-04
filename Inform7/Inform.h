@@ -151,6 +151,7 @@ public:
   void RunMessagePump(void);
   CreatedProcess CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug, const char* exeFile);
   void WaitForProcessEnd(HANDLE process);
+  void AddProcessToJob(HANDLE process);
   CreatedProcess RunCensus(void);
   int RunCommand(const char* dir, CString& command, const char* exeFile, OutputSink& output, bool hasSymbols);
   void HandleDebugEvents(void);
@@ -208,6 +209,8 @@ protected:
   CArray<CFrameWnd*> m_frames;
   std::map<std::string,CDibSection*> m_bitmaps;
   std::vector<ExtLocation> m_extensions;
+
+  void HookApiFunction(const char* callingDllName, const char* calledDllName, const char* functionName, PROC newFunction);
 
   struct DebugProcess
   {

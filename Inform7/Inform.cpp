@@ -21,6 +21,8 @@ extern "C" {
 #include "jpeglib.h"
 }
 
+#include <dbghelp.h>
+
 CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString& imageFile, LPVOID imageBase, DWORD imageSize);
 
 #ifdef _DEBUG
@@ -100,6 +102,17 @@ public:
   }
 };
 
+// Hook a DLL's calls to CreateProcess() and add the created process to our job
+BOOL WINAPI HookCreateProcessW(
+  LPCWSTR appName, LPWSTR cmdLine, LPSECURITY_ATTRIBUTES procAttrs, LPSECURITY_ATTRIBUTES threadAttrs,
+  BOOL inherit, DWORD flags, LPVOID env, LPCWSTR cd, LPSTARTUPINFOW startInfo, LPPROCESS_INFORMATION procInfo)
+{
+  BOOL created = CreateProcessW(appName,cmdLine,procAttrs,threadAttrs,inherit,flags,env,cd,startInfo,procInfo);
+  if (created)
+    theApp.AddProcessToJob(procInfo->hProcess);
+  return created;
+}
+
 BEGIN_MESSAGE_MAP(InformApp, CWinApp)
   ON_COMMAND_EX_RANGE(ID_FILE_MRU_FILE1, ID_FILE_MRU_FILE9, OnOpenRecentFile)
   ON_COMMAND(ID_FILE_CLEAR_RECENT, OnFileClearRecent)
@@ -144,6 +157,9 @@ BOOL InformApp::InitInstance()
       VERIFY(::SetInformationJobObject(m_job,
         JobObjectExtendedLimitInformation,&jeli,sizeof(jeli)));
     }
+
+    // Hook into CEF creating processes
+    HookApiFunction("libcef.dll","kernel32.dll","CreateProcessW",(PROC)HookCreateProcessW);
   }
 
   // Set the HOME environment variable to the My Documents folder,
@@ -1099,8 +1115,7 @@ InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& com
     ::CloseHandle(process.hThread);
 
     // If there is a job, assign the process to it
-    if (m_job)
-      VERIFY(::AssignProcessToJobObject(m_job,process.hProcess));
+    AddProcessToJob(process.hProcess);
   }
   return cp;
 }
@@ -1117,6 +1132,12 @@ void InformApp::WaitForProcessEnd(HANDLE process)
     if (::GetTickCount() > timeout)
       break;
   }
+}
+
+void InformApp::AddProcessToJob(HANDLE process)
+{
+  if (m_job)
+    ::AssignProcessToJobObject(m_job,process);
 }
 
 InformApp::CreatedProcess InformApp::RunCensus(void)
@@ -1564,6 +1585,64 @@ void InformApp::SetFonts(void)
 
   // Release the desktop device context
   wnd->ReleaseDC(dc);
+}
+
+void InformApp::HookApiFunction(const char* callingDllName, const char* calledDllName, const char* functionName, PROC newFunction)
+{
+  HMODULE callingDll = ::LoadLibrary(callingDllName);
+  HMODULE calledDll = ::LoadLibrary(calledDllName);
+  if ((callingDll == 0) || (calledDll == 0))
+    goto endHook;
+
+  // Get the pointer to the 'real' function
+  PROC realFunction = ::GetProcAddress(calledDll,functionName);
+  if (realFunction == 0)
+    goto endHook;
+
+  // Get the import section of the DLL
+  ULONG sz;
+  PIMAGE_IMPORT_DESCRIPTOR import =
+    (PIMAGE_IMPORT_DESCRIPTOR)::ImageDirectoryEntryToData(callingDll,TRUE,IMAGE_DIRECTORY_ENTRY_IMPORT,&sz);
+  if (import == NULL)
+    goto endHook;
+
+  // Find the import section matching the named DLL
+  while (import->Name)
+  {
+    PSTR dllName = (PSTR)((PBYTE)callingDll + import->Name);
+    {
+      if (stricmp(dllName,calledDllName) == 0)
+        break;
+    }
+    import++;
+  }
+  if (import->Name == NULL)
+    goto endHook;
+
+  // Scan the IAT for this DLL
+  PIMAGE_THUNK_DATA thunk = (PIMAGE_THUNK_DATA)((PBYTE)callingDll + import->FirstThunk);
+  while (thunk->u1.Function)
+  {
+    PROC* function = (PROC*)&(thunk->u1.Function);
+    if (*function == realFunction)
+    {
+      // Make the function pointer writable and hook the function
+      MEMORY_BASIC_INFORMATION mbi;
+      ::VirtualQuery(function,&mbi,sizeof mbi);
+      if (::VirtualProtect(mbi.BaseAddress,mbi.RegionSize,PAGE_READWRITE,&mbi.Protect))
+      {
+        *function = newFunction;
+        DWORD protect;
+        ::VirtualProtect(mbi.BaseAddress,mbi.RegionSize,mbi.Protect,&protect);
+        goto endHook;
+      }
+    }
+    thunk++;
+  }
+
+endHook:
+  ::FreeLibrary(calledDll);
+  ::FreeLibrary(callingDll);
 }
 
 InformApp::ExtLocation::ExtLocation(const char* a, const char* t, bool s, const char* p)
