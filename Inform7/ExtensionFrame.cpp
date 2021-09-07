@@ -889,9 +889,14 @@ void ExtensionFrame::SetDownloadProgress(CFrameWnd* parent, int total, int curre
 void ExtensionFrame::ShowInstalledMessage(CWnd* parent, int installed, int total, LPCWSTR lastExt)
 {
   CStringW head, msg;
+  LPCWSTR icon = NULL;
+
   if (total > installed)
   {
     // One or more errors
+    head = L"Installation error.";
+    icon = TD_ERROR_ICON;
+
     if (installed > 0)
     {
       if (installed == 1)
@@ -911,11 +916,16 @@ void ExtensionFrame::ShowInstalledMessage(CWnd* parent, int installed, int total
   {
     // No errors
     head = L"Installation complete.";
-    if (installed > 1)
+    icon = TD_INFORMATION_ICON;
+
+    if (total == 0)
+      msg = "Nothing to install.";
+    else if (installed > 1)
       msg.Format(L"%d extensions installed successfully.",installed);
     else
       msg.Format(L"Extension %s installed successfully.",lastExt);
   }
+
   ::TaskDialog(parent->GetSafeHwnd(),0,
     L_INFORM_TITLE,head,msg,TDCBF_OK_BUTTON,TD_INFORMATION_ICON,NULL);
 }
