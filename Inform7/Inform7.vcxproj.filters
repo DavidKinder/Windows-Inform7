@@ -933,9 +933,6 @@
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\transfer_util.cc">
       <Filter>Libraries\libcef</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_bind_helpers.cc">
-      <Filter>Libraries\libcef\base</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_callback_internal.cc">
       <Filter>Libraries\libcef\base</Filter>
     </ClCompile>
@@ -949,9 +946,6 @@
       <Filter>Libraries\libcef\base</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_ref_counted.cc">
-      <Filter>Libraries\libcef\base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_string16.cc">
       <Filter>Libraries\libcef\base</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_thread_checker_impl.cc">
@@ -1048,9 +1042,6 @@
       <Filter>Libraries\libcef\cpptoc</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\read_handler_cpptoc.cc">
-      <Filter>Libraries\libcef\cpptoc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\register_cdm_callback_cpptoc.cc">
       <Filter>Libraries\libcef\cpptoc</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\render_handler_cpptoc.cc">
@@ -1445,6 +1436,12 @@
     </ClCompile>
     <ClCompile Include="PanelTab.cpp">
       <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_atomic_flag.cc">
+      <Filter>Libraries\libcef\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\frame_handler_cpptoc.cc">
+      <Filter>Libraries\libcef\cpptoc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

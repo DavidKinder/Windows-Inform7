@@ -93,9 +93,9 @@ xcopy /y ..\..\..\Libraries\libcef\release\chrome_elf.dll $(OutDir)
 xcopy /y ..\..\..\Libraries\libcef\release\snapshot_blob.bin $(OutDir)
 xcopy /y ..\..\..\Libraries\libcef\release\v8_context_snapshot.bin $(OutDir)
 xcopy /y ..\..\..\Libraries\libcef\resources\icudtl.dat $(OutDir)
-xcopy /y ..\..\..\Libraries\libcef\resources\cef.pak ..\Build\Chrome
-xcopy /y ..\..\..\Libraries\libcef\resources\cef_100_percent.pak ..\Build\Chrome
-xcopy /y ..\..\..\Libraries\libcef\resources\cef_200_percent.pak ..\Build\Chrome
+xcopy /y ..\..\..\Libraries\libcef\resources\chrome_100_percent.pak ..\Build\Chrome
+xcopy /y ..\..\..\Libraries\libcef\resources\chrome_200_percent.pak ..\Build\Chrome
+xcopy /y ..\..\..\Libraries\libcef\resources\resources.pak ..\Build\Chrome
 xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\locales</Command>
     </PostBuildEvent>
     <PostBuildEvent>
@@ -147,9 +147,9 @@ xcopy /y ..\..\..\Libraries\libcef\release\chrome_elf.dll ..\Build
 xcopy /y ..\..\..\Libraries\libcef\release\snapshot_blob.bin ..\Build
 xcopy /y ..\..\..\Libraries\libcef\release\v8_context_snapshot.bin ..\Build
 xcopy /y ..\..\..\Libraries\libcef\resources\icudtl.dat ..\Build
-xcopy /y ..\..\..\Libraries\libcef\resources\cef.pak ..\Build\Chrome
-xcopy /y ..\..\..\Libraries\libcef\resources\cef_100_percent.pak ..\Build\Chrome
-xcopy /y ..\..\..\Libraries\libcef\resources\cef_200_percent.pak ..\Build\Chrome
+xcopy /y ..\..\..\Libraries\libcef\resources\chrome_100_percent.pak ..\Build\Chrome
+xcopy /y ..\..\..\Libraries\libcef\resources\chrome_200_percent.pak ..\Build\Chrome
+xcopy /y ..\..\..\Libraries\libcef\resources\resources.pak ..\Build\Chrome
 xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\locales</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -539,7 +539,13 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
       </PrecompiledHeader>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_bind_helpers.cc">
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\frame_handler_cpptoc.cc">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_atomic_flag.cc">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -570,12 +576,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_ref_counted.cc">
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_string16.cc">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -798,12 +798,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\read_handler_cpptoc.cc">
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\register_cdm_callback_cpptoc.cc">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>

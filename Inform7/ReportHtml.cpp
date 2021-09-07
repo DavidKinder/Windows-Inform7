@@ -405,7 +405,7 @@ public:
     CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
   {
     // Create an object with our JavaScript methods
-    CefRefPtr<CefV8Value> obj = CefV8Value::CreateObject(NULL,NULL);
+    CefRefPtr<CefV8Value> obj = CefV8Value::CreateObject(nullptr,nullptr);
     CefRefPtr<CefV8Handler> handler = new I7JavaScriptHandler(frame);
     AddMethod(obj,"selectView",handler);
     AddMethod(obj,"pasteCode",handler);
@@ -420,7 +420,7 @@ public:
     context->GetGlobal()->SetValue("Project",obj,V8_PROPERTY_ATTRIBUTE_NONE);
 
     // For backward compatability, also add as 'window.external.Project'
-    CefRefPtr<CefV8Value> extObj = CefV8Value::CreateObject(NULL,NULL);
+    CefRefPtr<CefV8Value> extObj = CefV8Value::CreateObject(nullptr,nullptr);
     extObj->SetValue("Project",obj,V8_PROPERTY_ATTRIBUTE_NONE);
     context->GetGlobal()->SetValue("external",extObj,V8_PROPERTY_ATTRIBUTE_NONE);
   }
@@ -810,7 +810,7 @@ bool ReportHtml::InitWebBrowser(void)
 // Shut down CEF
 void ReportHtml::ShutWebBrowser(void)
 {
-  cefApp = NULL;
+  cefApp = nullptr;
   delete g_requestContexts;
   g_requestContexts = NULL;
 
@@ -910,7 +910,7 @@ BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
   CefBrowserSettings browserSettings;
   CefRefPtr<I7CefClient> client(new I7CefClient());
   CefRefPtr<CefBrowser> browser = CefBrowserHost::CreateBrowserSync(
-    windowInfo,client,"",browserSettings,NULL,context);
+    windowInfo,client,"",browserSettings,nullptr,context);
   if (browser.get() == NULL)
     return FALSE;
 
