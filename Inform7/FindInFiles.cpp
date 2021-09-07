@@ -373,7 +373,7 @@ BOOL FindInFiles::OnInitDialog()
     m_findAutoComplete->SetOptions(ACO_AUTOSUGGEST);
     fes->ExternalRelease();
 
-    m_findHelper.InitResultsCtrl(&m_resultsList);
+    m_findHelper.InitResultsCtrl(&m_resultsList,true);
 
     CRect windowRect, resultsRect;
     GetWindowRect(windowRect);
@@ -642,7 +642,7 @@ void FindInFiles::OnFindAll()
     MessageBox(FindAllHelper::RegexError(ex),INFORM_TITLE,MB_ICONERROR|MB_OK);
   }
   std::sort(m_findHelper.results.begin(),m_findHelper.results.end());
-  m_findHelper.UpdateResultsCtrl(&m_resultsList);
+  m_findHelper.UpdateResultsCtrl(&m_resultsList,true);
 
   // Hide the progress bar
   m_found.ModifyStyle(0,WS_VISIBLE);

@@ -82,7 +82,7 @@ void FindReplaceDialog::InitDialog(void)
   m_dpi = DPI::getWindowDPI(this);
   theApp.SetIcon(this);
   if (m_resultsList.GetSafeHwnd() != 0)
-    m_findHelper.InitResultsCtrl(&m_resultsList);
+    m_findHelper.InitResultsCtrl(&m_resultsList,false);
 
   CRect dlgRect;
   GetWindowRect(dlgRect);
@@ -277,8 +277,7 @@ LRESULT FindReplaceDialog::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 
       double scaleX = (double)resultsRectAfter.right / (double)resultsRectBefore.right;
       m_resultsList.SetFont(theApp.GetFont(this,InformApp::FontSmall));
-      for (int i = 0; i < 3; i++)
-        m_resultsList.SetColumnWidth(i,(int)(scaleX*m_resultsList.GetColumnWidth(i)));
+      m_resultsList.SetColumnWidth(0,(int)(scaleX*m_resultsList.GetColumnWidth(0)));
     }
 
     m_dpi = newDpi;
@@ -337,7 +336,7 @@ void FindReplaceDialog::OnFindAll()
     MessageBox(FindAllHelper::RegexError(ex),INFORM_TITLE,MB_ICONERROR|MB_OK);
   }
   std::sort(m_findHelper.results.begin(),m_findHelper.results.end());
-  m_findHelper.UpdateResultsCtrl(&m_resultsList);
+  m_findHelper.UpdateResultsCtrl(&m_resultsList,false);
 
   // Set the height of the dialog
   CRect dlgRect;

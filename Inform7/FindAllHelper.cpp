@@ -80,16 +80,19 @@ void FindResultsCtrl::OnHeaderDividerDblClick(NMHDR* pNotifyStruct, LRESULT* res
     Default();
 }
 
-void FindAllHelper::InitResultsCtrl(FindResultsCtrl* ctrl)
+void FindAllHelper::InitResultsCtrl(FindResultsCtrl* ctrl, bool details)
 {
   ctrl->SetFont(theApp.GetFont(ctrl,InformApp::FontSmall));
   ctrl->SetExtendedStyle(LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
   ctrl->InsertColumn(0,"Result");
-  ctrl->InsertColumn(1,"Document");
-  ctrl->InsertColumn(2,"Type");
+  if (details)
+  {
+    ctrl->InsertColumn(1,"Document");
+    ctrl->InsertColumn(2,"Type");
+  }
 }
 
-void FindAllHelper::UpdateResultsCtrl(FindResultsCtrl* ctrl)
+void FindAllHelper::UpdateResultsCtrl(FindResultsCtrl* ctrl, bool details)
 {
   ctrl->DeleteAllItems();
   ctrl->SetRedraw(FALSE);
@@ -97,23 +100,29 @@ void FindAllHelper::UpdateResultsCtrl(FindResultsCtrl* ctrl)
   for (int i = 0; i < (int)results.size(); i++)
   {
     ctrl->InsertItem(i,"");
-    ctrl->SetItemText(i,1,results[i].doc);
-    ctrl->SetItemText(i,2,results[i].TypeName());
+    if (details)
+    {
+      ctrl->SetItemText(i,1,results[i].doc);
+      ctrl->SetItemText(i,2,results[i].TypeName());
+    }
   }
   ctrl->SetRedraw(TRUE);
 
   CRect resultsRect;
-  ctrl->GetClientRect(resultsRect);
+  ctrl->GetWindowRect(resultsRect);
 
-  // Resize all but the first column to be as wide as the least of their contents, or 25%
-  int remain = resultsRect.Width() - (::GetSystemMetrics(SM_CXVSCROLL)+8);
-  int max = (int)(0.25 * resultsRect.Width());
-  for (int i = 1; i <= 2; i++)
+  int remain = resultsRect.Width() - (::GetSystemMetrics(SM_CXVSCROLL)+4);
+  if (details)
   {
-    ctrl->SetColumnWidth(i,LVSCW_AUTOSIZE);
-    if (ctrl->GetColumnWidth(i) > max)
-      ctrl->SetColumnWidth(i,max);
-    remain -= ctrl->GetColumnWidth(i);
+    // Resize all but the first column to be as wide as the least of their contents, or 25%
+    int max = (int)(0.25 * resultsRect.Width());
+    for (int i = 1; i <= 2; i++)
+    {
+      ctrl->SetColumnWidth(i,LVSCW_AUTOSIZE);
+      if (ctrl->GetColumnWidth(i) > max)
+        ctrl->SetColumnWidth(i,max);
+      remain -= ctrl->GetColumnWidth(i);
+    }
   }
 
   // Resize the first column to take up the remaining space

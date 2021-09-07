@@ -56,8 +56,8 @@ protected:
 class FindAllHelper
 {
 public:
-  void InitResultsCtrl(FindResultsCtrl* ctrl);
-  void UpdateResultsCtrl(FindResultsCtrl* ctrl);
+  void InitResultsCtrl(FindResultsCtrl* ctrl, bool details);
+  void UpdateResultsCtrl(FindResultsCtrl* ctrl, bool details);
 
   void OnResultsDraw(FindResultsCtrl* ctrl, NMLVCUSTOMDRAW* custom, LRESULT* result);
   void OnResultsResize(FindResultsCtrl* ctrl);
