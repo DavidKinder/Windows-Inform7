@@ -58,7 +58,11 @@ FunctionEnd
 Section "DoInstall"
 
   SetOutPath "$INSTDIR"
-  Delete "$INSTDIR\natives_blob.bin" ; Only in older CEF-based versions
+
+  ; Remove old libcef files
+  Delete "$INSTDIR\natives_blob.bin"
+  Delete "$INSTDIR\Chrome\cef*.pak"
+
   File /r "..\Build\*.*"
   WriteUninstaller "Uninstall.exe"
 
