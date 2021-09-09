@@ -212,10 +212,12 @@ public:
 
   // Handle executing one of our JavaScript callback functions. Those that cannot be implemented
   // in the render process are passed to the browser process via a process message.
-  bool Execute(const CefString& name, CefRefPtr<CefV8Value>,
+  bool Execute(const CefString& name, CefRefPtr<CefV8Value> object,
     const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString&)
   {
-    if (name == "selectView")
+    if (name == "project")
+      retval = object->GetValue("Project");
+    else if (name == "selectView")
       SendMessage("I7.selectView",arguments);
     else if (name == "pasteCode")
       SendMessage("I7.pasteCode",arguments);
@@ -417,12 +419,16 @@ public:
     AddMethod(obj,"downloadMultipleExtensions",handler);
 
     // Add our object as 'window.Project'
-    context->GetGlobal()->SetValue("Project",obj,V8_PROPERTY_ATTRIBUTE_NONE);
+    CefRefPtr<CefV8Value> global = context->GetGlobal();
+    global->SetValue("Project",obj,V8_PROPERTY_ATTRIBUTE_NONE);
 
     // For backward compatability, also add as 'window.external.Project'
     CefRefPtr<CefV8Value> extObj = CefV8Value::CreateObject(nullptr,nullptr);
     extObj->SetValue("Project",obj,V8_PROPERTY_ATTRIBUTE_NONE);
-    context->GetGlobal()->SetValue("external",extObj,V8_PROPERTY_ATTRIBUTE_NONE);
+    global->SetValue("external",extObj,V8_PROPERTY_ATTRIBUTE_NONE);
+
+    // Extension documentation does not always have a needed 'project()' function
+    AddMethod(global,"project",handler);
   }
 
   // Implement CefRequestContextHandler to register our custom scheme
