@@ -445,10 +445,19 @@ CFont* InformApp::GetFont(CWnd* wnd, Fonts font)
     CWnd* frame = wnd->GetParentFrame();
     ASSERT(frame);
 
+    // Is font smoothing enabled?
+    BOOL fontSmooth = FALSE;
+    ::SystemParametersInfo(SPI_GETFONTSMOOTHING,sizeof fontSmooth,&fontSmooth,0);
+
     LOGFONT fontInfo;
     GetFont(frame,InformApp::FontSystem)->GetLogFont(&fontInfo);
     fontInfo.lfEscapement = 2700;
     fontInfo.lfOrientation = fontInfo.lfEscapement;
+    if (fontSmooth)
+    {
+      // Use anti-aliasing for vertical text, not ClearType
+      fontInfo.lfQuality = ANTIALIASED_QUALITY;
+    }
     theFont->CreateFontIndirect(&fontInfo);
   }
   else
