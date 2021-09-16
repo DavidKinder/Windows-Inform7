@@ -448,6 +448,11 @@ void ProjectFrame::OnClose()
 
 void ProjectFrame::OnSize(UINT nType, int cx, int cy)
 {
+  // Get the existing splitter position before the default action for this message
+  double split = 0.0;
+  if (m_splitter.GetSafeHwnd() != 0)
+    split = m_splitter.GetColumnFraction(0);
+
   MenuBarFrameWnd::OnSize(nType,cx,cy);
 
   // Reposition and update the toolbars
@@ -456,6 +461,13 @@ void ProjectFrame::OnSize(UINT nType, int cx, int cy)
     m_coolBar.GetReBarCtrl().MinimizeBand(2);
     m_toolBar.Invalidate();
     m_searchBar.Invalidate();
+  }
+
+  if ((m_splitter.GetSafeHwnd() != 0) && (split > 0.0))
+  {
+    // Adjust the splitter so that the fractional position is constant
+    m_splitter.SetColumnFraction(0,split,16);
+    m_splitter.RecalcLayout();
   }
 }
 
