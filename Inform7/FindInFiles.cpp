@@ -152,7 +152,7 @@ void FindInFiles::Show(void)
 
     bool placementSet = false;
     CRegKey registryKey;
-    if (registryKey.Create(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW) == ERROR_SUCCESS)
+    if (registryKey.Create(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW) == ERROR_SUCCESS)
     {
       // Restore the window state
       WINDOWPLACEMENT place;
@@ -236,7 +236,7 @@ void FindInFiles::InitInstance(void)
   {
     // Read the serialized auto complete history from the registry
     CRegKey registryKey;
-    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
+    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_READ) == ERROR_SUCCESS)
     {
       ULONG historyLen = 0;
       if (registryKey.QueryBinaryValue("Find in Files History",NULL,&historyLen) == ERROR_SUCCESS)
@@ -271,7 +271,7 @@ void FindInFiles::ExitInstance(void)
   try
   {
     CRegKey registryKey;
-    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
+    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
     {
       if (m_findHistory.GetCount() > 0)
       {
@@ -417,7 +417,7 @@ void FindInFiles::OnDestroy()
 
   // Save the window state
   CRegKey registryKey;
-  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
   {
     WINDOWPLACEMENT place;
     place.length = sizeof place;

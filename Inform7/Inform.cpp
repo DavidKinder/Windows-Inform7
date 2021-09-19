@@ -126,7 +126,7 @@ END_MESSAGE_MAP()
 // The one and only InformApp object
 InformApp theApp;
 
-InformApp::InformApp() : m_job(0)
+InformApp::InformApp() : m_job(0), m_doneProjectsOnExit(false)
 {
   for (int i = 0; i < sizeof m_fontSizes / sizeof m_fontSizes[0]; i++)
     m_fontSizes[i] = 0;
@@ -194,9 +194,15 @@ BOOL InformApp::InitInstance()
   // Initialize finding in files
   FindInFiles::InitInstance();
 
+  // Open any previously open projects
+  OpenPreviousProjects();
+
   // Show the splash screen
-  SplashScreen splash;
-  splash.ShowSplash();
+  if (AfxGetMainWnd() == NULL)
+  {
+    SplashScreen splash;
+    splash.ShowSplash();
+  }
 
   // Only continue if a project has been opened
   CWnd* mainWnd = AfxGetMainWnd();
@@ -388,6 +394,8 @@ void InformApp::OnFileClearRecent()
 
 void InformApp::OnAppExit()
 {
+  WriteOpenProjectsOnExit();
+
   // Close all secondary window frames first. The close message
   // will cause the window to be removed from the frames array.
   while (m_frames.GetSize() > 0)
@@ -656,7 +664,7 @@ CString InformApp::GetAppDir(void) const
 CString InformApp::GetLastProjectDir(void)
 {
   CRegKey registryKey;
-  if (registryKey.Create(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW) == ERROR_SUCCESS)
+  if (registryKey.Create(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW) == ERROR_SUCCESS)
   {
     char dir[MAX_PATH];
     ULONG len = sizeof dir;
@@ -1306,6 +1314,60 @@ BOOL InformApp::WriteProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR value)
   return (result == ERROR_SUCCESS);
 }
 
+void InformApp::WriteOpenProjectsOnExit(void)
+{
+  if (!m_doneProjectsOnExit)
+  {
+    CRegKey registryKey;
+    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM,KEY_READ|KEY_WRITE) == ERROR_SUCCESS)
+    {
+      registryKey.RecurseDeleteKey("Open Projects");
+      registryKey.Close();
+    }
+
+    if (registryKey.Create(HKEY_CURRENT_USER,REGISTRY_INFORM "\\Open Projects") == ERROR_SUCCESS)
+    {
+      int idx = 1;
+      CArray<CFrameWnd*> frames;
+      GetWindowFrames(frames);
+      for (int i = 0; i < frames.GetSize(); i++)
+      {
+        LPCSTR dir = (LPCSTR)frames[i]->SendMessage(WM_PROJECTDIR);
+        if (dir && (strlen(dir) > 0))
+        {
+          CString name;
+          name.Format("Project%d",idx++);
+          registryKey.SetStringValue(name,dir);
+        }
+      }
+    }
+
+    m_doneProjectsOnExit = true;
+  }
+}
+
+void InformApp::OpenPreviousProjects(void)
+{
+  CRegKey registryKey;
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM "\\Open Projects",KEY_READ) == ERROR_SUCCESS)
+  {
+    int idx = 1;
+    char dir[MAX_PATH];
+
+    while (true)
+    {
+      CString name;
+      name.Format("Project%d",idx++);
+      ULONG len = sizeof dir;
+      if (registryKey.QueryStringValue(name,dir,&len) != ERROR_SUCCESS)
+        return;
+
+      if (strlen(dir) > 0)
+        ProjectFrame::StartNamedProject(dir);
+    }
+  }
+}
+
 void InformApp::FindCompilerVersions(void)
 {
   CStdioFile retroFile;
@@ -1524,7 +1586,7 @@ void InformApp::SetFonts(void)
 
   // Look for registry settings
   CRegKey registryKey;
-  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_READ) == ERROR_SUCCESS)
   {
     char fontName[MAX_PATH];
     ULONG len = sizeof fontName;

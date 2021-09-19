@@ -23,7 +23,7 @@ PanelTab::PanelTab() : m_vertical(true), m_currentItem(-1), m_controller(NULL), 
 
   // Get the orientation immediately so that the panel is laid out correctly
   CRegKey regKey;
-  if (regKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
+  if (regKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_READ) == ERROR_SUCCESS)
     UpdateOrientation(regKey);
 }
 

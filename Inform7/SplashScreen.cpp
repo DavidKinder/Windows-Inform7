@@ -31,18 +31,6 @@ END_MESSAGE_MAP()
 
 void SplashScreen::ShowSplash(void)
 {
-  // Does the user want the splash screen?
-  int last = theApp.GetProfileInt("Start","Open Last Project",0);
-  if (last != 0)
-  {
-    // Open the last project, if possible
-    if (::GetFileAttributes(theApp.GetLastProjectDir()) != INVALID_FILE_ATTRIBUTES)
-    {
-      if (ProjectFrame::StartLastProject())
-        return;
-    }
-  }
-
   // Show the splash screen
   DoModal();
 }

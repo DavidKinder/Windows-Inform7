@@ -554,13 +554,11 @@ BEGIN
     GROUPBOX        "Interpreters",IDC_STATIC,5,45,187,31
     LTEXT           "Glul&x interpreter",IDC_STATIC,14,59,56,8
     COMBOBOX        IDC_GLULX,74,57,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Windows specific settings",IDC_STATIC,5,79,187,55
+    GROUPBOX        "Windows specific settings",IDC_STATIC,5,79,187,43
     CONTROL         "Show the list of panel choices horizontally",IDC_TABS_HORIZONTAL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,92,149,10
-    CONTROL         "Start by loading the last opened project",IDC_STARTLAST,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,104,149,10
     CONTROL         "Generate Inform 6 debugging information",IDC_I6DEBUGGING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,116,158,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,104,158,10
 END
 
 IDD_FIND_FILES DIALOGEX 0, 0, 399, 262

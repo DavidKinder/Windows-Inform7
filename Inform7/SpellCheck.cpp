@@ -91,7 +91,7 @@ void SpellCheck::Initialize(void)
   // Load registry settings
   char fileName[MAX_PATH] = "";
   CRegKey registryKey;
-  if (registryKey.Open(HKEY_CURRENT_USER,"Software\\David Kinder\\Inform\\Spelling",KEY_READ) == ERROR_SUCCESS)
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM "\\Spelling",KEY_READ) == ERROR_SUCCESS)
   {
     ULONG len = sizeof fileName;
     if (registryKey.QueryStringValue("Language",fileName,&len) != ERROR_SUCCESS)
@@ -150,7 +150,7 @@ void SpellCheck::Finalize(void)
   {
     // Save registry settings
     CRegKey registryKey;
-    if (registryKey.Open(HKEY_CURRENT_USER,"Software\\David Kinder\\Inform\\Spelling",KEY_WRITE) == ERROR_SUCCESS)
+    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM "\\Spelling",KEY_WRITE) == ERROR_SUCCESS)
       registryKey.SetStringValue("Language",currentLanguage->second.c_str());
   }
 

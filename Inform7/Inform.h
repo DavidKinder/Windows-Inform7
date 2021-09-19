@@ -17,7 +17,8 @@
 #define L_INFORM_TITLE L"Inform"
 
 // Registry location
-#define REGISTRY_PATH_WINDOW  "Software\\David Kinder\\Inform\\Window"
+#define REGISTRY_INFORM "Software\\David Kinder\\Inform"
+#define REGISTRY_INFORM_WINDOW REGISTRY_INFORM "\\Window"
 
 // Size to grow text arrays by
 #define TEXT_ARRAY_GROW 8192
@@ -162,6 +163,9 @@ public:
   CStringW GetProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR defaultValue);
   BOOL WriteProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR value);
 
+  void WriteOpenProjectsOnExit(void);
+  void OpenPreviousProjects(void);
+
   struct CompilerVersion
   {
     CString id;
@@ -232,6 +236,7 @@ protected:
 
   CString m_home;
   HANDLE m_job;
+  bool m_doneProjectsOnExit;
 };
 
 extern InformApp theApp;
