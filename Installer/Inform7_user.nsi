@@ -1,6 +1,7 @@
 ; Install script for Windows Inform 7
 
 !include "MUI2.nsh"
+!include "WinCore.nsh"
 !include "Inform7.nsh"
 
 Name "Windows Inform 7"
@@ -8,12 +9,13 @@ Caption "Windows Inform 7 (${BUILD}) Setup"
 BrandingText "NullSoft Install System"
 Unicode true
 ManifestDPIAware true
+RequestExecutionLevel user
 
 SetCompressor /SOLID lzma
-OutFile "I7_${BUILD}_Windows.exe"
+OutFile "I7_${BUILD}_Windows_user.exe"
 
-InstallDir "$PROGRAMFILES64\Inform 7"
-InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory"
+InstallDir ""
+InstallDirRegKey HKCU "SOFTWARE\David Kinder\Inform\Install64" "Directory"
 
 !define MUI_ICON "..\Inform7\res\Inform7.ico"
 !define MUI_UNICON "..\Inform7\res\Inform7.ico"
@@ -23,6 +25,7 @@ InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory"
 !define MUI_HEADERIMAGE_BITMAP "Back.bmp"
 !define MUI_HEADERIMAGE_BITMAP_NOSTRETCH
 
+!define MUI_WELCOMEPAGE_TEXT "Setup will guide you through the installation of Inform 7, a design system for interactive fiction based on natural language.$\r$\n$\r$\n$_CLICK"
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW SetWelcomeBitmap
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
@@ -38,6 +41,11 @@ InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory"
 !insertmacro MUI_LANGUAGE "English"
 
 Function ".onInit"
+  GetKnownFolderPath $InstDir ${FOLDERID_UserProgramFiles}
+  StrCmp $InstDir "" 0 +2
+  StrCpy $InstDir "$LocalAppData\Programs"
+  StrCpy $InstDir "$InstDir\Inform 7"
+
   InitPluginsDir
   System::Call USER32::GetDpiForSystem()i.r0
   ${If} $0 > 96
@@ -59,25 +67,19 @@ Section "DoInstall"
 
   SetOutPath "$INSTDIR"
 
-  ; Remove old libcef files
-  Delete "$INSTDIR\natives_blob.bin"
-  Delete "$INSTDIR\Chrome\cef*.pak"
-
   File /r "..\Build\*.*"
   WriteUninstaller "Uninstall.exe"
 
-  SetShellVarContext all
   CreateShortCut "$SMPROGRAMS\Inform 7.lnk" "$INSTDIR\Inform7.exe"
-  SetShellVarContext current
   
-  WriteRegStr HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory" "$INSTDIR"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayName" "Inform 7 (64-bit)"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayIcon" "$INSTDIR\Inform7.exe,0"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayVersion" ${BUILD}
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "Publisher" "David Kinder"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "UninstallString" '"$INSTDIR\Uninstall.exe"'
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "NoModify" 1
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "NoRepair" 1
+  WriteRegStr HKCU "SOFTWARE\David Kinder\Inform\Install64" "Directory" "$INSTDIR"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayName" "Inform 7 (64-bit)"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayIcon" "$INSTDIR\Inform7.exe,0"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayVersion" ${BUILD}
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "Publisher" "David Kinder"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "NoModify" 1
+  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "NoRepair" 1
 
 SectionEnd
 
@@ -104,11 +106,9 @@ Section "Uninstall"
   Delete "$INSTDIR\Inform7.VisualElementsManifest.xml"
   RMDir "$INSTDIR"
 
-  SetShellVarContext all
   Delete "$SMPROGRAMS\Inform 7.lnk"
-  SetShellVarContext current
 
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64"
+  DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64"
 
 SectionEnd
 
