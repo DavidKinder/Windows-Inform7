@@ -215,7 +215,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="SourceSettings.h" />
     <ClInclude Include="SourceWindow.h" />
     <ClInclude Include="SpellCheck.h" />
-    <ClInclude Include="SplashScreen.h" />
+    <ClInclude Include="WelcomeLauncher.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StopButton.h" />
     <ClInclude Include="TabBase.h" />
@@ -2322,7 +2322,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="SourceSettings.cpp" />
     <ClCompile Include="SourceWindow.cpp" />
     <ClCompile Include="SpellCheck.cpp" />
-    <ClCompile Include="SplashScreen.cpp" />
+    <ClCompile Include="WelcomeLauncher.cpp" />
     <ClCompile Include="StackTrace.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

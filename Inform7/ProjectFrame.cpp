@@ -2269,17 +2269,6 @@ bool ProjectFrame::StartNamedProject(const char* project)
   return true;
 }
 
-bool ProjectFrame::StartLastProject(void)
-{
-  CString last = theApp.GetLastProjectDir();
-  if (::GetFileAttributes(last) == INVALID_FILE_ATTRIBUTES)
-    return false;
-
-  ProjectFrame* frame = NewFrame(TypeFromDir(last));
-  frame->OpenProject(last);
-  return true;
-}
-
 void ProjectFrame::OpenProject(const char* project)
 {
   // Stop the game if running

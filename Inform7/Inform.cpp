@@ -11,7 +11,7 @@
 #include "PrefsDialog.h"
 #include "ReportHtml.h"
 #include "SpellCheck.h"
-#include "SplashScreen.h"
+#include "WelcomeLauncher.h"
 
 #include "Platform.h"
 #include "Scintilla.h"
@@ -195,13 +195,13 @@ BOOL InformApp::InitInstance()
   FindInFiles::InitInstance();
 
   // Open any previously open projects
-  OpenPreviousProjects();
+  /*OpenPreviousProjects();*/
 
-  // Show the splash screen
-  if (AfxGetMainWnd() == NULL)
+  // Show the launcher, if nothing else is open
+  /*if (AfxGetMainWnd() == NULL)*/
   {
-    SplashScreen splash;
-    splash.ShowSplash();
+    WelcomeLauncher welcome;
+    welcome.ShowLauncher();
   }
 
   // Only continue if a project has been opened

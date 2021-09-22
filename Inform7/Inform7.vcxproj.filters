@@ -172,7 +172,7 @@
     <ClInclude Include="ProjectDirDialog.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="SplashScreen.h">
+    <ClInclude Include="WelcomeLauncher.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="PropList.h">
@@ -405,7 +405,7 @@
     <ClCompile Include="ProjectDirDialog.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="SplashScreen.cpp">
+    <ClCompile Include="WelcomeLauncher.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="PropList.cpp">
