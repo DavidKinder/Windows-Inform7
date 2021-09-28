@@ -212,6 +212,24 @@
 #define IDC_REPLACE_WITH                1107
 #define IDC_REPLACE_ALL                 1108
 #define IDC_REPLACE_FIND                1109
+#define IDC_STATIC_OPEN_RECENT          1110
+#define IDC_STATIC_ADVICE               1111
+#define IDC_STATIC_CREATE_NEW           1112
+#define IDC_STATIC_SAMPLE               1113
+#define IDC_STATIC_SUMMON               1114
+#define IDC_STATIC_COMMUNITY            1115
+#define IDC_ADVICE_NEW                  1116
+#define IDC_ADVICE_UPGRADE              1117
+#define IDC_ADVICE_KEYBOARD             1118
+#define IDC_ADVICE_MATERIALS            1119
+#define IDC_ADVICE_CREDITS              1120
+#define IDC_LINK_INFORM7                1121
+#define IDC_LINK_IFDB                   1122
+#define IDC_LINK_INTFIC                 1123
+#define IDC_LINK_INTFIC_QA              1124
+#define IDC_LINK_IFWIKI                 1125
+#define IDC_LINK_PLANETIF               1126
+#define IDC_LINK_IFCOMP                 1127
 #define ID_OPEN_EXTENSIONS_LIST         2000
 #define ID_NEW_EXTENSIONS_LIST          3000
 
@@ -219,9 +237,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        284
+#define _APS_NEXT_RESOURCE_VALUE        285
 #define _APS_NEXT_COMMAND_VALUE         284
-#define _APS_NEXT_CONTROL_VALUE         1110
+#define _APS_NEXT_CONTROL_VALUE         1128
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif
