@@ -216,8 +216,8 @@
 #define IDC_STATIC_ADVICE               1111
 #define IDC_STATIC_CREATE_NEW           1112
 #define IDC_STATIC_SAMPLE               1113
-#define IDC_STATIC_SUMMON               1114
-#define IDC_STATIC_COMMUNITY            1115
+#define IDC_STATIC_COMMUNITY            1114
+#define IDC_STATIC_SUMMON               1115
 #define IDC_ADVICE_NEW                  1116
 #define IDC_ADVICE_UPGRADE              1117
 #define IDC_ADVICE_KEYBOARD             1118
@@ -230,6 +230,7 @@
 #define IDC_LINK_IFWIKI                 1125
 #define IDC_LINK_PLANETIF               1126
 #define IDC_LINK_IFCOMP                 1127
+#define IDC_LINK_IFDB_SRC               1128
 #define ID_OPEN_EXTENSIONS_LIST         2000
 #define ID_NEW_EXTENSIONS_LIST          3000
 

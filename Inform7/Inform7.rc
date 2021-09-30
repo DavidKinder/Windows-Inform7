@@ -415,29 +415,30 @@ BEGIN
     LTEXT           "Version:",IDC_VERSION_LABEL,15,225,32,8
 END
 
-IDD_LAUNCHER DIALOGEX 0, 0, 416, 226
+IDD_LAUNCHER DIALOGEX 0, 0, 416, 228
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Welcome to Inform"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Open a Recent Item",IDC_STATIC_OPEN_RECENT,6,51,90,11
-    LTEXT           "Create New",IDC_STATIC_CREATE_NEW,214,52,55,11
-    LTEXT           "Open a Sample Project",IDC_STATIC_SAMPLE,214,86,105,11
-    LTEXT           "Advice",IDC_STATIC_ADVICE,6,140,32,11
-    PUSHBUTTON      "• New to Inform?",IDC_ADVICE_NEW,6,155,111,9,BS_LEFT
-    PUSHBUTTON      "• Upgrading?",IDC_ADVICE_UPGRADE,6,166,111,9,BS_LEFT
-    PUSHBUTTON      "• Keyboard shortcuts",IDC_ADVICE_KEYBOARD,6,177,111,9,BS_LEFT
-    PUSHBUTTON      "• Structure of .materials folder",IDC_ADVICE_MATERIALS,6,188,111,9,BS_LEFT
-    PUSHBUTTON      "• Credits",IDC_ADVICE_CREDITS,6,199,111,9,BS_LEFT
-    LTEXT           "Community",IDC_STATIC_COMMUNITY,214,140,56,11
-    PUSHBUTTON      "• www.inform7.com",IDC_LINK_INFORM7,214,155,169,9,BS_LEFT
-    PUSHBUTTON      "• Inform at IFDB, the Interactive Fiction Database",IDC_LINK_IFDB,214,166,169,9,BS_LEFT
-    PUSHBUTTON      "• Interactive Fiction Forum",IDC_LINK_INTFIC,214,177,169,9,BS_LEFT
-    PUSHBUTTON      "• Inform Development Q&&A at the IFF",IDC_LINK_INTFIC_QA,214,188,169,9,BS_LEFT
-    PUSHBUTTON      "• IFWiki",IDC_LINK_IFWIKI,214,199,32,9,BS_LEFT
-    PUSHBUTTON      "• Planet IF Blog Aggregator",IDC_LINK_PLANETIF,248,199,98,9,BS_LEFT
-    PUSHBUTTON      "• IF Competition",IDC_LINK_IFCOMP,348,199,62,9,BS_LEFT
-    LTEXT           "Summon or dismiss this launcher with ?",IDC_STATIC_SUMMON,6,217,143,8
+    LTEXT           "Open a Recent Item",IDC_STATIC_OPEN_RECENT,6,53,90,11
+    LTEXT           "Create New",IDC_STATIC_CREATE_NEW,214,53,55,11
+    LTEXT           "Open a Sample Project",IDC_STATIC_SAMPLE,214,88,105,11
+    PUSHBUTTON      "Browse Inform projects with public source at IFDB",IDC_LINK_IFDB_SRC,214,102,196,11,BS_LEFT
+    LTEXT           "Advice",IDC_STATIC_ADVICE,6,142,32,11
+    PUSHBUTTON      "• New to Inform?",IDC_ADVICE_NEW,6,157,111,9,BS_LEFT
+    PUSHBUTTON      "• Upgrading?",IDC_ADVICE_UPGRADE,6,168,111,9,BS_LEFT
+    PUSHBUTTON      "• Keyboard shortcuts",IDC_ADVICE_KEYBOARD,6,179,111,9,BS_LEFT
+    PUSHBUTTON      "• Structure of .materials folder",IDC_ADVICE_MATERIALS,6,190,111,9,BS_LEFT
+    PUSHBUTTON      "• Credits",IDC_ADVICE_CREDITS,6,201,111,9,BS_LEFT
+    LTEXT           "Community",IDC_STATIC_COMMUNITY,214,142,56,11
+    PUSHBUTTON      "• www.inform7.com",IDC_LINK_INFORM7,214,157,169,9,BS_LEFT
+    PUSHBUTTON      "• Inform at IFDB, the Interactive Fiction Database",IDC_LINK_IFDB,214,168,169,9,BS_LEFT
+    PUSHBUTTON      "• Interactive Fiction Forum",IDC_LINK_INTFIC,214,179,169,9,BS_LEFT
+    PUSHBUTTON      "• Inform Development Q&&A at the IFF",IDC_LINK_INTFIC_QA,214,190,169,9,BS_LEFT
+    PUSHBUTTON      "• IFWiki",IDC_LINK_IFWIKI,214,201,32,9,BS_LEFT
+    PUSHBUTTON      "• Planet IF Blog Aggregator",IDC_LINK_PLANETIF,248,201,98,9,BS_LEFT
+    PUSHBUTTON      "• IF Competition",IDC_LINK_IFCOMP,348,201,62,9,BS_LEFT
+    LTEXT           "Summon or dismiss this launcher with ?",IDC_STATIC_SUMMON,6,219,143,8
 END
 
 IDD_SEARCH DIALOGEX 0, 0, 174, 18
@@ -713,9 +714,9 @@ BEGIN
     IDD_LAUNCHER, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 365
+        RIGHTMARGIN, 410
         TOPMARGIN, 2
-        BOTTOMMARGIN, 221
+        BOTTOMMARGIN, 227
     END
 
     IDD_SEARCH, DIALOG
