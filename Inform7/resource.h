@@ -231,6 +231,10 @@
 #define IDC_LINK_PLANETIF               1126
 #define IDC_LINK_IFCOMP                 1127
 #define IDC_LINK_IFDB_SRC               1128
+#define IDC_CREATE_PROJECT              1129
+#define IDC_CREATE_EXTENSION            1130
+#define IDC_SAMPLE_ONYX                 1131
+#define IDC_SAMPLE_DISENCHANTMENT       1132
 #define ID_OPEN_EXTENSIONS_LIST         2000
 #define ID_NEW_EXTENSIONS_LIST          3000
 

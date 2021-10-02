@@ -27,13 +27,11 @@ public:
 
   enum { IDD = IDD_LAUNCHER };
 
+  CDibSection m_banner;
   CFont m_bigFont;
   CFont m_titleFont;
-  CommandButton m_links[13];
+  CommandButton m_cmds[17];
   ReportHtml m_html;
-
-  CDibSection* m_original;
-  CDibSection m_banner;
 
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);

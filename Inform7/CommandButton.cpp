@@ -2,6 +2,7 @@
 #include "CommandButton.h"
 #include "Inform.h"
 #include "Dib.h"
+#include "ScaleGfx.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -22,6 +23,11 @@ CommandButton::CommandButton() : m_mouseOver(false)
 void CommandButton::SetBackSysColor(int index)
 {
   m_backIndex = index;
+}
+
+void CommandButton::SetIcon(const char* name)
+{
+  m_iconName = name;
 }
 
 void CommandButton::OnMouseMove(UINT nFlags, CPoint point)
@@ -97,14 +103,49 @@ void CommandButton::OnPaint()
     dc.SelectObject(oldPen);
   }
 
-  CString caption;
-  GetWindowText(caption);
   CRect textRect(client);
   textRect.left = theApp.MeasureFont(this,GetFont()).cx;
+
+  GetScaledIcon();
+  if (m_icon.GetSafeHandle() != 0)
+  {
+    textRect.left = (textRect.left/2) + m_icon.GetSize().cx;
+    bitmap.AlphaBlend(&m_icon,0,2,false);
+  }
+
+  CString caption;
+  GetWindowText(caption);
   dc.SetTextColor(::GetSysColor(COLOR_BTNTEXT));
-  dc.DrawText(caption,textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER);
+  DRAWTEXTPARAMS dtp = { sizeof(DRAWTEXTPARAMS),20,0 };
+  dc.DrawTextEx(caption,textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER|DT_EXPANDTABS|DT_TABSTOP,&dtp);
 
   dc.SelectObject(oldFont);
   dcPaint.BitBlt(0,0,client.Width(),client.Height(),&dc,0,0,SRCCOPY);
   dc.SelectObject(oldBitmap);
+}
+
+void CommandButton::GetScaledIcon(void)
+{
+  if (m_icon.GetSafeHandle() != 0)
+    return;
+  if (m_iconName.IsEmpty())
+    return;
+
+  CDibSection* original = theApp.GetCachedImage(m_iconName);
+  ASSERT(original != NULL);
+  CSize originalSize = original->GetSize();
+
+  CRect client;
+  GetClientRect(client);
+  int h = client.Height()-4;
+  double factor = h / originalSize.cy;
+  int w = (int)(originalSize.cx * ((double)h / (double)originalSize.cy));
+
+  // Create a bitmap for the scaled icon
+  CDC* dc = GetDC();
+  m_icon.CreateBitmap(dc->GetSafeHdc(),w,h);
+  ReleaseDC(dc);
+
+  // Scale and stretch the background
+  ScaleGfx(original->GetBits(),originalSize.cx,originalSize.cy,m_icon.GetBits(),w,h);
 }

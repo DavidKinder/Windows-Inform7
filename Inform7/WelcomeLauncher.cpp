@@ -9,7 +9,7 @@
 
 IMPLEMENT_DYNAMIC(WelcomeLauncher, I7BaseDialog)
 
-WelcomeLauncher::WelcomeLauncher(CWnd* pParent) : I7BaseDialog(WelcomeLauncher::IDD,pParent), m_original(NULL)
+WelcomeLauncher::WelcomeLauncher(CWnd* pParent) : I7BaseDialog(WelcomeLauncher::IDD,pParent)
 {
 }
 
@@ -63,24 +63,46 @@ BOOL WelcomeLauncher::OnInitDialog()
   lf.lfHeight = (LONG)(fontHeight*1.3);
   m_titleFont.DeleteObject();
   m_titleFont.CreateFontIndirect(&lf);
-  for (int id = IDC_LINK_IFDB_SRC; id <= IDC_LINK_IFDB_SRC; id++)
-    GetDlgItem(id)->SetFont(&m_bigFont);
   for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_STATIC_COMMUNITY; id++)
     GetDlgItem(id)->SetFont(&m_titleFont);
 
-  // Subclass links
-  for (int id = IDC_ADVICE_NEW; id <= IDC_LINK_IFDB_SRC; id++)
+  // Subclass command buttons
+  ASSERT((sizeof m_cmds / sizeof m_cmds[0]) == (IDC_SAMPLE_DISENCHANTMENT - IDC_ADVICE_NEW + 1));
+  for (int id = IDC_ADVICE_NEW; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
   {
-    CommandButton& link = m_links[id - IDC_ADVICE_NEW];
-    link.SubclassDlgItem(id,this);
-    link.SetBackSysColor((id >= IDC_LINK_IFDB_SRC) ? COLOR_BTNFACE : COLOR_WINDOW);
+    CommandButton& cmd = m_cmds[id - IDC_ADVICE_NEW];
+    cmd.SubclassDlgItem(id,this);
+
+    switch (id)
+    {
+    case IDC_CREATE_PROJECT:
+      cmd.SetBackSysColor(COLOR_BTNFACE);
+      cmd.SetFont(&m_bigFont);
+      cmd.SetIcon("Icon-Inform");
+      break;
+    case IDC_CREATE_EXTENSION:
+      cmd.SetBackSysColor(COLOR_BTNFACE);
+      cmd.SetFont(&m_bigFont);
+      cmd.SetIcon("Icon-I7X");
+      break;
+    case IDC_SAMPLE_ONYX:
+    case IDC_SAMPLE_DISENCHANTMENT:
+      cmd.SetBackSysColor(COLOR_BTNFACE);
+      cmd.SetFont(&m_bigFont);
+      cmd.SetIcon("Icon-Inform");
+      break;
+    case IDC_LINK_IFDB_SRC:
+      cmd.SetBackSysColor(COLOR_BTNFACE);
+      cmd.SetFont(&m_bigFont);
+      cmd.SetIcon("Icon-New");
+      break;
+    default:
+      cmd.SetBackSysColor(COLOR_WINDOW);
+      break;
+    }
   }
 
-  // Get the unscaled banner
-  m_original = theApp.GetCachedImage("Welcome Banner");
-  ASSERT(m_original != NULL);
-
-  // Create the scaled banner
+  // Create the scaled banner bitmap
   SetBannerBitmap();
   return TRUE;
 }
@@ -176,7 +198,10 @@ void WelcomeLauncher::OnLButtonUp(UINT nFlags, CPoint point)
 LRESULT WelcomeLauncher::OnDpiChanged(WPARAM, LPARAM)
 {
   Default();
-  SetBannerBitmap();
+  if (m_html.GetSafeHwnd() != 0)
+  {
+    SetBannerBitmap();
+  }
   return 0;
 }
 
@@ -239,22 +264,22 @@ void WelcomeLauncher::OnClickedLink(UINT nID)
 
 void WelcomeLauncher::SetBannerBitmap(void)
 {
-  if (m_original)
-  {
-    // Create a bitmap for the scaled banner
-    CArray<CRect> regions;
-    GetRegions(regions);
-    CRect scaled = regions.GetAt(0);
-    CDC* dc = GetDC();
-    m_banner.DeleteBitmap();
-    m_banner.CreateBitmap(dc->GetSafeHdc(),scaled.Width(),scaled.Height());
-    ReleaseDC(dc);
+  CDibSection* original = theApp.GetCachedImage("Welcome Banner");
+  ASSERT(original != NULL);
 
-    // Scale and stretch the background
-    CSize originalSize = m_original->GetSize();
-    ScaleGfx(m_original->GetBits(),originalSize.cx,originalSize.cy,
-      m_banner.GetBits(),scaled.Width(),scaled.Height());
-  }
+  // Create a bitmap for the scaled banner
+  CArray<CRect> regions;
+  GetRegions(regions);
+  CRect scaled = regions.GetAt(0);
+  CDC* dc = GetDC();
+  m_banner.DeleteBitmap();
+  m_banner.CreateBitmap(dc->GetSafeHdc(),scaled.Width(),scaled.Height());
+  ReleaseDC(dc);
+
+  // Scale and stretch the background
+  CSize originalSize = original->GetSize();
+  ScaleGfx(original->GetBits(),originalSize.cx,originalSize.cy,
+    m_banner.GetBits(),scaled.Width(),scaled.Height());
 }
 
 void WelcomeLauncher::GetRegions(CArray<CRect>& regions)
@@ -292,7 +317,7 @@ void WelcomeLauncher::GetRegions(CArray<CRect>& regions)
 
 void WelcomeLauncher::ShowHtml(bool show)
 {
-  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_LINK_IFDB_SRC; id++)
+  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
   {
     if (id != IDC_STATIC_SUMMON)
       GetDlgItem(id)->ShowWindow(show ? SW_HIDE : SW_SHOW);
