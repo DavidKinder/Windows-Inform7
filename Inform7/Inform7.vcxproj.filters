@@ -328,6 +328,9 @@
     <ClInclude Include="PanelTab.h">
       <Filter>Controls</Filter>
     </ClInclude>
+    <ClInclude Include="CommandButton.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1442,6 +1445,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\frame_handler_cpptoc.cc">
       <Filter>Libraries\libcef\cpptoc</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandButton.cpp">
+      <Filter>Controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
