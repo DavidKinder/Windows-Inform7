@@ -198,14 +198,14 @@ BOOL InformApp::InitInstance()
   /*OpenPreviousProjects();*/
 
   // Show the launcher, if nothing else is open
-  /*if (AfxGetMainWnd() == NULL)*/
+  if (m_pMainWnd == NULL)
   {
     WelcomeLauncher welcome;
-    welcome.ShowLauncher();
+    welcome.ShowModalLauncher();
   }
 
   // Only continue if a project has been opened
-  CWnd* mainWnd = AfxGetMainWnd();
+  CWnd* mainWnd = m_pMainWnd;
   if (mainWnd == NULL)
     return FALSE;
 
@@ -718,6 +718,19 @@ void InformApp::FrameClosing(CFrameWnd* frame)
   // This must be the main frame
   ASSERT(m_pMainWnd == frame);
   if (m_pMainWnd == frame)
+  {
+    // If there are secondary frames, make one the main window
+    if (!m_frames.IsEmpty())
+    {
+      m_pMainWnd = m_frames[0];
+      m_frames.RemoveAt(0);
+    }
+  }
+}
+
+void InformApp::SetFrameAsMainWindow(void)
+{
+  if (m_pMainWnd == NULL)
   {
     // If there are secondary frames, make one the main window
     if (!m_frames.IsEmpty())

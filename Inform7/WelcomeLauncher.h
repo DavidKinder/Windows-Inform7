@@ -13,7 +13,8 @@ class WelcomeLauncher : public I7BaseDialog
 public:
   WelcomeLauncher(CWnd* pParent = NULL);
 
-  void ShowLauncher(void);
+  void ShowModalLauncher(void);
+  void CloseLauncher(void);
 
   virtual BOOL OnInitDialog();
 
@@ -22,20 +23,23 @@ public:
   afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
   afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
   afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
+  afx_msg void OnOpenProject();
+  afx_msg void OnCreateProject();
+  afx_msg void OnCreateExtProject();
   afx_msg void OnClickedAdvice(UINT nID);
   afx_msg void OnClickedLink(UINT nID);
 
   enum { IDD = IDD_LAUNCHER };
 
+  bool m_modal;
+
   CDibSection m_banner;
   CFont m_bigFont;
   CFont m_titleFont;
-  CommandButton m_cmds[17];
+  CommandButton m_cmds[18];
   ReportHtml m_html;
 
 protected:
-  virtual void DoDataExchange(CDataExchange* pDX);
-
   DECLARE_MESSAGE_MAP()
 
 private:

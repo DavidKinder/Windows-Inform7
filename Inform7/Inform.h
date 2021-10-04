@@ -115,6 +115,7 @@ public:
 
   void NewFrame(CFrameWnd* frame);
   void FrameClosing(CFrameWnd* frame);
+  void SetFrameAsMainWindow(void);
   void GetWindowFrames(CArray<CFrameWnd*>& frames);
 
   enum Changed

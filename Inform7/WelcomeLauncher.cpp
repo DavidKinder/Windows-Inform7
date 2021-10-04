@@ -1,21 +1,18 @@
 #include "stdafx.h"
 #include "WelcomeLauncher.h"
-#include "Inform.h"
-#include "TextFormat.h"
 #include "DpiFunctions.h"
+#include "Inform.h"
+#include "ProjectFrame.h"
 #include "ScaleGfx.h"
+#include "TextFormat.h"
 
-//XXXXDK DPI,keyboard,accessibility
+//XXXXDK modeless,DPI,keyboard,accessibility
 
 IMPLEMENT_DYNAMIC(WelcomeLauncher, I7BaseDialog)
 
 WelcomeLauncher::WelcomeLauncher(CWnd* pParent) : I7BaseDialog(WelcomeLauncher::IDD,pParent)
 {
-}
-
-void WelcomeLauncher::DoDataExchange(CDataExchange* pDX)
-{
-  I7BaseDialog::DoDataExchange(pDX);
+  m_modal = false;
 }
 
 BEGIN_MESSAGE_MAP(WelcomeLauncher, I7BaseDialog)
@@ -24,15 +21,34 @@ BEGIN_MESSAGE_MAP(WelcomeLauncher, I7BaseDialog)
   ON_WM_LBUTTONUP()
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
   ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
+  ON_COMMAND(IDC_OPEN_PROJECT, OnOpenProject)
+  ON_COMMAND(IDC_CREATE_PROJECT, OnCreateProject)
+  ON_COMMAND(IDC_CREATE_EXTENSION, OnCreateExtProject)
   ON_COMMAND_RANGE(IDC_ADVICE_NEW, IDC_ADVICE_CREDITS, OnClickedAdvice)
   ON_COMMAND_RANGE(IDC_LINK_INFORM7, IDC_LINK_IFDB_SRC, OnClickedLink)
 END_MESSAGE_MAP()
 
-void WelcomeLauncher::ShowLauncher(void)
+void WelcomeLauncher::ShowModalLauncher(void)
 {
-  // Show the window
+  m_modal = true;
   DoModal();
-  theApp.m_pMainWnd = NULL;//XXXXDK
+}
+
+void WelcomeLauncher::CloseLauncher(void)
+{
+  if (m_modal)
+  {
+    EndDialog(IDOK);
+    if (theApp.m_pMainWnd == this)
+    {
+      theApp.m_pMainWnd = NULL;
+      theApp.SetFrameAsMainWindow();
+    }
+  }
+  else
+  {
+    ASSERT(FALSE);
+  }
 }
 
 BOOL WelcomeLauncher::OnInitDialog()
@@ -40,9 +56,12 @@ BOOL WelcomeLauncher::OnInitDialog()
   I7BaseDialog::OnInitDialog();
   theApp.SetIcon(this);
 
-  // If there is no main window, make this dialog it
-  if (AfxGetMainWnd() == NULL)
-    theApp.m_pMainWnd = this;
+  if (m_modal)
+  {
+    // If there is no main window, make this dialog it
+    if (theApp.m_pMainWnd == NULL)
+      theApp.m_pMainWnd = this;
+  }
 
   // Create the HTML control window
   if (!m_html.Create(NULL,NULL,WS_CHILD,CRect(0,0,0,0),this,1))
@@ -75,6 +94,11 @@ BOOL WelcomeLauncher::OnInitDialog()
 
     switch (id)
     {
+    case IDC_OPEN_PROJECT:
+      cmd.SetBackSysColor(COLOR_BTNFACE);
+      cmd.SetFont(&m_bigFont);
+      cmd.SetIcon("Icon-Folder");
+      break;
     case IDC_CREATE_PROJECT:
       cmd.SetBackSysColor(COLOR_BTNFACE);
       cmd.SetFont(&m_bigFont);
@@ -207,8 +231,27 @@ LRESULT WelcomeLauncher::OnDpiChanged(WPARAM, LPARAM)
 
 LRESULT WelcomeLauncher::OnKickIdle(WPARAM, LPARAM)
 {
-  ReportHtml::DoWebBrowserWork();
+  if (m_modal)
+    ReportHtml::DoWebBrowserWork();
   return 0;
+}
+
+void WelcomeLauncher::OnOpenProject()
+{
+  if (ProjectFrame::StartExistingProject(theApp.GetLastProjectDir(),this))
+    CloseLauncher();
+}
+
+void WelcomeLauncher::OnCreateProject()
+{
+  if (ProjectFrame::StartNewProject(theApp.GetLastProjectDir(),this))
+    CloseLauncher();
+}
+
+void WelcomeLauncher::OnCreateExtProject()
+{
+  if (ProjectFrame::StartNewExtProject(theApp.GetLastProjectDir(),this,NULL))
+    CloseLauncher();
 }
 
 void WelcomeLauncher::OnClickedAdvice(UINT nID)
