@@ -202,6 +202,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="ProjectFrame.h" />
     <ClInclude Include="ProjectSettings.h" />
     <ClInclude Include="PropList.h" />
+    <ClInclude Include="RecentProjectList.h" />
     <ClInclude Include="ReportEdit.h" />
     <ClInclude Include="ReportHtml.h" />
     <ClInclude Include="Resource.h" />
@@ -2079,6 +2080,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="ProjectFrame.cpp" />
     <ClCompile Include="ProjectSettings.cpp" />
     <ClCompile Include="PropList.cpp" />
+    <ClCompile Include="RecentProjectList.cpp" />
     <ClCompile Include="ReportEdit.cpp" />
     <ClCompile Include="ReportHtml.cpp" />
     <ClCompile Include="RichEdit.cpp" />

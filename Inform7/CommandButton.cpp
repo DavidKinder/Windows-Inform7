@@ -117,7 +117,7 @@ void CommandButton::OnPaint()
   GetWindowText(caption);
   dc.SetTextColor(::GetSysColor(COLOR_BTNTEXT));
   DRAWTEXTPARAMS dtp = { sizeof(DRAWTEXTPARAMS),20,0 };
-  dc.DrawTextEx(caption,textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER|DT_EXPANDTABS|DT_TABSTOP,&dtp);
+  dc.DrawTextEx(caption,textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER|DT_EXPANDTABS|DT_TABSTOP|DT_END_ELLIPSIS,&dtp);
 
   dc.SelectObject(oldFont);
   dcPaint.BitBlt(0,0,client.Width(),client.Height(),&dc,0,0,SRCCOPY);

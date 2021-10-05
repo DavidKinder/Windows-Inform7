@@ -26,6 +26,8 @@
 // Logging file name
 #define LOG_FILE "\\Inform\\i7log.txt"
 
+class RecentProjectList;
+
 enum ProjectType
 {
   Project_I7,
@@ -166,6 +168,7 @@ public:
 
   void WriteOpenProjectsOnExit(void);
   void OpenPreviousProjects(void);
+  RecentProjectList* GetRecentProjectList(void);
 
   struct CompilerVersion
   {

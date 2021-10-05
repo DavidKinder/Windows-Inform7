@@ -331,6 +331,9 @@
     <ClInclude Include="CommandButton.h">
       <Filter>Controls</Filter>
     </ClInclude>
+    <ClInclude Include="RecentProjectList.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1448,6 +1451,9 @@
     </ClCompile>
     <ClCompile Include="CommandButton.cpp">
       <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="RecentProjectList.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -23,7 +23,7 @@ public:
   afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
   afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
   afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
-  afx_msg void OnOpenProject();
+  afx_msg void OnOpenProject(UINT nID);
   afx_msg void OnCreateProject();
   afx_msg void OnCreateExtProject();
   afx_msg void OnClickedAdvice(UINT nID);
@@ -36,7 +36,7 @@ public:
   CDibSection m_banner;
   CFont m_bigFont;
   CFont m_titleFont;
-  CommandButton m_cmds[18];
+  CommandButton m_cmds[27];
   ReportHtml m_html;
 
 protected:

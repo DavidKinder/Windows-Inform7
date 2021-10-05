@@ -231,11 +231,20 @@
 #define IDC_LINK_PLANETIF               1126
 #define IDC_LINK_IFCOMP                 1127
 #define IDC_LINK_IFDB_SRC               1128
-#define IDC_OPEN_PROJECT                1129
-#define IDC_CREATE_PROJECT              1130
-#define IDC_CREATE_EXTENSION            1131
-#define IDC_SAMPLE_ONYX                 1132
-#define IDC_SAMPLE_DISENCHANTMENT       1133
+#define IDC_OPEN_0                      1129
+#define IDC_OPEN_1                      1130
+#define IDC_OPEN_2                      1131
+#define IDC_OPEN_3                      1132
+#define IDC_OPEN_4                      1133
+#define IDC_OPEN_5                      1134
+#define IDC_OPEN_6                      1135
+#define IDC_OPEN_7                      1136
+#define IDC_OPEN_8                      1137
+#define IDC_OPEN_9                      1138
+#define IDC_CREATE_PROJECT              1139
+#define IDC_CREATE_EXTENSION            1140
+#define IDC_SAMPLE_ONYX                 1141
+#define IDC_SAMPLE_DISENCHANTMENT       1142
 #define ID_OPEN_EXTENSIONS_LIST         2000
 #define ID_NEW_EXTENSIONS_LIST          3000
 
@@ -245,7 +254,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        285
 #define _APS_NEXT_COMMAND_VALUE         284
-#define _APS_NEXT_CONTROL_VALUE         1128
+#define _APS_NEXT_CONTROL_VALUE         1143
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif

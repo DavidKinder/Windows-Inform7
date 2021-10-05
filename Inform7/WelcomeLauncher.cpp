@@ -3,10 +3,14 @@
 #include "DpiFunctions.h"
 #include "Inform.h"
 #include "ProjectFrame.h"
+#include "RecentProjectList.h"
 #include "ScaleGfx.h"
 #include "TextFormat.h"
 
 //XXXXDK modeless,DPI,keyboard,accessibility
+// dir for creating samples in
+// tab in new dialogs
+// review text in html pages
 
 IMPLEMENT_DYNAMIC(WelcomeLauncher, I7BaseDialog)
 
@@ -21,7 +25,7 @@ BEGIN_MESSAGE_MAP(WelcomeLauncher, I7BaseDialog)
   ON_WM_LBUTTONUP()
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
   ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
-  ON_COMMAND(IDC_OPEN_PROJECT, OnOpenProject)
+  ON_COMMAND_RANGE(IDC_OPEN_0, IDC_OPEN_9, OnOpenProject)
   ON_COMMAND(IDC_CREATE_PROJECT, OnCreateProject)
   ON_COMMAND(IDC_CREATE_EXTENSION, OnCreateExtProject)
   ON_COMMAND_RANGE(IDC_ADVICE_NEW, IDC_ADVICE_CREDITS, OnClickedAdvice)
@@ -94,10 +98,19 @@ BOOL WelcomeLauncher::OnInitDialog()
 
     switch (id)
     {
-    case IDC_OPEN_PROJECT:
+    case IDC_OPEN_0:
+    case IDC_OPEN_1:
+    case IDC_OPEN_2:
+    case IDC_OPEN_3:
+    case IDC_OPEN_4:
+    case IDC_OPEN_5:
+    case IDC_OPEN_6:
+    case IDC_OPEN_7:
+    case IDC_OPEN_8:
+    case IDC_OPEN_9:
       cmd.SetBackSysColor(COLOR_BTNFACE);
       cmd.SetFont(&m_bigFont);
-      cmd.SetIcon("Icon-Folder");
+      cmd.ShowWindow(SW_SHOW);
       break;
     case IDC_CREATE_PROJECT:
       cmd.SetBackSysColor(COLOR_BTNFACE);
@@ -125,6 +138,31 @@ BOOL WelcomeLauncher::OnInitDialog()
       break;
     }
   }
+
+  // Update commands for opening recent projects
+  RecentProjectList* recent = theApp.GetRecentProjectList();
+  recent->RemoveInvalid();
+  int idx = 0;
+  while (idx < recent->GetSize())
+  {
+    CString display;
+    recent->AppendDisplayName(idx,display);
+    if (display.IsEmpty())
+      break;
+
+    CommandButton& cmd = m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW];
+    cmd.SetWindowText(display);
+    cmd.SetIcon((ProjectFrame::TypeFromDir((*recent)[idx]) == Project_I7XP) ? "Icon-I7X" : "Icon-Inform");
+    ++idx;
+  }
+  {
+    CommandButton& cmd = m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW];
+    cmd.SetWindowText("Open...");
+    cmd.SetIcon("Icon-Folder");
+    idx++;
+  }
+  for (; idx < 10; ++idx)
+    m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW].ShowWindow(SW_HIDE);
 
   // Create the scaled banner bitmap
   SetBannerBitmap();
@@ -236,10 +274,19 @@ LRESULT WelcomeLauncher::OnKickIdle(WPARAM, LPARAM)
   return 0;
 }
 
-void WelcomeLauncher::OnOpenProject()
+void WelcomeLauncher::OnOpenProject(UINT nID)
 {
-  if (ProjectFrame::StartExistingProject(theApp.GetLastProjectDir(),this))
-    CloseLauncher();
+  CString dir = (*(theApp.GetRecentProjectList()))[nID - IDC_OPEN_0];
+  if (dir.IsEmpty())
+  {
+    if (ProjectFrame::StartExistingProject(theApp.GetLastProjectDir(),this))
+      CloseLauncher();
+  }
+  else
+  {
+    if (ProjectFrame::StartNamedProject(dir))
+      CloseLauncher();
+  }
 }
 
 void WelcomeLauncher::OnCreateProject()

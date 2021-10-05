@@ -157,6 +157,7 @@ public:
   static bool StartNewExtProject(const char* dir, CWnd* parent, const InformApp::ExtLocation* fromExt);
   static bool StartExistingProject(const char* dir, CWnd* parent);
   static bool StartNamedProject(const char* project);
+  static ProjectType TypeFromDir(const CString& projectDir);
 
   CString GetDisplayName(bool fullName);
   void SendChanged(InformApp::Changed changed, int value);
@@ -189,7 +190,6 @@ protected:
   void OnSkeinLink(const char* url, TabInterface* from);
 
   static ProjectFrame* NewFrame(ProjectType projectType);
-  static ProjectType TypeFromDir(const CString& projectDir);
   void SetFromRegistryPath(const char* path);
   void SaveSettings(void);
 

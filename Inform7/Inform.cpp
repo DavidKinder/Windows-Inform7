@@ -9,6 +9,7 @@
 
 #include "AboutDialog.h"
 #include "PrefsDialog.h"
+#include "RecentProjectList.h"
 #include "ReportHtml.h"
 #include "SpellCheck.h"
 #include "WelcomeLauncher.h"
@@ -28,79 +29,6 @@ CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
-class RecentProjectList : public CRecentFileList
-{
-public:
-  RecentProjectList(int size) : CRecentFileList(0,"Recent File List","File%d",size)
-  {
-  }
-
-  void RemoveAll(void)
-  {
-    for (int i = 0; i < m_nSize; i++)
-      m_arrNames[i].Empty();
-  }
-
-  virtual void UpdateMenu(CCmdUI* pCmdUI)
-  {
-    for (int i = 0; i < m_nSize;)
-    {
-      if (!m_arrNames[i].IsEmpty())
-      {
-        if (::GetFileAttributes(m_arrNames[i]) == INVALID_FILE_ATTRIBUTES)
-        {
-          Remove(i);
-          continue;
-        }
-      }
-      i++;
-    }
-
-    CMenu* pMenu = pCmdUI->m_pSubMenu;
-    if (m_strOriginal.IsEmpty() && (pMenu != NULL))
-      pMenu->GetMenuString(pCmdUI->m_nID,m_strOriginal,MF_BYCOMMAND);
-
-    if (m_arrNames[0].IsEmpty())
-    {
-      if (!m_strOriginal.IsEmpty())
-        pCmdUI->SetText(m_strOriginal);
-      pCmdUI->Enable(FALSE);
-
-      if (pCmdUI->m_pSubMenu != NULL)
-      {
-        for (int i = 1; i < m_nSize; i++)
-          pCmdUI->m_pSubMenu->DeleteMenu(pCmdUI->m_nID+i,MF_BYCOMMAND);
-      }
-      return;
-    }
-
-    if (pCmdUI->m_pSubMenu == NULL)
-      return;
-
-    for (int i = 0; i < m_nSize; i++)
-      pCmdUI->m_pSubMenu->DeleteMenu(pCmdUI->m_nID+i,MF_BYCOMMAND);
-
-    for (int i = 0; i < m_nSize; i++)
-    {
-      if (!m_arrNames[i].IsEmpty())
-      {
-        CString menuItem;
-        menuItem.Format("&%d ",i+1);
-
-        LPCSTR name = ::PathFindFileName(m_arrNames[i]);
-        for (; *name != '\0'; ++name)
-        {
-          if (*name == '&')
-            menuItem.AppendChar('&');
-          menuItem.AppendChar(*name);
-        }
-        pCmdUI->m_pSubMenu->InsertMenu(i,MF_STRING|MF_BYPOSITION,pCmdUI->m_nID++,menuItem);
-      }
-    }
-    pCmdUI->m_bEnableChanged = TRUE;
-  }
-};
 
 // Hook a DLL's calls to CreateProcess() and add the created process to our job
 BOOL WINAPI HookCreateProcessW(
@@ -389,7 +317,7 @@ BOOL InformApp::OnOpenRecentFile(UINT nID)
 
 void InformApp::OnFileClearRecent()
 {
-  ((RecentProjectList*)m_pRecentFileList)->RemoveAll();
+  GetRecentProjectList()->RemoveAll();
 }
 
 void InformApp::OnAppExit()
@@ -1379,6 +1307,11 @@ void InformApp::OpenPreviousProjects(void)
         ProjectFrame::StartNamedProject(dir);
     }
   }
+}
+
+RecentProjectList* InformApp::GetRecentProjectList(void)
+{
+  return (RecentProjectList*)m_pRecentFileList;
 }
 
 void InformApp::FindCompilerVersions(void)
