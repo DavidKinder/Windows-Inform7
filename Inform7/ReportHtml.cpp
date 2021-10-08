@@ -824,7 +824,7 @@ void ReportHtml::ShutWebBrowser(void)
 }
 
 // Do an iteration of the CEF message loop
-void ReportHtml::DoWebBrowserWork(void)
+void ReportHtml::DoWebBrowserWork(bool checkMain)
 {
   for (int i = 0; i < 10; i++)
   {
@@ -832,7 +832,7 @@ void ReportHtml::DoWebBrowserWork(void)
     CefDoMessageLoopWork();
 
     // If the main window has gone, stop!
-    if (AfxGetMainWnd() == NULL)
+    if (checkMain && (AfxGetMainWnd() == NULL))
     {
       TRACE("Main window gone after CefDoMessageLoopWork(), shutting down\n");
       ::ExitProcess(0);

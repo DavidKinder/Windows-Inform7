@@ -13,7 +13,7 @@ class WelcomeLauncher : public I7BaseDialog
 public:
   WelcomeLauncher(CWnd* pParent = NULL);
 
-  void ShowModalLauncher(void);
+  void ShowStartLauncher(void);
   void CloseLauncher(void);
 
   virtual BOOL OnInitDialog();
@@ -26,12 +26,13 @@ public:
   afx_msg void OnOpenProject(UINT nID);
   afx_msg void OnCreateProject();
   afx_msg void OnCreateExtProject();
+  afx_msg void OnCopySampleProject(UINT nID);
   afx_msg void OnClickedAdvice(UINT nID);
   afx_msg void OnClickedLink(UINT nID);
 
   enum { IDD = IDD_LAUNCHER };
 
-  bool m_modal;
+  bool m_start;
 
   CDibSection m_banner;
   CFont m_bigFont;

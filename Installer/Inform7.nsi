@@ -91,6 +91,7 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\Internal"
   RMDir /r "$INSTDIR\Interpreters"
   RMDir /r "$INSTDIR\Retrospective"
+  RMDir /r "$INSTDIR\Samples"
   RMDir /r "$INSTDIR\Symbols"
   RMDir /r "$INSTDIR\Web"
 

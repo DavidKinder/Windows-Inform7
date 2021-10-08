@@ -129,7 +129,7 @@ BOOL InformApp::InitInstance()
   if (m_pMainWnd == NULL)
   {
     WelcomeLauncher welcome;
-    welcome.ShowModalLauncher();
+    welcome.ShowStartLauncher();
   }
 
   // Only continue if a project has been opened
@@ -204,7 +204,7 @@ BOOL InformApp::OnIdle(LONG lCount)
   if (lCount == 0)
   {
     HandleDebugEvents();
-    ReportHtml::DoWebBrowserWork();
+    ReportHtml::DoWebBrowserWork(true);
   }
   return CWinApp::OnIdle(lCount);
 }
@@ -1424,6 +1424,39 @@ const InformApp::ExtLocation* InformApp::GetExtension(const char* author, const 
       return &(*it);
   }
   return NULL;
+}
+
+CString InformApp::PickDirectory(const char* title, const char* initialDir, CWnd* parent)
+{
+  CComPtr<IFileDialog> dialog;
+  if (FAILED(dialog.CoCreateInstance(__uuidof(FileOpenDialog))))
+    return "";
+
+  dialog->SetTitle(CStringW(title));
+
+  DWORD options = 0;
+  dialog->GetOptions(&options);
+  dialog->SetOptions(options|FOS_PICKFOLDERS);
+
+  CComPtr<IShellItem> si;
+  if (SUCCEEDED(::SHCreateItemFromParsingName(
+    CStringW(initialDir),NULL,__uuidof(IShellItem),(void**)&si)))
+  {
+    dialog->SetFolder(si);
+  }
+  si.Release();
+
+  if (FAILED(dialog->Show(parent->GetSafeHwnd())))
+    return "";
+  if (FAILED(dialog->GetResult(&si)))
+    return "";
+  LPOLESTR path = NULL;
+  if (FAILED(si->GetDisplayName(SIGDN_FILESYSPATH,&path)))
+    return "";
+
+  CString chosenDir(path);
+  ::CoTaskMemFree(path);
+  return chosenDir;
 }
 
 void InformApp::SetMyDocuments(bool showMsgs)

@@ -8,15 +8,14 @@
 #include "TextFormat.h"
 
 //XXXXDK modeless,DPI,keyboard,accessibility
-// dir for creating samples in
-// tab in new dialogs
 // review text in html pages
+// ahead-of-time creation of libcef control?
 
 IMPLEMENT_DYNAMIC(WelcomeLauncher, I7BaseDialog)
 
 WelcomeLauncher::WelcomeLauncher(CWnd* pParent) : I7BaseDialog(WelcomeLauncher::IDD,pParent)
 {
-  m_modal = false;
+  m_start = false;
 }
 
 BEGIN_MESSAGE_MAP(WelcomeLauncher, I7BaseDialog)
@@ -28,44 +27,29 @@ BEGIN_MESSAGE_MAP(WelcomeLauncher, I7BaseDialog)
   ON_COMMAND_RANGE(IDC_OPEN_0, IDC_OPEN_9, OnOpenProject)
   ON_COMMAND(IDC_CREATE_PROJECT, OnCreateProject)
   ON_COMMAND(IDC_CREATE_EXTENSION, OnCreateExtProject)
+  ON_COMMAND_RANGE(IDC_SAMPLE_ONYX, IDC_SAMPLE_DISENCHANTMENT, OnCopySampleProject)
   ON_COMMAND_RANGE(IDC_ADVICE_NEW, IDC_ADVICE_CREDITS, OnClickedAdvice)
   ON_COMMAND_RANGE(IDC_LINK_INFORM7, IDC_LINK_IFDB_SRC, OnClickedLink)
 END_MESSAGE_MAP()
 
-void WelcomeLauncher::ShowModalLauncher(void)
+void WelcomeLauncher::ShowStartLauncher(void)
 {
-  m_modal = true;
+  m_start = true;
   DoModal();
 }
 
 void WelcomeLauncher::CloseLauncher(void)
 {
-  if (m_modal)
-  {
+  if (m_start)
     EndDialog(IDOK);
-    if (theApp.m_pMainWnd == this)
-    {
-      theApp.m_pMainWnd = NULL;
-      theApp.SetFrameAsMainWindow();
-    }
-  }
   else
-  {
     ASSERT(FALSE);
-  }
 }
 
 BOOL WelcomeLauncher::OnInitDialog()
 {
   I7BaseDialog::OnInitDialog();
   theApp.SetIcon(this);
-
-  if (m_modal)
-  {
-    // If there is no main window, make this dialog it
-    if (theApp.m_pMainWnd == NULL)
-      theApp.m_pMainWnd = this;
-  }
 
   // Create the HTML control window
   if (!m_html.Create(NULL,NULL,WS_CHILD,CRect(0,0,0,0),this,1))
@@ -269,8 +253,8 @@ LRESULT WelcomeLauncher::OnDpiChanged(WPARAM, LPARAM)
 
 LRESULT WelcomeLauncher::OnKickIdle(WPARAM, LPARAM)
 {
-  if (m_modal)
-    ReportHtml::DoWebBrowserWork();
+  if (m_start)
+    ReportHtml::DoWebBrowserWork(false);
   return 0;
 }
 
@@ -298,6 +282,80 @@ void WelcomeLauncher::OnCreateProject()
 void WelcomeLauncher::OnCreateExtProject()
 {
   if (ProjectFrame::StartNewExtProject(theApp.GetLastProjectDir(),this,NULL))
+    CloseLauncher();
+}
+
+void WelcomeLauncher::OnCopySampleProject(UINT nID)
+{
+  // Find the parent of the last project directory
+  CString lastDir = theApp.GetLastProjectDir();
+  int i = lastDir.ReverseFind('\\');
+  if (i != -1)
+    lastDir.Truncate(i);
+  else
+    lastDir.Empty();
+
+  // Get the destination directory
+  CString toDir = theApp.PickDirectory("Choose a directory to save into",lastDir,this);
+  if (toDir.IsEmpty())
+    return;
+
+  // Convert the destination directory to a shell item
+  CComPtr<IShellItem> toItem;
+  if (FAILED(::SHCreateItemFromParsingName(CStringW(toDir),NULL,__uuidof(IShellItem),(void**)&toItem)))
+    return;
+
+  // Create a file operation to perform the copy
+  CComPtr<IFileOperation> fileOper;
+  if (FAILED(fileOper.CoCreateInstance(CLSID_FileOperation)))
+    return;
+  fileOper->SetOperationFlags(FOF_NO_UI);
+
+  // Add the shell items to copy to the operation
+  CString fromDir = theApp.GetAppDir();
+  fromDir.Append("\\Samples");
+  CString resultDir(toDir);
+  switch (nID)
+  {
+  case IDC_SAMPLE_ONYX:
+    {
+      CComPtr<IShellItem> projectItem;
+      if (FAILED(::SHCreateItemFromParsingName(CStringW(fromDir)+L"\\Onyx.inform",NULL,__uuidof(IShellItem),(void**)&projectItem)))
+        return;
+      if (FAILED(fileOper->CopyItem(projectItem,toItem,NULL,NULL)))
+        return;
+
+      resultDir.Append("\\Onyx.inform");
+    }
+    break;
+  case IDC_SAMPLE_DISENCHANTMENT:
+    {
+      CComPtr<IShellItem> projectItem;
+      if (FAILED(::SHCreateItemFromParsingName(CStringW(fromDir)+L"\\Disenchantment Bay.inform",NULL,__uuidof(IShellItem),(void**)&projectItem)))
+        return;
+      if (FAILED(fileOper->CopyItem(projectItem,toItem,NULL,NULL)))
+        return;
+
+      CComPtr<IShellItem> materialsItem;
+      if (FAILED(::SHCreateItemFromParsingName(CStringW(fromDir)+L"\\Disenchantment Bay.materials",NULL,__uuidof(IShellItem),(void**)&materialsItem)))
+        return;
+      if (FAILED(fileOper->CopyItem(materialsItem,toItem,NULL,NULL)))
+        return;
+
+      resultDir.Append("\\Disenchantment Bay.inform");
+    }
+    break;
+  default:
+    ASSERT(FALSE);
+    return;
+  }
+
+  // Copy the sample project
+  if (FAILED(fileOper->PerformOperations()))
+    return;
+
+  // Open the copied sample project
+  if (ProjectFrame::StartNamedProject(resultDir))
     CloseLauncher();
 }
 
