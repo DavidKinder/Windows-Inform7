@@ -7,11 +7,11 @@
  <script src="../epub.min.js"></script>
 </head>
 <body>
- <div id="viewer"></div>
+ <div id="area"></div>
  <script>
   var book = ePub("./Changes to Inform.epub");
-  var rendition = book.renderTo("viewer", { method: "default", width: "100%", height: "100%" });
-  var displayed = rendition.display();
+  var rendition = book.renderTo("area");
+  rendition.display();
  </script>
 </body>
 </html>
