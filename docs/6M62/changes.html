@@ -10,7 +10,7 @@
  <div id="area"></div>
  <script>
   var book = ePub("./Changes to Inform.epub");
-  var rendition = book.renderTo("area", { method: "continuous" });
+  var rendition = book.renderTo("area", { flow: "scrolled-doc" });
   rendition.display();
  </script>
 </body>
