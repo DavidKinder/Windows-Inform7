@@ -434,10 +434,10 @@ BEGIN
     LTEXT           "Create New",IDC_STATIC_CREATE_NEW,226,58,55,11
     PUSHBUTTON      "Project",IDC_CREATE_PROJECT,226,72,208,11,BS_LEFT
     PUSHBUTTON      "Extension",IDC_CREATE_EXTENSION,226,84,208,11,BS_LEFT
-    LTEXT           "Open a Sample Project",IDC_STATIC_SAMPLE,226,99,105,11
-    PUSHBUTTON      "Onyx\t(a small project)",IDC_SAMPLE_ONYX,226,113,208,11,BS_LEFT
-    PUSHBUTTON      "Disenchantment Bay\t(a medium project)",IDC_SAMPLE_DISENCHANTMENT,226,125,208,11,BS_LEFT
-    PUSHBUTTON      "Browse Inform projects with public source at IFDB",IDC_LINK_IFDB_SRC,226,137,208,11,BS_LEFT
+    LTEXT           "Open a Sample Project",IDC_STATIC_SAMPLE,226,142,105,11
+    PUSHBUTTON      "Onyx\t(a small project)",IDC_SAMPLE_ONYX,226,156,208,11,BS_LEFT
+    PUSHBUTTON      "Disenchantment Bay\t(a medium project)",IDC_SAMPLE_DISENCHANTMENT,226,168,208,11,BS_LEFT
+    PUSHBUTTON      "Browse Inform projects with public source at IFDB",IDC_LINK_IFDB_SRC,226,180,208,11,BS_LEFT
     LTEXT           "Advice",IDC_STATIC_ADVICE,6,203,32,11
     PUSHBUTTON      "• New to Inform?",IDC_ADVICE_NEW,6,218,208,9,BS_LEFT
     PUSHBUTTON      "• Upgrading?",IDC_ADVICE_UPGRADE,6,229,208,9,BS_LEFT
