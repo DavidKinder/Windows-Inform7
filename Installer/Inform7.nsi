@@ -23,6 +23,7 @@ InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory"
 !define MUI_HEADERIMAGE_BITMAP "Back.bmp"
 !define MUI_HEADERIMAGE_BITMAP_NOSTRETCH
 
+!define MUI_WELCOMEPAGE_TEXT "Setup will guide you through the installation of Inform 7, a design system for interactive fiction based on natural language.$\r$\n$\r$\n$_CLICK"
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW SetWelcomeBitmap
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
