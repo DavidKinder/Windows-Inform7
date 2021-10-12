@@ -48,13 +48,14 @@ BEGIN_MESSAGE_MAP(InformApp, CWinApp)
   ON_COMMAND(ID_APP_PREFS, OnAppPrefs)
   ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
   ON_COMMAND(ID_APP_WEBPAGE, OnAppWebPage)
+  ON_COMMAND(ID_APP_LAUNCHER, OnAppLauncher)
   ON_UPDATE_COMMAND_UI(ID_EDIT_USE_SEL, OnUpdateEditUseSel)
 END_MESSAGE_MAP()
 
 // The one and only InformApp object
 InformApp theApp;
 
-InformApp::InformApp() : m_job(0), m_doneProjectsOnExit(false)
+InformApp::InformApp() : m_job(0), m_doneProjectsOnExit(false), m_launcher(NULL)
 {
   for (int i = 0; i < sizeof m_fontSizes / sizeof m_fontSizes[0]; i++)
     m_fontSizes[i] = 0;
@@ -324,6 +325,13 @@ void InformApp::OnAppExit()
 {
   WriteOpenProjectsOnExit();
 
+  // Close the launcher, if it exists
+  if (m_launcher)
+  {
+    delete m_launcher;
+    m_launcher = NULL;
+  }
+
   // Close all secondary window frames first. The close message
   // will cause the window to be removed from the frames array.
   while (m_frames.GetSize() > 0)
@@ -358,6 +366,16 @@ void InformApp::OnAppAbout()
 void InformApp::OnAppWebPage()
 {
   ::ShellExecute(0,NULL,"http://inform7.com/",NULL,NULL,SW_SHOWNORMAL);
+}
+
+void InformApp::OnAppLauncher()
+{
+  if (m_launcher == NULL)
+  {
+    m_launcher = new WelcomeLauncher();
+    m_launcher->Create(MAKEINTRESOURCE(WelcomeLauncher::IDD));
+  }
+  m_launcher->ShowWindow(m_launcher->IsWindowVisible() ? SW_HIDE : SW_SHOW);
 }
 
 void InformApp::OnUpdateEditUseSel(CCmdUI *pCmdUI)

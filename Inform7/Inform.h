@@ -27,6 +27,7 @@
 #define LOG_FILE "\\Inform\\i7log.txt"
 
 class RecentProjectList;
+class WelcomeLauncher;
 
 enum ProjectType
 {
@@ -53,6 +54,7 @@ protected:
   afx_msg void OnAppPrefs();
   afx_msg void OnAppAbout();
   afx_msg void OnAppWebPage();
+  afx_msg void OnAppLauncher();
   afx_msg void OnUpdateEditUseSel(CCmdUI *pCmdUI);
 
 public:
@@ -243,6 +245,8 @@ protected:
   CString m_home;
   HANDLE m_job;
   bool m_doneProjectsOnExit;
+
+  WelcomeLauncher* m_launcher;
 };
 
 extern InformApp theApp;

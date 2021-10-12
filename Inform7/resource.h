@@ -84,14 +84,15 @@
 #define ID_HELP_RECIPES                 273
 #define ID_APP_PREFS                    274
 #define ID_APP_WEBPAGE                  275
-#define ID_HEAD_SHOW                    276
-#define ID_HEAD_CURRENT                 277
-#define ID_HEAD_INCREASE                278
-#define ID_HEAD_REDUCE                  279
-#define ID_HEAD_ENTIRE                  280
-#define ID_HEAD_PREVIOUS                281
-#define ID_HEAD_NEXT                    282
-#define ID_FILE_CLEAR_RECENT            283
+#define ID_APP_LAUNCHER                 276
+#define ID_HEAD_SHOW                    277
+#define ID_HEAD_CURRENT                 278
+#define ID_HEAD_INCREASE                279
+#define ID_HEAD_REDUCE                  280
+#define ID_HEAD_ENTIRE                  281
+#define ID_HEAD_PREVIOUS                282
+#define ID_HEAD_NEXT                    283
+#define ID_FILE_CLEAR_RECENT            284
 #define ID_WINDOW_LIST                  300
 #define ID_SKEIN_LABEL                  400
 #define ID_SKEIN_PLAY                   401
@@ -253,7 +254,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        285
-#define _APS_NEXT_COMMAND_VALUE         284
+#define _APS_NEXT_COMMAND_VALUE         285
 #define _APS_NEXT_CONTROL_VALUE         1143
 #define _APS_NEXT_SYMED_VALUE           100
 #endif

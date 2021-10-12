@@ -180,6 +180,7 @@ BEGIN
     END
     POPUP "&Window"
     BEGIN
+        MENUITEM "Show &Launcher\tCtrl+Shift+L",  ID_APP_LAUNCHER
         POPUP "Show &Tab"
         BEGIN
             MENUITEM "&Source\tCtrl+F1",            ID_WINDOW_TAB_SOURCE
@@ -302,6 +303,7 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
+    "L",            ID_APP_LAUNCHER,        VIRTKEY, CONTROL, SHIFT, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
