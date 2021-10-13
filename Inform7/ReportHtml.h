@@ -7,10 +7,10 @@ class ReportHtml : public CWnd
 public:
   static bool InitWebBrowser(void);
   static void ShutWebBrowser(void);
-  static void DoWebBrowserWork(bool checkMain);
+  static void DoWebBrowserWork(void);
   static void UpdateWebBrowserPreferences(void);
-  static void UpdateWebBrowserPreferences(CWnd* frame);
-  static void RemoveContext(CWnd* frame);
+  static void UpdateWebBrowserPreferences(CFrameWnd* frame);
+  static void RemoveContext(CFrameWnd* frame);
 
   ReportHtml();
   ~ReportHtml();

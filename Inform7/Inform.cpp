@@ -55,7 +55,7 @@ END_MESSAGE_MAP()
 // The one and only InformApp object
 InformApp theApp;
 
-InformApp::InformApp() : m_job(0), m_doneProjectsOnExit(false), m_launcher(NULL)
+InformApp::InformApp() : m_job(0), m_doneProjectsOnExit(false)
 {
   for (int i = 0; i < sizeof m_fontSizes / sizeof m_fontSizes[0]; i++)
     m_fontSizes[i] = 0;
@@ -124,25 +124,24 @@ BOOL InformApp::InitInstance()
   FindInFiles::InitInstance();
 
   // Open any previously open projects
-  /*OpenPreviousProjects();*/
+  OpenPreviousProjects();
 
   // Show the launcher, if nothing else is open
   if (m_pMainWnd == NULL)
-  {
-    WelcomeLauncher welcome;
-    welcome.ShowStartLauncher();
-  }
+    WelcomeLauncherFrame::ShowLauncher();
 
-  // Only continue if a project has been opened
-  CWnd* mainWnd = m_pMainWnd;
-  if (mainWnd == NULL)
+  // Only continue if a window has been opened
+  if (m_pMainWnd == NULL)
+  {
+    ASSERT(FALSE);
     return FALSE;
+  }
 
   // Make sure that any census failure is reported
   if (ni.process != INVALID_HANDLE_VALUE)
   {
-    if (mainWnd->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
-      ((ProjectFrame*)mainWnd)->MonitorProcess(ni,ProjectFrame::ProcessNoAction,"ni (census)");
+    if (m_pMainWnd->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
+      ((ProjectFrame*)m_pMainWnd)->MonitorProcess(ni,ProjectFrame::ProcessNoAction,"ni (census)");
   }
   return TRUE;
 }
@@ -205,7 +204,7 @@ BOOL InformApp::OnIdle(LONG lCount)
   if (lCount == 0)
   {
     HandleDebugEvents();
-    ReportHtml::DoWebBrowserWork(true);
+    ReportHtml::DoWebBrowserWork();
   }
   return CWinApp::OnIdle(lCount);
 }
@@ -325,13 +324,6 @@ void InformApp::OnAppExit()
 {
   WriteOpenProjectsOnExit();
 
-  // Close the launcher, if it exists
-  if (m_launcher)
-  {
-    delete m_launcher;
-    m_launcher = NULL;
-  }
-
   // Close all secondary window frames first. The close message
   // will cause the window to be removed from the frames array.
   while (m_frames.GetSize() > 0)
@@ -370,12 +362,7 @@ void InformApp::OnAppWebPage()
 
 void InformApp::OnAppLauncher()
 {
-  if (m_launcher == NULL)
-  {
-    m_launcher = new WelcomeLauncher();
-    m_launcher->Create(MAKEINTRESOURCE(WelcomeLauncher::IDD));
-  }
-  m_launcher->ShowWindow(m_launcher->IsWindowVisible() ? SW_HIDE : SW_SHOW);
+  WelcomeLauncherFrame::ShowLauncher();
 }
 
 void InformApp::OnUpdateEditUseSel(CCmdUI *pCmdUI)

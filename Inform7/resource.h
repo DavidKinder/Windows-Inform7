@@ -7,6 +7,7 @@
 #define IDR_SKEIN                       101
 #define IDR_EXTFRAME                    102
 #define IDR_ICON                        103
+#define IDR_LAUNCHFRAME                 104
 #define IDD_ABOUTBOX                    150
 #define IDD_SETTINGS                    151
 #define IDD_LAUNCHER                    152

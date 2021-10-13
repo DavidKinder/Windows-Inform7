@@ -7,23 +7,32 @@
 #include "ScaleGfx.h"
 #include "TextFormat.h"
 
-//XXXXDK modeless,DPI,keyboard,accessibility
-// review text in html pages
-// ahead-of-time creation of libcef control?
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
-IMPLEMENT_DYNAMIC(WelcomeLauncher, I7BaseDialog)
+//XXXXDK
+// Hide if "show" when currently front window
+// Show if "show" when currently open, but not front
+// Ctrl+Shift+L, Esc on launcher
+// Better solution than tabbed text in link controls
+// Crash in libcef on start, open previous project, close??
+// Review text in html pages
+// DPI change
+// Keyboard
+// Accessibility
+// Ahead-of-time creation of libcef control?
 
-WelcomeLauncher::WelcomeLauncher(CWnd* pParent) : I7BaseDialog(WelcomeLauncher::IDD,pParent)
+IMPLEMENT_DYNAMIC(WelcomeLauncherView, CFormView)
+
+WelcomeLauncherView::WelcomeLauncherView() : CFormView(WelcomeLauncherView::IDD)
 {
-  m_start = false;
 }
 
-BEGIN_MESSAGE_MAP(WelcomeLauncher, I7BaseDialog)
+BEGIN_MESSAGE_MAP(WelcomeLauncherView, CFormView)
   ON_WM_CTLCOLOR()
   ON_WM_ERASEBKGND()
   ON_WM_LBUTTONUP()
-  ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
-  ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
   ON_COMMAND_RANGE(IDC_OPEN_0, IDC_OPEN_9, OnOpenProject)
   ON_COMMAND(IDC_CREATE_PROJECT, OnCreateProject)
   ON_COMMAND(IDC_CREATE_EXTENSION, OnCreateExtProject)
@@ -32,29 +41,37 @@ BEGIN_MESSAGE_MAP(WelcomeLauncher, I7BaseDialog)
   ON_COMMAND_RANGE(IDC_LINK_INFORM7, IDC_LINK_IFDB_SRC, OnClickedLink)
 END_MESSAGE_MAP()
 
-void WelcomeLauncher::ShowStartLauncher(void)
+BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
+  DWORD dwRequestedStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext)
 {
-  m_start = true;
-  DoModal();
-}
+  // Start of code copied from CFormView::Create() in MFC sources to enable a call to our CreateDlg()
+  CREATESTRUCT cs = { 0 };
+  cs.style = dwRequestedStyle;
+  if (!PreCreateWindow(cs))
+    return FALSE;
 
-void WelcomeLauncher::CloseLauncher(void)
-{
-  if (m_start)
-    EndDialog(IDOK);
-  else
-    ASSERT(FALSE);
-}
+  if (!CreateDlg(m_lpszTemplateName,pParentWnd))
+    return FALSE;
+  ModifyStyle(WS_BORDER|WS_CAPTION,cs.style & (WS_BORDER|WS_CAPTION));
+  ModifyStyleEx(WS_EX_CLIENTEDGE,cs.dwExStyle & WS_EX_CLIENTEDGE);
+  SetDlgCtrlID(nID);
 
-BOOL WelcomeLauncher::OnInitDialog()
-{
-  I7BaseDialog::OnInitDialog();
-  theApp.SetIcon(this);
+  CRect rectTemplate;
+  GetWindowRect(rectTemplate);
+  SetScrollSizes(MM_TEXT,rectTemplate.Size());
+
+  if (!ExecuteDlgInit(m_lpszTemplateName))
+    return FALSE;
+
+  SetWindowPos(NULL,rect.left,rect.top,rect.right - rect.left,rect.bottom - rect.top,SWP_NOZORDER|SWP_NOACTIVATE);
+  ShowWindow(SW_NORMAL);
+  // End of code copied from CFormView::Create() in MFC sources
 
   // Create the HTML control window
   if (!m_html.Create(NULL,NULL,WS_CHILD,CRect(0,0,0,0),this,1))
   {
     TRACE("Failed to create HTML control\n");
+    return FALSE;
   }
   m_html.SetWindowText("Advice");
 
@@ -148,14 +165,95 @@ BOOL WelcomeLauncher::OnInitDialog()
   for (; idx < 10; ++idx)
     m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW].ShowWindow(SW_HIDE);
 
-  // Create the scaled banner bitmap
-  SetBannerBitmap();
   return TRUE;
 }
 
-HBRUSH WelcomeLauncher::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+// Copied from MFC sources to enable a call to our CreateDlgIndirect()
+BOOL WelcomeLauncherView::CreateDlg(LPCTSTR lpszTemplateName, CWnd* pParentWnd)
 {
-  HBRUSH brush = I7BaseDialog::OnCtlColor(pDC,pWnd,nCtlColor);
+  LPCDLGTEMPLATE lpDialogTemplate = NULL;
+  HGLOBAL hDialogTemplate = NULL;
+  HINSTANCE hInst = AfxFindResourceHandle(lpszTemplateName,RT_DIALOG);
+  HRSRC hResource = ::FindResource(hInst,lpszTemplateName,RT_DIALOG);
+  hDialogTemplate = LoadResource(hInst,hResource);
+  if (hDialogTemplate != NULL)
+    lpDialogTemplate = (LPCDLGTEMPLATE)LockResource(hDialogTemplate);
+  ASSERT(lpDialogTemplate != NULL);
+
+  BOOL bSuccess = CreateDlgIndirect(lpDialogTemplate,pParentWnd,hInst);
+  UnlockResource(hDialogTemplate);
+  FreeResource(hDialogTemplate);
+  return bSuccess;
+}
+
+INT_PTR CALLBACK AfxDlgProc(HWND, UINT, WPARAM, LPARAM);
+
+BOOL WelcomeLauncherView::CreateDlgIndirect(LPCDLGTEMPLATE lpDialogTemplate, CWnd* pParentWnd, HINSTANCE hInst)
+{
+  if (!hInst)
+    hInst = AfxGetResourceHandle();
+
+  HGLOBAL hTemplate = NULL;
+  HWND hWnd = NULL;
+
+  TRY
+  {
+    CDialogTemplate dlgTemp(lpDialogTemplate);
+    SetFont(dlgTemp);
+    hTemplate = dlgTemp.Detach();
+    lpDialogTemplate = (DLGTEMPLATE*)GlobalLock(hTemplate);
+
+    m_nModalResult = -1;
+    m_nFlags |= WF_CONTINUEMODAL;
+
+    AfxHookWindowCreate(this);
+    hWnd = ::CreateDialogIndirect(hInst,lpDialogTemplate,pParentWnd->GetSafeHwnd(),AfxDlgProc);
+  }
+  CATCH_ALL(e)
+  {
+    e->Delete();
+    m_nModalResult = -1;
+  }
+  END_CATCH_ALL
+
+  if (!AfxUnhookWindowCreate())
+    PostNcDestroy();
+
+  if ((hWnd != NULL) && !(m_nFlags & WF_CONTINUEMODAL))
+  {
+    ::DestroyWindow(hWnd);
+    hWnd = NULL;
+  }
+
+  if (hTemplate != NULL)
+  {
+    GlobalUnlock(hTemplate);
+    GlobalFree(hTemplate);
+  }
+
+  if (hWnd == NULL)
+    return FALSE;
+  return TRUE;
+}
+
+void WelcomeLauncherView::SetFont(CDialogTemplate& dlgTemplate)
+{
+  NONCLIENTMETRICS ncm;
+  ::ZeroMemory(&ncm,sizeof ncm);
+  ncm.cbSize = sizeof ncm;
+  ::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof ncm,&ncm,0);
+
+  dlgTemplate.SetFont(ncm.lfMessageFont.lfFaceName,9);
+}
+
+void WelcomeLauncherView::PostNcDestroy()
+{
+  // Do nothing
+}
+
+HBRUSH WelcomeLauncherView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+  HBRUSH brush = CFormView::OnCtlColor(pDC,pWnd,nCtlColor);
   if (nCtlColor == CTLCOLOR_STATIC)
   {
     brush = (HBRUSH)::GetStockObject(NULL_BRUSH);
@@ -176,7 +274,7 @@ HBRUSH WelcomeLauncher::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
   return brush;
 }
 
-BOOL WelcomeLauncher::OnEraseBkgnd(CDC* pDC)
+BOOL WelcomeLauncherView::OnEraseBkgnd(CDC* pDC)
 {
   CArray<CRect> regions;
   GetRegions(regions);
@@ -228,9 +326,9 @@ BOOL WelcomeLauncher::OnEraseBkgnd(CDC* pDC)
   return TRUE;
 }
 
-void WelcomeLauncher::OnLButtonUp(UINT nFlags, CPoint point)
+void WelcomeLauncherView::OnLButtonUp(UINT nFlags, CPoint point)
 {
-  I7BaseDialog::OnLButtonUp(nFlags, point);
+  CFormView::OnLButtonUp(nFlags, point);
 
   CArray<CRect> regions;
   GetRegions(regions);
@@ -241,51 +339,26 @@ void WelcomeLauncher::OnLButtonUp(UINT nFlags, CPoint point)
   }
 }
 
-LRESULT WelcomeLauncher::OnDpiChanged(WPARAM, LPARAM)
-{
-  Default();
-  if (m_html.GetSafeHwnd() != 0)
-  {
-    SetBannerBitmap();
-  }
-  return 0;
-}
-
-LRESULT WelcomeLauncher::OnKickIdle(WPARAM, LPARAM)
-{
-  if (m_start)
-    ReportHtml::DoWebBrowserWork(false);
-  return 0;
-}
-
-void WelcomeLauncher::OnOpenProject(UINT nID)
+void WelcomeLauncherView::OnOpenProject(UINT nID)
 {
   CString dir = (*(theApp.GetRecentProjectList()))[nID - IDC_OPEN_0];
   if (dir.IsEmpty())
-  {
-    if (ProjectFrame::StartExistingProject(theApp.GetLastProjectDir(),this))
-      CloseLauncher();
-  }
+    ProjectFrame::StartExistingProject(theApp.GetLastProjectDir(),this);
   else
-  {
-    if (ProjectFrame::StartNamedProject(dir))
-      CloseLauncher();
-  }
+    ProjectFrame::StartNamedProject(dir);
 }
 
-void WelcomeLauncher::OnCreateProject()
+void WelcomeLauncherView::OnCreateProject()
 {
-  if (ProjectFrame::StartNewProject(theApp.GetLastProjectDir(),this))
-    CloseLauncher();
+  ProjectFrame::StartNewProject(theApp.GetLastProjectDir(),this);
 }
 
-void WelcomeLauncher::OnCreateExtProject()
+void WelcomeLauncherView::OnCreateExtProject()
 {
-  if (ProjectFrame::StartNewExtProject(theApp.GetLastProjectDir(),this,NULL))
-    CloseLauncher();
+  ProjectFrame::StartNewExtProject(theApp.GetLastProjectDir(),this,NULL);
 }
 
-void WelcomeLauncher::OnCopySampleProject(UINT nID)
+void WelcomeLauncherView::OnCopySampleProject(UINT nID)
 {
   // Find the parent of the last project directory
   CString lastDir = theApp.GetLastProjectDir();
@@ -355,11 +428,10 @@ void WelcomeLauncher::OnCopySampleProject(UINT nID)
     return;
 
   // Open the copied sample project
-  if (ProjectFrame::StartNamedProject(resultDir))
-    CloseLauncher();
+  ProjectFrame::StartNamedProject(resultDir);
 }
 
-void WelcomeLauncher::OnClickedAdvice(UINT nID)
+void WelcomeLauncherView::OnClickedAdvice(UINT nID)
 {
   if (HIWORD(GetCurrentMessage()->wParam) == BN_CLICKED)
   {
@@ -388,7 +460,7 @@ void WelcomeLauncher::OnClickedAdvice(UINT nID)
   }
 }
 
-void WelcomeLauncher::OnClickedLink(UINT nID)
+void WelcomeLauncherView::OnClickedLink(UINT nID)
 {
   if (HIWORD(GetCurrentMessage()->wParam) == BN_CLICKED)
   {
@@ -410,7 +482,7 @@ void WelcomeLauncher::OnClickedLink(UINT nID)
   }
 }
 
-void WelcomeLauncher::SetBannerBitmap(void)
+void WelcomeLauncherView::SetBannerBitmap(void)
 {
   CDibSection* original = theApp.GetCachedImage("Welcome Banner");
   ASSERT(original != NULL);
@@ -430,7 +502,7 @@ void WelcomeLauncher::SetBannerBitmap(void)
     m_banner.GetBits(),scaled.Width(),scaled.Height());
 }
 
-void WelcomeLauncher::GetRegions(CArray<CRect>& regions)
+void WelcomeLauncherView::GetRegions(CArray<CRect>& regions)
 {
   CRect client;
   GetClientRect(client);
@@ -463,7 +535,7 @@ void WelcomeLauncher::GetRegions(CArray<CRect>& regions)
   regions.Add(regionRect);
 }
 
-void WelcomeLauncher::ShowHtml(bool show)
+void WelcomeLauncherView::ShowHtml(bool show)
 {
   for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
   {
@@ -471,4 +543,126 @@ void WelcomeLauncher::ShowHtml(bool show)
       GetDlgItem(id)->ShowWindow(show ? SW_HIDE : SW_SHOW);
   }
   m_html.ShowWindow(show ? SW_SHOW :SW_HIDE);
+}
+
+IMPLEMENT_DYNAMIC(WelcomeLauncherFrame, CFrameWnd)
+
+BEGIN_MESSAGE_MAP(WelcomeLauncherFrame, CFrameWnd)
+  ON_WM_CREATE()
+  ON_WM_DESTROY()
+  ON_WM_CLOSE()
+END_MESSAGE_MAP()
+
+WelcomeLauncherFrame::WelcomeLauncherFrame()
+{
+}
+
+void WelcomeLauncherFrame::ShowLauncher()
+{
+  WelcomeLauncherFrame* frame = new WelcomeLauncherFrame;
+  theApp.NewFrame(frame);
+  frame->LoadFrame(IDR_LAUNCHFRAME,WS_OVERLAPPED|WS_CAPTION|WS_MINIMIZEBOX|WS_SYSMENU,NULL,NULL);
+  frame->Resize(true);
+  frame->ShowWindow(SW_SHOW);
+  frame->UpdateWindow();
+}
+
+BOOL WelcomeLauncherFrame::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle,
+  const RECT& rect, CWnd* pParentWnd, LPCTSTR lpszMenuName, DWORD dwExStyle, CCreateContext* pContext)
+{
+  m_strTitle = lpszWindowName;
+  if (!CreateEx(dwExStyle,lpszClassName,lpszWindowName,dwStyle,
+    rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top,pParentWnd->GetSafeHwnd(),0,pContext))
+  {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+BOOL WelcomeLauncherFrame::PreCreateWindow(CREATESTRUCT& cs)
+{
+  if (!CFrameWnd::PreCreateWindow(cs))
+    return FALSE;
+
+  cs.dwExStyle &= ~WS_EX_CLIENTEDGE;
+  cs.lpszClass = AfxRegisterWndClass(0);
+  return TRUE;
+}
+
+BOOL WelcomeLauncherFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+  CPushRoutingFrame push(this);
+
+  // First try the view
+  if (m_view.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
+    return TRUE;
+
+  // Then pump through frame
+  if (CWnd::OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
+    return TRUE;
+
+  // Then pump through application
+  if (AfxGetApp()->OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
+    return TRUE;
+  return FALSE;
+}
+
+int WelcomeLauncherFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+  if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
+    return -1;
+
+  // Create the welcome launcher view
+  if (!m_view.Create(NULL,NULL,WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,AFX_IDW_PANE_FIRST,NULL))
+  {
+    TRACE("Failed to create welcome launcher view\n");
+    return -1;
+  }
+  m_view.SetFocus();
+
+  // Set the application icon
+  theApp.SetIcon(this);
+  return 0;
+}
+
+void WelcomeLauncherFrame::OnDestroy()
+{
+  ReportHtml::RemoveContext(this);
+  CFrameWnd::OnDestroy();
+}
+
+void WelcomeLauncherFrame::OnClose()
+{
+  CArray<CFrameWnd*> frames;
+  theApp.GetWindowFrames(frames);
+  if (frames.GetSize() == 1)
+    theApp.WriteOpenProjectsOnExit();
+
+  theApp.FrameClosing(this);
+  CFrameWnd::OnClose();
+}
+
+void WelcomeLauncherFrame::Resize(bool centre)
+{
+  // Make the frame fit the view
+  CSize viewSize = m_view.GetTotalSize();
+  CRect clientRect, frameRect;
+  GetClientRect(clientRect);
+  GetWindowRect(frameRect);
+  int ncw = frameRect.Width() - clientRect.Width();
+  int nch = frameRect.Height() - clientRect.Height();
+  frameRect.right = frameRect.left + viewSize.cx + ncw;
+  frameRect.bottom = frameRect.top + viewSize.cy + nch;
+
+  if (centre)
+  {
+    // Center in the monitor
+    CRect workRect = DPI::getMonitorWorkRect(this);
+    frameRect.MoveToXY((workRect.Width()-frameRect.Width())/2,(workRect.Height()-frameRect.Height())/2);
+  }
+
+  MoveWindow(frameRect);
+
+  // Create the scaled banner bitmap
+  m_view.SetBannerBitmap();
 }

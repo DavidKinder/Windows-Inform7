@@ -5,6 +5,7 @@
 #include "Messages.h"
 #include "SourceSettings.h"
 #include "TextFormat.h"
+#include "WelcomeLauncher.h"
 #include "NewDialogs.h"
 #include "Dialogs.h"
 #include "DpiFunctions.h"
@@ -34,13 +35,6 @@ BEGIN_MESSAGE_MAP(ExtensionFrame, MenuBarFrameWnd)
   ON_UPDATE_COMMAND_UI(ID_WINDOW_LIST, OnUpdateWindowList)
   ON_COMMAND_RANGE(ID_WINDOW_LIST, ID_WINDOW_LIST+8, OnWindowList)
 END_MESSAGE_MAP()
-
-static UINT indicators[] =
-{
-  ID_SEPARATOR,
-  ID_INDICATOR_CAPS,
-  ID_INDICATOR_NUM,
-};
 
 ExtensionFrame::ExtensionFrame()
 {
@@ -126,6 +120,11 @@ void ExtensionFrame::OnClose()
     }
   }
 
+  CArray<CFrameWnd*> frames;
+  theApp.GetWindowFrames(frames);
+  if (frames.GetSize() == 1)
+    theApp.WriteOpenProjectsOnExit();
+
   // If there are any secondary frame windows and this is the main frame,
   // promote one of the secondaries to be the new main frame.
   theApp.FrameClosing(this);
@@ -177,6 +176,8 @@ void ExtensionFrame::GetMessageString(UINT nID, CString& rMessage) const
         rMessage.Format("Switch to the extension \"%s\"",
           ((ExtensionFrame*)frames[i])->GetDisplayName(false));
       }
+      else if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
+        rMessage.Format("Switch to the welcome launcher");
       return;
     }
   }
@@ -301,6 +302,8 @@ void ExtensionFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
       name = ((ProjectFrame*)frames[i])->GetDisplayName(true);
     else if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
       name = ((ExtensionFrame*)frames[i])->GetDisplayName(true);
+    else if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
+      name = "Welcome Launcher";
 
     menu.Format("&%d %s",i+1,(LPCSTR)name);
 

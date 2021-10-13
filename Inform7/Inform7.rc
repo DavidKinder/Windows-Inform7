@@ -180,7 +180,7 @@ BEGIN
     END
     POPUP "&Window"
     BEGIN
-        MENUITEM "Show &Launcher\tCtrl+Shift+L",  ID_APP_LAUNCHER
+        MENUITEM "Show &Launcher\tCtrl+Shift+L", ID_APP_LAUNCHER
         POPUP "Show &Tab"
         BEGIN
             MENUITEM "&Source\tCtrl+F1",            ID_WINDOW_TAB_SOURCE
@@ -303,7 +303,7 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
-    "L",            ID_APP_LAUNCHER,        VIRTKEY, CONTROL, SHIFT, NOINVERT
+    "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
@@ -359,6 +359,7 @@ END
 
 IDR_EXTFRAME ACCELERATORS
 BEGIN
+    "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
@@ -418,8 +419,7 @@ BEGIN
 END
 
 IDD_LAUNCHER DIALOGEX 0, 0, 440, 289
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Welcome to Inform"
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Open a Recent Item",IDC_STATIC_OPEN_RECENT,6,58,90,11
@@ -454,7 +454,7 @@ BEGIN
     PUSHBUTTON      "• IFWiki",IDC_LINK_IFWIKI,226,262,32,9,BS_LEFT
     PUSHBUTTON      "• Planet IF Blog Aggregator",IDC_LINK_PLANETIF,260,262,98,9,BS_LEFT
     PUSHBUTTON      "• IF Competition",IDC_LINK_IFCOMP,360,262,62,9,BS_LEFT
-    LTEXT           "Summon or dismiss this launcher with ?",IDC_STATIC_SUMMON,6,280,143,8
+    LTEXT           "Summon or dismiss this launcher with Ctrl+Shift+L",IDC_STATIC_SUMMON,6,280,400,8
 END
 
 IDD_SEARCH DIALOGEX 0, 0, 174, 18
@@ -1066,6 +1066,7 @@ STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "Inform"
     IDR_EXTFRAME            "Inform"
+    IDR_LAUNCHFRAME         "Welcome to Inform"
 END
 
 STRINGTABLE

@@ -21,8 +21,8 @@
 // Settings for all browser instances
 static CefSettings cefSettings;
 
-// Map of request contexts, one per frame window
-static std::map<CWnd*,CefRefPtr<CefRequestContext>>* g_requestContexts;
+// Map of request contexts, one per window frame
+static std::map<CFrameWnd*,CefRefPtr<CefRequestContext>>* g_requestContexts;
 
 // Test whether the given file exists
 static bool FileExists(const char* path)
@@ -792,7 +792,7 @@ bool ReportHtml::InitWebBrowser(void)
     return false;
 
   // Create the map of request contexts
-  g_requestContexts = new std::map<CWnd*,CefRefPtr<CefRequestContext>>();
+  g_requestContexts = new std::map<CFrameWnd*,CefRefPtr<CefRequestContext>>();
 
   // Initialize settings
   cefSettings.no_sandbox = true;
@@ -824,7 +824,7 @@ void ReportHtml::ShutWebBrowser(void)
 }
 
 // Do an iteration of the CEF message loop
-void ReportHtml::DoWebBrowserWork(bool checkMain)
+void ReportHtml::DoWebBrowserWork(void)
 {
   for (int i = 0; i < 10; i++)
   {
@@ -832,7 +832,7 @@ void ReportHtml::DoWebBrowserWork(bool checkMain)
     CefDoMessageLoopWork();
 
     // If the main window has gone, stop!
-    if (checkMain && (AfxGetMainWnd() == NULL))
+    if (AfxGetMainWnd() == NULL)
     {
       TRACE("Main window gone after CefDoMessageLoopWork(), shutting down\n");
       ::ExitProcess(0);
@@ -848,7 +848,7 @@ void ReportHtml::UpdateWebBrowserPreferences(void)
 }
 
 // Update preferences for the web browser instances under one frame window
-void ReportHtml::UpdateWebBrowserPreferences(CWnd* frame)
+void ReportHtml::UpdateWebBrowserPreferences(CFrameWnd* frame)
 {
   auto it = g_requestContexts->find(frame);
   if (it != g_requestContexts->end())
@@ -871,7 +871,7 @@ void ReportHtml::UpdateWebBrowserPreferences(CWnd* frame)
   }
 }
 
-void ReportHtml::RemoveContext(CWnd* frame)
+void ReportHtml::RemoveContext(CFrameWnd* frame)
 {
   g_requestContexts->erase(frame);
 }
@@ -895,14 +895,7 @@ BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
 {
   CefRefPtr<CefRequestContext> context;
   {
-    CWnd* frame = parentWnd->GetParentFrame();
-    if (frame == NULL)
-    {
-      CWnd* topLevel = parentWnd->GetTopLevelParent();
-      if (topLevel != NULL)
-        frame = CWnd::FromHandlePermanent(topLevel->GetSafeHwnd());
-    }
-
+    CFrameWnd* frame = parentWnd->GetParentFrame();
     auto it = g_requestContexts->find(frame);
     if (it != g_requestContexts->end())
       context = it->second;

@@ -2,8 +2,9 @@
 #include "ProjectFrame.h"
 #include "ExtensionFrame.h"
 #include "Messages.h"
-#include "TextFormat.h"
 #include "ProjectDirDialog.h"
+#include "TextFormat.h"
+#include "WelcomeLauncher.h"
 #include "NewDialogs.h"
 #include "Dialogs.h"
 #include "DpiFunctions.h"
@@ -145,13 +146,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_SEARCH_SOURCE, OnSearchSource)
   ON_COMMAND(ID_SEARCH_DOCS, OnSearchDocs)
 END_MESSAGE_MAP()
-
-static UINT indicators[] =
-{
-  ID_SEPARATOR,
-  ID_INDICATOR_CAPS,
-  ID_INDICATOR_NUM,
-};
 
 class IntestOutputSink : public InformApp::OutputSink
 {
@@ -833,6 +827,8 @@ void ProjectFrame::GetMessageString(UINT nID, CString& rMessage) const
         rMessage.Format("Switch to the extension \"%s\"",
           ((ExtensionFrame*)frames[i])->GetDisplayName(false));
       }
+      else if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
+        rMessage.Format("Switch to the welcome launcher");
       return;
     }
   }
@@ -2022,6 +2018,8 @@ void ProjectFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
       name = ((ProjectFrame*)frames[i])->GetDisplayName(true);
     else if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
       name = ((ExtensionFrame*)frames[i])->GetDisplayName(true);
+    else if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
+      name = "Welcome Launcher";
 
     menu.Format("&%d %s",i+1,(LPCSTR)name);
 
