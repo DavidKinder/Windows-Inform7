@@ -12,9 +12,6 @@
 #endif
 
 //XXXXDK
-// Hide if "show" when currently front window
-// Show if "show" when currently open, but not front
-// Ctrl+Shift+L, Esc on launcher
 // Better solution than tabbed text in link controls
 // Crash in libcef on start, open previous project, close??
 // Review text in html pages
@@ -559,6 +556,30 @@ WelcomeLauncherFrame::WelcomeLauncherFrame()
 
 void WelcomeLauncherFrame::ShowLauncher()
 {
+  // If the active frame is the launcher, close it
+  CFrameWnd* activeFrame = theApp.GetActiveFrame();
+  if (activeFrame != NULL)
+  {
+    if (activeFrame->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
+    {
+      activeFrame->PostMessage(WM_CLOSE);
+      return;
+    }
+  }
+
+  // If the launcher is already open, bring it to the front
+  CArray<CFrameWnd*> frames;
+  theApp.GetWindowFrames(frames);
+  for (int i = 0; i < frames.GetSize(); i++)
+  {
+    if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
+    {
+      frames[i]->ActivateFrame();
+      return;
+    }
+  }
+
+  // Open a new launcher
   WelcomeLauncherFrame* frame = new WelcomeLauncherFrame;
   theApp.NewFrame(frame);
   frame->LoadFrame(IDR_LAUNCHFRAME,WS_OVERLAPPED|WS_CAPTION|WS_MINIMIZEBOX|WS_SYSMENU,NULL,NULL);

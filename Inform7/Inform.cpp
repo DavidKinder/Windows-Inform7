@@ -628,6 +628,19 @@ CString InformApp::PathToUrl(const char* path)
   return url;
 }
 
+CFrameWnd* InformApp::GetActiveFrame(void)
+{
+  CWnd* active = CWnd::GetActiveWindow();
+  if (active != NULL)
+  {
+    if (active->IsKindOf(RUNTIME_CLASS(CFrameWnd)))
+      return (CFrameWnd*)active;
+    else
+      return active->GetParentFrame();
+  }
+  return NULL;
+}
+
 void InformApp::NewFrame(CFrameWnd* frame)
 {
   if (m_pMainWnd == NULL)

@@ -116,6 +116,7 @@ public:
   CString GetHomeDir(void);
   CString PathToUrl(const char* path);
 
+  CFrameWnd* GetActiveFrame(void);
   void NewFrame(CFrameWnd* frame);
   void FrameClosing(CFrameWnd* frame);
   void SetFrameAsMainWindow(void);

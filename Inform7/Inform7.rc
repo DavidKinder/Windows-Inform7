@@ -382,6 +382,12 @@ BEGIN
     VK_OEM_2,       ID_FORMAT_UNCOMMENT,    VIRTKEY, SHIFT, ALT, NOINVERT
 END
 
+IDR_LAUNCHFRAME ACCELERATORS
+BEGIN
+    "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_ESCAPE,      ID_APP_LAUNCHER,        VIRTKEY, NOINVERT
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
