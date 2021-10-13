@@ -13,11 +13,12 @@
 
 //XXXXDK
 // Crash in libcef on start, open previous project, close??
-// Review text in html pages
 // DPI change
-// Keyboard
+// Keyboard, including in HTML
 // Accessibility
 // Ahead-of-time creation of libcef control?
+// EPUB viewer
+// Missing keyboard shortcuts from HTML page
 
 IMPLEMENT_DYNAMIC(WelcomeLauncherView, CFormView)
 

@@ -174,7 +174,7 @@ BEGIN
         MENUITEM "&Release",                    ID_RELEASE_GAME
         MENUITEM "Release for &Testing",        ID_RELEASE_TEST
         MENUITEM SEPARATOR
-        MENUITEM "Open &Materials Folder",      ID_RELEASE_MATERIALS
+        MENUITEM "Open &Materials Folder\tCtrl+Shift+M", ID_RELEASE_MATERIALS
         MENUITEM SEPARATOR
         MENUITEM "&Export iFiction Record...",  ID_RELEASE_IFICTION
     END
@@ -325,6 +325,7 @@ BEGIN
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_OEM_2,       ID_FORMAT_COMMENT,      VIRTKEY, ALT, NOINVERT
     "M",            ID_FORMAT_RENUMBER,     VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_RELEASE_MATERIALS,   VIRTKEY, CONTROL, SHIFT, NOINVERT
     VK_OEM_4,       ID_FORMAT_SHIFT_LEFT,   VIRTKEY, ALT, NOINVERT
     VK_OEM_6,       ID_FORMAT_SHIFT_RIGHT,  VIRTKEY, ALT, NOINVERT
     VK_OEM_2,       ID_FORMAT_UNCOMMENT,    VIRTKEY, SHIFT, ALT, NOINVERT
