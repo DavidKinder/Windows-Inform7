@@ -12,7 +12,6 @@
 #endif
 
 //XXXXDK
-// Better solution than tabbed text in link controls
 // Crash in libcef on start, open previous project, close??
 // Review text in html pages
 // DPI change
@@ -125,6 +124,7 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
       cmd.SetBackSysColor(COLOR_BTNFACE);
       cmd.SetFont(&m_bigFont);
       cmd.SetIcon("Icon-Inform");
+      cmd.SetTabStop(theApp.MeasureText(&cmd,"Browse Inform projects ").cx);
       break;
     case IDC_LINK_IFDB_SRC:
       cmd.SetBackSysColor(COLOR_BTNFACE);

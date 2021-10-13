@@ -16,13 +16,18 @@ BEGIN_MESSAGE_MAP(CommandButton, CButton)
   ON_WM_PAINT()
 END_MESSAGE_MAP()
 
-CommandButton::CommandButton() : m_mouseOver(false)
+CommandButton::CommandButton() : m_backIndex(0), m_tabStop(0), m_mouseOver(false)
 {
 }
 
 void CommandButton::SetBackSysColor(int index)
 {
   m_backIndex = index;
+}
+
+void CommandButton::SetTabStop(int tab)
+{
+  m_tabStop = tab;
 }
 
 void CommandButton::SetIcon(const char* name)
@@ -113,11 +118,18 @@ void CommandButton::OnPaint()
     bitmap.AlphaBlend(&m_icon,0,2,false);
   }
 
+  dc.SetTextColor(::GetSysColor(COLOR_BTNTEXT));
   CString caption;
   GetWindowText(caption);
-  dc.SetTextColor(::GetSysColor(COLOR_BTNTEXT));
-  DRAWTEXTPARAMS dtp = { sizeof(DRAWTEXTPARAMS),20,0 };
-  dc.DrawTextEx(caption,textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER|DT_EXPANDTABS|DT_TABSTOP|DT_END_ELLIPSIS,&dtp);
+  int tab = caption.Find('\t');
+  if (tab > 0)
+  {
+    dc.DrawText(caption.Left(tab),textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER|DT_END_ELLIPSIS);
+    textRect.left += m_tabStop;
+    dc.DrawText(caption.Mid(tab+1),textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER|DT_END_ELLIPSIS);
+  }
+  else
+    dc.DrawText(caption,textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER|DT_END_ELLIPSIS);
 
   dc.SelectObject(oldFont);
   dcPaint.BitBlt(0,0,client.Width(),client.Height(),&dc,0,0,SRCCOPY);

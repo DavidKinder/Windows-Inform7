@@ -10,6 +10,7 @@ public:
   CommandButton();
 
   void SetBackSysColor(int index);
+  void SetTabStop(int tab);
   void SetIcon(const char* name);
 
 protected:
@@ -22,6 +23,7 @@ protected:
   void GetScaledIcon(void);
 
   int m_backIndex;
+  int m_tabStop;
   CString m_iconName;
   CDibSection m_icon;
 
