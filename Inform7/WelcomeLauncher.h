@@ -51,6 +51,7 @@ protected:
   CommandButton m_cmds[27];
   ReportHtml m_html;
 
+  int m_recentCount;
   double m_rightGapPerDpi;
   double m_bottomGapPerDpi;
 };

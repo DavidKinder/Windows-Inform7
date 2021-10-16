@@ -13,15 +13,19 @@
 
 //XXXXDK
 // Crash in libcef on start, open previous project, close??
+// On show, update recent list
 // Keyboard, including in HTML
 // Accessibility
 // EPUB viewer
 // Missing keyboard shortcuts from HTML page, change obscure ones that differ from OSX?
 
+#define RECENT_MAX 10
+
 IMPLEMENT_DYNAMIC(WelcomeLauncherView, CFormView)
 
 WelcomeLauncherView::WelcomeLauncherView() : CFormView(WelcomeLauncherView::IDD)
 {
+  m_recentCount = 0;
   m_rightGapPerDpi = 0.0;
   m_bottomGapPerDpi = 0.0;
 }
@@ -140,7 +144,8 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
     cmd.SetIcon("Icon-Folder");
     idx++;
   }
-  for (; idx < 10; ++idx)
+  m_recentCount = idx;
+  for (; idx < RECENT_MAX; ++idx)
     m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW].ShowWindow(SW_HIDE);
 
   // Set the fonts for all controls
@@ -619,6 +624,11 @@ void WelcomeLauncherView::ShowHtml(bool show)
   {
     if (id != IDC_STATIC_SUMMON)
       GetDlgItem(id)->ShowWindow(show ? SW_HIDE : SW_SHOW);
+  }
+  if (!show)
+  {
+    for (int i = m_recentCount; i < RECENT_MAX; ++i)
+      m_cmds[IDC_OPEN_0 + i - IDC_ADVICE_NEW].ShowWindow(SW_HIDE);
   }
   m_html.ShowWindow(show ? SW_SHOW :SW_HIDE);
 }
