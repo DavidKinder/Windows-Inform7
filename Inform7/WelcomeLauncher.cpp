@@ -13,23 +13,24 @@
 
 //XXXXDK
 // Crash in libcef on start, open previous project, close??
-// DPI change
 // Keyboard, including in HTML
 // Accessibility
-// Ahead-of-time creation of libcef control?
 // EPUB viewer
-// Missing keyboard shortcuts from HTML page
+// Missing keyboard shortcuts from HTML page, change obscure ones that differ from OSX?
 
 IMPLEMENT_DYNAMIC(WelcomeLauncherView, CFormView)
 
 WelcomeLauncherView::WelcomeLauncherView() : CFormView(WelcomeLauncherView::IDD)
 {
+  m_rightGapPerDpi = 0.0;
+  m_bottomGapPerDpi = 0.0;
 }
 
 BEGIN_MESSAGE_MAP(WelcomeLauncherView, CFormView)
   ON_WM_CTLCOLOR()
   ON_WM_ERASEBKGND()
   ON_WM_LBUTTONUP()
+  ON_WM_SIZE()
   ON_COMMAND_RANGE(IDC_OPEN_0, IDC_OPEN_9, OnOpenProject)
   ON_COMMAND(IDC_CREATE_PROJECT, OnCreateProject)
   ON_COMMAND(IDC_CREATE_EXTENSION, OnCreateExtProject)
@@ -72,21 +73,6 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
   }
   m_html.SetWindowText("Advice");
 
-  // Create and use larger fonts
-  LOGFONT lf;
-  GetFont()->GetLogFont(&lf);
-  LONG fontHeight = lf.lfHeight;
-  lf.lfWeight = FW_NORMAL;
-  lf.lfHeight = (LONG)(fontHeight*1.15);
-  m_bigFont.DeleteObject();
-  m_bigFont.CreateFontIndirect(&lf);
-  lf.lfWeight = FW_BOLD;
-  lf.lfHeight = (LONG)(fontHeight*1.3);
-  m_titleFont.DeleteObject();
-  m_titleFont.CreateFontIndirect(&lf);
-  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_STATIC_COMMUNITY; id++)
-    GetDlgItem(id)->SetFont(&m_titleFont);
-
   // Subclass command buttons
   ASSERT((sizeof m_cmds / sizeof m_cmds[0]) == (IDC_SAMPLE_DISENCHANTMENT - IDC_ADVICE_NEW + 1));
   for (int id = IDC_ADVICE_NEW; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
@@ -107,29 +93,23 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
     case IDC_OPEN_8:
     case IDC_OPEN_9:
       cmd.SetBackSysColor(COLOR_BTNFACE);
-      cmd.SetFont(&m_bigFont);
       cmd.ShowWindow(SW_SHOW);
       break;
     case IDC_CREATE_PROJECT:
       cmd.SetBackSysColor(COLOR_BTNFACE);
-      cmd.SetFont(&m_bigFont);
       cmd.SetIcon("Icon-Inform");
       break;
     case IDC_CREATE_EXTENSION:
       cmd.SetBackSysColor(COLOR_BTNFACE);
-      cmd.SetFont(&m_bigFont);
       cmd.SetIcon("Icon-I7X");
       break;
     case IDC_SAMPLE_ONYX:
     case IDC_SAMPLE_DISENCHANTMENT:
       cmd.SetBackSysColor(COLOR_BTNFACE);
-      cmd.SetFont(&m_bigFont);
       cmd.SetIcon("Icon-Inform");
-      cmd.SetTabStop(theApp.MeasureText(&cmd,"Browse Inform projects ").cx);
       break;
     case IDC_LINK_IFDB_SRC:
       cmd.SetBackSysColor(COLOR_BTNFACE);
-      cmd.SetFont(&m_bigFont);
       cmd.SetIcon("Icon-New");
       break;
     default:
@@ -163,7 +143,40 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
   for (; idx < 10; ++idx)
     m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW].ShowWindow(SW_HIDE);
 
+  // Set the fonts for all controls
+  SetFonts();
+
+  // Get scaling factors for handling a DPI change
+  int dpi = DPI::getWindowDPI(this);
+  CRect ifdbSrcRect, summonRect;
+  GetDlgItem(IDC_LINK_IFDB_SRC)->GetWindowRect(ifdbSrcRect);
+  GetDlgItem(IDC_STATIC_SUMMON)->GetWindowRect(summonRect);
+  m_rightGapPerDpi = (double)(rectTemplate.right - ifdbSrcRect.right) / (double)dpi;
+  m_bottomGapPerDpi = (double)(rectTemplate.bottom - summonRect.bottom) / (double)dpi;
   return TRUE;
+}
+
+CSize WelcomeLauncherView::GetTotalSize() const
+{
+  int w = 0;
+  int h = 0;
+
+  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
+  {
+    CRect r;
+    GetDlgItem(id)->GetWindowRect(r);
+    ScreenToClient(r);
+
+    if (w < r.right)
+      w = r.right;
+    if (h < r.bottom)
+      h = r.bottom;
+  }
+
+  int dpi = DPI::getWindowDPI((CWnd*)this);
+  w += (int)(m_rightGapPerDpi * dpi);
+  h += (int)(m_bottomGapPerDpi * dpi);
+  return CSize(w,h);
 }
 
 // Copied from MFC sources to enable a call to our CreateDlgIndirect()
@@ -326,7 +339,7 @@ BOOL WelcomeLauncherView::OnEraseBkgnd(CDC* pDC)
 
 void WelcomeLauncherView::OnLButtonUp(UINT nFlags, CPoint point)
 {
-  CFormView::OnLButtonUp(nFlags, point);
+  CFormView::OnLButtonUp(nFlags,point);
 
   CArray<CRect> regions;
   GetRegions(regions);
@@ -335,6 +348,14 @@ void WelcomeLauncherView::OnLButtonUp(UINT nFlags, CPoint point)
     if (m_html.IsWindowVisible())
       ShowHtml(false);
   }
+}
+
+void WelcomeLauncherView::OnSize(UINT nType, int cx, int cy)
+{
+  CFormView::OnSize(nType,cx,cy);
+
+  // Turn scrollbars off
+  EnableScrollBarCtrl(SB_BOTH,FALSE);
 }
 
 void WelcomeLauncherView::OnOpenProject(UINT nID)
@@ -480,6 +501,13 @@ void WelcomeLauncherView::OnClickedLink(UINT nID)
   }
 }
 
+void WelcomeLauncherView::UpdateDPI(void)
+{
+  SetFonts();
+  for (CommandButton& cmd : m_cmds)
+    cmd.UpdateDPI();
+}
+
 void WelcomeLauncherView::SetBannerBitmap(void)
 {
   CDibSection* original = theApp.GetCachedImage("Welcome Banner");
@@ -533,6 +561,58 @@ void WelcomeLauncherView::GetRegions(CArray<CRect>& regions)
   regions.Add(regionRect);
 }
 
+void WelcomeLauncherView::SetFonts(void)
+{
+  LOGFONT lf;
+  GetFont()->GetLogFont(&lf);
+  LONG fontHeight = lf.lfHeight;
+  lf.lfWeight = FW_NORMAL;
+  lf.lfHeight = (LONG)(fontHeight*1.15);
+  m_bigFont.DeleteObject();
+  m_bigFont.CreateFontIndirect(&lf);
+  lf.lfWeight = FW_BOLD;
+  lf.lfHeight = (LONG)(fontHeight*1.3);
+  m_titleFont.DeleteObject();
+  m_titleFont.CreateFontIndirect(&lf);
+
+  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_STATIC_COMMUNITY; id++)
+    GetDlgItem(id)->SetFont(&m_titleFont);
+  for (int id = IDC_ADVICE_NEW; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
+  {
+    CommandButton& cmd = m_cmds[id - IDC_ADVICE_NEW];
+
+    switch (id)
+    {
+    case IDC_OPEN_0:
+    case IDC_OPEN_1:
+    case IDC_OPEN_2:
+    case IDC_OPEN_3:
+    case IDC_OPEN_4:
+    case IDC_OPEN_5:
+    case IDC_OPEN_6:
+    case IDC_OPEN_7:
+    case IDC_OPEN_8:
+    case IDC_OPEN_9:
+      cmd.SetFont(&m_bigFont);
+      break;
+    case IDC_CREATE_PROJECT:
+      cmd.SetFont(&m_bigFont);
+      break;
+    case IDC_CREATE_EXTENSION:
+      cmd.SetFont(&m_bigFont);
+      break;
+    case IDC_SAMPLE_ONYX:
+    case IDC_SAMPLE_DISENCHANTMENT:
+      cmd.SetFont(&m_bigFont);
+      cmd.SetTabStop(theApp.MeasureText(&cmd,"Browse Inform projects ").cx);
+      break;
+    case IDC_LINK_IFDB_SRC:
+      cmd.SetFont(&m_bigFont);
+      break;
+    }
+  }
+}
+
 void WelcomeLauncherView::ShowHtml(bool show)
 {
   for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
@@ -549,6 +629,7 @@ BEGIN_MESSAGE_MAP(WelcomeLauncherFrame, CFrameWnd)
   ON_WM_CREATE()
   ON_WM_DESTROY()
   ON_WM_CLOSE()
+  ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 END_MESSAGE_MAP()
 
 WelcomeLauncherFrame::WelcomeLauncherFrame()
@@ -662,6 +743,15 @@ void WelcomeLauncherFrame::OnClose()
 
   theApp.FrameClosing(this);
   CFrameWnd::OnClose();
+}
+
+LRESULT WelcomeLauncherFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
+{
+  MoveWindow((LPRECT)lparam,TRUE);
+  m_view.UpdateDPI();
+  Resize(false);
+  Invalidate();
+  return 0;
 }
 
 void WelcomeLauncherFrame::Resize(bool centre)

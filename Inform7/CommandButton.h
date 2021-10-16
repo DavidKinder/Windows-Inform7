@@ -12,6 +12,7 @@ public:
   void SetBackSysColor(int index);
   void SetTabStop(int tab);
   void SetIcon(const char* name);
+  void UpdateDPI(void);
 
 protected:
   DECLARE_MESSAGE_MAP()

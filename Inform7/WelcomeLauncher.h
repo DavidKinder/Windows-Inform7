@@ -14,7 +14,9 @@ public:
 
   BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
     DWORD dwRequestedStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext);
+  CSize GetTotalSize() const;
 
+  void UpdateDPI(void);
   void SetBannerBitmap(void);
 
 protected:
@@ -27,6 +29,7 @@ protected:
   afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
   afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+  afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg void OnOpenProject(UINT nID);
   afx_msg void OnCreateProject();
   afx_msg void OnCreateExtProject();
@@ -39,6 +42,7 @@ protected:
   DECLARE_MESSAGE_MAP()
 
   void GetRegions(CArray<CRect>& regions);
+  void SetFonts(void);
   void ShowHtml(bool show);
 
   CDibSection m_banner;
@@ -46,6 +50,9 @@ protected:
   CFont m_titleFont;
   CommandButton m_cmds[27];
   ReportHtml m_html;
+
+  double m_rightGapPerDpi;
+  double m_bottomGapPerDpi;
 };
 
 class WelcomeLauncherFrame : public CFrameWnd
@@ -72,6 +79,7 @@ protected:
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
   afx_msg void OnDestroy();
   afx_msg void OnClose();
+  afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
 
   WelcomeLauncherView m_view;
 };

@@ -35,6 +35,11 @@ void CommandButton::SetIcon(const char* name)
   m_iconName = name;
 }
 
+void CommandButton::UpdateDPI(void)
+{
+  m_icon.DeleteBitmap();
+}
+
 void CommandButton::OnMouseMove(UINT nFlags, CPoint point)
 {
   if (m_mouseOver == false)
