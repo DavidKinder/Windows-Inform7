@@ -67,14 +67,14 @@ BOOL InformApp::InitInstance()
   CWinApp::InitInstance();
   ::BufferedPaintInit();
 
-  if (!AfxOleInit())
-    return FALSE;
-  if (!Scintilla_RegisterClasses(AfxGetInstanceHandle()))
-    return FALSE;
-
   // Is this the main application, or a CEF worker process?
   if (__argc == 1)
   {
+    if (!AfxOleInit())
+      return FALSE;
+    if (!Scintilla_RegisterClasses(AfxGetInstanceHandle()))
+      return FALSE;
+
     // If possible, create a job to assign child processes to. Since the
     // job will be closed when this process exits, this ensures that any
     // child processes still running will also exit.
