@@ -762,7 +762,7 @@ private:
 };
 
 // Private implementation data not exposed in the class header file
-struct ReportHtml::Private : public CefRefPtr<CefBrowser>
+struct ReportHtml::Private
 {
   CefRefPtr<I7CefClient> client;
   CefRefPtr<CefBrowser> browser;
