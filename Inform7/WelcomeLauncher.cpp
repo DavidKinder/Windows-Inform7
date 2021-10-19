@@ -15,7 +15,6 @@
 // Crash in libcef on start, open previous project, close??
 // On show, update recent list
 // Keyboard, including in HTML
-// Accessibility
 // EPUB viewer
 // Missing keyboard shortcuts from HTML page, change obscure ones that differ from OSX?
 
@@ -676,6 +675,12 @@ void WelcomeLauncherFrame::ShowLauncher()
   theApp.NewFrame(frame);
   frame->LoadFrame(IDR_LAUNCHFRAME,WS_OVERLAPPED|WS_CAPTION|WS_MINIMIZEBOX|WS_SYSMENU,NULL,NULL);
   frame->Resize(true);
+
+  BOOL cues;
+  if (::SystemParametersInfo(SPI_GETKEYBOARDCUES,0,&cues,0) == 0)
+    cues = TRUE;
+  frame->SendMessage(WM_CHANGEUISTATE,MAKEWPARAM(cues ? UIS_CLEAR : UIS_SET,UISF_HIDEFOCUS));
+
   frame->ShowWindow(SW_SHOW);
   frame->UpdateWindow();
 }

@@ -136,6 +136,12 @@ void CommandButton::OnPaint()
   else
     dc.DrawText(caption,textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER|DT_END_ELLIPSIS);
 
+  if (CWnd::GetFocus() == this)
+  {
+    if ((SendMessage(WM_QUERYUISTATE) & UISF_HIDEFOCUS) == 0)
+      dc.DrawFocusRect(client);
+  }
+
   dc.SelectObject(oldFont);
   dcPaint.BitBlt(0,0,client.Width(),client.Height(),&dc,0,0,SRCCOPY);
   dc.SelectObject(oldBitmap);
