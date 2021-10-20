@@ -14,9 +14,8 @@
 //XXXXDK
 // Crash in libcef on start, open previous project, close??
 // On show, update recent list
-// Keyboard, including in HTML
-// EPUB viewer
 // Missing keyboard shortcuts from HTML page, change obscure ones that differ from OSX?
+// EPUB viewer
 
 #define RECENT_MAX 10
 
@@ -266,6 +265,31 @@ void WelcomeLauncherView::PostNcDestroy()
   // Do nothing
 }
 
+BOOL WelcomeLauncherView::PreTranslateMessage(MSG* pMsg)
+{
+  if (CView::PreTranslateMessage(pMsg))
+    return TRUE;
+  CFrameWnd* pFrameWnd = GetParentFrame();
+  while (pFrameWnd != NULL)
+  {
+    if (pFrameWnd->PreTranslateMessage(pMsg))
+      return TRUE;
+    pFrameWnd = pFrameWnd->GetParentFrame();
+  }
+  if (::GetWindow(m_hWnd,GW_CHILD) == NULL)
+    return FALSE;
+
+  // Backspace hides the HTML page
+  if ((pMsg->message == WM_KEYDOWN) && (pMsg->wParam == VK_BACK))
+    ShowHtml(false);
+  
+  // Don't process dialog messages if the HTML page is showing
+  if (m_html.IsWindowVisible())
+    return FALSE;
+
+  return PreTranslateInput(pMsg);
+}
+
 HBRUSH WelcomeLauncherView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
   HBRUSH brush = CFormView::OnCtlColor(pDC,pWnd,nCtlColor);
@@ -478,7 +502,7 @@ void WelcomeLauncherView::OnClickedAdvice(UINT nID)
 
       ShowHtml(true);
       m_html.Navigate(TextFormat::AnsiToUTF8(
-        theApp.GetAppDir()+"\\Documentation\\windows\\"+pages[i]),true);
+        theApp.GetAppDir()+"\\Documentation\\windows\\"+pages[i]),false);
     }
   }
 }
@@ -621,15 +645,13 @@ void WelcomeLauncherView::ShowHtml(bool show)
 {
   for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
   {
-    if (id != IDC_STATIC_SUMMON)
-      GetDlgItem(id)->ShowWindow(show ? SW_HIDE : SW_SHOW);
+    if ((id >= m_recentCount + IDC_OPEN_0) && (id < RECENT_MAX + IDC_OPEN_0))
+      continue;
+    if (id == IDC_STATIC_SUMMON)
+      continue;
+    GetDlgItem(id)->ShowWindow(show ? SW_HIDE : SW_SHOW);
   }
-  if (!show)
-  {
-    for (int i = m_recentCount; i < RECENT_MAX; ++i)
-      m_cmds[IDC_OPEN_0 + i - IDC_ADVICE_NEW].ShowWindow(SW_HIDE);
-  }
-  m_html.ShowWindow(show ? SW_SHOW :SW_HIDE);
+  m_html.ShowWindow(show ? SW_SHOW : SW_HIDE);
 }
 
 IMPLEMENT_DYNAMIC(WelcomeLauncherFrame, CFrameWnd)
