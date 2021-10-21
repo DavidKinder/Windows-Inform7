@@ -13,7 +13,6 @@
 
 //XXXXDK
 // Crash in libcef on start, open previous project, close??
-// On show, update recent list
 // Missing keyboard shortcuts from HTML page, change obscure ones that differ from OSX?
 // EPUB viewer
 
@@ -121,30 +120,7 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
   }
 
   // Update commands for opening recent projects
-  RecentProjectList* recent = theApp.GetRecentProjectList();
-  recent->RemoveInvalid();
-  int idx = 0;
-  while (idx < recent->GetSize())
-  {
-    CString display;
-    recent->AppendDisplayName(idx,display);
-    if (display.IsEmpty())
-      break;
-
-    CommandButton& cmd = m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW];
-    cmd.SetWindowText(display);
-    cmd.SetIcon((ProjectFrame::TypeFromDir((*recent)[idx]) == Project_I7XP) ? "Icon-I7X" : "Icon-Inform");
-    ++idx;
-  }
-  {
-    CommandButton& cmd = m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW];
-    cmd.SetWindowText("Open...");
-    cmd.SetIcon("Icon-Folder");
-    idx++;
-  }
-  m_recentCount = idx;
-  for (; idx < RECENT_MAX; ++idx)
-    m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW].ShowWindow(SW_HIDE);
+  UpdateRecent();
 
   // Set the fonts for all controls
   SetFonts();
@@ -536,6 +512,43 @@ void WelcomeLauncherView::UpdateDPI(void)
     cmd.UpdateDPI();
 }
 
+void WelcomeLauncherView::UpdateRecent(void)
+{
+  bool show = (m_html.IsWindowVisible() == FALSE);
+
+  RecentProjectList* recent = theApp.GetRecentProjectList();
+  recent->RemoveInvalid();
+  int idx = 0;
+  while (idx < recent->GetSize())
+  {
+    CString display;
+    recent->AppendDisplayName(idx,display);
+    if (display.IsEmpty())
+      break;
+
+    CommandButton& cmd = m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW];
+    if (show)
+      cmd.ShowWindow(SW_SHOW);
+    cmd.SetWindowText(display);
+    cmd.SetIcon((ProjectFrame::TypeFromDir((*recent)[idx]) == Project_I7XP) ? "Icon-I7X" : "Icon-Inform");
+    ++idx;
+  }
+  {
+    CommandButton& cmd = m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW];
+    if (show)
+      cmd.ShowWindow(SW_SHOW);
+    cmd.SetWindowText("Open...");
+    cmd.SetIcon("Icon-Folder");
+    idx++;
+  }
+  m_recentCount = idx;
+  if (show)
+  {
+    for (; idx < RECENT_MAX; ++idx)
+      m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW].ShowWindow(SW_HIDE);
+  }
+}
+
 void WelcomeLauncherView::SetBannerBitmap(void)
 {
   CDibSection* original = theApp.GetCachedImage("Welcome Banner");
@@ -687,7 +700,10 @@ void WelcomeLauncherFrame::ShowLauncher()
   {
     if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
     {
-      frames[i]->ActivateFrame();
+      WelcomeLauncherFrame* frame = (WelcomeLauncherFrame*)frames[i];
+      frame->m_view.UpdateRecent();
+      frame->Invalidate();
+      frame->ActivateFrame();
       return;
     }
   }

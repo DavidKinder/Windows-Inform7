@@ -33,6 +33,7 @@ void CommandButton::SetTabStop(int tab)
 void CommandButton::SetIcon(const char* name)
 {
   m_iconName = name;
+  m_icon.DeleteBitmap();
 }
 
 void CommandButton::UpdateDPI(void)

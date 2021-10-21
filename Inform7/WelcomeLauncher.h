@@ -17,6 +17,7 @@ public:
   CSize GetTotalSize() const;
 
   void UpdateDPI(void);
+  void UpdateRecent(void);
   void SetBannerBitmap(void);
 
 protected:
