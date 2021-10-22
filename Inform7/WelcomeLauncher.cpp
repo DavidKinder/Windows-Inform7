@@ -12,8 +12,7 @@
 #endif
 
 //XXXXDK
-// Crash in libcef on start, open previous project, close??
-// Missing keyboard shortcuts from HTML page, change obscure ones that differ from OSX?
+// Crash in libcef on start, open previous project, close?
 // EPUB viewer
 
 #define RECENT_MAX 10

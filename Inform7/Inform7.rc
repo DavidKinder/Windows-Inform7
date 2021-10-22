@@ -94,9 +94,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Close\tAlt+F4",              ID_FILE_CLOSE
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
-        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM "Save &As...\tCtrl+Shift+S",   ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
-        MENUITEM "E&xit Inform",                ID_APP_EXIT
+        MENUITEM "E&xit Inform\tCtrl+Q",        ID_APP_EXIT
     END
     POPUP "&Edit"
     BEGIN
@@ -116,7 +116,7 @@ BEGIN
             MENUITEM "Find &Next\tF8",              ID_EDIT_FIND_NEXT
             MENUITEM "Find &Previous\tShift+F8",    ID_EDIT_FIND_PREV
             MENUITEM "&Use Selection for Find",     ID_EDIT_USE_SEL
-            MENUITEM "&Scroll to Selection",        ID_EDIT_SCROLL
+            MENUITEM "&Scroll to Selection\tCtrl+J", ID_EDIT_SCROLL
             MENUITEM SEPARATOR
             MENUITEM "Find &in Files\tF10",         ID_EDIT_FIND_IN_FILES
         END
@@ -124,18 +124,18 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Headings"
         BEGIN
-            MENUITEM "Show &Headings",              ID_HEAD_SHOW
+            MENUITEM "Show &Headings\tCtrl+Shift+H", ID_HEAD_SHOW
             MENUITEM SEPARATOR
-            MENUITEM "&Current Section Only",       ID_HEAD_CURRENT
-            MENUITEM "&Increase Restriction",       ID_HEAD_INCREASE
-            MENUITEM "&Reduce Restriction",         ID_HEAD_REDUCE
+            MENUITEM "&Current Section Only\tCtrl+.", ID_HEAD_CURRENT
+            MENUITEM "&Increase Restriction\tCtrl+,", ID_HEAD_INCREASE
+            MENUITEM "&Reduce Restriction\tCtrl+/", ID_HEAD_REDUCE
             MENUITEM "&Entire Source\tF4",          ID_HEAD_ENTIRE
             MENUITEM SEPARATOR
-            MENUITEM "&Previous Section",           ID_HEAD_PREVIOUS
-            MENUITEM "&Next Section",               ID_HEAD_NEXT
+            MENUITEM "&Previous Section\tCtrl+;",   ID_HEAD_PREVIOUS
+            MENUITEM "&Next Section\tCtrl+'",       ID_HEAD_NEXT
         END
         MENUITEM SEPARATOR
-        MENUITEM "Prefere&nces...",             ID_APP_PREFS
+        MENUITEM "Prefere&nces...\tCtrl+Shift+N",   ID_APP_PREFS
     END
     POPUP "F&ormat"
     BEGIN
@@ -151,7 +151,7 @@ BEGIN
         MENUITEM "&Go\tF5",                     ID_PLAY_GO
         MENUITEM "&Replay\tF9",                 ID_PLAY_REPLAY
         MENUITEM "&Stop",                       ID_PLAY_STOP
-        MENUITEM "&Test Me",                    ID_PLAY_TEST
+        MENUITEM "&Test Me\tCtrl+Shift+T",      ID_PLAY_TEST
         MENUITEM SEPARATOR
         MENUITEM "Refresh Inde&x\tF7",          ID_PLAY_REFRESH
         MENUITEM "&Load Story...",              ID_PLAY_LOAD
@@ -171,7 +171,7 @@ BEGIN
     END
     POPUP "&Release"
     BEGIN
-        MENUITEM "&Release",                    ID_RELEASE_GAME
+        MENUITEM "&Release\tCtrl+R",            ID_RELEASE_GAME
         MENUITEM "Release for &Testing",        ID_RELEASE_TEST
         MENUITEM SEPARATOR
         MENUITEM "Open &Materials Folder\tCtrl+Shift+M", ID_RELEASE_MATERIALS
@@ -256,9 +256,9 @@ BEGIN
     BEGIN
         MENUITEM "&Close\tAlt+F4",              ID_FILE_CLOSE
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
-        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM "Save &As...\tCtrl+Shift+S",   ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
-        MENUITEM "E&xit Inform",                ID_APP_EXIT
+        MENUITEM "E&xit Inform\tCtrl+Q",        ID_APP_EXIT
     END
     POPUP "&Edit"
     BEGIN
@@ -278,7 +278,7 @@ BEGIN
             MENUITEM "Find &Next\tF8",              ID_EDIT_FIND_NEXT
             MENUITEM "Find &Previous\tShift+F8",    ID_EDIT_FIND_PREV
             MENUITEM "&Use Selection for Find",     ID_EDIT_USE_SEL
-            MENUITEM "&Scroll to Selection",        ID_EDIT_SCROLL
+            MENUITEM "&Scroll to Selection\tCtrl+J", ID_EDIT_SCROLL
         END
         MENUITEM "Check &Spelling...\tCtrl+G",  ID_EDIT_SPELLING
     END
@@ -303,7 +303,9 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
+    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
     "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "N",            ID_APP_PREFS,           VIRTKEY, SHIFT, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
@@ -317,23 +319,33 @@ BEGIN
     VK_BACK,        ID_EDIT_REDO,           VIRTKEY, SHIFT, ALT, NOINVERT
     "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
     "H",            ID_EDIT_REPLACE,        VIRTKEY, CONTROL, NOINVERT
+    "J",            ID_EDIT_SCROLL,         VIRTKEY, CONTROL, NOINVERT
     "G",            ID_EDIT_SPELLING,       VIRTKEY, CONTROL, NOINVERT
     VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE_AS,        VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_OEM_2,       ID_FORMAT_COMMENT,      VIRTKEY, ALT, NOINVERT
     "M",            ID_FORMAT_RENUMBER,     VIRTKEY, CONTROL, NOINVERT
-    "M",            ID_RELEASE_MATERIALS,   VIRTKEY, CONTROL, SHIFT, NOINVERT
     VK_OEM_4,       ID_FORMAT_SHIFT_LEFT,   VIRTKEY, ALT, NOINVERT
     VK_OEM_6,       ID_FORMAT_SHIFT_RIGHT,  VIRTKEY, ALT, NOINVERT
     VK_OEM_2,       ID_FORMAT_UNCOMMENT,    VIRTKEY, SHIFT, ALT, NOINVERT
+    VK_OEM_PERIOD,  ID_HEAD_CURRENT,        VIRTKEY, CONTROL, NOINVERT
     VK_F4,          ID_HEAD_ENTIRE,         VIRTKEY, NOINVERT
+    VK_OEM_COMMA,   ID_HEAD_INCREASE,       VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_3,       ID_HEAD_NEXT,           VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_1,       ID_HEAD_PREVIOUS,       VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_2,       ID_HEAD_REDUCE,         VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_HEAD_SHOW,           VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_F1,          ID_HELP_INDEX,          VIRTKEY, NOINVERT
     VK_F5,          ID_PLAY_GO,             VIRTKEY, NOINVERT
     VK_F7,          ID_PLAY_REFRESH,        VIRTKEY, NOINVERT
     VK_F9,          ID_PLAY_REPLAY,         VIRTKEY, NOINVERT
+    "T",            ID_PLAY_TEST,           VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "R",            ID_RELEASE_GAME,        VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_RELEASE_MATERIALS,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_F3,          ID_SEARCH_DOCS,         VIRTKEY, NOINVERT
     VK_F2,          ID_SEARCH_SOURCE,       VIRTKEY, NOINVERT
     "5",            ID_WINDOW_INDEX_ACTIONS, VIRTKEY, CONTROL, NOINVERT
@@ -360,6 +372,7 @@ END
 
 IDR_EXTFRAME ACCELERATORS
 BEGIN
+    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
     "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -373,9 +386,11 @@ BEGIN
     VK_BACK,        ID_EDIT_REDO,           VIRTKEY, SHIFT, ALT, NOINVERT
     "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
     "H",            ID_EDIT_REPLACE,        VIRTKEY, CONTROL, NOINVERT
+    "J",            ID_EDIT_SCROLL,         VIRTKEY, CONTROL, NOINVERT
     VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE_AS,        VIRTKEY, SHIFT, CONTROL, NOINVERT
     "G",            ID_EDIT_SPELLING,       VIRTKEY, CONTROL, NOINVERT
     VK_OEM_6,       ID_FORMAT_SHIFT_RIGHT,  VIRTKEY, ALT, NOINVERT
     VK_OEM_4,       ID_FORMAT_SHIFT_LEFT,   VIRTKEY, ALT, NOINVERT
