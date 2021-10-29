@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "ProjectFrame.h"
+
+#include "BookFrame.h"
 #include "ExtensionFrame.h"
+
 #include "Messages.h"
 #include "NewDialogs.h"
 #include "ProjectDirDialog.h"
@@ -43,7 +46,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_WM_DRAWITEM()
   ON_WM_SETTINGCHANGE()
   ON_WM_TIMER()
-  ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 
   ON_CBN_SELCHANGE(IDC_EXAMPLE_LIST, OnChangedExample)
@@ -630,18 +632,6 @@ void ProjectFrame::OnChangedExample()
   }
 }
 
-LRESULT ProjectFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
-{
-  if ((wParam == AFX_IDS_IDLEMESSAGE) && (lParam == NULL))
-  {
-    static CString msg;
-    if (msg.IsEmpty())
-      msg.Format(AFX_IDS_IDLEMESSAGE,NI_BUILD);
-    return MenuBarFrameWnd::OnSetMessageString(0,(LPARAM)(LPCSTR)msg);
-  }
-  return MenuBarFrameWnd::OnSetMessageString(wParam,lParam);
-}
-
 LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 {
   std::map<CWnd*,double> layout;
@@ -761,82 +751,6 @@ void ProjectFrame::OnUpdateFrameTitle(BOOL)
   CString title;
   title.Format("%s - %s",(LPCSTR)GetDisplayName(true),m_strTitle);
   AfxSetWindowText(GetSafeHwnd(),title);
-}
-
-void ProjectFrame::GetMessageString(UINT nID, CString& rMessage) const
-{
-  if ((nID >= ID_OPEN_EXTENSIONS_LIST) && (nID < ID_OPEN_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS))
-  {
-    const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
-    int i = nID - ID_OPEN_EXTENSIONS_LIST;
-    if (i < (int)extensions.size())
-    {
-      if (extensions[i].system)
-        rMessage.Format("Open the \"%s\" built-in extension",extensions[i].title.c_str());
-      else
-        rMessage.Format("Open the \"%s\" extension",extensions[i].title.c_str());
-      return;
-    }
-  }
-  else if ((nID >= ID_NEW_EXTENSIONS_LIST) && (nID < ID_NEW_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS))
-  {
-    const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
-    int i = nID - ID_NEW_EXTENSIONS_LIST;
-    if (i < (int)extensions.size())
-    {
-      rMessage.Format("Create an extension project from the \"%s\" extension",extensions[i].title.c_str());
-      return;
-    }
-  }
-  else if ((nID >= ID_WINDOW_TAB_SOURCE) && (nID <= ID_WINDOW_TAB_SETTINGS))
-  {
-    CString name;
-    GetMenu()->GetMenuString(nID,name,MF_BYCOMMAND);
-    int len = name.Find('\t');
-    if (len > 0)
-      name.Truncate(len);
-    name.Remove('&');
-    rMessage.Format("Go to the %s panel",name);
-    return;
-  }
-  else if ((nID >= ID_WINDOW_INDEX_HOME) && (nID <= ID_WINDOW_INDEX_WORLD))
-  {
-    CString name;
-    GetMenu()->GetMenuString(nID,name,MF_BYCOMMAND);
-    int len = name.Find('\t');
-    if (len > 0)
-      name.Truncate(len);
-    name.Remove('&');
-    rMessage.Format("Go to the %s tab of the index",name);
-    return;
-  }
-  else if ((nID >= ID_WINDOW_LIST) && (nID <= ID_WINDOW_LIST+8))
-  {
-    CArray<CFrameWnd*> frames;
-    theApp.GetWindowFrames(frames);
-
-    int i = nID-ID_WINDOW_LIST;
-    if (i < frames.GetSize())
-    {
-      if (frames[i]->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
-      {
-        rMessage.Format("Switch to the \"%s\" project",
-          ((ProjectFrame*)frames[i])->GetDisplayName(false));
-      }
-      else if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
-      {
-        rMessage.Format("Switch to the extension \"%s\"",
-          ((ExtensionFrame*)frames[i])->GetDisplayName(false));
-      }
-      else if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
-        rMessage.Format("Switch to the welcome launcher");
-      return;
-    }
-  }
-  else if ((m_projectType == Project_I7XP) && (nID == ID_PLAY_TEST))
-    nID = ID_PLAY_TEST_EXAMPLES;
-
-  MenuBarFrameWnd::GetMessageString(nID,rMessage);
 }
 
 LRESULT ProjectFrame::OnPlaySkein(WPARAM wparam, LPARAM)
@@ -2019,6 +1933,8 @@ void ProjectFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
       name = ((ProjectFrame*)frames[i])->GetDisplayName(true);
     else if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
       name = ((ExtensionFrame*)frames[i])->GetDisplayName(true);
+    else if (frames[i]->IsKindOf(RUNTIME_CLASS(BookFrame)))
+      name = ((BookFrame*)frames[i])->GetDisplayName();
     else if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
       name = "Welcome Launcher";
 

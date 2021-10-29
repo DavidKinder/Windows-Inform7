@@ -396,38 +396,5 @@
 			<navLabel><text>11.10. What was new in build 4S08 (March 2007)</text></navLabel><content src="CI_11.html#s10"/>
 		</navPoint>
 	</navPoint>
-	<navPoint id="navpoint-129" playOrder="129">
-		<navLabel><text>Chapter 1: Introduction</text></navLabel>	<content src="CI_1.html"/>
-	</navPoint>
-	<navPoint id="navpoint-130" playOrder="130">
-		<navLabel><text>Chapter 2: Build 6M62</text></navLabel>	<content src="CI_2.html"/>
-	</navPoint>
-	<navPoint id="navpoint-131" playOrder="131">
-		<navLabel><text>Chapter 3: Build 6L38</text></navLabel>	<content src="CI_3.html"/>
-	</navPoint>
-	<navPoint id="navpoint-132" playOrder="132">
-		<navLabel><text>Chapter 4: Build 6L02</text></navLabel>	<content src="CI_4.html"/>
-	</navPoint>
-	<navPoint id="navpoint-133" playOrder="133">
-		<navLabel><text>Chapter 5: The Inform application</text></navLabel>	<content src="CI_5.html"/>
-	</navPoint>
-	<navPoint id="navpoint-134" playOrder="134">
-		<navLabel><text>Chapter 6: Documentation and Index</text></navLabel>	<content src="CI_6.html"/>
-	</navPoint>
-	<navPoint id="navpoint-135" playOrder="135">
-		<navLabel><text>Chapter 7: The Inform language</text></navLabel>	<content src="CI_7.html"/>
-	</navPoint>
-	<navPoint id="navpoint-136" playOrder="136">
-		<navLabel><text>Chapter 8: The Standard Rules</text></navLabel>	<content src="CI_8.html"/>
-	</navPoint>
-	<navPoint id="navpoint-137" playOrder="137">
-		<navLabel><text>Chapter 9: Other features</text></navLabel>	<content src="CI_9.html"/>
-	</navPoint>
-	<navPoint id="navpoint-138" playOrder="138">
-		<navLabel><text>Chapter 10: Maintenance</text></navLabel>	<content src="CI_10.html"/>
-	</navPoint>
-	<navPoint id="navpoint-139" playOrder="139">
-		<navLabel><text>Chapter 11: Earlier builds</text></navLabel>	<content src="CI_11.html"/>
-	</navPoint>
 </navMap>
 </ncx>

@@ -37,7 +37,6 @@ public:
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
   virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
   virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
-  virtual void GetMessageString(UINT nID, CString& rMessage) const;
 
 protected:
   CToolBar m_toolBar;
@@ -59,7 +58,6 @@ protected:
   afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
   afx_msg void OnTimer(UINT_PTR nIDEvent);
   afx_msg void OnChangedExample();
-  afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
   afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
 
   afx_msg LRESULT OnPlaySkein(WPARAM, LPARAM);

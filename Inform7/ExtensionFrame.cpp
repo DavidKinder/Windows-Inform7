@@ -1,12 +1,16 @@
 #include "stdafx.h"
 #include "ExtensionFrame.h"
+
+#include "BookFrame.h"
 #include "ProjectFrame.h"
+
 #include "Inform.h"
 #include "Messages.h"
+#include "NewDialogs.h"
 #include "SourceSettings.h"
 #include "TextFormat.h"
 #include "WelcomeLauncher.h"
-#include "NewDialogs.h"
+
 #include "Dialogs.h"
 #include "DpiFunctions.h"
 #include "Build.h"
@@ -21,7 +25,6 @@ BEGIN_MESSAGE_MAP(ExtensionFrame, MenuBarFrameWnd)
   ON_WM_CREATE()
   ON_WM_ACTIVATE()
   ON_WM_CLOSE()
-  ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 
   ON_MESSAGE(WM_PROJECTEDITED, OnProjectEdited)
@@ -155,47 +158,6 @@ void ExtensionFrame::OnUpdateFrameTitle(BOOL)
   AfxSetWindowText(GetSafeHwnd(),title);
 }
 
-void ExtensionFrame::GetMessageString(UINT nID, CString& rMessage) const
-{
-  if ((nID >= ID_WINDOW_LIST) && (nID <= ID_WINDOW_LIST+8))
-  {
-    CArray<CFrameWnd*> frames;
-    theApp.GetWindowFrames(frames);
-
-    int i = nID-ID_WINDOW_LIST;
-    if (i < frames.GetSize())
-    {
-      if (frames[i]->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
-      {
-        rMessage.Format("Switch to the \"%s\" project",
-          ((ProjectFrame*)frames[i])->GetDisplayName(false));
-      }
-      else if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
-      {
-        rMessage.Format("Switch to the extension \"%s\"",
-          ((ExtensionFrame*)frames[i])->GetDisplayName(false));
-      }
-      else if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
-        rMessage.Format("Switch to the welcome launcher");
-      return;
-    }
-  }
-
-  MenuBarFrameWnd::GetMessageString(nID,rMessage);
-}
-
-LRESULT ExtensionFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
-{
-  if ((wParam == AFX_IDS_IDLEMESSAGE) && (lParam == NULL))
-  {
-    static CString msg;
-    if (msg.IsEmpty())
-      msg.Format(AFX_IDS_IDLEMESSAGE,NI_BUILD);
-    return MenuBarFrameWnd::OnSetMessageString(0,(LPARAM)(LPCSTR)msg);
-  }
-  return MenuBarFrameWnd::OnSetMessageString(wParam,lParam);
-}
-
 LRESULT ExtensionFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 {
   MoveWindow((LPRECT)lparam,TRUE);
@@ -301,6 +263,8 @@ void ExtensionFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
       name = ((ProjectFrame*)frames[i])->GetDisplayName(true);
     else if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
       name = ((ExtensionFrame*)frames[i])->GetDisplayName(true);
+    else if (frames[i]->IsKindOf(RUNTIME_CLASS(BookFrame)))
+      name = ((BookFrame*)frames[i])->GetDisplayName();
     else if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
       name = "Welcome Launcher";
 

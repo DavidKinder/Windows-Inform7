@@ -10,6 +10,7 @@ protected:
 public:
   static void ShowBook(const char* dir);
   void ShowPage(const char* page);
+  CString GetDisplayName(void);
 
   virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
     DWORD dwStyle, const RECT& rect, CWnd* pParentWnd,
@@ -28,6 +29,7 @@ protected:
   CString StringFromXML(IXMLDOMNode* node, LPWSTR query);
 
   CTreeCtrl& GetTreeCtrl(void);
+  void DeleteItemData(HTREEITEM item);
 
   DECLARE_MESSAGE_MAP()
 
@@ -36,8 +38,10 @@ protected:
   afx_msg void OnClose();
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
+  afx_msg void OnWindowSwitchPanes();
 
   FlatSplitter m_splitter;
 
   CString m_dir;
+  CString m_title;
 };

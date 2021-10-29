@@ -8,12 +8,6 @@
 #define new DEBUG_NEW
 #endif
 
-//XXXXDK
-// icon
-// delete CStrings
-// accelerators
-// window list other frames
-
 class BookContentsView : public CTreeView
 {
 protected:
@@ -47,6 +41,7 @@ BEGIN_MESSAGE_MAP(BookFrame, CFrameWnd)
   ON_WM_CLOSE()
   ON_WM_SIZE()
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
+  ON_COMMAND(ID_WINDOW_SWITCH, OnWindowSwitchPanes)
 END_MESSAGE_MAP()
 
 BookFrame::BookFrame(const char* dir) : m_dir(dir), m_splitter(true)
@@ -90,6 +85,11 @@ void BookFrame::ShowPage(const char* page)
   CString pagePath;
   pagePath.Format("%s\\OEBPS\\%s",(LPCSTR)m_dir,page);
   html->Navigate(theApp.PathToUrl(pagePath),false);
+}
+
+CString BookFrame::GetDisplayName(void)
+{
+  return m_title;
 }
 
 BOOL BookFrame::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle,
@@ -141,22 +141,22 @@ int BookFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   tree.SetFont(theApp.GetFont(this,InformApp::FontSystem));
 
   // Read the book contents
-  CString title = ReadContents();
-  if (title.IsEmpty())
+  m_title = ReadContents();
+  if (m_title.IsEmpty())
     return -1;
-  SetWindowText(title);
+  SetWindowText(m_title);
 
   // Show the first item in the book
-  HTREEITEM firstItem = tree.GetChildItem(TVI_ROOT);
-  tree.SelectItem(firstItem);
-  tree.EnsureVisible(firstItem);
+  tree.SelectItem(tree.GetChildItem(TVI_ROOT));
   tree.SetScrollPos(SB_HORZ,0);
+  tree.SetScrollPos(SB_VERT,0);
   tree.SetFocus();
   return 0;
 }
 
 void BookFrame::OnDestroy()
 {
+  DeleteItemData(TVI_ROOT);
   ReportHtml::RemoveContext(this);
   CFrameWnd::OnDestroy();
 }
@@ -234,6 +234,17 @@ LRESULT BookFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
   return 0;
 }
 
+void BookFrame::OnWindowSwitchPanes()
+{
+  CWnd* focusWnd = GetFocus();
+  CWnd* leftWnd = m_splitter.GetPane(0,0);
+
+  if ((leftWnd == focusWnd) || leftWnd->IsChild(focusWnd))
+    m_splitter.GetPane(0,1)->SetFocus();
+  else
+    leftWnd->SetFocus();
+}
+
 void BookFrame::SetFromRegistryPath(const char* path)
 {
   CRegKey registryKey;
@@ -304,20 +315,26 @@ CString BookFrame::ReadContents(void)
 
 void BookFrame::ReadContentsPoints(IXMLDOMNodeList* navPoints, HTREEITEM parentItem)
 {
+  CTreeCtrl& tree = GetTreeCtrl();
+
   CComPtr<IXMLDOMNode> navPoint;
   while (navPoints->nextNode(&navPoint) == S_OK)
   {
     CString text = StringFromXML(navPoint,L"navLabel/text");
     CString url = StringFromXML(navPoint,L"content/@src");
+
     if (!text.IsEmpty() && !url.IsEmpty())
     {
-      HTREEITEM item = GetTreeCtrl().InsertItem(text,parentItem);
-      GetTreeCtrl().SetItemData(item,(DWORD_PTR)(new CString(url)));
+      HTREEITEM item = tree.InsertItem(text,parentItem);
+      tree.SetItemData(item,(DWORD_PTR)(new CString(url)));
 
       CComPtr<IXMLDOMNodeList> childNavPoints;
       navPoint->selectNodes(L"navPoint",&childNavPoints);
       ReadContentsPoints(childNavPoints,item);
+
+      tree.Expand(item,TVE_EXPAND);
     }
+
     navPoint = NULL;
   }
 }
@@ -342,4 +359,26 @@ CTreeCtrl& BookFrame::GetTreeCtrl(void)
 
   BookContentsView* treeView = (BookContentsView*)wnd;
   return treeView->GetTreeCtrl();
+}
+
+void BookFrame::DeleteItemData(HTREEITEM item)
+{
+  CTreeCtrl& tree = GetTreeCtrl();
+
+  if (item != TVI_ROOT)
+  {
+    DWORD_PTR data = tree.GetItemData(item);
+    if (data)
+    {
+      delete (CString*)data;
+      tree.SetItemData(item,0);
+    }
+  }
+
+  HTREEITEM childItem = tree.GetChildItem(item);
+  while (childItem)
+  {
+    DeleteItemData(childItem);
+    childItem = tree.GetNextItem(childItem,TVGN_NEXT);
+  }
 }
