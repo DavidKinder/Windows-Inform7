@@ -170,6 +170,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="ArrowButton.h" />
     <ClInclude Include="BaseDialog.h" />
     <ClInclude Include="Build.h" />
+    <ClInclude Include="CommandButton.h" />
     <ClInclude Include="PageTab.h" />
     <ClInclude Include="ContentsWindow.h" />
     <ClInclude Include="Diff.h" />
@@ -2053,6 +2054,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="AboutDialog.cpp" />
     <ClCompile Include="ArrowButton.cpp" />
     <ClCompile Include="BaseDialog.cpp" />
+    <ClCompile Include="CommandButton.cpp" />
     <ClCompile Include="PageTab.cpp" />
     <ClCompile Include="ContentsWindow.cpp" />
     <ClCompile Include="Diff.cpp" />

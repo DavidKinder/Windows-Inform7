@@ -331,6 +331,9 @@
     <ClInclude Include="RecentProjectList.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="CommandButton.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1451,6 +1454,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\views\overlay_controller_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp\views</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandButton.cpp">
+      <Filter>Controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
