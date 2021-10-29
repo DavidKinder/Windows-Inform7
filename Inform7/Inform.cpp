@@ -127,15 +127,14 @@ BOOL InformApp::InitInstance()
   splash.ShowSplash();
 
   // Only continue if a project has been opened
-  CWnd* mainWnd = AfxGetMainWnd();
-  if (mainWnd == NULL)
+  if (m_pMainWnd == NULL)
     return FALSE;
 
   // Make sure that any census failure is reported
   if (ni.process != INVALID_HANDLE_VALUE)
   {
-    if (mainWnd->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
-      ((ProjectFrame*)mainWnd)->MonitorProcess(ni,ProjectFrame::ProcessNoAction,"ni (census)");
+    if (m_pMainWnd->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
+      ((ProjectFrame*)m_pMainWnd)->MonitorProcess(ni,ProjectFrame::ProcessNoAction,"ni (census)");
   }
   return TRUE;
 }
