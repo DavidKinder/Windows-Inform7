@@ -1180,14 +1180,27 @@ LRESULT ProjectFrame::OnProgress(WPARAM wp, LPARAM lp)
 
 LRESULT ProjectFrame::OnCreateNewProject(WPARAM code, LPARAM title)
 {
-  CString projectDir;
-  projectDir.Format("%s\\Inform\\Projects\\%S.inform",(LPCSTR)theApp.GetHomeDir(),(LPCWSTR)title);
+  // Find the parent of the project directory
+  CString lastDir = m_projectDir;
+  int i = lastDir.ReverseFind('\\');
+  if (i != -1)
+    lastDir.Truncate(i);
+  else
+    lastDir.Empty();
 
-  ProjectFrame* frame = NewFrame(Project_I7);
-  ((TabSource*)frame->GetPanel(0)->GetTab(Panel::Tab_Source))->PasteCode((LPCWSTR)code);
+  // Ask the user for where to create the project
+  CString dir = theApp.PickDirectory("Choose the directory to create the new project in",lastDir,this);
+  if (!dir.IsEmpty())
+  {
+    CString projectDir;
+    projectDir.Format("%s\\%S.inform",(LPCSTR)dir,(LPCWSTR)title);
 
-  frame->SaveProject(projectDir);
-  frame->GetPanel(0)->SetActiveTab(Panel::Tab_Source);
+    ProjectFrame* frame = NewFrame(Project_I7);
+    ((TabSource*)frame->GetPanel(0)->GetTab(Panel::Tab_Source))->PasteCode((LPCWSTR)code);
+
+    frame->SaveProject(projectDir);
+    frame->GetPanel(0)->SetActiveTab(Panel::Tab_Source);
+  }
   return 0;
 }
 
