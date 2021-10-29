@@ -29,7 +29,6 @@ protected:
 
   DECLARE_MESSAGE_MAP()
 
-  static int CALLBACK BrowseDirCB(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData);
   void AddType(CWnd* wnd);
 
   CString m_dir;

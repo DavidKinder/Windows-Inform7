@@ -89,51 +89,21 @@ BOOL AbstractNewDialog::OnInitDialog()
   return TRUE;
 }
 
-int CALLBACK AbstractNewDialog::BrowseDirCB(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
-{
-  AbstractNewDialog* dlg = (AbstractNewDialog*)lpData;
-  if (uMsg == BFFM_INITIALIZED)
-    ::SendMessage(hwnd,BFFM_SETSELECTION,TRUE,(LPARAM)(LPCSTR)dlg->m_dir);
-  return 0;
-}
-
 void AbstractNewDialog::OnClickedDirPopup()
 {
-  CComPtr<IFileDialog> dialog;
-  if (FAILED(dialog.CoCreateInstance(__uuidof(FileOpenDialog))))
-    return;
+  UpdateData(TRUE);
 
   CString title;
   title.Format("Choose the directory to create the new %s in",GetType());
-  dialog->SetTitle(CStringW(title));
-
-  DWORD options = 0;
-  dialog->GetOptions(&options);
-  dialog->SetOptions(options|FOS_PICKFOLDERS);
-
-  CComPtr<IShellItem> si;
-  if (SUCCEEDED(::SHCreateItemFromParsingName(
-    CStringW(m_dir),NULL,__uuidof(IShellItem),(void**)&si)))
+  CString dir = theApp.PickDirectory(title,m_dir,this);
+  if (!dir.IsEmpty())
   {
-    dialog->SetFolder(si);
+    m_dir = dir;
+    UpdateData(FALSE);
+
+    // Update the create button state
+    OnChangedEdit();
   }
-  si.Release();
-
-  if (FAILED(dialog->Show(GetSafeHwnd())))
-    return;
-  if (FAILED(dialog->GetResult(&si)))
-    return;
-  LPOLESTR path = NULL;
-  if (FAILED(si->GetDisplayName(SIGDN_FILESYSPATH,&path)))
-    return;
-
-  UpdateData(TRUE);
-  m_dir = CString(path);
-  ::CoTaskMemFree(path);
-  UpdateData(FALSE);
-
-  // Update the create button state
-  OnChangedEdit();
 }
 
 void AbstractNewDialog::OnChangedEdit()

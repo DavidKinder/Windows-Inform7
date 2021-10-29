@@ -115,6 +115,7 @@ public:
   CString GetHomeDir(void);
   CString PathToUrl(const char* path);
 
+  CFrameWnd* GetActiveFrame(void);
   void NewFrame(CFrameWnd* frame);
   void FrameClosing(CFrameWnd* frame);
   void GetWindowFrames(CArray<CFrameWnd*>& frames);
@@ -200,6 +201,8 @@ public:
   void AddToExtensions(const char* author, const char* title, const char* path);
   const std::vector<ExtLocation>& GetExtensions(void);
   const ExtLocation* GetExtension(const char* author, const char* title);
+
+  CString PickDirectory(const char* title, const char* initialDir, CWnd* parent);
 
 protected:
   void ClearScaledImages(void);

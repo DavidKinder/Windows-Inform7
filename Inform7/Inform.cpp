@@ -615,6 +615,19 @@ CString InformApp::PathToUrl(const char* path)
   return url;
 }
 
+CFrameWnd* InformApp::GetActiveFrame(void)
+{
+  CWnd* active = CWnd::GetActiveWindow();
+  if (active != NULL)
+  {
+    if (active->IsKindOf(RUNTIME_CLASS(CFrameWnd)))
+      return (CFrameWnd*)active;
+    else
+      return active->GetParentFrame();
+  }
+  return NULL;
+}
+
 void InformApp::NewFrame(CFrameWnd* frame)
 {
   if (m_pMainWnd == NULL)
@@ -1349,6 +1362,39 @@ const InformApp::ExtLocation* InformApp::GetExtension(const char* author, const 
       return &(*it);
   }
   return NULL;
+}
+
+CString InformApp::PickDirectory(const char* title, const char* initialDir, CWnd* parent)
+{
+  CComPtr<IFileDialog> dialog;
+  if (FAILED(dialog.CoCreateInstance(__uuidof(FileOpenDialog))))
+    return "";
+
+  dialog->SetTitle(CStringW(title));
+
+  DWORD options = 0;
+  dialog->GetOptions(&options);
+  dialog->SetOptions(options|FOS_PICKFOLDERS);
+
+  CComPtr<IShellItem> si;
+  if (SUCCEEDED(::SHCreateItemFromParsingName(
+    CStringW(initialDir),NULL,__uuidof(IShellItem),(void**)&si)))
+  {
+    dialog->SetFolder(si);
+  }
+  si.Release();
+
+  if (FAILED(dialog->Show(parent->GetSafeHwnd())))
+    return "";
+  if (FAILED(dialog->GetResult(&si)))
+    return "";
+  LPOLESTR path = NULL;
+  if (FAILED(si->GetDisplayName(SIGDN_FILESYSPATH,&path)))
+    return "";
+
+  CString chosenDir(path);
+  ::CoTaskMemFree(path);
+  return chosenDir;
 }
 
 void InformApp::SetMyDocuments(bool showMsgs)
