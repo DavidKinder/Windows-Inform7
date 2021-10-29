@@ -458,6 +458,9 @@ BEGIN
     LTEXT           "Create New",IDC_STATIC_CREATE_NEW,226,58,55,11
     PUSHBUTTON      "Project",IDC_CREATE_PROJECT,226,72,208,11,BS_LEFT
     PUSHBUTTON      "Extension",IDC_CREATE_EXTENSION,226,84,208,11,BS_LEFT
+    LTEXT           "Documentation",IDC_STATIC_DOCS,226,100,100,11
+    PUSHBUTTON      "Inform - A Design System for Interactive Fiction",IDC_BOOK_INFORM,226,114,208,11,BS_LEFT
+    PUSHBUTTON      "Changes to Inform",IDC_BOOK_CHANGES,226,126,208,11,BS_LEFT
     LTEXT           "Open a Sample Project",IDC_STATIC_SAMPLE,226,142,105,11
     PUSHBUTTON      "Onyx\t(a small project)",IDC_SAMPLE_ONYX,226,156,208,11,BS_LEFT
     PUSHBUTTON      "Disenchantment Bay\t(a medium project)",IDC_SAMPLE_DISENCHANTMENT,226,168,208,11,BS_LEFT
@@ -1089,6 +1092,7 @@ BEGIN
     IDR_MAINFRAME           "Inform"
     IDR_EXTFRAME            "Inform"
     IDR_LAUNCHFRAME         "Welcome to Inform"
+    IDR_BOOKFRAME           "Inform"
 END
 
 STRINGTABLE

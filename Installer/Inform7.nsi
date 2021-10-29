@@ -84,6 +84,7 @@ SectionEnd
 
 Section "Uninstall"
 
+  RMDir /r "$INSTDIR\Books"
   RMDir /r "$INSTDIR\Chrome"
   RMDir /r "$INSTDIR\Compilers"
   RMDir /r "$INSTDIR\Dictionaries"

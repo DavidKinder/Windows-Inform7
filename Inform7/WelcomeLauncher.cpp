@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "WelcomeLauncher.h"
+#include "BookFrame.h"
 #include "DpiFunctions.h"
 #include "Inform.h"
 #include "ProjectFrame.h"
@@ -10,10 +11,6 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
-//XXXXDK
-// Crash in libcef on start, open previous project, close?
-// EPUB viewer
 
 #define RECENT_MAX 10
 
@@ -34,6 +31,7 @@ BEGIN_MESSAGE_MAP(WelcomeLauncherView, CFormView)
   ON_COMMAND_RANGE(IDC_OPEN_0, IDC_OPEN_9, OnOpenProject)
   ON_COMMAND(IDC_CREATE_PROJECT, OnCreateProject)
   ON_COMMAND(IDC_CREATE_EXTENSION, OnCreateExtProject)
+  ON_COMMAND_RANGE(IDC_BOOK_INFORM, IDC_BOOK_CHANGES, OnShowBook)
   ON_COMMAND_RANGE(IDC_SAMPLE_ONYX, IDC_SAMPLE_DISENCHANTMENT, OnCopySampleProject)
   ON_COMMAND_RANGE(IDC_ADVICE_NEW, IDC_ADVICE_CREDITS, OnClickedAdvice)
   ON_COMMAND_RANGE(IDC_LINK_INFORM7, IDC_LINK_IFDB_SRC, OnClickedLink)
@@ -74,8 +72,8 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
   m_html.SetWindowText("Advice");
 
   // Subclass command buttons
-  ASSERT((sizeof m_cmds / sizeof m_cmds[0]) == (IDC_SAMPLE_DISENCHANTMENT - IDC_ADVICE_NEW + 1));
-  for (int id = IDC_ADVICE_NEW; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
+  ASSERT((sizeof m_cmds / sizeof m_cmds[0]) == (IDC_BOOK_CHANGES - IDC_ADVICE_NEW + 1));
+  for (int id = IDC_ADVICE_NEW; id <= IDC_BOOK_CHANGES; id++)
   {
     CommandButton& cmd = m_cmds[id - IDC_ADVICE_NEW];
     cmd.SubclassDlgItem(id,this);
@@ -112,6 +110,11 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
       cmd.SetBackSysColor(COLOR_BTNFACE);
       cmd.SetIcon("Icon-New");
       break;
+    case IDC_BOOK_INFORM:
+    case IDC_BOOK_CHANGES:
+      cmd.SetBackSysColor(COLOR_BTNFACE);
+      cmd.SetIcon("Icon-New");
+      break;
     default:
       cmd.SetBackSysColor(COLOR_WINDOW);
       break;
@@ -139,7 +142,7 @@ CSize WelcomeLauncherView::GetTotalSize() const
   int w = 0;
   int h = 0;
 
-  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
+  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_BOOK_CHANGES; id++)
   {
     CRect r;
     GetDlgItem(id)->GetWindowRect(r);
@@ -380,6 +383,21 @@ void WelcomeLauncherView::OnCreateExtProject()
   ProjectFrame::StartNewExtProject(theApp.GetLastProjectDir(),this,NULL);
 }
 
+void WelcomeLauncherView::OnShowBook(UINT nID)
+{
+  CString bookDir = theApp.GetAppDir();
+  switch (nID)
+  {
+  case IDC_BOOK_INFORM:
+    bookDir.Append("\\Books\\Inform - A Design System for Interactive Fiction.epub");
+    break;
+  case IDC_BOOK_CHANGES:
+    bookDir.Append("\\Books\\Changes to Inform.epub");
+    break;
+  }
+  BookFrame::ShowBook(bookDir);
+}
+
 void WelcomeLauncherView::OnCopySampleProject(UINT nID)
 {
   // Find the parent of the last project directory
@@ -617,7 +635,7 @@ void WelcomeLauncherView::SetFonts(void)
 
   for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_STATIC_COMMUNITY; id++)
     GetDlgItem(id)->SetFont(&m_titleFont);
-  for (int id = IDC_ADVICE_NEW; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
+  for (int id = IDC_ADVICE_NEW; id <= IDC_BOOK_CHANGES; id++)
   {
     CommandButton& cmd = m_cmds[id - IDC_ADVICE_NEW];
 
@@ -633,12 +651,11 @@ void WelcomeLauncherView::SetFonts(void)
     case IDC_OPEN_7:
     case IDC_OPEN_8:
     case IDC_OPEN_9:
-      cmd.SetFont(&m_bigFont);
-      break;
     case IDC_CREATE_PROJECT:
-      cmd.SetFont(&m_bigFont);
-      break;
     case IDC_CREATE_EXTENSION:
+    case IDC_BOOK_INFORM:
+    case IDC_BOOK_CHANGES:
+    case IDC_LINK_IFDB_SRC:
       cmd.SetFont(&m_bigFont);
       break;
     case IDC_SAMPLE_ONYX:
@@ -646,16 +663,13 @@ void WelcomeLauncherView::SetFonts(void)
       cmd.SetFont(&m_bigFont);
       cmd.SetTabStop(theApp.MeasureText(&cmd,"Browse Inform projects ").cx);
       break;
-    case IDC_LINK_IFDB_SRC:
-      cmd.SetFont(&m_bigFont);
-      break;
     }
   }
 }
 
 void WelcomeLauncherView::ShowHtml(bool show)
 {
-  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
+  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_BOOK_CHANGES; id++)
   {
     if ((id >= m_recentCount + IDC_OPEN_0) && (id < RECENT_MAX + IDC_OPEN_0))
       continue;
@@ -801,6 +815,7 @@ LRESULT WelcomeLauncherFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 {
   MoveWindow((LPRECT)lparam,TRUE);
   m_view.UpdateDPI();
+  ReportHtml::UpdateWebBrowserPreferences(this);
   Resize(false);
   Invalidate();
   return 0;

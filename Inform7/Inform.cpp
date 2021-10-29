@@ -674,19 +674,6 @@ void InformApp::FrameClosing(CFrameWnd* frame)
   }
 }
 
-void InformApp::SetFrameAsMainWindow(void)
-{
-  if (m_pMainWnd == NULL)
-  {
-    // If there are secondary frames, make one the main window
-    if (!m_frames.IsEmpty())
-    {
-      m_pMainWnd = m_frames[0];
-      m_frames.RemoveAt(0);
-    }
-  }
-}
-
 void InformApp::GetWindowFrames(CArray<CFrameWnd*>& frames)
 {
   if (m_pMainWnd)
