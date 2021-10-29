@@ -158,6 +158,7 @@ public:
   static bool StartExistingProject(const char* dir, CWnd* parent);
   static bool StartNamedProject(const char* project);
   static bool StartLastProject(void);
+  static ProjectType TypeFromDir(const CString& projectDir);
 
   CString GetDisplayName(bool fullName);
   void SendChanged(InformApp::Changed changed, int value);
@@ -190,7 +191,6 @@ protected:
   void OnSkeinLink(const char* url, TabInterface* from);
 
   static ProjectFrame* NewFrame(ProjectType projectType);
-  static ProjectType TypeFromDir(const CString& projectDir);
   void SetFromRegistryPath(const char* path);
   void SaveSettings(void);
 
