@@ -2,9 +2,10 @@
 #include "ProjectFrame.h"
 #include "ExtensionFrame.h"
 #include "Messages.h"
-#include "TextFormat.h"
-#include "ProjectDirDialog.h"
 #include "NewDialogs.h"
+#include "ProjectDirDialog.h"
+#include "TextFormat.h"
+
 #include "Dialogs.h"
 #include "DpiFunctions.h"
 #include "Build.h"
@@ -145,13 +146,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_SEARCH_SOURCE, OnSearchSource)
   ON_COMMAND(ID_SEARCH_DOCS, OnSearchDocs)
 END_MESSAGE_MAP()
-
-static UINT indicators[] =
-{
-  ID_SEPARATOR,
-  ID_INDICATOR_CAPS,
-  ID_INDICATOR_NUM,
-};
 
 class IntestOutputSink : public InformApp::OutputSink
 {
