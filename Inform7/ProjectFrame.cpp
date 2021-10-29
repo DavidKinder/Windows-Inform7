@@ -2,10 +2,11 @@
 #include "ProjectFrame.h"
 #include "ExtensionFrame.h"
 #include "Messages.h"
+#include "NewDialogs.h"
 #include "ProjectDirDialog.h"
 #include "TextFormat.h"
 #include "WelcomeLauncher.h"
-#include "NewDialogs.h"
+
 #include "Dialogs.h"
 #include "DpiFunctions.h"
 #include "Build.h"

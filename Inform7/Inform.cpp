@@ -11,6 +11,7 @@
 #include "PrefsDialog.h"
 #include "RecentProjectList.h"
 #include "ReportHtml.h"
+#include "RecentProjectList.h"
 #include "SpellCheck.h"
 #include "WelcomeLauncher.h"
 
