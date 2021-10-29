@@ -584,7 +584,7 @@ CString InformApp::GetAppDir(void) const
 CString InformApp::GetLastProjectDir(void)
 {
   CRegKey registryKey;
-  if (registryKey.Create(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW) == ERROR_SUCCESS)
+  if (registryKey.Create(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW) == ERROR_SUCCESS)
   {
     char dir[MAX_PATH];
     ULONG len = sizeof dir;
@@ -1457,7 +1457,7 @@ void InformApp::SetFonts(void)
 
   // Look for registry settings
   CRegKey registryKey;
-  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_READ) == ERROR_SUCCESS)
   {
     char fontName[MAX_PATH];
     ULONG len = sizeof fontName;

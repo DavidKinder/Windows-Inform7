@@ -1286,7 +1286,7 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
   case InformApp::Preferences:
     {
       CRegKey registryKey;
-      if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
+      if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_READ) == ERROR_SUCCESS)
       {
         DWORD I6debug = 0;
         if (registryKey.QueryDWORDValue("Generate I6 Debug",I6debug) == ERROR_SUCCESS)
@@ -2079,7 +2079,7 @@ ProjectFrame* ProjectFrame::NewFrame(ProjectType projectType)
   theApp.NewFrame(frame);
 
   frame->LoadFrame(IDR_MAINFRAME,WS_OVERLAPPEDWINDOW|FWS_ADDTOTITLE,NULL,NULL);
-  frame->SetFromRegistryPath(REGISTRY_PATH_WINDOW);
+  frame->SetFromRegistryPath(REGISTRY_INFORM_WINDOW);
   frame->ShowWindow(SW_SHOW);
   frame->UpdateWindow();
 

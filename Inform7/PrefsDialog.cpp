@@ -46,7 +46,7 @@ END_MESSAGE_MAP()
 void PrefsEditPage::ReadSettings(void)
 {
   CRegKey registryKey;
-  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_READ) == ERROR_SUCCESS)
   {
     char fontName[MAX_PATH];
     DWORD value = sizeof fontName;
@@ -126,7 +126,7 @@ void PrefsEditPage::ReadSettings(void)
 void PrefsEditPage::WriteSettings(void)
 {
   CRegKey registryKey;
-  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
   {
     registryKey.SetStringValue("Source Font Name",m_fontName);
     int fontSize = 0;
@@ -608,7 +608,7 @@ END_MESSAGE_MAP()
 void PrefsTextPage::ReadSettings(void)
 {
   CRegKey registryKey;
-  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_READ) == ERROR_SUCCESS)
   {
     char fontName[MAX_PATH];
     DWORD value = sizeof fontName;
@@ -625,7 +625,7 @@ void PrefsTextPage::ReadSettings(void)
 void PrefsTextPage::WriteSettings(void)
 {
   CRegKey registryKey;
-  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
   {
     registryKey.SetStringValue("Font Name",m_fontName);
     registryKey.SetStringValue("Fixed Font Name",m_fixedFontName);
@@ -702,7 +702,7 @@ END_MESSAGE_MAP()
 void PrefsAdvancedPage::ReadSettings(void)
 {
   CRegKey registryKey;
-  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_READ) == ERROR_SUCCESS)
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_READ) == ERROR_SUCCESS)
   {
     DWORD value = 0;
 
@@ -723,7 +723,7 @@ void PrefsAdvancedPage::ReadSettings(void)
 void PrefsAdvancedPage::WriteSettings(void)
 {
   CRegKey registryKey;
-  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_PATH_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
   {
     registryKey.SetDWORDValue("Clean Up Files",m_cleanFiles);
     registryKey.SetDWORDValue("Clean Up Indexes",m_cleanIndexes);
