@@ -1449,6 +1449,9 @@
     <ClCompile Include="RecentProjectList.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\views\overlay_controller_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp\views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Inform7.ico">
