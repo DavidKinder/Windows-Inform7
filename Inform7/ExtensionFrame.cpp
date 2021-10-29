@@ -35,13 +35,6 @@ BEGIN_MESSAGE_MAP(ExtensionFrame, MenuBarFrameWnd)
   ON_COMMAND_RANGE(ID_WINDOW_LIST, ID_WINDOW_LIST+8, OnWindowList)
 END_MESSAGE_MAP()
 
-static UINT indicators[] =
-{
-  ID_SEPARATOR,
-  ID_INDICATOR_CAPS,
-  ID_INDICATOR_NUM,
-};
-
 ExtensionFrame::ExtensionFrame()
 {
 }
