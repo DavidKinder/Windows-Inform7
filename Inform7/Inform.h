@@ -25,6 +25,8 @@
 // Logging file name
 #define LOG_FILE "\\Inform\\i7log.txt"
 
+class RecentProjectList;
+
 enum ProjectType
 {
   Project_I7,
@@ -161,6 +163,8 @@ public:
 
   CStringW GetProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR defaultValue);
   BOOL WriteProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR value);
+
+  RecentProjectList* GetRecentProjectList(void);
 
   struct CompilerVersion
   {
