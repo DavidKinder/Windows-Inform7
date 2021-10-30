@@ -113,7 +113,7 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
     case IDC_BOOK_INFORM:
     case IDC_BOOK_CHANGES:
       cmd.SetBackSysColor(COLOR_BTNFACE);
-      cmd.SetIcon("Icon-New");
+      cmd.SetIcon("Icon-Book");
       break;
     default:
       cmd.SetBackSysColor(COLOR_WINDOW);
