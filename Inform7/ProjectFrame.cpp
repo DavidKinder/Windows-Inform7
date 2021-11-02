@@ -3288,6 +3288,9 @@ bool ProjectFrame::UpdateExampleList(void)
   int code = theApp.RunCommand(m_projectDir,cmdLine,"intest.exe",sink,true);
   sink.Done();
 
+  if (!theApp.IsValidFrame(this))
+    return false;
+
   if (code == 0)
   {
     // Update the list of all examples

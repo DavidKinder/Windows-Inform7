@@ -116,6 +116,7 @@ public:
   CString PathToUrl(const char* path);
 
   CFrameWnd* GetActiveFrame(void);
+  bool IsValidFrame(CFrameWnd* frame);
   void NewFrame(CFrameWnd* frame);
   void FrameClosing(CFrameWnd* frame);
   void GetWindowFrames(CArray<CFrameWnd*>& frames);
