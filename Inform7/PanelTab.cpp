@@ -85,16 +85,24 @@ CRect PanelTab::GetItemRect(int item)
       int totalSize = 0;
       for (int i = 0; i < m_items.size(); i++)
       {
-        sizes[i] = dc->GetTextExtent(GetItem(i)).cx;
-        totalSize += sizes[i];
-        totalSize += (int)(spaceFactor*fontSize.cx);
+        if (IsTabEnabled(i))
+        {
+          sizes[i] = dc->GetTextExtent(GetItem(i)).cx;
+          totalSize += sizes[i];
+          totalSize += (int)(spaceFactor*fontSize.cx);
+        }
       }
 
       // Get the rectangle for the tab so that the overall set of tabs are centred vertically
       r.top = (client.Height() - totalSize)/2;
       for (int i = 0; i < item; i++)
-        r.top += sizes[i] + (int)(spaceFactor*fontSize.cx);
-      r.bottom = r.top + sizes[item] + (int)(spaceFactor*fontSize.cx);
+      {
+        if (IsTabEnabled(i))
+          r.top += sizes[i] + (int)(spaceFactor*fontSize.cx);
+      }
+      r.bottom = r.top;
+      if (IsTabEnabled(item))
+        r.bottom += sizes[item] + (int)(spaceFactor*fontSize.cx);
     }
     else
     {
@@ -104,8 +112,11 @@ CRect PanelTab::GetItemRect(int item)
       int totalSize = 0;
       for (int i = 0; i < m_items.size(); i++)
       {
-        sizes[i] = dc->GetTextExtent(GetItem(i)).cx;
-        totalSize += sizes[i];
+        if (IsTabEnabled(i))
+        {
+          sizes[i] = dc->GetTextExtent(GetItem(i)).cx;
+          totalSize += sizes[i];
+        }
       }
 
       // Work out a suitable spacing factor, depending on how much space there is
@@ -120,8 +131,11 @@ CRect PanelTab::GetItemRect(int item)
       for (int i = 0; i <= item; i++)
       {
         r.left = r.right;
-        r.right += sizes[i];
-        r.right += (int)(spaceFactor*fontSize.cx);
+        if (IsTabEnabled(i))
+        {
+          r.right += sizes[i];
+          r.right += (int)(spaceFactor*fontSize.cx);
+        }
       }
     }
 
@@ -195,20 +209,23 @@ void PanelTab::OnPaint()
     int sel = GetCurSel();
     for (int i = 0; i < GetItemCount(); i++)
     {
-      CString text = GetItem(i);
-      CRect itemRect = GetItemRect(i);
-      itemRect.OffsetRect(CPoint(-bitmapX,0));
+      if (IsTabEnabled(i))
+      {
+        CString text = GetItem(i);
+        CRect itemRect = GetItemRect(i);
+        itemRect.OffsetRect(CPoint(-bitmapX,0));
 
-      if (i == sel)
-        theApp.DrawSelectRect(dc,itemRect,false);
-      else if ((i == m_mouseOverItem) && IsTabEnabled(i))
-        theApp.DrawSelectRect(dc,itemRect,true);
-      else
-        dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNFACE));
+        if (i == sel)
+          theApp.DrawSelectRect(dc,itemRect,false);
+        else if (i == m_mouseOverItem)
+          theApp.DrawSelectRect(dc,itemRect,true);
+        else
+          dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNFACE));
 
-      dc.SetTextColor(::GetSysColor(IsTabEnabled(i) ? COLOR_BTNTEXT : COLOR_GRAYTEXT));
-      CSize size = dc.GetTextExtent(text);
-      dc.TextOut((itemRect.left+itemRect.right-size.cy)/2,(itemRect.top+itemRect.bottom-size.cx)/2,text);
+        dc.SetTextColor(COLOR_BTNTEXT);
+        CSize size = dc.GetTextExtent(text);
+        dc.TextOut((itemRect.left+itemRect.right-size.cy)/2,(itemRect.top+itemRect.bottom-size.cx)/2,text);
+      }
     }
   }
   else
@@ -242,33 +259,36 @@ void PanelTab::OnPaint()
     int sel = GetCurSel();
     for (int i = 0; i < GetItemCount(); i++)
     {
-      CString text = GetItem(i);
-      CRect itemRect = GetItemRect(i);
-      itemRect.bottom = base+1;
-
-      if (i == sel)
+      if (IsTabEnabled(i))
       {
-        dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNFACE));
+        CString text = GetItem(i);
+        CRect itemRect = GetItemRect(i);
+        itemRect.bottom = base+1;
 
-        dc.MoveTo(itemRect.right,itemRect.bottom-1);
-        dc.LineTo(itemRect.right,itemRect.top);
-        dc.LineTo(itemRect.left,itemRect.top);
-        dc.LineTo(itemRect.left,itemRect.bottom);
+        if (i == sel)
+        {
+          dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNFACE));
+
+          dc.MoveTo(itemRect.right,itemRect.bottom-1);
+          dc.LineTo(itemRect.right,itemRect.top);
+          dc.LineTo(itemRect.left,itemRect.top);
+          dc.LineTo(itemRect.left,itemRect.bottom);
+        }
+        else if (i == m_mouseOverItem)
+        {
+          itemRect.bottom--;
+          dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNHIGHLIGHT));
+
+          dc.MoveTo(itemRect.right,itemRect.bottom-1);
+          dc.LineTo(itemRect.right,itemRect.top);
+          dc.LineTo(itemRect.left,itemRect.top);
+          dc.LineTo(itemRect.left,itemRect.bottom);
+          itemRect.bottom++;
+        }
+
+        dc.SetTextColor(COLOR_BTNTEXT);
+        dc.DrawText(text,itemRect,DT_SINGLELINE|DT_CENTER|DT_VCENTER);
       }
-      else if ((i == m_mouseOverItem) && IsTabEnabled(i))
-      {
-        itemRect.bottom--;
-        dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNHIGHLIGHT));
-
-        dc.MoveTo(itemRect.right,itemRect.bottom-1);
-        dc.LineTo(itemRect.right,itemRect.top);
-        dc.LineTo(itemRect.left,itemRect.top);
-        dc.LineTo(itemRect.left,itemRect.bottom);
-        itemRect.bottom++;
-      }
-
-      dc.SetTextColor(::GetSysColor(IsTabEnabled(i) ? COLOR_BTNTEXT : COLOR_GRAYTEXT));
-      dc.DrawText(text,itemRect,DT_SINGLELINE|DT_CENTER|DT_VCENTER);
     }
     dc.SelectObject(oldPen);
   }

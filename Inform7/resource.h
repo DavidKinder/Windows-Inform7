@@ -60,10 +60,10 @@
 #define ID_RELEASE_IFICTION             243
 #define ID_WINDOW_TAB_SOURCE            250
 #define ID_WINDOW_TAB_RESULTS           251
-#define ID_WINDOW_TAB_INDEX             252
+#define ID_WINDOW_TAB_STORY             252
 #define ID_WINDOW_TAB_SKEIN             253
 #define ID_WINDOW_TAB_TRANSCRIPT        254
-#define ID_WINDOW_TAB_STORY             255
+#define ID_WINDOW_TAB_INDEX             255
 #define ID_WINDOW_TAB_DOCUMENTATION     256
 #define ID_WINDOW_TAB_EXTENSIONS        257
 #define ID_WINDOW_TAB_SETTINGS          258
