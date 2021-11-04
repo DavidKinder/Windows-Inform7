@@ -120,10 +120,11 @@ private:
   struct DocData
   {
     CCriticalSection lock;
+    bool stop;
     bool done;
     CArray<FindInFiles::DocText*> texts;
 
-    DocData() : done(false)
+    DocData() : stop(false), done(false)
     {
     }
   };

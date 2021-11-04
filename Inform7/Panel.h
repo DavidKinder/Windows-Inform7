@@ -16,10 +16,10 @@ public:
   {
     Tab_Source = 0,
     Tab_Results,
-    Tab_Index,
+    Tab_Story,
     Tab_Skein,
     Tab_Transcript,
-    Tab_Story,
+    Tab_Index,
     Tab_Doc,
     Tab_Extensions,
     Tab_Settings,

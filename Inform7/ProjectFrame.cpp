@@ -256,8 +256,7 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   ((TabSource*)GetPanel(1)->GetTab(Panel::Tab_Source))->SetDocument(
     ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source)));
 
-  // Set up the story tabs
-  ((TabStory*)GetPanel(0)->GetTab(Panel::Tab_Story))->SetGame(&m_game);
+  // Set up the story tab
   ((TabStory*)GetPanel(1)->GetTab(Panel::Tab_Story))->SetGame(&m_game);
 
   // Set up the skein tabs
@@ -709,13 +708,10 @@ BOOL ProjectFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINF
 
     // If the interpreter did not process the command,
     // make sure it is routed to the correct panel
-    for (int i = 0; i < 2; i++)
+    if (((TabStory*)GetPanel(1)->GetTab(Panel::Tab_Story))->IsActive())
     {
-      if (((TabStory*)GetPanel(i)->GetTab(Panel::Tab_Story))->IsActive())
-      {
-        if (GetPanel(i)->OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
-          return TRUE;
-      }
+      if (GetPanel(1)->OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
+        return TRUE;
     }
   }
 
@@ -828,12 +824,8 @@ LRESULT ProjectFrame::OnPasteCode(WPARAM code, LPARAM)
 
 LRESULT ProjectFrame::OnRuntimeProblem(WPARAM problem, LPARAM)
 {
-  int panel = 0;
-  if (((TabStory*)GetPanel(0)->GetTab(Panel::Tab_Story))->IsActive())
-    panel = 1;
-
-  ((TabResults*)GetPanel(panel)->GetTab(Panel::Tab_Results))->ShowRuntimeProblem((int)problem);
-  GetPanel(panel)->SetActiveTab(Panel::Tab_Results);
+  ((TabResults*)GetPanel(1)->GetTab(Panel::Tab_Results))->ShowRuntimeProblem((int)problem);
+  GetPanel(1)->SetActiveTab(Panel::Tab_Results);
   return 0;
 }
 
@@ -951,12 +943,8 @@ LRESULT ProjectFrame::OnAnimateSkein(WPARAM wparam, LPARAM lparam)
 
 LRESULT ProjectFrame::OnTerpFailed(WPARAM wparam, LPARAM lparam)
 {
-  int panel = 1;
-  if (((TabStory*)GetPanel(0)->GetTab(Panel::Tab_Story))->IsActive())
-    panel = 0;
-
-  ((TabResults*)GetPanel(panel)->GetTab(Panel::Tab_Results))->ShowTerpFailed();
-  GetPanel(panel)->SetActiveTab(Panel::Tab_Results);
+  ((TabResults*)GetPanel(1)->GetTab(Panel::Tab_Results))->ShowTerpFailed();
+  GetPanel(1)->SetActiveTab(Panel::Tab_Results);
   return 0;
 }
 
@@ -3204,6 +3192,9 @@ bool ProjectFrame::UpdateExampleList(void)
   IntestOutputSink sink;
   int code = theApp.RunCommand(m_projectDir,cmdLine,"intest.exe",sink,true);
   sink.Done();
+
+  if (!theApp.IsValidFrame(this))
+    return false;
 
   if (code == 0)
   {

@@ -642,6 +642,18 @@ CFrameWnd* InformApp::GetActiveFrame(void)
   return NULL;
 }
 
+bool InformApp::IsValidFrame(CFrameWnd* frame)
+{
+  if (m_pMainWnd == frame)
+    return true;
+  for (int i = 0; i < m_frames.GetSize(); i++)
+  {
+    if (m_frames[i] == frame)
+      return true;
+  }
+  return false;
+}
+
 void InformApp::NewFrame(CFrameWnd* frame)
 {
   if (m_pMainWnd == NULL)

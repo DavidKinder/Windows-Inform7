@@ -297,36 +297,33 @@ void FindInFiles::ExitInstance(void)
     ex->Delete();
   }
 
-  // Free the memory for the text extracted from the documentation if the
-  // background thread is finished.
   if (m_data)
   {
-    CSingleLock lock(&(m_data->lock),TRUE);
-    if (m_data->done)
+    if (m_pThread)
     {
-      for (int i = 0; i < m_data->texts.GetSize(); i++)
-        delete m_data->texts[i];
-      m_data->texts.RemoveAll();
-    }
-  }
-
-  // If the background thread is still running, suspend it, otherwise clean up.
-  if (m_pThread)
-  {
-    DWORD code = 0;
-    if (::GetExitCodeThread(*m_pThread,&code))
-    {
-      if (code == STILL_ACTIVE)
-        m_pThread->SuspendThread();
-      else
+      // If the background thread is still running, stop it
       {
-        delete m_pThread;
-        m_pThread = NULL;
+        CSingleLock lock(&(m_data->lock),TRUE);
+        m_data->stop = true;
+      }
+
+      if (::WaitForSingleObject(*m_pThread,10*1000) != WAIT_OBJECT_0)
+        ::ExitProcess(1);
+
+      delete m_pThread;
+      m_pThread = NULL;
+    }
+
+    // Free the memory for the text extracted from the documentation
+    {
+      CSingleLock lock(&(m_data->lock),TRUE);
+      if (m_data->done)
+      {
+        for (int i = 0; i < m_data->texts.GetSize(); i++)
+          delete m_data->texts[i];
+        m_data->texts.RemoveAll();
       }
     }
-  }
-  if (m_data)
-  {
     delete m_data;
     m_data = NULL;
   }
@@ -1186,6 +1183,15 @@ UINT FindInFiles::BackgroundDecodeThread(LPVOID)
     BOOL found = findDoc.FindFile(findPath);
     while (found)
     {
+      {
+        CSingleLock lock(&(m_data->lock),TRUE);
+        if (m_data->stop)
+        {
+          m_data->done = true;
+          return 0;
+        }
+      }
+
       // Get the filename of a documentation file
       found = findDoc.FindNextFile();
 
@@ -1198,7 +1204,7 @@ UINT FindInFiles::BackgroundDecodeThread(LPVOID)
     CSingleLock lock(&(m_data->lock),TRUE);
     m_data->done = true;
   }
-  TRACE("Background thread finished processing HTML for searching\n");
+  TRACE("Background thread finished processing HTML for find in files\n");
   return 0;
 }
 
