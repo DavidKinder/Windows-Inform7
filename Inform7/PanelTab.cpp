@@ -414,7 +414,12 @@ bool PanelTab::IsTabEnabled(int tab)
 
 HRESULT PanelTab::get_accChildCount(long* count)
 {
-  *count = GetItemCount();
+  *count = 0;
+  for (int i = 0; i < GetItemCount(); i++)
+  {
+    if (IsTabEnabled(i))
+      (*count)++;
+  }
   return S_OK;
 }
 
@@ -435,7 +440,7 @@ HRESULT PanelTab::get_accName(VARIANT child, BSTR* accName)
   if (child.lVal == CHILDID_SELF)
     name = "Panels";
   else
-    name = GetItem(child.lVal-1);
+    name = GetItem(IndexFromActive(child.lVal-1));
 
   *accName = name.AllocSysString();
   return S_OK;
@@ -460,7 +465,7 @@ HRESULT PanelTab::get_accState(VARIANT child, VARIANT* state)
   state->vt = VT_I4;
   state->lVal = 0;
 
-  if ((child.lVal > 0) && (m_currentItem == child.lVal-1))
+  if ((child.lVal > 0) && (m_currentItem == IndexFromActive(child.lVal-1)))
     state->lVal = STATE_SYSTEM_SELECTED;
   return S_OK;
 }
@@ -472,7 +477,7 @@ HRESULT PanelTab::accDoDefaultAction(VARIANT child)
 
   if (child.lVal != CHILDID_SELF)
   {
-    if (SetActiveTab(child.lVal-1))
+    if (SetActiveTab(IndexFromActive(child.lVal-1)))
       return S_OK;
   }
   return S_FALSE;
@@ -486,10 +491,15 @@ HRESULT PanelTab::accHitTest(long left, long top, VARIANT* child)
   CPoint point(left,top);
   ScreenToClient(&point);
 
+  int activeIndex = 0;
   for (int i = 0; i < GetItemCount(); i++)
   {
-    if (GetItemRect(i).PtInRect(point))
-      child->lVal = i+1;
+    if (IsTabEnabled(i))
+    {
+      if (GetItemRect(i).PtInRect(point))
+        child->lVal = activeIndex+1;
+      activeIndex++;
+    }
   }
   return S_OK;
 }
@@ -506,7 +516,7 @@ HRESULT PanelTab::accLocation(long* left, long* top, long* width, long* height, 
   {
     CRect winRect;
     GetWindowRect(winRect);
-    rect = GetItemRect(child.lVal-1);
+    rect = GetItemRect(IndexFromActive(child.lVal-1));
     rect.OffsetRect(winRect.TopLeft());
   }
 
@@ -515,4 +525,19 @@ HRESULT PanelTab::accLocation(long* left, long* top, long* width, long* height, 
   *width = rect.Width();
   *height = rect.Height();
   return S_OK;
+}
+
+int PanelTab::IndexFromActive(int activeIndex)
+{
+  int count = 0;
+  for (int i = 0; i < GetItemCount(); i++)
+  {
+    if (IsTabEnabled(i))
+    {
+      if (count == activeIndex)
+        return i;
+      count++;
+    }
+  }
+  return 0;
 }

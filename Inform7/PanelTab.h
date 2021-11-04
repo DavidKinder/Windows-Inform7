@@ -44,6 +44,7 @@ public:
 protected:
   bool SetActiveTab(int tab);
   bool IsTabEnabled(int tab);
+  int IndexFromActive(int activeIndex);
 
   bool m_vertical;
   std::vector<CString> m_items;
