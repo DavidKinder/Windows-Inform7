@@ -1446,23 +1446,17 @@
     <ClCompile Include="PanelTab.cpp">
       <Filter>Controls</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_atomic_flag.cc">
-      <Filter>Libraries\libcef\base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\frame_handler_cpptoc.cc">
-      <Filter>Libraries\libcef\cpptoc</Filter>
-    </ClCompile>
     <ClCompile Include="RecentProjectList.cpp">
       <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\views\overlay_controller_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp\views</Filter>
     </ClCompile>
     <ClCompile Include="BookFrame.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="CommandButton.cpp">
       <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\register_cdm_callback_cpptoc.cc">
+      <Filter>Libraries\libcef\cpptoc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

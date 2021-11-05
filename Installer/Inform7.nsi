@@ -62,7 +62,7 @@ Section "DoInstall"
 
   ; Remove old libcef files
   Delete "$INSTDIR\natives_blob.bin"
-  Delete "$INSTDIR\Chrome\cef*.pak"
+  Delete "$INSTDIR\Chrome\*.pak"
 
   File /r "..\Build\*.*"
   WriteUninstaller "Uninstall.exe"
