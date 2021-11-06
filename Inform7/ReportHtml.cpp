@@ -820,6 +820,10 @@ void ReportHtml::ShutWebBrowser(void)
   delete g_requestContexts;
   g_requestContexts = NULL;
 
+  // Do any last work before shutdown
+  for (int i = 0; i < 100; i++)
+    CefDoMessageLoopWork();
+
   CefShutdown();
 }
 
