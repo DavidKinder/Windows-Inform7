@@ -1233,9 +1233,6 @@
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\process_message_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\request_callback_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\request_context_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>

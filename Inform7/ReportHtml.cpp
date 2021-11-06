@@ -913,7 +913,8 @@ BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
   }
 
   CefWindowInfo windowInfo;
-  windowInfo.SetAsChild(parentWnd->GetSafeHwnd(),rect);
+  CefRect windowRect(rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top);
+  windowInfo.SetAsChild(parentWnd->GetSafeHwnd(),windowRect);
   windowInfo.style = style;
   windowInfo.menu = (HMENU)(UINT_PTR)id;
 
