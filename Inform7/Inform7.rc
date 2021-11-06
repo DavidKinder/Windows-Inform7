@@ -180,7 +180,7 @@ BEGIN
     END
     POPUP "&Window"
     BEGIN
-        MENUITEM "Show &Launcher\tCtrl+Shift+L", ID_APP_LAUNCHER
+        MENUITEM "Show &Launcher\tShift+F1",        ID_APP_LAUNCHER
         POPUP "Show &Tab"
         BEGIN
             MENUITEM "&Source\tCtrl+F1",            ID_WINDOW_TAB_SOURCE
@@ -304,7 +304,7 @@ END
 IDR_MAINFRAME ACCELERATORS
 BEGIN
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
-    "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_F1,          ID_APP_LAUNCHER,        VIRTKEY, SHIFT, NOINVERT
     "N",            ID_APP_PREFS,           VIRTKEY, SHIFT, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -373,7 +373,7 @@ END
 IDR_EXTFRAME ACCELERATORS
 BEGIN
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
-    "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_F1,          ID_APP_LAUNCHER,        VIRTKEY, SHIFT, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
@@ -401,14 +401,14 @@ END
 IDR_LAUNCHFRAME ACCELERATORS
 BEGIN
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
-    "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_F1,          ID_APP_LAUNCHER,        VIRTKEY, SHIFT, NOINVERT
     VK_ESCAPE,      ID_APP_LAUNCHER,        VIRTKEY, NOINVERT
 END
 
 IDR_BOOKFRAME ACCELERATORS
 BEGIN
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
-    "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_F1,          ID_APP_LAUNCHER,        VIRTKEY, SHIFT, NOINVERT
     VK_F6,          ID_WINDOW_SWITCH,       VIRTKEY, NOINVERT
 END
 
@@ -487,7 +487,7 @@ BEGIN
     PUSHBUTTON      "• IFWiki",IDC_LINK_IFWIKI,226,262,32,9,BS_LEFT
     PUSHBUTTON      "• Planet IF Blog Aggregator",IDC_LINK_PLANETIF,260,262,98,9,BS_LEFT
     PUSHBUTTON      "• IF Competition",IDC_LINK_IFCOMP,360,262,62,9,BS_LEFT
-    LTEXT           "Summon or dismiss this launcher with Ctrl+Shift+L",IDC_STATIC_SUMMON,6,280,400,8
+    LTEXT           "Summon or dismiss this launcher with Shift+F1",IDC_STATIC_SUMMON,6,280,400,8
 END
 
 IDD_SEARCH DIALOGEX 0, 0, 174, 18
