@@ -172,7 +172,7 @@
     <ClInclude Include="ProjectDirDialog.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="SplashScreen.h">
+    <ClInclude Include="WelcomeLauncher.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="PropList.h">
@@ -331,6 +331,9 @@
     <ClInclude Include="RecentProjectList.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="BookFrame.h">
+      <Filter>Core</Filter>
+    </ClInclude>
     <ClInclude Include="CommandButton.h">
       <Filter>Controls</Filter>
     </ClInclude>
@@ -411,7 +414,7 @@
     <ClCompile Include="ProjectDirDialog.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="SplashScreen.cpp">
+    <ClCompile Include="WelcomeLauncher.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="PropList.cpp">
@@ -1230,9 +1233,6 @@
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\process_message_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\request_callback_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\request_context_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>
@@ -1443,20 +1443,23 @@
     <ClCompile Include="PanelTab.cpp">
       <Filter>Controls</Filter>
     </ClCompile>
+    <ClCompile Include="RecentProjectList.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="BookFrame.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandButton.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_atomic_flag.cc">
       <Filter>Libraries\libcef\base</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\frame_handler_cpptoc.cc">
       <Filter>Libraries\libcef\cpptoc</Filter>
     </ClCompile>
-    <ClCompile Include="RecentProjectList.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\views\overlay_controller_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp\views</Filter>
-    </ClCompile>
-    <ClCompile Include="CommandButton.cpp">
-      <Filter>Controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -53,6 +53,7 @@ protected:
   afx_msg void OnAppPrefs();
   afx_msg void OnAppAbout();
   afx_msg void OnAppWebPage();
+  afx_msg void OnAppLauncher();
   afx_msg void OnUpdateEditUseSel(CCmdUI *pCmdUI);
 
 public:
@@ -167,6 +168,8 @@ public:
   CStringW GetProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR defaultValue);
   BOOL WriteProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR value);
 
+  void WriteOpenProjectsOnExit(void);
+  void OpenPreviousProjects(void);
   RecentProjectList* GetRecentProjectList(void);
 
   struct CompilerVersion
@@ -241,6 +244,7 @@ protected:
 
   CString m_home;
   HANDLE m_job;
+  bool m_doneProjectsOnExit;
 };
 
 extern InformApp theApp;

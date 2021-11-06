@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	unique-identifier="bookid" version="2.0">
+	<metadata>
+	<dc:rights>http://creativecommons.org/licenses/by/3.0/</dc:rights>
+	<dc:publisher>www.inform7.com</dc:publisher>
+	<dc:date>2016-08-11</dc:date>
+	<dc:type>Text</dc:type>
+	<dc:title>Changes to Inform</dc:title>
+	<dc:subject>Interactive Fiction</dc:subject>
+	<dc:language>en-UK</dc:language>
+	<dc:identifier id="bookid">urn:www.inform7.com:inform-changes</dc:identifier>
+	<dc:creator>Graham Nelson and Emily Short</dc:creator>
+	<meta name="cover" content="cover-image" />
+	</metadata>
+	<manifest>
+	<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+	<item id="css" href="indoc.css" media-type="text/css"/>
+	<item id="cover" href="cover.html" media-type="application/xhtml+xml"/>
+	<item id="CI_1" href="CI_1.html" media-type="application/xhtml+xml"/>
+	<item id="CI_2" href="CI_2.html" media-type="application/xhtml+xml"/>
+	<item id="CI_3" href="CI_3.html" media-type="application/xhtml+xml"/>
+	<item id="CI_4" href="CI_4.html" media-type="application/xhtml+xml"/>
+	<item id="CI_5" href="CI_5.html" media-type="application/xhtml+xml"/>
+	<item id="CI_6" href="CI_6.html" media-type="application/xhtml+xml"/>
+	<item id="CI_7" href="CI_7.html" media-type="application/xhtml+xml"/>
+	<item id="CI_8" href="CI_8.html" media-type="application/xhtml+xml"/>
+	<item id="CI_9" href="CI_9.html" media-type="application/xhtml+xml"/>
+	<item id="CI_10" href="CI_10.html" media-type="application/xhtml+xml"/>
+	<item id="CI_11" href="CI_11.html" media-type="application/xhtml+xml"/>
+	<item id="mar07" href="images/mar07.jpg" media-type="image/jpeg"/>
+	<item id="apr10" href="images/apr10.jpg" media-type="image/jpeg"/>
+	<item id="nov07" href="images/nov07.jpg" media-type="image/jpeg"/>
+	<item id="grey-ovoid" href="images/grey-ovoid.png" media-type="image/png"/>
+	<item id="aug07" href="images/aug07.jpg" media-type="image/jpeg"/>
+	<item id="sep08" href="images/sep08.jpg" media-type="image/jpeg"/>
+	<item id="jul07" href="images/jul07.jpg" media-type="image/jpeg"/>
+	<item id="apr08" href="images/apr08.jpg" media-type="image/jpeg"/>
+	<item id="oct07" href="images/oct07.jpg" media-type="image/jpeg"/>
+	<item id="apr09" href="images/apr09.jpg" media-type="image/jpeg"/>
+	<item id="changes_cover" href="images/changes_cover.png" media-type="image/png"/>
+	<item id="apr07" href="images/apr07.jpg" media-type="image/jpeg"/>
+	<item id="ovoid" href="images/ovoid.png" media-type="image/png"/>
+	</manifest>
+	<spine toc="ncx">
+	<itemref idref="cover"	linear="no"/>
+	<itemref idref="CI_1"/>
+	<itemref idref="CI_2"/>
+	<itemref idref="CI_3"/>
+	<itemref idref="CI_4"/>
+	<itemref idref="CI_5"/>
+	<itemref idref="CI_6"/>
+	<itemref idref="CI_7"/>
+	<itemref idref="CI_8"/>
+	<itemref idref="CI_9"/>
+	<itemref idref="CI_10"/>
+	<itemref idref="CI_11"/>
+	</spine>
+	<guide>
+	<reference href="cover.html" type="cover" title="Cover"/>
+	</guide>
+</package>

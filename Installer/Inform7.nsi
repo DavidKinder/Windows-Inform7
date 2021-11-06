@@ -62,7 +62,7 @@ Section "DoInstall"
 
   ; Remove old libcef files
   Delete "$INSTDIR\natives_blob.bin"
-  Delete "$INSTDIR\Chrome\cef*.pak"
+  Delete "$INSTDIR\Chrome\*.pak"
 
   File /r "..\Build\*.*"
   WriteUninstaller "Uninstall.exe"
@@ -84,6 +84,7 @@ SectionEnd
 
 Section "Uninstall"
 
+  RMDir /r "$INSTDIR\Books"
   RMDir /r "$INSTDIR\Chrome"
   RMDir /r "$INSTDIR\Compilers"
   RMDir /r "$INSTDIR\Dictionaries"
@@ -92,6 +93,7 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\Internal"
   RMDir /r "$INSTDIR\Interpreters"
   RMDir /r "$INSTDIR\Retrospective"
+  RMDir /r "$INSTDIR\Samples"
   RMDir /r "$INSTDIR\Symbols"
   RMDir /r "$INSTDIR\Web"
 

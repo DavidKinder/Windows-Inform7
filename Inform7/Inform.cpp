@@ -9,10 +9,11 @@
 
 #include "AboutDialog.h"
 #include "PrefsDialog.h"
+#include "RecentProjectList.h"
 #include "ReportHtml.h"
 #include "RecentProjectList.h"
 #include "SpellCheck.h"
-#include "SplashScreen.h"
+#include "WelcomeLauncher.h"
 
 #include "Platform.h"
 #include "Scintilla.h"
@@ -48,13 +49,14 @@ BEGIN_MESSAGE_MAP(InformApp, CWinApp)
   ON_COMMAND(ID_APP_PREFS, OnAppPrefs)
   ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
   ON_COMMAND(ID_APP_WEBPAGE, OnAppWebPage)
+  ON_COMMAND(ID_APP_LAUNCHER, OnAppLauncher)
   ON_UPDATE_COMMAND_UI(ID_EDIT_USE_SEL, OnUpdateEditUseSel)
 END_MESSAGE_MAP()
 
 // The one and only InformApp object
 InformApp theApp;
 
-InformApp::InformApp() : m_job(0)
+InformApp::InformApp() : m_job(0), m_doneProjectsOnExit(false)
 {
   for (int i = 0; i < sizeof m_fontSizes / sizeof m_fontSizes[0]; i++)
     m_fontSizes[i] = 0;
@@ -122,13 +124,19 @@ BOOL InformApp::InitInstance()
   // Initialize finding in files
   FindInFiles::InitInstance();
 
-  // Show the splash screen
-  SplashScreen splash;
-  splash.ShowSplash();
+  // Open any previously open projects
+  OpenPreviousProjects();
 
-  // Only continue if a project has been opened
+  // Show the launcher, if nothing else is open
   if (m_pMainWnd == NULL)
+    WelcomeLauncherFrame::ShowLauncher();
+
+  // Only continue if a window has been opened
+  if (m_pMainWnd == NULL)
+  {
+    ASSERT(FALSE);
     return FALSE;
+  }
 
   // Make sure that any census failure is reported
   if (ni.process != INVALID_HANDLE_VALUE)
@@ -315,6 +323,8 @@ void InformApp::OnFileClearRecent()
 
 void InformApp::OnAppExit()
 {
+  WriteOpenProjectsOnExit();
+
   // Close all secondary window frames first. The close message
   // will cause the window to be removed from the frames array.
   while (m_frames.GetSize() > 0)
@@ -349,6 +359,11 @@ void InformApp::OnAppAbout()
 void InformApp::OnAppWebPage()
 {
   ::ShellExecute(0,NULL,"http://inform7.com/",NULL,NULL,SW_SHOWNORMAL);
+}
+
+void InformApp::OnAppLauncher()
+{
+  WelcomeLauncherFrame::ShowLauncher();
 }
 
 void InformApp::OnUpdateEditUseSel(CCmdUI *pCmdUI)
@@ -1256,6 +1271,60 @@ BOOL InformApp::WriteProfileString(LPCSTR section, LPCWSTR entry, LPCWSTR value)
     (LPBYTE)value,(lstrlenW(value)+1)*sizeof(WCHAR));
   ::RegCloseKey(secKey);
   return (result == ERROR_SUCCESS);
+}
+
+void InformApp::WriteOpenProjectsOnExit(void)
+{
+  if (!m_doneProjectsOnExit)
+  {
+    CRegKey registryKey;
+    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM,KEY_READ|KEY_WRITE) == ERROR_SUCCESS)
+    {
+      registryKey.RecurseDeleteKey("Open Projects");
+      registryKey.Close();
+    }
+
+    if (registryKey.Create(HKEY_CURRENT_USER,REGISTRY_INFORM "\\Open Projects") == ERROR_SUCCESS)
+    {
+      int idx = 1;
+      CArray<CFrameWnd*> frames;
+      GetWindowFrames(frames);
+      for (int i = 0; i < frames.GetSize(); i++)
+      {
+        LPCSTR dir = (LPCSTR)frames[i]->SendMessage(WM_PROJECTDIR);
+        if (dir && (strlen(dir) > 0))
+        {
+          CString name;
+          name.Format("Project%d",idx++);
+          registryKey.SetStringValue(name,dir);
+        }
+      }
+    }
+
+    m_doneProjectsOnExit = true;
+  }
+}
+
+void InformApp::OpenPreviousProjects(void)
+{
+  CRegKey registryKey;
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM "\\Open Projects",KEY_READ) == ERROR_SUCCESS)
+  {
+    int idx = 1;
+    char dir[MAX_PATH];
+
+    while (true)
+    {
+      CString name;
+      name.Format("Project%d",idx++);
+      ULONG len = sizeof dir;
+      if (registryKey.QueryStringValue(name,dir,&len) != ERROR_SUCCESS)
+        return;
+
+      if (strlen(dir) > 0)
+        ProjectFrame::StartNamedProject(dir);
+    }
+  }
 }
 
 RecentProjectList* InformApp::GetRecentProjectList(void)

@@ -820,6 +820,10 @@ void ReportHtml::ShutWebBrowser(void)
   delete g_requestContexts;
   g_requestContexts = NULL;
 
+  // Do any last work before shutdown
+  for (int i = 0; i < 100; i++)
+    CefDoMessageLoopWork();
+
   CefShutdown();
 }
 
@@ -909,7 +913,8 @@ BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
   }
 
   CefWindowInfo windowInfo;
-  windowInfo.SetAsChild(parentWnd->GetSafeHwnd(),rect);
+  CefRect windowRect(rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top);
+  windowInfo.SetAsChild(parentWnd->GetSafeHwnd(),windowRect);
   windowInfo.style = style;
   windowInfo.menu = (HMENU)(UINT_PTR)id;
 

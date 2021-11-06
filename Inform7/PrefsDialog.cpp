@@ -690,7 +690,6 @@ PrefsAdvancedPage::PrefsAdvancedPage() : CPropertyPage(PrefsAdvancedPage::IDD)
   m_cleanIndexes = TRUE;
   m_glulxTerp = "Glulxe";
   m_tabsHorizontal = FALSE;
-  m_startWithLast = FALSE;
   m_I6debug = FALSE;
 }
 
@@ -716,7 +715,6 @@ void PrefsAdvancedPage::ReadSettings(void)
       m_I6debug = (value != 0);
   }
 
-  m_startWithLast = (theApp.GetProfileInt("Start","Open Last Project",0) != 0);
   m_glulxTerp = theApp.CWinApp::GetProfileString("Game","Glulx Interpreter",m_glulxTerp);
 }
 
@@ -730,7 +728,6 @@ void PrefsAdvancedPage::WriteSettings(void)
     registryKey.SetDWORDValue("Tabs Horizontal",m_tabsHorizontal);
     registryKey.SetDWORDValue("Generate I6 Debug",m_I6debug);
   }
-  theApp.WriteProfileInt("Start","Open Last Project",m_startWithLast ? 1 : 0);
   theApp.CWinApp::WriteProfileString("Game","Glulx Interpreter",m_glulxTerp);
 }
 
@@ -742,7 +739,6 @@ void PrefsAdvancedPage::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX, IDC_CLEANFILES, m_cleanFilesCheck);
   DDX_Control(pDX, IDC_CLEANINDEX, m_cleanIndexCheck);
   DDX_CBString(pDX, IDC_GLULX, m_glulxTerp);
-  DDX_Check(pDX, IDC_STARTLAST, m_startWithLast);
   DDX_Check(pDX, IDC_TABS_HORIZONTAL, m_tabsHorizontal);
   DDX_Check(pDX, IDC_I6DEBUGGING, m_I6debug);
 }

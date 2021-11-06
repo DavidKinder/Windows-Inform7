@@ -18,7 +18,6 @@ public:
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
   virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
   virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
-  virtual void GetMessageString(UINT nID, CString& rMessage) const;
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -26,7 +25,6 @@ protected:
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
   afx_msg void OnActivate(UINT nState, CWnd*, BOOL);
   afx_msg void OnClose();
-  afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
   afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
 
   afx_msg LRESULT OnProjectEdited(WPARAM wparam, LPARAM lparam);

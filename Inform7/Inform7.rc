@@ -180,6 +180,7 @@ BEGIN
     END
     POPUP "&Window"
     BEGIN
+        MENUITEM "Show &Launcher\tCtrl+Shift+L", ID_APP_LAUNCHER
         POPUP "Show &Tab"
         BEGIN
             MENUITEM "&Source\tCtrl+F1",            ID_WINDOW_TAB_SOURCE
@@ -303,6 +304,7 @@ END
 IDR_MAINFRAME ACCELERATORS
 BEGIN
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
     "N",            ID_APP_PREFS,           VIRTKEY, SHIFT, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -371,6 +373,7 @@ END
 IDR_EXTFRAME ACCELERATORS
 BEGIN
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
@@ -395,6 +398,20 @@ BEGIN
     VK_OEM_2,       ID_FORMAT_UNCOMMENT,    VIRTKEY, SHIFT, ALT, NOINVERT
 END
 
+IDR_LAUNCHFRAME ACCELERATORS
+BEGIN
+    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_ESCAPE,      ID_APP_LAUNCHER,        VIRTKEY, NOINVERT
+END
+
+IDR_BOOKFRAME ACCELERATORS
+BEGIN
+    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_APP_LAUNCHER,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_F6,          ID_WINDOW_SWITCH,       VIRTKEY, NOINVERT
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -406,7 +423,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFR
 CAPTION "Inform 7 for Windows"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_CREDITS,"RichEdit50W",ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_TABSTOP,4,53,202,120
+    CONTROL         "",IDC_CREDITS,"RichEdit50W",WS_VSCROLL | WS_TABSTOP | 0x804,4,53,202,120
     CTEXT           "Copyright 2006-2021 David Kinder (front end), Graham Nelson et al (compiler).",IDC_COPYRIGHT,25,182,156,17
     CTEXT           "Inform",IDC_TITLE,23,22,159,15,SS_CENTERIMAGE
     CONTROL         "",IDC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,79,1,48,18
@@ -431,15 +448,46 @@ BEGIN
     LTEXT           "Version:",IDC_VERSION_LABEL,15,225,32,8
 END
 
-IDD_SPLASH DIALOGEX 0, 0, 370, 222
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Welcome to Inform 7"
+IDD_LAUNCHER DIALOGEX 0, 0, 440, 289
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    PUSHBUTTON      "Start a &new project...",IDC_NEW_PROJECT,253,163,112,14
-    DEFPUSHBUTTON   "&Open an existing project...",IDC_OPEN_PROJECT,253,182,112,14
-    PUSHBUTTON      "&Reopen last project",IDC_REOPEN_LAST,253,201,112,14
-    LTEXT           "",IDC_INTRO,15,14,128,160
+    LTEXT           "Open a Recent Item",IDC_STATIC_OPEN_RECENT,6,58,90,11
+    PUSHBUTTON      "",IDC_OPEN_0,6,72,208,11,BS_LEFT
+    PUSHBUTTON      "",IDC_OPEN_1,6,84,208,11,BS_LEFT
+    PUSHBUTTON      "",IDC_OPEN_2,6,96,208,11,BS_LEFT
+    PUSHBUTTON      "",IDC_OPEN_3,6,108,208,11,BS_LEFT
+    PUSHBUTTON      "",IDC_OPEN_4,6,120,208,11,BS_LEFT
+    PUSHBUTTON      "",IDC_OPEN_5,6,132,208,11,BS_LEFT
+    PUSHBUTTON      "",IDC_OPEN_6,6,144,208,11,BS_LEFT
+    PUSHBUTTON      "",IDC_OPEN_7,6,156,208,11,BS_LEFT
+    PUSHBUTTON      "",IDC_OPEN_8,6,168,208,11,BS_LEFT
+    PUSHBUTTON      "",IDC_OPEN_9,6,180,208,11,BS_LEFT
+    LTEXT           "Create New",IDC_STATIC_CREATE_NEW,226,58,55,11
+    PUSHBUTTON      "Project",IDC_CREATE_PROJECT,226,72,208,11,BS_LEFT
+    PUSHBUTTON      "Extension",IDC_CREATE_EXTENSION,226,84,208,11,BS_LEFT
+    LTEXT           "Documentation",IDC_STATIC_DOCS,226,100,100,11
+    PUSHBUTTON      "Inform - A Design System for Interactive Fiction",IDC_BOOK_INFORM,226,114,208,11,BS_LEFT
+    PUSHBUTTON      "Changes to Inform",IDC_BOOK_CHANGES,226,126,208,11,BS_LEFT
+    LTEXT           "Open a Sample Project",IDC_STATIC_SAMPLE,226,142,105,11
+    PUSHBUTTON      "Onyx\t(a small project)",IDC_SAMPLE_ONYX,226,156,208,11,BS_LEFT
+    PUSHBUTTON      "Disenchantment Bay\t(a medium project)",IDC_SAMPLE_DISENCHANTMENT,226,168,208,11,BS_LEFT
+    PUSHBUTTON      "Browse Inform projects with public source at IFDB",IDC_LINK_IFDB_SRC,226,180,208,11,BS_LEFT
+    LTEXT           "Advice",IDC_STATIC_ADVICE,6,203,32,11
+    PUSHBUTTON      "• New to Inform?",IDC_ADVICE_NEW,6,218,208,9,BS_LEFT
+    PUSHBUTTON      "• Upgrading?",IDC_ADVICE_UPGRADE,6,229,208,9,BS_LEFT
+    PUSHBUTTON      "• Keyboard shortcuts",IDC_ADVICE_KEYBOARD,6,240,208,9,BS_LEFT
+    PUSHBUTTON      "• Structure of .materials folder",IDC_ADVICE_MATERIALS,6,251,208,9,BS_LEFT
+    PUSHBUTTON      "• Credits",IDC_ADVICE_CREDITS,6,262,208,9,BS_LEFT
+    LTEXT           "Community",IDC_STATIC_COMMUNITY,226,203,56,11
+    PUSHBUTTON      "• www.inform7.com",IDC_LINK_INFORM7,226,218,208,9,BS_LEFT
+    PUSHBUTTON      "• Inform at IFDB, the Interactive Fiction Database",IDC_LINK_IFDB,226,229,208,9,BS_LEFT
+    PUSHBUTTON      "• Interactive Fiction Forum",IDC_LINK_INTFIC,226,240,208,9,BS_LEFT
+    PUSHBUTTON      "• Inform Development Q&&A at the IFF",IDC_LINK_INTFIC_QA,226,251,208,9,BS_LEFT
+    PUSHBUTTON      "• IFWiki",IDC_LINK_IFWIKI,226,262,32,9,BS_LEFT
+    PUSHBUTTON      "• Planet IF Blog Aggregator",IDC_LINK_PLANETIF,260,262,98,9,BS_LEFT
+    PUSHBUTTON      "• IF Competition",IDC_LINK_IFCOMP,360,262,62,9,BS_LEFT
+    LTEXT           "Summon or dismiss this launcher with Ctrl+Shift+L",IDC_STATIC_SUMMON,6,280,400,8
 END
 
 IDD_SEARCH DIALOGEX 0, 0, 174, 18
@@ -570,13 +618,11 @@ BEGIN
     GROUPBOX        "Interpreters",IDC_STATIC,5,45,187,31
     LTEXT           "Glul&x interpreter",IDC_STATIC,14,59,56,8
     COMBOBOX        IDC_GLULX,74,57,48,38,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Windows specific settings",IDC_STATIC,5,79,187,55
+    GROUPBOX        "Windows specific settings",IDC_STATIC,5,79,187,43
     CONTROL         "Show the list of panel choices horizontally",IDC_TABS_HORIZONTAL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,92,149,10
-    CONTROL         "Start by loading the last opened project",IDC_STARTLAST,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,104,149,10
     CONTROL         "Generate Inform 6 debugging information",IDC_I6DEBUGGING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,116,158,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,104,158,10
 END
 
 IDD_FIND_FILES DIALOGEX 0, 0, 399, 262
@@ -714,12 +760,12 @@ BEGIN
         BOTTOMMARGIN, 272
     END
 
-    IDD_SPLASH, DIALOG
+    IDD_LAUNCHER, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 365
+        RIGHTMARGIN, 434
         TOPMARGIN, 2
-        BOTTOMMARGIN, 215
+        BOTTOMMARGIN, 288
     END
 
     IDD_SEARCH, DIALOG
@@ -1038,6 +1084,11 @@ BEGIN
     0
 END
 
+IDD_LAUNCHER AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1048,6 +1099,8 @@ STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "Inform"
     IDR_EXTFRAME            "Inform"
+    IDR_LAUNCHFRAME         "Welcome to Inform"
+    IDR_BOOKFRAME           "Inform"
 END
 
 STRINGTABLE

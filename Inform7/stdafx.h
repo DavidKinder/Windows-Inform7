@@ -22,6 +22,7 @@
 #include <afxdisp.h>
 #include <afxdtctl.h>
 #include <afxcmn.h>
+#include <afxcview.h>
 #include <afxhtml.h>
 #include <afxtempl.h>
 #include <afxdlgs.h>

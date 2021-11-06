@@ -141,7 +141,6 @@ private:
   CButton m_cleanIndexCheck;
   CString m_glulxTerp;
   BOOL m_tabsHorizontal;
-  BOOL m_startWithLast;
   BOOL m_I6debug;
 
   CFont m_smallFont;

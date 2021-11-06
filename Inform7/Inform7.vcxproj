@@ -169,6 +169,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="AboutDialog.h" />
     <ClInclude Include="ArrowButton.h" />
     <ClInclude Include="BaseDialog.h" />
+    <ClInclude Include="BookFrame.h" />
     <ClInclude Include="Build.h" />
     <ClInclude Include="CommandButton.h" />
     <ClInclude Include="PageTab.h" />
@@ -217,7 +218,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="SourceSettings.h" />
     <ClInclude Include="SourceWindow.h" />
     <ClInclude Include="SpellCheck.h" />
-    <ClInclude Include="SplashScreen.h" />
+    <ClInclude Include="WelcomeLauncher.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StopButton.h" />
     <ClInclude Include="TabBase.h" />
@@ -541,12 +542,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
       </PrecompiledHeader>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\frame_handler_cpptoc.cc">
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\base\cef_atomic_flag.cc">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -728,6 +723,12 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\focus_handler_cpptoc.cc">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\frame_handler_cpptoc.cc">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -1194,12 +1195,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\request_callback_ctocpp.cc">
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\request_context_ctocpp.cc">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WRAPPING_CEF_SHARED;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -2054,6 +2049,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="AboutDialog.cpp" />
     <ClCompile Include="ArrowButton.cpp" />
     <ClCompile Include="BaseDialog.cpp" />
+    <ClCompile Include="BookFrame.cpp" />
     <ClCompile Include="CommandButton.cpp" />
     <ClCompile Include="PageTab.cpp" />
     <ClCompile Include="ContentsWindow.cpp" />
@@ -2332,7 +2328,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="SourceSettings.cpp" />
     <ClCompile Include="SourceWindow.cpp" />
     <ClCompile Include="SpellCheck.cpp" />
-    <ClCompile Include="SplashScreen.cpp" />
+    <ClCompile Include="WelcomeLauncher.cpp" />
     <ClCompile Include="StackTrace.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
