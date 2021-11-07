@@ -90,6 +90,9 @@
     <PostBuildEvent>
       <Command>xcopy /y ..\..\..\Libraries\libcef\release\libcef.dll $(OutDir)
 xcopy /y ..\..\..\Libraries\libcef\release\chrome_elf.dll $(OutDir)
+xcopy /y ..\..\..\Libraries\libcef\release\d3dcompiler_47.dll $(OutDir)
+xcopy /y ..\..\..\Libraries\libcef\release\libEGL.dll $(OutDir)
+xcopy /y ..\..\..\Libraries\libcef\release\libGLESv2.dll $(OutDir)
 xcopy /y ..\..\..\Libraries\libcef\release\snapshot_blob.bin $(OutDir)
 xcopy /y ..\..\..\Libraries\libcef\release\v8_context_snapshot.bin $(OutDir)
 xcopy /y ..\..\..\Libraries\libcef\resources\icudtl.dat $(OutDir)
@@ -144,6 +147,9 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
       <Message>Copying CEF files...</Message>
       <Command>xcopy /y ..\..\..\Libraries\libcef\release\libcef.dll ..\Build
 xcopy /y ..\..\..\Libraries\libcef\release\chrome_elf.dll ..\Build
+xcopy /y ..\..\..\Libraries\libcef\release\d3dcompiler_47.dll ..\Build
+xcopy /y ..\..\..\Libraries\libcef\release\libEGL.dll ..\Build
+xcopy /y ..\..\..\Libraries\libcef\release\libGLESv2.dll ..\Build
 xcopy /y ..\..\..\Libraries\libcef\release\snapshot_blob.bin ..\Build
 xcopy /y ..\..\..\Libraries\libcef\release\v8_context_snapshot.bin ..\Build
 xcopy /y ..\..\..\Libraries\libcef\resources\icudtl.dat ..\Build
