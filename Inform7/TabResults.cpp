@@ -437,7 +437,7 @@ void TabResults::SetFocusOnContent(void)
   switch (GetActiveTab())
   {
   case ResTab_Report:
-    m_report.SetFocusOnContent();
+    m_report.SetFocus();
     break;
   case ResTab_Console:
     m_console.SetFocus();

@@ -73,7 +73,7 @@ void TabDoc::MakeActive(TabState& state)
 
   // Make the window visible
   ShowWindow(SW_SHOW);
-  m_html.SetFocusOnContent();
+  m_html.SetFocus();
 
   // Use and update the given tab state
   if (state.tab == Panel::Tab_Doc)

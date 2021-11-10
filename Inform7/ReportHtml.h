@@ -27,8 +27,8 @@ public:
   void Refresh(void);
   void RunJavaScript(const char* code);
 
-  void SetFocusOnContent(void);
   void SetFocusFlag(bool focus);
+  bool OnSetFocus(void);
 
   void Find(LPCWSTR findText, bool findNext, bool forward, bool matchCase);
   void StopFind(void);

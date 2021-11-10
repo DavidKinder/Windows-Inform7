@@ -81,7 +81,7 @@ void TabIndex::MoveTab(CRect& rect)
 void TabIndex::MakeActive(TabState& state)
 {
   ShowWindow(SW_SHOW);
-  m_index.SetFocusOnContent();
+  m_index.SetFocus();
 
   if (state.tab == Panel::Tab_Index)
   {
@@ -277,7 +277,7 @@ void TabIndex::SetActiveTab(IndexTabs tab, bool focus)
       m_index.Navigate("about:blank",false);
 
     if (focus)
-      m_index.SetFocusOnContent();
+      m_index.SetFocus();
 
     if (IsWindowVisible())
     {

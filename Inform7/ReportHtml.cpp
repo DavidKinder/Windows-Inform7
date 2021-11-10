@@ -461,7 +461,8 @@ static CefRefPtr<I7CefApp> cefApp;
 class I7CefClient : public CefClient,
   public CefRequestHandler,
   public CefLoadHandler,
-  public CefContextMenuHandler
+  public CefContextMenuHandler,
+  public CefFocusHandler
 {
 public:
   I7CefClient()
@@ -589,6 +590,24 @@ public:
     CefRefPtr<CefContextMenuParams>, CefRefPtr<CefMenuModel> model)
   {
     model->Clear();
+  }
+
+  CefRefPtr<CefFocusHandler> GetFocusHandler()
+  {
+    return this;
+  }
+
+  // Implement CefFocusHandler to control whether the browser can get the focus
+  bool OnSetFocus(CefRefPtr<CefBrowser> browser, FocusSource source)
+  {
+    if (CefCurrentlyOn(TID_UI))
+    {
+      if (m_object)
+        return m_object->OnSetFocus();
+    }
+    else
+      ASSERT(FALSE);
+    return false;
   }
 
 private:
@@ -1043,9 +1062,6 @@ void ReportHtml::OnLoadEnd(void)
   if (m_consumer)
     m_consumer->LinkDone();
 
-  if (m_setFocus && (m_url != "about:blank"))
-    SetFocusOnContent();
-
   if (!m_find.IsEmpty())
   {
     m_private->browser->GetHost()->Find(0,m_find.GetString(),true,false,false);
@@ -1069,18 +1085,14 @@ void ReportHtml::SetLinkConsumer(ReportHtml::LinkConsumer* consumer)
   m_consumer = consumer;
 }
 
-void ReportHtml::SetFocusOnContent(void)
-{
-  CPoint point(0,0);
-  ClientToScreen(&point);
-  CWnd* wnd = WindowFromPoint(point);
-  if (wnd != NULL)
-    wnd->SetFocus();
-}
-
 void ReportHtml::SetFocusFlag(bool focus)
 {
   m_setFocus = focus;
+}
+
+bool ReportHtml::OnSetFocus(void)
+{
+  return !m_setFocus;
 }
 
 BEGIN_MESSAGE_MAP(ReportHtml, CWnd)
