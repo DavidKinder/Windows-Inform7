@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FlatSplitter.h"
+#include "ReportHtml.h"
 
 class BookFrame : public CFrameWnd
 {
@@ -8,6 +9,8 @@ protected:
   DECLARE_DYNAMIC(BookFrame)
 
 public:
+  ~BookFrame();
+
   static void ShowBook(const char* dir);
   void ShowPage(const char* page);
   CString GetDisplayName(void);
@@ -28,7 +31,6 @@ protected:
   void ReadContentsPoints(IXMLDOMNodeList* navPoints, HTREEITEM parentItem);
   CString StringFromXML(IXMLDOMNode* node, LPWSTR query);
 
-  CTreeCtrl& GetTreeCtrl(void);
   void DeleteItemData(HTREEITEM item);
 
   DECLARE_MESSAGE_MAP()
@@ -41,6 +43,8 @@ protected:
   afx_msg void OnWindowSwitchPanes();
 
   FlatSplitter m_splitter;
+  CTreeView* m_tree;
+  ReportHtml* m_html;
 
   CString m_dir;
   CString m_title;

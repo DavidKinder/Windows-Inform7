@@ -2,7 +2,6 @@
 #include "BookFrame.h"
 #include "DpiFunctions.h"
 #include "Inform.h"
-#include "ReportHtml.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,8 +43,13 @@ BEGIN_MESSAGE_MAP(BookFrame, CFrameWnd)
   ON_COMMAND(ID_WINDOW_SWITCH, OnWindowSwitchPanes)
 END_MESSAGE_MAP()
 
-BookFrame::BookFrame(const char* dir) : m_dir(dir), m_splitter(true)
+BookFrame::BookFrame(const char* dir) : m_dir(dir), m_splitter(true), m_tree(NULL), m_html(NULL)
 {
+}
+
+BookFrame::~BookFrame()
+{
+  delete m_html;
 }
 
 void BookFrame::ShowBook(const char* dir)
@@ -77,14 +81,9 @@ void BookFrame::ShowBook(const char* dir)
 
 void BookFrame::ShowPage(const char* page)
 {
-  CWnd* wnd = m_splitter.GetPane(0,1);
-  ASSERT(wnd != NULL);
-  ASSERT(wnd->IsKindOf(RUNTIME_CLASS(ReportHtml)));
-  ReportHtml* html = (ReportHtml*)wnd;
-
   CString pagePath;
   pagePath.Format("%s\\OEBPS\\%s",(LPCSTR)m_dir,page);
-  html->Navigate(theApp.PathToUrl(pagePath),false);
+  m_html->Navigate(theApp.PathToUrl(pagePath),false);
 }
 
 CString BookFrame::GetDisplayName(void)
@@ -129,6 +128,8 @@ int BookFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
   if (!m_splitter.CreateView(0,0,RUNTIME_CLASS(BookContentsView),CSize(0,0),NULL))
     return -1;
+  m_tree = (BookContentsView*)m_splitter.GetPane(0,0);
+  m_html = (ReportHtml*)m_splitter.GetPane(0,1);
 
   // Set the splitter as 1/3 on the left
   CRect client;
@@ -136,7 +137,7 @@ int BookFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   m_splitter.SetColumnInfo(0,client.Width()/3,16);
 
   // Set up the tree control for the book contents
-  CTreeCtrl& tree = GetTreeCtrl();
+  CTreeCtrl& tree = m_tree->GetTreeCtrl();
   tree.ModifyStyle(0,TVS_HASBUTTONS|TVS_HASLINES|TVS_LINESATROOT|TVS_SHOWSELALWAYS);
   tree.SetFont(theApp.GetFont(this,InformApp::FontSystem));
 
@@ -223,7 +224,7 @@ LRESULT BookFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 
   MoveWindow((LPRECT)lparam,TRUE);
 
-  GetTreeCtrl().SetFont(theApp.GetFont(this,InformApp::FontSystem));
+  m_tree->GetTreeCtrl().SetFont(theApp.GetFont(this,InformApp::FontSystem));
   ReportHtml::UpdateWebBrowserPreferences(this);
 
   if ((m_splitter.GetSafeHwnd() != 0) && (split > 0.0))
@@ -315,7 +316,7 @@ CString BookFrame::ReadContents(void)
 
 void BookFrame::ReadContentsPoints(IXMLDOMNodeList* navPoints, HTREEITEM parentItem)
 {
-  CTreeCtrl& tree = GetTreeCtrl();
+  CTreeCtrl& tree = m_tree->GetTreeCtrl();
 
   CComPtr<IXMLDOMNode> navPoint;
   while (navPoints->nextNode(&navPoint) == S_OK)
@@ -351,19 +352,9 @@ CString BookFrame::StringFromXML(IXMLDOMNode* node, LPWSTR query)
   return "";
 }
 
-CTreeCtrl& BookFrame::GetTreeCtrl(void)
-{
-  CWnd* wnd = m_splitter.GetPane(0,0);
-  ASSERT(wnd != NULL);
-  ASSERT(wnd->IsKindOf(RUNTIME_CLASS(BookContentsView)));
-
-  BookContentsView* treeView = (BookContentsView*)wnd;
-  return treeView->GetTreeCtrl();
-}
-
 void BookFrame::DeleteItemData(HTREEITEM item)
 {
-  CTreeCtrl& tree = GetTreeCtrl();
+  CTreeCtrl& tree = m_tree->GetTreeCtrl();
 
   if (item != TVI_ROOT)
   {
