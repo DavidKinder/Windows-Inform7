@@ -35,7 +35,7 @@ protected:
   afx_msg void OnOpenProject(UINT nID);
   afx_msg void OnCreateProject();
   afx_msg void OnCreateExtProject();
-  afx_msg void OnShowBook(UINT nID);
+  afx_msg void OnShowChangesBook();
   afx_msg void OnCopySampleProject(UINT nID);
   afx_msg void OnClickedAdvice(UINT nID);
   afx_msg void OnClickedLink(UINT nID);
@@ -51,7 +51,7 @@ protected:
   CDibSection m_banner;
   CFont m_bigFont;
   CFont m_titleFont;
-  CommandButton m_cmds[29];
+  CommandButton m_cmds[28];
   ReportHtml m_html;
 
   int m_recentCount;

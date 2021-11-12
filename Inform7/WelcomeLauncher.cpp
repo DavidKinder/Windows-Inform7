@@ -31,7 +31,7 @@ BEGIN_MESSAGE_MAP(WelcomeLauncherView, CFormView)
   ON_COMMAND_RANGE(IDC_OPEN_0, IDC_OPEN_9, OnOpenProject)
   ON_COMMAND(IDC_CREATE_PROJECT, OnCreateProject)
   ON_COMMAND(IDC_CREATE_EXTENSION, OnCreateExtProject)
-  ON_COMMAND_RANGE(IDC_BOOK_INFORM, IDC_BOOK_CHANGES, OnShowBook)
+  ON_COMMAND(IDC_BOOK_CHANGES, OnShowChangesBook)
   ON_COMMAND_RANGE(IDC_SAMPLE_ONYX, IDC_SAMPLE_DISENCHANTMENT, OnCopySampleProject)
   ON_COMMAND_RANGE(IDC_ADVICE_NEW, IDC_ADVICE_CREDITS, OnClickedAdvice)
   ON_COMMAND_RANGE(IDC_LINK_INFORM7, IDC_LINK_IFDB_SRC, OnClickedLink)
@@ -110,7 +110,6 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
       cmd.SetBackSysColor(COLOR_BTNFACE);
       cmd.SetIcon("Icon-New");
       break;
-    case IDC_BOOK_INFORM:
     case IDC_BOOK_CHANGES:
       cmd.SetBackSysColor(COLOR_BTNFACE);
       cmd.SetIcon("Icon-Book");
@@ -383,18 +382,10 @@ void WelcomeLauncherView::OnCreateExtProject()
   ProjectFrame::StartNewExtProject(theApp.GetLastProjectDir(),this,NULL);
 }
 
-void WelcomeLauncherView::OnShowBook(UINT nID)
+void WelcomeLauncherView::OnShowChangesBook()
 {
   CString bookDir = theApp.GetAppDir();
-  switch (nID)
-  {
-  case IDC_BOOK_INFORM:
-    bookDir.Append("\\Books\\Inform - A Design System for Interactive Fiction.epub");
-    break;
-  case IDC_BOOK_CHANGES:
-    bookDir.Append("\\Books\\Changes to Inform.epub");
-    break;
-  }
+  bookDir.Append("\\Books\\Changes to Inform");
   BookFrame::ShowBook(bookDir);
 }
 
@@ -653,7 +644,6 @@ void WelcomeLauncherView::SetFonts(void)
     case IDC_OPEN_9:
     case IDC_CREATE_PROJECT:
     case IDC_CREATE_EXTENSION:
-    case IDC_BOOK_INFORM:
     case IDC_BOOK_CHANGES:
     case IDC_LINK_IFDB_SRC:
       cmd.SetFont(&m_bigFont);

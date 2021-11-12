@@ -249,8 +249,7 @@
 #define IDC_CREATE_EXTENSION            1141
 #define IDC_SAMPLE_ONYX                 1142
 #define IDC_SAMPLE_DISENCHANTMENT       1143
-#define IDC_BOOK_INFORM                 1144
-#define IDC_BOOK_CHANGES                1145
+#define IDC_BOOK_CHANGES                1144
 #define ID_OPEN_EXTENSIONS_LIST         2000
 #define ID_NEW_EXTENSIONS_LIST          3000
 
@@ -260,7 +259,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        285
 #define _APS_NEXT_COMMAND_VALUE         285
-#define _APS_NEXT_CONTROL_VALUE         1146
+#define _APS_NEXT_CONTROL_VALUE         1145
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif
