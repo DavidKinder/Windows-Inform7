@@ -14,7 +14,7 @@ INRTPSOPTS = -nofont
 INTESTOPTS = -threads=2 -no-colours
 
 GCC = x86_64-w64-mingw32-gcc
-GCCOPTS = -DPLATFORM_WINDOWS -DCPU_WORDSIZE_MULTIPLIER=2 -I.
+GCCOPTS = -DPLATFORM_WINDOWS -DCPU_WORDSIZE_MULTIPLIER=2 -I. -gdwarf-4
 GCCWARNINGS = -Wno-pointer-arith -Wno-unused-macros -Wno-shadow -Wno-cast-align -Wno-variadic-macros -Wno-missing-noreturn -Wno-missing-prototypes -Wno-unused-parameter -Wno-padded -Wno-format-nonliteral -Wno-cast-qual
 CBLORBWARNINGS = -Wno-format-nonliteral
 LINK = $(GCC) $(GCCOPTS) -g
