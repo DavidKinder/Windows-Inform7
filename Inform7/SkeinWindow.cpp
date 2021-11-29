@@ -1343,16 +1343,13 @@ void SkeinWindow::CommandStartEdit::Run(void)
 // SkeinMouseAnchorWnd
 
 #define ID_TIMER_TRACKING	0xE000
-#define AFX_CX_ANCHOR_BITMAP	32
-#define AFX_CY_ANCHOR_BITMAP	32
 
 BEGIN_MESSAGE_MAP(SkeinMouseAnchorWnd, CWnd)
-  ON_WM_PAINT()
   ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 SkeinMouseAnchorWnd::SkeinMouseAnchorWnd(CPoint& ptAnchor)
-  : m_ptAnchor(ptAnchor), m_bQuitTracking(FALSE)
+  : m_size(32,33), m_ptAnchor(ptAnchor), m_bQuitTracking(FALSE)
 {
 }
 
@@ -1362,29 +1359,58 @@ BOOL SkeinMouseAnchorWnd::Create(SkeinWindow* pParent)
 
   pParent->ClientToScreen(&m_ptAnchor);
 
-  int dpi = DPI::getWindowDPI(this);
+  int dpi = DPI::getWindowDPI(pParent);
   m_rectDrag.top = m_ptAnchor.y - DPI::getSystemMetrics(SM_CYDOUBLECLK,dpi);
   m_rectDrag.bottom = m_ptAnchor.y + DPI::getSystemMetrics(SM_CYDOUBLECLK,dpi);
   m_rectDrag.left = m_ptAnchor.x - DPI::getSystemMetrics(SM_CXDOUBLECLK,dpi);
   m_rectDrag.right = m_ptAnchor.x + DPI::getSystemMetrics(SM_CXDOUBLECLK,dpi);
 
-  BOOL bRetVal = 
-    CreateEx(WS_EX_TOOLWINDOW|WS_EX_TOPMOST,
-      AfxRegisterWndClass(CS_SAVEBITS),
-      NULL,
-      WS_POPUP,
-      m_ptAnchor.x - AFX_CX_ANCHOR_BITMAP/2,
-      m_ptAnchor.y - AFX_CY_ANCHOR_BITMAP/2,
-      AFX_CX_ANCHOR_BITMAP,AFX_CY_ANCHOR_BITMAP,
-      NULL,NULL);
+  BOOL bRetVal = CreateEx(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED,
+    AfxRegisterWndClass(CS_SAVEBITS),NULL,WS_POPUP,
+    m_ptAnchor.x - m_size.cx/2,m_ptAnchor.y - m_size.cy/2,m_size.cx,m_size.cy,NULL,NULL);
   SetOwner(pParent);
 
   if (bRetVal)
   {
-    CRgn rgn;
-    rgn.CreateEllipticRgn(0,0,AFX_CX_ANCHOR_BITMAP,AFX_CY_ANCHOR_BITMAP);
-    if (SetWindowRgn(rgn,TRUE))
-      rgn.Detach();
+    HDC dc = ::GetDC(NULL);
+    CDC dcMem;
+    dcMem.CreateCompatibleDC(CDC::FromHandle(dc));
+    CDibSection bitmap;
+    if (bitmap.CreateBitmap(dc,m_size.cx,m_size.cy))
+    {
+      CBitmap* oldBitmap = CDibSection::SelectDibSection(dcMem,&bitmap);
+
+      // Copy the circle image
+      CDibSection* circle = NULL;
+      switch (m_nAnchorID)
+      {
+      case AFX_IDC_MOUSE_ORG_HV:
+        circle = theApp.GetCachedImage("Anchor-pan");
+        break;
+      case AFX_IDC_MOUSE_ORG_HORZ:
+        circle = theApp.GetCachedImage("Anchor-pan-horizontal");
+        break;
+      case AFX_IDC_MOUSE_ORG_VERT:
+        circle = theApp.GetCachedImage("Anchor-pan-vertical");
+        break;
+      }
+      ASSERT(circle != NULL);
+      if (circle != NULL)
+      {
+        ASSERT(circle->GetSize().cx == m_size.cx);
+        ASSERT(circle->GetSize().cy == m_size.cy);
+        memcpy(bitmap.GetBits(),circle->GetBits(),m_size.cx * m_size.cy * sizeof (DWORD));
+      }
+
+      // Use the bitmap as the alpha blended image for this window
+      CPoint layerTopLeft(0,0);
+      BLENDFUNCTION layerBlend = { AC_SRC_OVER,0,0xFF,AC_SRC_ALPHA };
+      ::UpdateLayeredWindow(GetSafeHwnd(),dc,
+        NULL,&m_size,dcMem.GetSafeHdc(),&layerTopLeft,0,&layerBlend,ULW_ALPHA);
+
+      dcMem.SelectObject(&oldBitmap);
+    }
+    ::ReleaseDC(NULL,dc);
 
     SetCapture();
     SetTimer(ID_TIMER_TRACKING,50,NULL);
@@ -1514,19 +1540,8 @@ void SkeinMouseAnchorWnd::OnTimer(UINT_PTR nIDEvent)
     pView->OnScrollBy(sizeToScroll,TRUE);
     UpdateWindow();
     SetWindowPos(&CWnd::wndTop,
-      m_ptAnchor.x - AFX_CX_ANCHOR_BITMAP/2,
-      m_ptAnchor.y - AFX_CY_ANCHOR_BITMAP/2,0,0,
+      m_ptAnchor.x - m_size.cx/2,
+      m_ptAnchor.y - m_size.cy/2,0,0,
       SWP_NOACTIVATE|SWP_NOSIZE|SWP_SHOWWINDOW);
   }
-}
-
-void SkeinMouseAnchorWnd::OnPaint()
-{
-  CPaintDC dc(this);
-  CRect rect;
-  GetClientRect(&rect);
-
-  rect.DeflateRect(1,1,1,1);
-  dc.Ellipse(rect);
-  ::DrawIconEx(dc.GetSafeHdc(),0,0,m_hAnchorCursor,0,0,0,NULL,DI_NORMAL);
 }

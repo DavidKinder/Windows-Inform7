@@ -143,12 +143,12 @@ public:
 
   virtual BOOL PreTranslateMessage(MSG* pMsg);
 
-  afx_msg void OnPaint();
   afx_msg void OnTimer(UINT_PTR nIDEvent);
   
   DECLARE_MESSAGE_MAP()
 
 private:
+  CSize m_size;
   CRect m_rectDrag;
   CPoint m_ptAnchor;
   BOOL m_bQuitTracking;
