@@ -206,7 +206,8 @@ public:
   const std::vector<ExtLocation>& GetExtensions(void);
   const ExtLocation* GetExtension(const char* author, const char* title);
 
-  CString PickDirectory(const char* title, const char* initialDir, CWnd* parent);
+  CString PickDirectory(const char* title, const char* folderLabel, const char* okLabel,
+    const char* initialDir, CWnd* parent);
 
 protected:
   void ClearScaledImages(void);

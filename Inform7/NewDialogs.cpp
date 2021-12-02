@@ -95,7 +95,7 @@ void AbstractNewDialog::OnClickedDirPopup()
 
   CString title;
   title.Format("Choose the directory to create the new %s in",GetType());
-  CString dir = theApp.PickDirectory(title,m_dir,this);
+  CString dir = theApp.PickDirectory(title,NULL,NULL,m_dir,this);
   if (!dir.IsEmpty())
   {
     m_dir = dir;

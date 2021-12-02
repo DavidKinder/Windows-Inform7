@@ -1101,7 +1101,8 @@ LRESULT ProjectFrame::OnCreateNewProject(WPARAM code, LPARAM title)
     lastDir.Empty();
 
   // Ask the user for where to create the project
-  CString dir = theApp.PickDirectory("Choose the directory to create the new project in",lastDir,this);
+  CString dir = theApp.PickDirectory("Choose the directory to create the new project in",
+    "Location of new project:","Create Project",lastDir,this);
   if (!dir.IsEmpty())
   {
     CString projectDir;

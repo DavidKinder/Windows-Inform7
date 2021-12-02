@@ -1444,13 +1444,18 @@ const InformApp::ExtLocation* InformApp::GetExtension(const char* author, const 
   return NULL;
 }
 
-CString InformApp::PickDirectory(const char* title, const char* initialDir, CWnd* parent)
+CString InformApp::PickDirectory(const char* title, const char* folderLabel, const char* okLabel,
+  const char* initialDir, CWnd* parent)
 {
   CComPtr<IFileDialog> dialog;
   if (FAILED(dialog.CoCreateInstance(__uuidof(FileOpenDialog))))
     return "";
 
   dialog->SetTitle(CStringW(title));
+  if (folderLabel)
+    dialog->SetFileNameLabel(CStringW(folderLabel));
+  if (okLabel)
+    dialog->SetOkButtonLabel(CStringW(okLabel));
 
   DWORD options = 0;
   dialog->GetOptions(&options);

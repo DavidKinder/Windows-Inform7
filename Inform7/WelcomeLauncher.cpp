@@ -400,7 +400,8 @@ void WelcomeLauncherView::OnCopySampleProject(UINT nID)
     lastDir.Empty();
 
   // Get the destination directory
-  CString toDir = theApp.PickDirectory("Choose a directory to save into",lastDir,this);
+  CString toDir = theApp.PickDirectory("Choose a directory to save into",
+    "Location of new project:","Create Project",lastDir,this);
   if (toDir.IsEmpty())
     return;
 
