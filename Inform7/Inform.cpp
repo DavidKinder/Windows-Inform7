@@ -495,8 +495,6 @@ COLORREF InformApp::GetColour(Colours colour)
     return RGB(0xa0,0xa0,0xa0);
   case ColourSkeinLine:
     return RGB(0x00,0x00,0x00);
-  case ColourSkeinInput:
-    return RGB(0x68,0x65,0xff);
   case ColourTabBack:
     return RGB(0xf7,0xf3,0xe9);
   case ColourInform6Code:

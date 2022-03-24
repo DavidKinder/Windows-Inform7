@@ -80,7 +80,7 @@ void GameGrid::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRe
     h += m_charHeight/4;
 }
 
-void GameGrid::AddText(const CStringW& text, bool fromSkein)
+void GameGrid::AddText(const CStringW& text)
 {
   if (m_y < m_rows)
   {

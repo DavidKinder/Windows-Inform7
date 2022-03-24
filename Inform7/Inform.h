@@ -68,7 +68,6 @@ public:
     ColourHighlight,
     ColourFaint,
     ColourSkeinLine,
-    ColourSkeinInput,
     ColourTabBack,
     ColourInform6Code,
     ColourBorder,

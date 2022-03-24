@@ -68,7 +68,6 @@ void GameText::FontChanged(void)
   RichEdit::FontChanged();
 
   m_defaultFont.Release();
-  m_skeinFont.Release();
   CreateFonts();
 
   // Reset to unstyled text: this isn't perfect, but how often will the font be changed?
@@ -85,7 +84,7 @@ void GameText::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRe
   h = size * fontSize.cy;
 }
 
-void GameText::AddText(const CStringW& text, bool fromSkein)
+void GameText::AddText(const CStringW& text)
 {
   // Don't update the display until we're done
   long freeze = 0;
@@ -102,9 +101,7 @@ void GameText::AddText(const CStringW& text, bool fromSkein)
   range->SetText(CComBSTR(text));
 
   // Set the appropriate font and paragraph for this range
-  if (fromSkein)
-    range->SetFont(m_skeinFont);
-  else if (m_currentFont != NULL)
+  if (m_currentFont != NULL)
     range->SetFont(m_currentFont);
   if (m_currentPara != NULL)
     range->SetPara(m_currentPara);
@@ -662,11 +659,6 @@ void GameText::CreateFonts(void)
   CComPtr<ITextFont> font;
   range->GetFont(&font);
   font->GetDuplicate(&m_defaultFont);
-
-  // Create a font for skein input
-  font->GetDuplicate(&m_skeinFont);
-  m_skeinFont->SetForeColor(theApp.GetColour(InformApp::ColourSkeinInput));
-  m_skeinFont->SetBold(tomTrue);
 }
 
 // IRichEditOleCallback implementation

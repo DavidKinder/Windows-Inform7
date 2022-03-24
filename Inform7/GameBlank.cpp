@@ -50,7 +50,7 @@ void GameBlank::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CR
   h = 0;
 }
 
-void GameBlank::AddText(const CStringW& text, bool fromSkein)
+void GameBlank::AddText(const CStringW& text)
 {
 }
 

@@ -17,7 +17,7 @@ public:
   void Layout(const CRect& r);
   void FontChanged(void);
   void GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r);
-  void AddText(const CStringW& text, bool fromSkein);
+  void AddText(const CStringW& text);
   void ClearText(bool styles, bool reverse, COLORREF fore, COLORREF back);
   void SetStyle(bool bold, bool italic, bool reverse, bool fixed, int size);
   void SetColours(COLORREF fore, COLORREF back);
@@ -53,7 +53,7 @@ private:
   void CaretToEnd(void);
   void CreateFonts(void);
 
-  CComPtr<ITextFont> m_defaultFont, m_currentFont, m_skeinFont;
+  CComPtr<ITextFont> m_defaultFont, m_currentFont;
   CComPtr<ITextPara> m_defaultPara, m_currentPara;
 
   bool m_allowEdit;

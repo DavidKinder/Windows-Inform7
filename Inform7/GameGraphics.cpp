@@ -98,7 +98,7 @@ void GameGraphics::GetNeededSize(int size, int& w, int& h, CSize fontSize, const
   h = size;
 }
 
-void GameGraphics::AddText(const CStringW& text, bool fromSkein)
+void GameGraphics::AddText(const CStringW& text)
 {
 }
 

@@ -422,8 +422,8 @@ void GameWindow::CommandFatalError(char* error, int errLength)
   {
     // Show the error message in bold text
     it.Value()->SetStyle(true,false,false,false,0);
-    it.Value()->AddText(L"Fatal Error: ",false);
-    it.Value()->AddText(CStringW(error,errLength),false);
+    it.Value()->AddText(L"Fatal Error: ");
+    it.Value()->AddText(CStringW(error,errLength));
   }
   else
   {
@@ -527,7 +527,7 @@ void GameWindow::CommandPrintOutput(int wndId, wchar_t* text, int textLength)
   }
 
   CStringW str(text,textLength);
-  wnd->AddText(str,false);
+  wnd->AddText(str);
 
   if (wnd->IsKindOf(RUNTIME_CLASS(GameText)))
   {
@@ -613,7 +613,7 @@ void GameWindow::CommandReadLine(int wndId, int initial, bool restart, bool echo
     if (m_skein.NextLine(skeinLine))
     {
       if (echo)
-        wnd->AddText(skeinLine,true);
+        wnd->AddText(skeinLine);
       wnd->MoveToEnd();
       SendInputLine(GetWindowId(wnd),skeinLine);
     }

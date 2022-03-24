@@ -146,7 +146,7 @@ void GamePair::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRe
 {
 }
 
-void GamePair::AddText(const CStringW& text, bool fromSkein)
+void GamePair::AddText(const CStringW& text)
 {
 }
 
