@@ -7,13 +7,13 @@
 #include "FlatSplitter.h"
 #include "ReportHtml.h"
 
-class TabSkein : public TabBase, public ReportHtml::LinkConsumer
+class TabTesting : public TabBase, public ReportHtml::LinkConsumer
 {
-  DECLARE_DYNAMIC(TabSkein)
+  DECLARE_DYNAMIC(TabTesting)
 
 public:
-  TabSkein();
-  ~TabSkein();
+  TabTesting();
+  ~TabTesting();
 
   const char* GetName(void);
   void CreateTab(CWnd* parent);

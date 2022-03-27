@@ -1,7 +1,7 @@
 // The skein tab
 
 #include "stdafx.h"
-#include "TabSkein.h"
+#include "TabTesting.h"
 #include "Inform.h"
 #include "Panel.h"
 #include "TextFormat.h"
@@ -13,9 +13,9 @@
 #define new DEBUG_NEW
 #endif
 
-IMPLEMENT_DYNAMIC(TabSkein, TabBase)
+IMPLEMENT_DYNAMIC(TabTesting, TabBase)
 
-BEGIN_MESSAGE_MAP(TabSkein, TabBase)
+BEGIN_MESSAGE_MAP(TabTesting, TabBase)
   ON_WM_SIZE()
   ON_COMMAND(ID_SKEIN_LABEL, OnSkeinLabel)
   ON_COMMAND(ID_SKEIN_PLAY_ALL, OnSkeinPlay)
@@ -26,22 +26,22 @@ BEGIN_MESSAGE_MAP(TabSkein, TabBase)
   ON_MESSAGE(WM_UPDATEHELP, OnUpdateHelp)
 END_MESSAGE_MAP()
 
-TabSkein::TabSkein() : m_splitter(false),
+TabTesting::TabTesting() : m_splitter(false),
   m_skeinWindow(NULL), m_helpWindow(NULL), m_skein(NULL), m_label(ArrowButton::DownLow)
 {
 }
 
-TabSkein::~TabSkein()
+TabTesting::~TabTesting()
 {
   delete m_helpWindow;
 }
 
-const char* TabSkein::GetName(void)
+const char* TabTesting::GetName(void)
 {
-  return "Skein";
+  return "Testing";
 }
 
-void TabSkein::CreateTab(CWnd* parent)
+void TabTesting::CreateTab(CWnd* parent)
 {
   // Create the pane window
   Create(parent);
@@ -68,25 +68,25 @@ void TabSkein::CreateTab(CWnd* parent)
     theApp.GetAppDir()+"\\Documentation\\windows\\TestingTemplate.html"),false);
 
   // Set window text for accessibility
-  m_splitter.SetWindowText("Skein page");
+  m_splitter.SetWindowText("Testing page");
   m_skeinWindow->SetWindowText("Skein");
   m_helpWindow->SetWindowText("Skein help");
 }
 
-void TabSkein::MoveTab(CRect& rect)
+void TabTesting::MoveTab(CRect& rect)
 {
   MoveWindow(rect,TRUE);
 }
 
-void TabSkein::MakeActive(TabState& state)
+void TabTesting::MakeActive(TabState& state)
 {
   ShowWindow(SW_SHOW);
   m_skeinWindow->SetFocus();
 
-  state.tab = Panel::Tab_Skein;
+  state.tab = Panel::Tab_Testing;
 }
 
-BOOL TabSkein::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
+BOOL TabTesting::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
   if (m_splitter.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo))
     return TRUE;
@@ -98,7 +98,7 @@ BOOL TabSkein::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* p
   return CWnd::OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
 
-void TabSkein::OpenProject(const char* path, bool primary)
+void TabTesting::OpenProject(const char* path, bool primary)
 {
   if (primary)
   {
@@ -108,7 +108,7 @@ void TabSkein::OpenProject(const char* path, bool primary)
   m_skeinWindow->Layout(false);
 }
 
-bool TabSkein::SaveProject(const char* path, bool primary)
+bool TabTesting::SaveProject(const char* path, bool primary)
 {
   if (primary)
   {
@@ -118,12 +118,12 @@ bool TabSkein::SaveProject(const char* path, bool primary)
   return true;
 }
 
-bool TabSkein::IsProjectEdited(void)
+bool TabTesting::IsProjectEdited(void)
 {
   return m_skein->IsEdited();
 }
 
-void TabSkein::LoadSettings(CRegKey& key, bool primary)
+void TabTesting::LoadSettings(CRegKey& key, bool primary)
 {
   DWORD heightPercent = 0;
   if (key.QueryDWORDValue(primary ?
@@ -143,7 +143,7 @@ void TabSkein::LoadSettings(CRegKey& key, bool primary)
   ShowHideHelp(showHelp);
 }
 
-void TabSkein::SaveSettings(CRegKey& key, bool primary)
+void TabTesting::SaveSettings(CRegKey& key, bool primary)
 {
   DWORD heightPercent = 100;
   if (m_splitter.GetRowCount() == 2)
@@ -152,19 +152,19 @@ void TabSkein::SaveSettings(CRegKey& key, bool primary)
     "Left Skein Height" : "Right Skein Height",heightPercent);
 }
 
-void TabSkein::PrefsChanged(CRegKey& key)
+void TabTesting::PrefsChanged(CRegKey& key)
 {
   m_skeinWindow->PrefsChanged();
   m_helpWindow->Refresh();
 }
 
-void TabSkein::BeforeUpdateDPI(std::map<CWnd*,double>& layout)
+void TabTesting::BeforeUpdateDPI(std::map<CWnd*,double>& layout)
 {
   TabBase::BeforeUpdateDPI(layout);
   layout.insert(std::make_pair(&m_splitter,m_splitter.GetRowFraction(0)));
 }
 
-void TabSkein::UpdateDPI(const std::map<CWnd*,double>& layout)
+void TabTesting::UpdateDPI(const std::map<CWnd*,double>& layout)
 {
   TabBase::UpdateDPI(layout);
 
@@ -185,55 +185,55 @@ void TabSkein::UpdateDPI(const std::map<CWnd*,double>& layout)
   m_skeinWindow->PrefsChanged();
 }
 
-void TabSkein::SourceLink(const char* url)
+void TabTesting::SourceLink(const char* url)
 {
 }
 
-void TabSkein::LibraryLink(const char* url)
+void TabTesting::LibraryLink(const char* url)
 {
 }
 
-void TabSkein::SkeinLink(const char* url)
+void TabTesting::SkeinLink(const char* url)
 {
 }
 
-bool TabSkein::DocLink(const char* url)
+bool TabTesting::DocLink(const char* url)
 {
   return false;
 }
 
-void TabSkein::LinkDone(void)
+void TabTesting::LinkDone(void)
 {
   PostMessage(WM_UPDATEHELP);
 }
 
-void TabSkein::LinkError(const char* url)
+void TabTesting::LinkError(const char* url)
 {
 }
 
-void TabSkein::SetSkein(Skein* skein)
+void TabTesting::SetSkein(Skein* skein)
 {
   m_skein = skein;
   m_skeinWindow->SetSkein(skein);
 }
 
-void TabSkein::ShowNode(Skein::Node* node, Skein::Show why)
+void TabTesting::ShowNode(Skein::Node* node, Skein::Show why)
 {
   m_skeinWindow->SkeinShowNode(node,why);
 }
 
-void TabSkein::SkeinChanged(void)
+void TabTesting::SkeinChanged(void)
 {
   m_skein->GetRoot()->SetLine(GetStoryName());
   m_skeinWindow->Layout(false);
 }
 
-void TabSkein::Animate(int pct)
+void TabTesting::Animate(int pct)
 {
   m_skeinWindow->Animate(pct);
 }
 
-CString TabSkein::GetToolTip(UINT_PTR id)
+CString TabTesting::GetToolTip(UINT_PTR id)
 {
   switch (id)
   {
@@ -254,7 +254,7 @@ CString TabSkein::GetToolTip(UINT_PTR id)
   return TabBase::GetToolTip(id);
 }
 
-CStringW TabSkein::GetStoryName(void)
+CStringW TabTesting::GetStoryName(void)
 {
   CString* name = (CString*)(GetParentFrame()->SendMessage(WM_STORYNAME));
   if (name != NULL)
@@ -267,13 +267,13 @@ CStringW TabSkein::GetStoryName(void)
     return L"story";
 }
 
-void TabSkein::OnSize(UINT nType, int cx, int cy)
+void TabTesting::OnSize(UINT nType, int cx, int cy)
 {
   TabBase::OnSize(nType,cx,cy);
   Resize();
 }
 
-LRESULT TabSkein::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
+LRESULT TabTesting::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
 {
   if (GetSafeHwnd() != 0)
   {
@@ -293,7 +293,7 @@ LRESULT TabSkein::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
   return TabBase::OnIdleUpdateCmdUI(wParam,lParam);
 }
 
-LRESULT TabSkein::OnUpdateHelp(WPARAM, LPARAM)
+LRESULT TabTesting::OnUpdateHelp(WPARAM, LPARAM)
 {
   bool active = m_skein->IsActive();
   bool showWelcome = false;
@@ -319,19 +319,19 @@ LRESULT TabSkein::OnUpdateHelp(WPARAM, LPARAM)
   return 0;
 }
 
-LRESULT TabSkein::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
+LRESULT TabTesting::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)
 {
   return m_helpWindow->OnFindReplaceCmd(wParam,lParam);
 }
 
-void TabSkein::SetHelpVisible(const char* node, bool visible)
+void TabTesting::SetHelpVisible(const char* node, bool visible)
 {
   CString code;
   code.Format("%s('%s');",visible ? "showBlock" : "hideBlock",node);
   m_helpWindow->RunJavaScript(code);
 }
 
-void TabSkein::OnSkeinLabel()
+void TabTesting::OnSkeinLabel()
 {
   std::map<CStringW,Skein::Node*> labels;
   m_skein->GetLabels(labels);
@@ -368,12 +368,12 @@ void TabSkein::OnSkeinLabel()
   }
 }
 
-void TabSkein::OnSkeinPlay()
+void TabTesting::OnSkeinPlay()
 {
   GetParentFrame()->SendMessage(WM_COMMAND,ID_REPLAY_ALL);
 }
 
-void TabSkein::OnSaveTranscript()
+void TabTesting::OnSaveTranscript()
 {
   SimpleFileDialog dialog(FALSE,"txt",NULL,OFN_HIDEREADONLY|OFN_ENABLESIZING,
     "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||",this);
@@ -386,12 +386,12 @@ void TabSkein::OnSaveTranscript()
   }
 }
 
-void TabSkein::OnToggleHelp()
+void TabTesting::OnToggleHelp()
 {
   ShowHideHelp(m_splitter.GetRowCount() != 2);
 }
 
-void TabSkein::ShowHideHelp(bool show)
+void TabTesting::ShowHideHelp(bool show)
 {
   if (show)
   {
@@ -408,7 +408,7 @@ void TabSkein::ShowHideHelp(bool show)
   m_splitter.RecalcLayout();
 }
 
-void TabSkein::Resize(void)
+void TabTesting::Resize(void)
 {
   if (m_splitter.GetSafeHwnd() != 0)
   {

@@ -234,7 +234,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="TabInterface.h" />
     <ClInclude Include="TabResults.h" />
     <ClInclude Include="TabSettings.h" />
-    <ClInclude Include="TabSkein.h" />
+    <ClInclude Include="TabTesting.h" />
     <ClInclude Include="TabSource.h" />
     <ClInclude Include="TabStory.h" />
     <ClInclude Include="TabTranscript.h" />
@@ -2347,7 +2347,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="TabIndex.cpp" />
     <ClCompile Include="TabResults.cpp" />
     <ClCompile Include="TabSettings.cpp" />
-    <ClCompile Include="TabSkein.cpp" />
+    <ClCompile Include="TabTesting.cpp" />
     <ClCompile Include="TabSource.cpp" />
     <ClCompile Include="TabStory.cpp" />
     <ClCompile Include="TabTranscript.cpp" />

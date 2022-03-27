@@ -63,7 +63,7 @@
 #define ID_WINDOW_TAB_SOURCE            250
 #define ID_WINDOW_TAB_RESULTS           251
 #define ID_WINDOW_TAB_STORY             252
-#define ID_WINDOW_TAB_SKEIN             253
+#define ID_WINDOW_TAB_TESTING           253
 #define ID_WINDOW_TAB_TRANSCRIPT        254
 #define ID_WINDOW_TAB_INDEX             255
 #define ID_WINDOW_TAB_DOCUMENTATION     256

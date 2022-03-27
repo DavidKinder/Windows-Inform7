@@ -17,7 +17,7 @@ public:
     Tab_Source = 0,
     Tab_Results,
     Tab_Story,
-    Tab_Skein,
+    Tab_Testing,
     Tab_Transcript,
     Tab_Index,
     Tab_Doc,

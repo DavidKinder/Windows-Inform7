@@ -18,8 +18,8 @@
 #include "TabExtensions.h"
 #include "TabIndex.h"
 #include "TabResults.h"
-#include "TabSkein.h"
 #include "TabStory.h"
+#include "TabTesting.h"
 #include "TabTranscript.h"
 
 #include <sys/stat.h>
@@ -259,9 +259,9 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   // Set up the story tab
   ((TabStory*)GetPanel(1)->GetTab(Panel::Tab_Story))->SetGame(&m_game);
 
-  // Set up the skein tabs
-  ((TabSkein*)GetPanel(0)->GetTab(Panel::Tab_Skein))->SetSkein(&m_skein);
-  ((TabSkein*)GetPanel(1)->GetTab(Panel::Tab_Skein))->SetSkein(&m_skein);
+  // Set up the testing tabs
+  ((TabTesting*)GetPanel(0)->GetTab(Panel::Tab_Testing))->SetSkein(&m_skein);
+  ((TabTesting*)GetPanel(1)->GetTab(Panel::Tab_Testing))->SetSkein(&m_skein);
 
   // Set up the transcript tabs
   ((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->SetSkein(&m_skein);
@@ -620,11 +620,11 @@ void ProjectFrame::OnChangedExample()
 
   if (m_skein.ChangeFile(id,m_projectDir))
   {
-    TabSkein* tab = (TabSkein*)(GetPanel(0)->GetTab(Panel::Tab_Skein));
+    TabTesting* tab = (TabTesting*)(GetPanel(0)->GetTab(Panel::Tab_Testing));
     tab->SkeinChanged();
 
     GetPanel(0)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,false);
-    GetPanel(1)->GetTab(Panel::Tab_Skein)->OpenProject(m_projectDir,false);
+    GetPanel(1)->GetTab(Panel::Tab_Testing)->OpenProject(m_projectDir,false);
     GetPanel(1)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,false);
 
     m_needCompile = true;
@@ -809,8 +809,8 @@ LRESULT ProjectFrame::OnSelectView(WPARAM view, LPARAM wnd)
     GetPanel(panel)->SetActiveTab(Panel::Tab_Doc);
   else if (viewName == "index")
     GetPanel(panel)->SetActiveTab(Panel::Tab_Index);
-  else if (viewName == "skein")
-    GetPanel(panel)->SetActiveTab(Panel::Tab_Skein);
+  else if ((viewName == "skein") || (viewName == "testing"))
+    GetPanel(panel)->SetActiveTab(Panel::Tab_Testing);
   else if (viewName == "transcript")
     GetPanel(panel)->SetActiveTab(Panel::Tab_Transcript);
   return 0;
@@ -881,16 +881,16 @@ LRESULT ProjectFrame::OnShowSkein(WPARAM wparam, LPARAM lparam)
 
   // If the skein is not visible, use the same panel as the calling window
   Panel* panel = NULL;
-  if (GetPanel(0)->GetActiveTab() == Panel::Tab_Skein)
+  if (GetPanel(0)->GetActiveTab() == Panel::Tab_Testing)
     panel = GetPanel(0);
-  else if (GetPanel(1)->GetActiveTab() == Panel::Tab_Skein)
+  else if (GetPanel(1)->GetActiveTab() == Panel::Tab_Testing)
     panel = GetPanel(1);
   else
     panel = GetPanel(GetPanel(0)->IsChild(wnd) ? 0 : 1);
 
-  // Move the skein to the given node and show the tab
-  ((TabSkein*)panel->GetTab(Panel::Tab_Skein))->ShowNode(node,Skein::JustShow);
-  panel->SetActiveTab(Panel::Tab_Skein);
+  // Move the skein to the given node and show the testing tab
+  ((TabTesting*)panel->GetTab(Panel::Tab_Testing))->ShowNode(node,Skein::JustShow);
+  panel->SetActiveTab(Panel::Tab_Testing);
   return 0;
 }
 
@@ -911,8 +911,8 @@ LRESULT ProjectFrame::OnAnimateSkein(WPARAM wparam, LPARAM lparam)
     animate = false;
 
   // Don't animate if the skein isn't shown anywhere
-  bool skein0 = (GetPanel(0)->GetActiveTab() == Panel::Tab_Skein);
-  bool skein1 = (GetPanel(1)->GetActiveTab() == Panel::Tab_Skein);
+  bool skein0 = (GetPanel(0)->GetActiveTab() == Panel::Tab_Testing);
+  bool skein1 = (GetPanel(1)->GetActiveTab() == Panel::Tab_Testing);
   if (!skein0 && !skein1)
     animate = false;
 
@@ -921,16 +921,16 @@ LRESULT ProjectFrame::OnAnimateSkein(WPARAM wparam, LPARAM lparam)
     for (int pct = 0; pct < 100; pct += 10)
     {
       if (skein0)
-        ((TabSkein*)GetPanel(0)->GetTab(Panel::Tab_Skein))->Animate(pct);
+        ((TabTesting*)GetPanel(0)->GetTab(Panel::Tab_Testing))->Animate(pct);
       if (skein1)
-        ((TabSkein*)GetPanel(1)->GetTab(Panel::Tab_Skein))->Animate(pct);
+        ((TabTesting*)GetPanel(1)->GetTab(Panel::Tab_Testing))->Animate(pct);
       ::Sleep(5);
     }
   }
 
   m_skein.GetRoot()->AnimateClear();
-  ((TabSkein*)GetPanel(0)->GetTab(Panel::Tab_Skein))->Animate(-1);
-  ((TabSkein*)GetPanel(1)->GetTab(Panel::Tab_Skein))->Animate(-1);
+  ((TabTesting*)GetPanel(0)->GetTab(Panel::Tab_Testing))->Animate(-1);
+  ((TabTesting*)GetPanel(1)->GetTab(Panel::Tab_Testing))->Animate(-1);
 
   if (lparam != 0)
   {
@@ -1510,7 +1510,7 @@ void ProjectFrame::OnPlayTest()
         m_progress.LongTaskProgress("Testing",0,2);
       m_progress.ShowStop();
       if (testAll)
-        GetPanel(ChoosePanel(Panel::Tab_Skein))->SetActiveTab(Panel::Tab_Skein);
+        GetPanel(ChoosePanel(Panel::Tab_Testing))->SetActiveTab(Panel::Tab_Testing);
       TestCurrentExample(testAll);
       if (m_playThreads.empty())
         m_progress.LongTaskDone();

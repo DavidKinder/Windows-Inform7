@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "SkeinWindow.h"
-#include "TabSkein.h"
+#include "TabTesting.h"
 #include "Inform.h"
 #include "Dialogs.h"
 #include "DpiFunctions.h"
@@ -585,8 +585,8 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
   CWnd* wnd = this;
   while (wnd != NULL)
   {
-    if (wnd->IsKindOf(RUNTIME_CLASS(TabSkein)))
-      ((TabSkein*)wnd)->PostMessage(WM_UPDATEHELP);
+    if (wnd->IsKindOf(RUNTIME_CLASS(TabTesting)))
+      ((TabTesting*)wnd)->PostMessage(WM_UPDATEHELP);
     wnd = wnd->GetParent();
   }
 }

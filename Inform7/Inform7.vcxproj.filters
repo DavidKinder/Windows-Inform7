@@ -136,7 +136,7 @@
     <ClInclude Include="TabSettings.h">
       <Filter>Tabs</Filter>
     </ClInclude>
-    <ClInclude Include="TabSkein.h">
+    <ClInclude Include="TabTesting.h">
       <Filter>Tabs</Filter>
     </ClInclude>
     <ClInclude Include="TabSource.h">
@@ -378,7 +378,7 @@
     <ClCompile Include="TabSettings.cpp">
       <Filter>Tabs</Filter>
     </ClCompile>
-    <ClCompile Include="TabSkein.cpp">
+    <ClCompile Include="TabTesting.cpp">
       <Filter>Tabs</Filter>
     </ClCompile>
     <ClCompile Include="TabSource.cpp">
