@@ -464,7 +464,7 @@ void TranscriptWindow::GetSkeinNodes(void)
   bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
   m_skeinPlayed = gameRunning ? m_skein->GetPlayed() : m_skein->GetCurrent();
   m_skeinSelected = NULL;
-  m_skeinEndThread = m_skein->GetThreadBottom(m_skein->GetCurrent());
+  m_skeinEndThread = m_skein->GetThreadEnd(m_skein->GetCurrent());
 }
 
 void TranscriptWindow::Layout(void)
@@ -606,7 +606,7 @@ void TranscriptWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
   case Skein::JustShow:
     if (ScrollToNode(node) == false)
     {
-      m_skeinEndThread = m_skein->GetThreadBottom(node);
+      m_skeinEndThread = m_skein->GetThreadEnd(node);
       Layout();
       ScrollToNode(node);
     }
@@ -621,7 +621,7 @@ void TranscriptWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
     else
     {
       m_skeinSelected = node;
-      m_skeinEndThread = m_skein->GetThreadBottom(node);
+      m_skeinEndThread = m_skein->GetThreadEnd(node);
     }
     Layout();
     ScrollToNode(node);

@@ -688,25 +688,7 @@ void Skein::SetExpectedText(Node* node, LPCWSTR text)
   NotifyChange(NodeColourChanged);
 }
 
-Skein::Node* Skein::GetThreadTop(Node* node)
-{
-  while (true)
-  {
-    Node* parent = node->GetParent();
-    if (parent == NULL)
-    {
-      ASSERT(FALSE);
-      return node;
-    }
-    if (parent->GetNumChildren() != 1)
-      return node;
-    if (parent->GetParent() == NULL)
-      return node;
-    node = parent;
-  }
-}
-
-Skein::Node* Skein::GetThreadBottom(Node* node)
+Skein::Node* Skein::GetThreadEnd(Node* node)
 {
   while (true)
   {

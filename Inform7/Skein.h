@@ -174,8 +174,7 @@ public:
   bool CanBless(Node* node, bool all);
   void SetExpectedText(Node* node, LPCWSTR text);
 
-  Node* GetThreadTop(Node* node);
-  Node* GetThreadBottom(Node* node);
+  Node* GetThreadEnd(Node* node);
   bool IsValidNode(Node* testNode, Node* node = NULL);
   void GetThreadEnds(std::vector<Node*>& nodes, Node* node = NULL);
   Node* GetFirstDifferent(Node* node = NULL);
