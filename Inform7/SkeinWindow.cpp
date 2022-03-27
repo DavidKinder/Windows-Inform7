@@ -114,18 +114,6 @@ void SkeinWindow::OnLButtonUp(UINT nFlags, CPoint point)
   Skein::Node* node = NodeAtPoint(point);
   if (node != NULL)
   {
-    // Is the user clicking on the "differs" badge?
-    if ((node->GetDiffers() != Skein::Node::ExpectedSame) && (node->GetExpectedText().IsEmpty() == FALSE))
-    {
-      if (GetBadgeRect(m_nodes[node]).PtInRect(point))
-      {
-        if (!dclick)
-          GetParentFrame()->SendMessage(WM_SHOWTRANSCRIPT,(WPARAM)node,(LPARAM)GetSafeHwnd());
-        CScrollView::OnLButtonUp(nFlags,point);
-        return;
-      }
-    }
-
     // Is the user clicking on the context menu button?
     if (GetMenuButtonRect(m_nodes[node]).PtInRect(point))
     {
