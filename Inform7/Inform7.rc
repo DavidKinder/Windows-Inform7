@@ -160,9 +160,6 @@ BEGIN
     BEGIN
         MENUITEM "Replay &All Commands",        ID_REPLAY_ALL
         MENUITEM SEPARATOR
-        MENUITEM "Show &Last Command",          ID_REPLAY_SHOW_LAST
-        MENUITEM "Show Last &Command in Skein", ID_REPLAY_SHOW_LAST_SKEIN
-        MENUITEM SEPARATOR
         MENUITEM "Find &Previous Changed Command", ID_REPLAY_CHANGED_PREV
         MENUITEM "Find &Next Changed Command",  ID_REPLAY_CHANGED_NEXT
         MENUITEM "Find Previous Di&fference",   ID_REPLAY_DIFF_PREV
@@ -1138,8 +1135,6 @@ BEGIN
     ID_PLAY_LOAD            "Load and play a story"
     ID_PLAY_REPLAY          "Translate the story, and re-run through the skein to the previously active play point\nReplay"
     ID_REPLAY_ALL           "Play all threads in the skein in sequence"
-    ID_REPLAY_SHOW_LAST     "Show the last story command in the transcript"
-    ID_REPLAY_SHOW_LAST_SKEIN "Show the last story command in the skein"
     ID_REPLAY_CHANGED_PREV  "Find the previous command in the transcript with changed text"
     ID_REPLAY_CHANGED_NEXT  "Find the next command in the transcript with changed text"
     ID_REPLAY_DIFF_PREV     "Find the previous command in the transcript for which the transcript and blessed text do not match"

@@ -113,10 +113,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
 
   ON_UPDATE_COMMAND_UI(ID_REPLAY_ALL, OnUpdateReplayAll)
   ON_COMMAND(ID_REPLAY_ALL, OnReplayAll)
-  ON_UPDATE_COMMAND_UI(ID_REPLAY_SHOW_LAST, OnUpdateReplayShowLast)
-  ON_COMMAND(ID_REPLAY_SHOW_LAST, OnReplayShowLast)
-  ON_UPDATE_COMMAND_UI(ID_REPLAY_SHOW_LAST_SKEIN, OnUpdateReplayShowLast)
-  ON_COMMAND(ID_REPLAY_SHOW_LAST_SKEIN, OnReplayShowLastSkein)
   ON_UPDATE_COMMAND_UI_RANGE(ID_REPLAY_CHANGED_PREV, ID_REPLAY_CHANGED_NEXT, OnUpdateReplayChanged)
   ON_COMMAND_RANGE(ID_REPLAY_CHANGED_PREV, ID_REPLAY_CHANGED_NEXT, OnReplayChanged)
   ON_UPDATE_COMMAND_UI_RANGE(ID_REPLAY_DIFF_PREV, ID_REPLAY_DIFF_NEXT, OnUpdateReplayDiffer)
@@ -1597,33 +1593,6 @@ void ProjectFrame::OnReplayAll()
   // Play the thread leading to the first node
   m_skein.SetCurrent(firstEnd);
   OnPlayReplay();
-}
-
-void ProjectFrame::OnUpdateReplayShowLast(CCmdUI *pCmdUI)
-{
-  pCmdUI->Enable(m_skein.IsActive());
-}
-
-void ProjectFrame::OnReplayShowLast()
-{
-  // Move the transcript to the given node for both panels, as this involves
-  // more than just scrolling the transcript: the thread in the transcript
-  // may be changed
-  Skein::Node* node = m_skein.GetCurrent();
-  ((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::JustShow);
-  ((TabTranscript*)GetPanel(1)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::JustShow);
-
-  // Show the appropriate panel
-  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Transcript));
-  panel->SetActiveTab(Panel::Tab_Transcript);
-
-  // Send out a skein notification to the skein
-  m_skein.NotifyChange(Skein::TranscriptThreadChanged);
-}
-
-void ProjectFrame::OnReplayShowLastSkein()
-{
-  SendMessage(WM_SHOWSKEIN,(WPARAM)m_skein.GetCurrent(),0);
 }
 
 void ProjectFrame::OnUpdateReplayChanged(CCmdUI *pCmdUI)

@@ -117,9 +117,6 @@ protected:
   afx_msg void OnPlayReplay();
   afx_msg void OnUpdateReplayAll(CCmdUI *pCmdUI);
   afx_msg void OnReplayAll();
-  afx_msg void OnUpdateReplayShowLast(CCmdUI *pCmdUI);
-  afx_msg void OnReplayShowLast();
-  afx_msg void OnReplayShowLastSkein();
   afx_msg void OnUpdateReplayChanged(CCmdUI *pCmdUI);
   afx_msg void OnReplayChanged(UINT nID);
   afx_msg void OnUpdateReplayDiffer(CCmdUI *pCmdUI);
