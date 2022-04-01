@@ -950,7 +950,7 @@ LRESULT ProjectFrame::OnProjectDir(WPARAM wparam, LPARAM lparam)
 
 LRESULT ProjectFrame::OnTranscriptEnd(WPARAM wparam, LPARAM lparam)
 {
-  return (LRESULT)((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->GetEndNode();
+  return 0;//XXXXDK Allow testing tab to have a selected transcript thread
 }
 
 LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)

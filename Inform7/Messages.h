@@ -66,7 +66,7 @@
 // Sent to the window frame to get the project directory.
 #define WM_PROJECTDIR     WM_APP+17
 
-// Sent to the window frame to get the end node of the transcript thread.
+// Sent to the window frame to get the end node of the transcript thread, if any.
 #define WM_TRANSCRIPTEND  WM_APP+18
 
 // Sent to the window frame to cause the next thread to be played, if any.

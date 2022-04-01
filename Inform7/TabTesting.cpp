@@ -382,7 +382,8 @@ void TabTesting::OnSaveTranscript()
   {
     Skein::Node* threadEnd = (Skein::Node*)
       GetParentFrame()->SendMessage(WM_TRANSCRIPTEND);
-    m_skein->SaveTranscript(threadEnd,dialog.GetPathName());
+    if (threadEnd)
+      m_skein->SaveTranscript(threadEnd,dialog.GetPathName());
   }
 }
 
