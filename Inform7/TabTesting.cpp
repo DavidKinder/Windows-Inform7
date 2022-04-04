@@ -296,7 +296,7 @@ LRESULT TabTesting::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
 LRESULT TabTesting::OnUpdateHelp(WPARAM, LPARAM)
 {
   bool active = m_skein->IsActive();
-  bool showWelcome = false;
+  bool showWelcome = false;//XXXXDK
   bool anyPurple = false, anyGrey = false, anyBlue = false, anyBadge = false;
   int count = 0;
   if (active)
@@ -307,9 +307,9 @@ LRESULT TabTesting::OnUpdateHelp(WPARAM, LPARAM)
   SetHelpVisible("purple",anyPurple);
   SetHelpVisible("grey",anyGrey || anyBlue);
   SetHelpVisible("blue",anyGrey || anyBlue);
-  SetHelpVisible("report",false);
-  SetHelpVisible("tick",false);
-  SetHelpVisible("cross",false);
+  SetHelpVisible("report",false);//XXXXDK
+  SetHelpVisible("tick",false);//XXXXDK
+  SetHelpVisible("cross",false);//XXXXDK
   SetHelpVisible("badge",anyBadge);
   SetHelpVisible("threads",count >= 2);
   SetHelpVisible("knots",count == 1);
