@@ -66,7 +66,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_ANIMATESKEIN, OnAnimateSkein)
   ON_MESSAGE(WM_TERPFAILED, OnTerpFailed)
   ON_MESSAGE(WM_PROJECTDIR, OnProjectDir)
-  ON_MESSAGE(WM_TRANSCRIPTEND, OnTranscriptEnd)
   ON_MESSAGE(WM_PLAYNEXTTHREAD, OnPlayNextThread)
   ON_MESSAGE(WM_CANPLAYALL, OnCanPlayAll)
   ON_MESSAGE(WM_PROJECTEDITED, OnProjectEdited)
@@ -946,11 +945,6 @@ LRESULT ProjectFrame::OnTerpFailed(WPARAM wparam, LPARAM lparam)
 LRESULT ProjectFrame::OnProjectDir(WPARAM wparam, LPARAM lparam)
 {
   return (LRESULT)(LPCSTR)m_projectDir;
-}
-
-LRESULT ProjectFrame::OnTranscriptEnd(WPARAM wparam, LPARAM lparam)
-{
-  return 0;//XXXXDK Allow testing tab to have a selected transcript thread
 }
 
 LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)

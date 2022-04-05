@@ -76,7 +76,6 @@ protected:
   afx_msg LRESULT OnAnimateSkein(WPARAM, LPARAM);
   afx_msg LRESULT OnTerpFailed(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectDir(WPARAM, LPARAM);
-  afx_msg LRESULT OnTranscriptEnd(WPARAM, LPARAM);
   afx_msg LRESULT OnPlayNextThread(WPARAM, LPARAM);
   afx_msg LRESULT OnCanPlayAll(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectEdited(WPARAM, LPARAM);

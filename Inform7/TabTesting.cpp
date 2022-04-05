@@ -281,7 +281,7 @@ LRESULT TabTesting::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
     {
       m_label.EnableWindow(m_skein->HasLabels() ? TRUE : FALSE);
       m_play.EnableWindow(GetParentFrame()->SendMessage(WM_CANPLAYALL) != 0);
-      m_save.EnableWindow(GetParentFrame()->SendMessage(WM_TRANSCRIPTEND) != 0);
+      m_save.EnableWindow(m_skeinWindow->GetTranscriptEnd() != NULL);
     }
     else
     {
@@ -380,8 +380,7 @@ void TabTesting::OnSaveTranscript()
   dialog.m_ofn.lpstrTitle = "Save Transcript";
   if (dialog.DoModal() == IDOK)
   {
-    Skein::Node* threadEnd = (Skein::Node*)
-      GetParentFrame()->SendMessage(WM_TRANSCRIPTEND);
+    Skein::Node* threadEnd = m_skeinWindow->GetTranscriptEnd();
     if (threadEnd)
       m_skein->SaveTranscript(threadEnd,dialog.GetPathName());
   }

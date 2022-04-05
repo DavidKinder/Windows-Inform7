@@ -487,14 +487,12 @@ void SkeinWindow::OnDraw(CDC* pDC)
       rootCentre.x += client.Width()/2;
 
     // Get relevant state from the project frame
-    Skein::Node* threadEnd = (Skein::Node*)
-      GetParentFrame()->SendMessage(WM_TRANSCRIPTEND);
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
 
     // Draw all nodes
     for (int i = 0; i < 2; i++)
     {
-      DrawNodeTree(i,m_skein->GetRoot(),threadEnd,dc,bitmap,client,
+      DrawNodeTree(i,m_skein->GetRoot(),GetTranscriptEnd(),dc,bitmap,client,
         CPoint(0,0),rootCentre,0,GetNodeYPos(1,0),gameRunning);
     }
 
@@ -638,10 +636,8 @@ void SkeinWindow::SkeinNodesShown(
 
   if (m_skein->IsActive())
   {
-    Skein::Node* threadEnd = (Skein::Node*)
-      GetParentFrame()->SendMessage(WM_TRANSCRIPTEND);
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
-    SkeinNodesShown(m_skein->GetRoot(),threadEnd,gameRunning,
+    SkeinNodesShown(m_skein->GetRoot(),GetTranscriptEnd(),gameRunning,
       unselected,selected,active,differs,count);
   }
 }
@@ -656,6 +652,11 @@ void SkeinWindow::Animate(int pct)
   m_pctAnim = pct;
   Invalidate();
   UpdateWindow();
+}
+
+Skein::Node* SkeinWindow::GetTranscriptEnd(void)
+{
+  return NULL;//XXXXDK Show transcript in skein window
 }
 
 CSize SkeinWindow::GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL bVert)

@@ -29,6 +29,7 @@ public:
     bool& unselected, bool& selected, bool& active, bool& differs, int& count);
   void AnimatePrepare();
   void Animate(int pct);
+  Skein::Node* GetTranscriptEnd(void);
 
   virtual CSize GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL bVert);
 
