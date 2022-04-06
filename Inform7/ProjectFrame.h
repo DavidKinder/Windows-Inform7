@@ -70,7 +70,6 @@ protected:
   afx_msg LRESULT OnRuntimeProblem(WPARAM, LPARAM);
   afx_msg LRESULT OnSearchSource(WPARAM, LPARAM);
   afx_msg LRESULT OnSearchDoc(WPARAM, LPARAM);
-  afx_msg LRESULT OnShowTranscript(WPARAM, LPARAM);
   afx_msg LRESULT OnShowSkein(WPARAM, LPARAM);
   afx_msg LRESULT OnAnimateSkein(WPARAM, LPARAM);
   afx_msg LRESULT OnTerpFailed(WPARAM, LPARAM);

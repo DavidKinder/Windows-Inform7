@@ -62,12 +62,11 @@
 #define ID_WINDOW_TAB_RESULTS           251
 #define ID_WINDOW_TAB_STORY             252
 #define ID_WINDOW_TAB_TESTING           253
-#define ID_WINDOW_TAB_TRANSCRIPT        254
-#define ID_WINDOW_TAB_INDEX             255
-#define ID_WINDOW_TAB_DOCUMENTATION     256
-#define ID_WINDOW_TAB_EXTENSIONS        257
-#define ID_WINDOW_TAB_SETTINGS          258
-#define ID_WINDOW_SWITCH                259
+#define ID_WINDOW_TAB_INDEX             254
+#define ID_WINDOW_TAB_DOCUMENTATION     255
+#define ID_WINDOW_TAB_EXTENSIONS        256
+#define ID_WINDOW_TAB_SETTINGS          257
+#define ID_WINDOW_SWITCH                258
 #define ID_WINDOW_LEFTPANE              260
 #define ID_WINDOW_RIGHTPANE             261
 #define ID_WINDOW_INDEX_HOME            262

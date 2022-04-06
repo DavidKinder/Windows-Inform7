@@ -18,7 +18,6 @@ public:
     Tab_Results,
     Tab_Story,
     Tab_Testing,
-    Tab_Transcript,
     Tab_Index,
     Tab_Doc,
     Tab_Extensions,

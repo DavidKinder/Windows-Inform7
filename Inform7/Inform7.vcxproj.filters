@@ -145,9 +145,6 @@
     <ClInclude Include="TabStory.h">
       <Filter>Tabs</Filter>
     </ClInclude>
-    <ClInclude Include="TabTranscript.h">
-      <Filter>Tabs</Filter>
-    </ClInclude>
     <ClInclude Include="AboutDialog.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
@@ -385,9 +382,6 @@
       <Filter>Tabs</Filter>
     </ClCompile>
     <ClCompile Include="TabStory.cpp">
-      <Filter>Tabs</Filter>
-    </ClCompile>
-    <ClCompile Include="TabTranscript.cpp">
       <Filter>Tabs</Filter>
     </ClCompile>
     <ClCompile Include="AboutDialog.cpp">

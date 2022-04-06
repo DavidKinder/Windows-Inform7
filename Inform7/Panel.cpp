@@ -12,7 +12,6 @@
 #include "TabSource.h"
 #include "TabStory.h"
 #include "TabTesting.h"
-#include "TabTranscript.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -31,7 +30,6 @@ Panel::Panel()
   m_tabs[Tab_Results] = new TabResults;
   m_tabs[Tab_Index] = new TabIndex;
   m_tabs[Tab_Testing] = new TabTesting;
-  m_tabs[Tab_Transcript] = new TabTranscript;
   m_tabs[Tab_Story] = new TabStory;
   m_tabs[Tab_Doc] = new TabDoc;
   m_tabs[Tab_Extensions] = new TabExtensions;
