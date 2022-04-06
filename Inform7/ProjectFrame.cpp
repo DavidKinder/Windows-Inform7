@@ -62,7 +62,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_SEARCHSOURCE, OnSearchSource)
   ON_MESSAGE(WM_SEARCHDOC, OnSearchDoc)
   ON_MESSAGE(WM_SHOWSKEIN, OnShowSkein)
-  ON_MESSAGE(WM_SELECTNODE, OnSelectNode)
   ON_MESSAGE(WM_ANIMATESKEIN, OnAnimateSkein)
   ON_MESSAGE(WM_TERPFAILED, OnTerpFailed)
   ON_MESSAGE(WM_PROJECTDIR, OnProjectDir)
@@ -885,15 +884,6 @@ LRESULT ProjectFrame::OnShowSkein(WPARAM wparam, LPARAM lparam)
   // Move the skein to the given node and show the testing tab
   ((TabTesting*)panel->GetTab(Panel::Tab_Testing))->ShowNode(node,Skein::JustShow);
   panel->SetActiveTab(Panel::Tab_Testing);
-  return 0;
-}
-
-LRESULT ProjectFrame::OnSelectNode(WPARAM wparam, LPARAM lparam)
-{
-  Skein::Node* node = (Skein::Node*)wparam;
-  ((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::JustSelect);
-  ((TabTranscript*)GetPanel(1)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::JustSelect);
-  m_skein.NotifyChange(Skein::TranscriptThreadChanged);
   return 0;
 }
 

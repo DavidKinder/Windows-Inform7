@@ -414,7 +414,7 @@ void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
       // If a single click has happened, just select the node
       Skein::Node* node = NodeAtPoint(m_lastPoint);
       if (node != NULL)
-        GetParentFrame()->SendMessage(WM_SELECTNODE,(WPARAM)node);
+      {}//XXXXDK make this the selected node / transcript
     }
   }
 

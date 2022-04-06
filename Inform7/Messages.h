@@ -150,12 +150,8 @@ struct SourceRange
 // This is returned as a pointer to a CString allocated on the heap.
 #define WM_STORYNAME      WM_APP+34
 
-// Sent to the window frame to select the node given by wParam in
-// the skein and transcript tab.
-#define WM_SELECTNODE     WM_APP+35
-
 // Sent to the a tab window to update the context sensitive help.
-#define WM_UPDATEHELP     WM_APP+36
+#define WM_UPDATEHELP     WM_APP+35
 
 class Command
 {
@@ -172,21 +168,21 @@ public:
 // an instance of Command to be run after the animation completes.
 // This command object is allocated on the heap and is freed by the
 // recipient.
-#define WM_ANIMATESKEIN   WM_APP+37
+#define WM_ANIMATESKEIN   WM_APP+36
 
 // Sent to a property sheet page after the dialog font has been set
 // and the page resized.
-#define WM_AFTERFONTSET   WM_APP+38
+#define WM_AFTERFONTSET   WM_APP+37
 
 // Sent to a property sheet to resize the currently active page.
-#define WM_RESIZEPAGE     WM_APP+39
+#define WM_RESIZEPAGE     WM_APP+38
 
 // Sent to a preferences dialog sheet to indicate that the preview
 // is to be updated.
-#define WM_UPDATEPREVIEW  WM_APP+40
+#define WM_UPDATEPREVIEW  WM_APP+39
 
 // Sent to the Find in Files dialog to resize the results column.
-#define WM_RESIZERESULTS  WM_APP+41
+#define WM_RESIZERESULTS  WM_APP+40
 
 enum FindCommand
 {
@@ -199,4 +195,4 @@ enum FindCommand
 
 // Sent to the parent window of Find and Replace dialogs to indicate
 // a command has been triggered in that dialog.
-#define WM_FINDREPLACECMD WM_APP+42
+#define WM_FINDREPLACECMD WM_APP+41

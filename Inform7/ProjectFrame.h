@@ -72,7 +72,6 @@ protected:
   afx_msg LRESULT OnSearchDoc(WPARAM, LPARAM);
   afx_msg LRESULT OnShowTranscript(WPARAM, LPARAM);
   afx_msg LRESULT OnShowSkein(WPARAM, LPARAM);
-  afx_msg LRESULT OnSelectNode(WPARAM, LPARAM);
   afx_msg LRESULT OnAnimateSkein(WPARAM, LPARAM);
   afx_msg LRESULT OnTerpFailed(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectDir(WPARAM, LPARAM);
