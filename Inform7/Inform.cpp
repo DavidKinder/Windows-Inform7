@@ -25,7 +25,7 @@ extern "C" {
 
 #include <dbghelp.h>
 
-CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString& imageFile, LPVOID imageBase, DWORD imageSize);
+CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode);
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -228,9 +228,6 @@ void InformApp::HandleDebugEvents(void)
           dp.process = debug.u.CreateProcessInfo.hProcess;
           dp.thread = debug.u.CreateProcessInfo.hThread;
           dp.threadId = debug.dwThreadId;
-          dp.imageBase = debug.u.CreateProcessInfo.lpBaseOfImage;
-          if (debug.u.CreateProcessInfo.hFile != 0)
-            dp.imageSize = ::GetFileSize(debug.u.CreateProcessInfo.hFile,NULL);
         }
       }
       if (debug.u.CreateProcessInfo.hFile != 0)
@@ -281,8 +278,7 @@ void InformApp::HandleDebugEvents(void)
               if (m_traces.size() > 16)
                 m_traces.clear();
               m_traces[debug.dwProcessId] = GetStackTrace(
-                dp.process,dp.thread,debug.u.Exception.ExceptionRecord.ExceptionCode,
-                dp.imageFile,dp.imageBase,dp.imageSize);
+                dp.process,dp.thread,debug.u.Exception.ExceptionRecord.ExceptionCode);
             }
             ::TerminateProcess(it->second.process,kill);
           }
@@ -1060,7 +1056,7 @@ void InformApp::RunMessagePump(void)
     RestoreWaitCursor();
 }
 
-InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug, const char* exeFile)
+InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug)
 {
   BOOL flags = CREATE_NO_WINDOW;
   if (debug)
@@ -1081,7 +1077,6 @@ InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& com
     if (debug)
     {
       DebugProcess dp;
-      dp.imageFile = exeFile;
       m_debugging[process.dwProcessId] = dp;
     }
 
@@ -1125,10 +1120,10 @@ InformApp::CreatedProcess InformApp::RunCensus(void)
   start.cb = sizeof start;
   start.wShowWindow = SW_HIDE;
   start.dwFlags = STARTF_USESHOWWINDOW;
-  return CreateProcess(NULL,command,start,true,"inform7.exe");
+  return CreateProcess(NULL,command,start,true);
 }
 
-int InformApp::RunCommand(const char* dir, CString& command, const char* exeFile, OutputSink& output, bool hasSymbols)
+int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output, bool hasSymbols)
 {
   CWaitCursor wc;
 
@@ -1150,7 +1145,7 @@ int InformApp::RunCommand(const char* dir, CString& command, const char* exeFile
   start.dwFlags = STARTF_USESTDHANDLES|STARTF_USESHOWWINDOW;
 
   // Create the process for the command
-  CreatedProcess cp = CreateProcess(dir,command,start,true,exeFile);
+  CreatedProcess cp = CreateProcess(dir,command,start,true);
 
   DWORD result = 512;
   if (cp.process != INVALID_HANDLE_VALUE)

@@ -154,11 +154,11 @@ public:
   };
 
   void RunMessagePump(void);
-  CreatedProcess CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug, const char* exeFile);
+  CreatedProcess CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug);
   void WaitForProcessEnd(HANDLE process);
   void AddProcessToJob(HANDLE process);
   CreatedProcess RunCensus(void);
-  int RunCommand(const char* dir, CString& command, const char* exeFile, OutputSink& output, bool hasSymbols);
+  int RunCommand(const char* dir, CString& command, OutputSink& output, bool hasSymbols);
   void HandleDebugEvents(void);
   CString GetTraceForProcess(DWORD processId);
   void WriteLog(const char* msg);
@@ -229,11 +229,8 @@ protected:
     HANDLE process;
     HANDLE thread;
     DWORD threadId;
-    CString imageFile;
-    LPVOID imageBase;
-    DWORD imageSize;
 
-    DebugProcess() : process(0), thread(0), threadId(0), imageBase(0), imageSize(0)
+    DebugProcess() : process(0), thread(0), threadId(0)
     {
     }
   };

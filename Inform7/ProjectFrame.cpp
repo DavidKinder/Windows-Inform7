@@ -1769,7 +1769,7 @@ void ProjectFrame::OnReleaseGame(UINT nID)
       cmdLine.Format("\"%s\" %s",(LPCSTR)executable,(LPCSTR)arguments);
 
       m_outputFileLoc.Empty();
-      code = theApp.RunCommand(m_projectDir,cmdLine,"cblorb.exe",*this,true);
+      code = theApp.RunCommand(m_projectDir,cmdLine,*this,true);
 
       GetPanel(0)->CompileProject(TabInterface::RanCBlorb,code);
       GetPanel(1)->CompileProject(TabInterface::RanCBlorb,code);
@@ -2328,7 +2328,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
 
     // Run intest to extract the example
     IntestOutputSink sink;
-    code = theApp.RunCommand(NULL,IntestSourceCommandLine(),"intest.exe",sink,true);
+    code = theApp.RunCommand(NULL,IntestSourceCommandLine(),sink,true);
     sink.Done();
 
     // Read the intest output describing how to map from example story line numbers
@@ -2358,7 +2358,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
   if (code == 0)
   {
     m_last5StartTime = ::GetTickCount();
-    code = theApp.RunCommand(NULL,Inform7CommandLine(release),Inform7Exe(),*this,
+    code = theApp.RunCommand(NULL,Inform7CommandLine(release),*this,
       m_settings.GetCompilerVersion() == NI_BUILD);
     if (code != 0)
       failed = "i7";
@@ -2402,7 +2402,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
   if (code == 0)
   {
     SendMessage(WM_PROGRESS,100,(LPARAM)"Creating story file");
-    code = theApp.RunCommand(m_projectDir+"\\Build",Inform6CommandLine(release),"inform6.exe",*this,true);
+    code = theApp.RunCommand(m_projectDir+"\\Build",Inform6CommandLine(release),*this,true);
     if (code != 0)
     {
       failed = "i6";
@@ -2649,15 +2649,6 @@ CString ProjectFrame::Inform7CommandLine(bool release)
   return cmdLine;
 }
 
-CString ProjectFrame::Inform7Exe(void)
-{
-  CString version = m_settings.GetCompilerVersion();
-  if (version <= "6M62")
-    return "ni.exe";
-  else
-    return "inform7.exe";
-}
-
 CString ProjectFrame::Inform6CommandLine(bool release)
 {
   CString dir = theApp.GetAppDir();
@@ -2741,7 +2732,7 @@ void ProjectFrame::GenerateIntestReport(CString result)
     (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id,(LPCSTR)result,
     (LPCSTR)m_projectDir,(LPCSTR)nodeId,nodeCount,(LPCSTR)m_projectDir,m_exampleCompiled.index);
   IntestOutputSink sink;
-  int code = theApp.RunCommand(m_projectDir,cmdLine,"intest.exe",sink,true);
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink,true);
   sink.Done();
 
   if (code == 0)
@@ -2767,7 +2758,7 @@ void ProjectFrame::GenerateIntestCombinedReport(void)
     (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_projectDir,m_examples.GetSize(),
     (LPCSTR)m_projectDir);
   IntestOutputSink sink;
-  int code = theApp.RunCommand(m_projectDir,cmdLine,"intest.exe",sink,true);
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink,true);
   sink.Done();
 
   if (code == 0)
@@ -3200,7 +3191,7 @@ bool ProjectFrame::UpdateExampleList(void)
     " -using -extension \"%s\\Source\\extension.i7x\" -do -catalogue",
     (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir);
   IntestOutputSink sink;
-  int code = theApp.RunCommand(m_projectDir,cmdLine,"intest.exe",sink,true);
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink,true);
   sink.Done();
 
   if (!theApp.IsValidFrame(this))
@@ -3350,7 +3341,7 @@ void ProjectFrame::TestCurrentExample(bool testAll)
         " -using -extension \"%s\\Source\\extension.i7x\" -do -script %c",
         (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id);
       IntestOutputSink sink;
-      int code = theApp.RunCommand(m_projectDir,cmdLine,"intest.exe",sink,true);
+      int code = theApp.RunCommand(m_projectDir,cmdLine,sink,true);
       sink.Done();
 
       if (code == 0)

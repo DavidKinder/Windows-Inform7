@@ -221,7 +221,6 @@ protected:
   void TestCurrentExample(bool testAll);
 
   CString Inform7CommandLine(bool release);
-  CString Inform7Exe(void);
   CString Inform6CommandLine(bool release);
   CString IntestSourceCommandLine(void);
   void GenerateIntestReport(CString result);
