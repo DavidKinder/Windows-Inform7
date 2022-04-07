@@ -33,7 +33,7 @@ int main(int, char**)
   strftime(monthYear,256,"%B %Y",timeNow);
 
   char buildCount[16], line[256];
-  FILE* bcFile = fopen("../Distribution/Inform7/Contents.w","rt");
+  FILE* bcFile = fopen("../Distribution/inform/build.txt","rt");
   if (bcFile == NULL)
     return 0;
   while (feof(bcFile) == 0)

@@ -1,2 +1,2 @@
-#define BUILD_DATE "1st November 2020"
-#define NI_BUILD "6M62"
+#define BUILD_DATE "7th April 2022"
+#define NI_BUILD "6U76"

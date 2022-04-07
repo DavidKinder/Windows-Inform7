@@ -1145,11 +1145,11 @@ LRESULT ProjectFrame::OnWantStop(WPARAM wparam, LPARAM lparam)
 
 LRESULT ProjectFrame::OnRunCensus(WPARAM wparam, LPARAM lparam)
 {
-  InformApp::CreatedProcess ni = theApp.RunCensus();
-  if (ni.process != INVALID_HANDLE_VALUE)
+  InformApp::CreatedProcess i7 = theApp.RunCensus();
+  if (i7.process != INVALID_HANDLE_VALUE)
   {
-    MonitorProcess(ni,
-      (wparam != 0) ? ProcessHelpExtensions : ProcessNoAction,"ni (census)");
+    MonitorProcess(i7,
+      (wparam != 0) ? ProcessHelpExtensions : ProcessNoAction,"inform7 (census)");
   }
   return 0;
 }
@@ -2354,11 +2354,11 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
     GetPanel(1)->CompileProject(TabInterface::RanIntestSource,code);
   }
 
-  // Run Natural Inform
+  // Run Inform 7
   if (code == 0)
   {
     m_last5StartTime = ::GetTickCount();
-    code = theApp.RunCommand(NULL,NaturalCommandLine(release),"ni.exe",*this,
+    code = theApp.RunCommand(NULL,Inform7CommandLine(release),Inform7Exe(),*this,
       m_settings.GetCompilerVersion() == NI_BUILD);
     if (code != 0)
       failed = "i7";
@@ -2366,7 +2366,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
     GetPanel(0)->CompileProject(TabInterface::RanNaturalInform,code);
     GetPanel(1)->CompileProject(TabInterface::RanNaturalInform,code);
 
-    // Warn if Microsoft Defender Antivirus might be slowing down the Natural Inform compiler
+    // Warn if Microsoft Defender Antivirus might be slowing down the Inform 7 compiler
     if (!test && (code == 0))
     {
       if (theApp.GetProfileInt("Window","Slow Compile Warn",1) != 0)
@@ -2402,7 +2402,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
   if (code == 0)
   {
     SendMessage(WM_PROGRESS,100,(LPARAM)"Creating story file");
-    code = theApp.RunCommand(m_projectDir+"\\Build",InformCommandLine(release),"inform6.exe",*this,true);
+    code = theApp.RunCommand(m_projectDir+"\\Build",Inform6CommandLine(release),"inform6.exe",*this,true);
     if (code != 0)
     {
       failed = "i6";
@@ -2605,7 +2605,7 @@ void ProjectFrame::UpdateExtensionsMenu(void)
   }
 }
 
-CString ProjectFrame::NaturalCommandLine(bool release)
+CString ProjectFrame::Inform7CommandLine(bool release)
 {
   CString dir = theApp.GetAppDir();
   CString format = m_settings.GetOutputFormat();
@@ -2614,7 +2614,7 @@ CString ProjectFrame::NaturalCommandLine(bool release)
   CString executable, arguments;
   if (version == NI_BUILD)
   {
-    executable.Format("%s\\Compilers\\ni",(LPCSTR)dir);
+    executable.Format("%s\\Compilers\\inform7",(LPCSTR)dir);
     arguments.Format(
       "%s%s-internal \"%s\\Internal\" -project \"%s\" -format=%s",
       (release ? "-release " : ""),
@@ -2649,7 +2649,16 @@ CString ProjectFrame::NaturalCommandLine(bool release)
   return cmdLine;
 }
 
-CString ProjectFrame::InformCommandLine(bool release)
+CString ProjectFrame::Inform7Exe(void)
+{
+  CString version = m_settings.GetCompilerVersion();
+  if (version <= "6M62")
+    return "ni.exe";
+  else
+    return "inform7.exe";
+}
+
+CString ProjectFrame::Inform6CommandLine(bool release)
 {
   CString dir = theApp.GetAppDir();
   CString switches = m_settings.GetInformSwitches(release,m_I6debug);

@@ -625,7 +625,7 @@ private:
     return "";
   }
 
-  // Remove NI-generated escapes (e.g. "[=0x20=]") from the input string
+  // Remove escape sequences (e.g. "[=0x20=]") from the input string
   CStringW UnescapeUnicode(const char* input)
   {
     size_t len = strlen(input);

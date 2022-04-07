@@ -119,7 +119,7 @@ BOOL InformApp::InitInstance()
 
   // Find and create documentation for extensions
   FindExtensions();
-  CreatedProcess ni = RunCensus();
+  CreatedProcess i7 = RunCensus();
 
   // Initialize finding in files
   FindInFiles::InitInstance();
@@ -139,10 +139,10 @@ BOOL InformApp::InitInstance()
   }
 
   // Make sure that any census failure is reported
-  if (ni.process != INVALID_HANDLE_VALUE)
+  if (i7.process != INVALID_HANDLE_VALUE)
   {
     if (m_pMainWnd->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
-      ((ProjectFrame*)m_pMainWnd)->MonitorProcess(ni,ProjectFrame::ProcessNoAction,"ni (census)");
+      ((ProjectFrame*)m_pMainWnd)->MonitorProcess(i7,ProjectFrame::ProcessNoAction,"inform7 (census)");
   }
   return TRUE;
 }
@@ -1117,7 +1117,7 @@ void InformApp::AddProcessToJob(HANDLE process)
 InformApp::CreatedProcess InformApp::RunCensus(void)
 {
   CString command, dir = GetAppDir();
-  command.Format("\"%s\\Compilers\\ni\" -internal \"%s\\Internal\" -census",
+  command.Format("\"%s\\Compilers\\inform7\" -internal \"%s\\Internal\" -census",
     (LPCSTR)dir,(LPCSTR)dir);
 
   STARTUPINFO start;
@@ -1125,7 +1125,7 @@ InformApp::CreatedProcess InformApp::RunCensus(void)
   start.cb = sizeof start;
   start.wShowWindow = SW_HIDE;
   start.dwFlags = STARTF_USESHOWWINDOW;
-  return CreateProcess(NULL,command,start,true,"ni.exe");
+  return CreateProcess(NULL,command,start,true,"inform7.exe");
 }
 
 int InformApp::RunCommand(const char* dir, CString& command, const char* exeFile, OutputSink& output, bool hasSymbols)
