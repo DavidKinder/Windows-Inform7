@@ -157,6 +157,18 @@ CString ProjectSettings::GetOutputFormat(void)
   return "";
 }
 
+CString ProjectSettings::GetI7OutputFormat(bool release)
+{
+  switch (m_output)
+  {
+  case OutputZ8:
+    return release ? "Inform6/16" : "Inform6/16d";
+  case OutputGlulx:
+    return release ? "Inform6/32" : "Inform6/32d";
+  }
+  return "";
+}
+
 CString ProjectSettings::GetCompilerVersion(void)
 {
   if (m_compilerVersion.IsEmpty() || (m_compilerVersion == "****"))

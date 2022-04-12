@@ -13,6 +13,7 @@ public:
 
   CString GetInformSwitches(bool release, bool debugFile);
   CString GetOutputFormat(void);
+  CString GetI7OutputFormat(bool release);
   CString GetCompilerVersion(void);
 
   enum Output
