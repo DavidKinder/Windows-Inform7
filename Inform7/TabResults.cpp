@@ -126,7 +126,7 @@ void TabResults::CompileProject(CompileStage stage, int code)
     m_inform6 = NoError;
     break;
 
-  case RanNaturalInform:
+  case RanInform7:
     // Load in the report
     switch (code)
     {

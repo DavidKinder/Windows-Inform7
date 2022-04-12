@@ -90,7 +90,7 @@ BOOL TabDoc::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHa
 
 void TabDoc::CompileProject(CompileStage stage, int code)
 {
-  if (stage == RanNaturalInform)
+  if (stage == RanInform7)
   {
     if (code == 0)
     {

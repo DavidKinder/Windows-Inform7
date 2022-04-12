@@ -92,9 +92,8 @@ BOOL InformApp::InitInstance()
     HookApiFunction("libcef.dll","kernel32.dll","CreateProcessW",(PROC)HookCreateProcessW);
   }
 
-  // Set the HOME environment variable to the My Documents folder,
-  // used by the Natural Inform compiler, and make sure directories
-  // under My Documents exist.
+  // Set the HOME environment variable to the My Documents folder, used by the
+  // Inform 7 compiler, and make sure directories under My Documents exist.
   SetMyDocuments(false);
 
   SetRegistryKey("David Kinder");

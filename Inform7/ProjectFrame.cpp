@@ -2363,8 +2363,8 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
     if (code != 0)
       failed = "i7";
 
-    GetPanel(0)->CompileProject(TabInterface::RanNaturalInform,code);
-    GetPanel(1)->CompileProject(TabInterface::RanNaturalInform,code);
+    GetPanel(0)->CompileProject(TabInterface::RanInform7,code);
+    GetPanel(1)->CompileProject(TabInterface::RanInform7,code);
 
     // Warn if Microsoft Defender Antivirus might be slowing down the Inform 7 compiler
     if (!test && (code == 0))
