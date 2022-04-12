@@ -57,7 +57,7 @@ public:
     CompileStart,
     RanNaturalInform,
     RanInform6,
-    RanCBlorb,
+    RanInblorb,
     RanIntestSource,
     RanIntestReport
   };

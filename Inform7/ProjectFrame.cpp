@@ -1758,8 +1758,8 @@ void ProjectFrame::OnReleaseGame(UINT nID)
     if (m_settings.m_blorb)
     {
       CString executable, arguments;
-      executable.Format("%s\\Compilers\\cblorb",(LPCSTR)theApp.GetAppDir());
-      arguments.Format("-windows Release.blurb Build\\output.%s",blorbExt);
+      executable.Format("%s\\Compilers\\inblorb",(LPCSTR)theApp.GetAppDir());
+      arguments.Format("Release.blurb Build\\output.%s",blorbExt);
 
       CString output;
       output.Format("%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
@@ -1771,10 +1771,10 @@ void ProjectFrame::OnReleaseGame(UINT nID)
       m_outputFileLoc.Empty();
       code = theApp.RunCommand(m_projectDir,cmdLine,*this,true);
 
-      GetPanel(0)->CompileProject(TabInterface::RanCBlorb,code);
-      GetPanel(1)->CompileProject(TabInterface::RanCBlorb,code);
+      GetPanel(0)->CompileProject(TabInterface::RanInblorb,code);
+      GetPanel(1)->CompileProject(TabInterface::RanInblorb,code);
 
-      // If cBlorb picked a location to save the file, use it
+      // If inblorb picked a location to save the file, use it
       releasePath = m_outputFileLoc;
     }
 
