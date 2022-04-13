@@ -1021,7 +1021,7 @@ bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
     }
     else if (strncmp(url,"skein:",6) == 0)
     {
-      // Got a skin: URL
+      // Got a skein: URL
       m_consumer->SkeinLink(url);
       return true;
     }
