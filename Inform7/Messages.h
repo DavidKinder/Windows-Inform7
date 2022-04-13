@@ -196,3 +196,6 @@ enum FindCommand
 // Sent to the parent window of Find and Replace dialogs to indicate
 // a command has been triggered in that dialog.
 #define WM_FINDREPLACECMD WM_APP+41
+
+// Sent to the window frame to trigger replaying all skein threads.
+#define WM_REPLAYALL      WM_APP+42

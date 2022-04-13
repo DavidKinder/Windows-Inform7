@@ -48,7 +48,6 @@
 #define ID_PLAY_REFRESH                 224
 #define ID_PLAY_LOAD                    225
 #define ID_PLAY_REPLAY                  226
-#define ID_REPLAY_ALL                   231
 #define ID_RELEASE_GAME                 240
 #define ID_RELEASE_TEST                 241
 #define ID_RELEASE_MATERIALS            242

@@ -370,7 +370,7 @@ void TabTesting::OnSkeinLabel()
 
 void TabTesting::OnSkeinPlay()
 {
-  GetParentFrame()->SendMessage(WM_COMMAND,ID_REPLAY_ALL);
+  GetParentFrame()->SendMessage(WM_REPLAYALL);
 }
 
 void TabTesting::OnSaveTranscript()

@@ -86,6 +86,7 @@ protected:
   afx_msg LRESULT OnWantStop(WPARAM, LPARAM);
   afx_msg LRESULT OnRunCensus(WPARAM, LPARAM);
   afx_msg LRESULT OnStoryName(WPARAM, LPARAM);
+  afx_msg LRESULT OnReplayAll(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();
@@ -111,7 +112,6 @@ protected:
   afx_msg void OnPlayRefresh();
   afx_msg void OnPlayLoad();
   afx_msg void OnPlayReplay();
-  afx_msg void OnReplayAll();
 
   afx_msg void OnUpdateReleaseGame(CCmdUI *pCmdUI);
   afx_msg void OnReleaseGame(UINT nID);

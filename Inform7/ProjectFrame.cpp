@@ -76,7 +76,8 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_WANTSTOP, OnWantStop)
   ON_MESSAGE(WM_RUNCENSUS, OnRunCensus)
   ON_MESSAGE(WM_STORYNAME, OnStoryName)
-  
+  ON_MESSAGE(WM_REPLAYALL, OnReplayAll)
+
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
   ON_COMMAND(ID_FILE_INSTALL_EXT, OnFileInstallExt)
@@ -107,8 +108,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_UPDATE_COMMAND_UI(ID_PLAY_REFRESH, OnUpdateCompile)
   ON_COMMAND(ID_PLAY_REFRESH, OnPlayRefresh)
   ON_COMMAND(ID_PLAY_LOAD, OnPlayLoad)
-
-  ON_COMMAND(ID_REPLAY_ALL, OnReplayAll)
 
   ON_UPDATE_COMMAND_UI_RANGE(ID_RELEASE_GAME, ID_RELEASE_TEST, OnUpdateReleaseGame)
   ON_COMMAND_RANGE(ID_RELEASE_GAME, ID_RELEASE_TEST, OnReleaseGame)
@@ -1495,7 +1494,7 @@ void ProjectFrame::OnPlayLoad()
   m_game.RunInterpreter(path.Left(split),path.Mid(split+1),glulx);
 }
 
-void ProjectFrame::OnReplayAll()
+LRESULT ProjectFrame::OnReplayAll(WPARAM, LPARAM)
 {
   // Discard any previous threads to be played
   while (!m_playThreads.empty())
@@ -1505,7 +1504,7 @@ void ProjectFrame::OnReplayAll()
   std::vector<Skein::Node*> ends;
   m_skein.GetThreadEnds(ends);
   if (ends.empty())
-    return;
+    return 0;
 
   // Get the first node and store the rest
   Skein::Node* firstEnd = ends[0];
@@ -1523,6 +1522,7 @@ void ProjectFrame::OnReplayAll()
   // Play the thread leading to the first node
   m_skein.SetCurrent(firstEnd);
   OnPlayReplay();
+  return 0;
 }
 
 void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)
