@@ -2328,7 +2328,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
 
     // Run intest to extract the example
     IntestOutputSink sink;
-    code = theApp.RunCommand(NULL,IntestSourceCommandLine(),sink,true);
+    code = theApp.RunCommand(m_projectDir,IntestSourceCommandLine(),sink,true);
     sink.Done();
 
     // Read the intest output describing how to map from example story line numbers
@@ -2677,10 +2677,9 @@ CString ProjectFrame::IntestSourceCommandLine(void)
   CString executable, arguments;
   executable.Format("%s\\Compilers\\intest",(LPCSTR)dir);
   arguments.Format(
-    "-no-history -threads=1 -using -extension \"%s\\Source\\extension.i7x\""
-    " -do -source %c -to \"%s\\Source\\story.ni\" -concordance %c",
-    (LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id,(LPCSTR)m_projectDir,
-    (LPCSTR)m_exampleCompiled.id);
+    "\"%s\" -no-history -threads=1 -using -extension Source\\extension.i7x"
+    " -do -source %c -to Source\\story.ni -concordance %c",
+    (LPCSTR)m_projectDir,m_exampleCompiled.id,m_exampleCompiled.id);
 
   CString output;
   output.Format("\n%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
@@ -2727,11 +2726,11 @@ void ProjectFrame::GenerateIntestReport(CString result)
   // Run intest to generate a problem report
   CString cmdLine;
   cmdLine.Format(
-    "\"%s\\Compilers\\intest\" -no-history -threads=1 -using"
-    " -extension \"%s\\Source\\extension.i7x\" -do -report %c %s"
-    " \"%s\\Build\\Problems.html\" n%s t%d -to \"%s\\Build\\Inform-Report-%d.html\"",
-    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id,(LPCSTR)result,
-    (LPCSTR)m_projectDir,(LPCSTR)nodeId,nodeCount,(LPCSTR)m_projectDir,m_exampleCompiled.index);
+    "\"%s\\Compilers\\intest\" \"%s\" -no-history -threads=1 -using"
+    " -extension Source\\extension.i7x -do -report %c %s"
+    " Build\\Problems.html n%s t%d -to Build\\Inform-Report-%d.html",
+    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,m_exampleCompiled.id,
+    (LPCSTR)result,(LPCSTR)nodeId,nodeCount,m_exampleCompiled.index);
   IntestOutputSink sink;
   int code = theApp.RunCommand(m_projectDir,cmdLine,sink,true);
   sink.Done();
@@ -2754,10 +2753,10 @@ void ProjectFrame::GenerateIntestCombinedReport(void)
   // Run intest to generate a combined report for all the tests
   CString cmdLine;
   cmdLine.Format(
-    "\"%s\\Compilers\\intest\" -no-history -threads=1 -using -extension \"%s\\Source\\extension.i7x\""
-    " -do -combine \"%s\\Build\\Inform-Report.html\" -%d -to \"%s\\Build\\Problems.html\"",
-    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_projectDir,m_examples.GetSize(),
-    (LPCSTR)m_projectDir);
+    "\"%s\\Compilers\\intest\" \"%s\" -no-history -threads=1 -using"
+    " -extension Source\\extension.i7x -do"
+    " -combine Build\\Inform-Report.html -%d -to Build\\Problems.html",
+    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,m_examples.GetSize());
   IntestOutputSink sink;
   int code = theApp.RunCommand(m_projectDir,cmdLine,sink,true);
   sink.Done();
@@ -3188,8 +3187,8 @@ bool ProjectFrame::UpdateExampleList(void)
   // Run intest to list the examples
   CString cmdLine;
   cmdLine.Format(
-    "\"%s\\Compilers\\intest\" -no-history -threads=1"
-    " -using -extension \"%s\\Source\\extension.i7x\" -do -catalogue",
+    "\"%s\\Compilers\\intest\" \"%s\" -no-history -threads=1"
+    " -using -extension Source\\extension.i7x -do -catalogue",
     (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir);
   IntestOutputSink sink;
   int code = theApp.RunCommand(m_projectDir,cmdLine,sink,true);
@@ -3338,9 +3337,9 @@ void ProjectFrame::TestCurrentExample(bool testAll)
       // Run intest to get the list of test commands
       CString cmdLine;
       cmdLine.Format(
-        "\"%s\\Compilers\\intest\" -no-history -threads=1"
-        " -using -extension \"%s\\Source\\extension.i7x\" -do -script %c",
-        (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id);
+        "\"%s\\Compilers\\intest\" \"%s\" -no-history -threads=1"
+        " -using -extension Source\\extension.i7x -do -script %c",
+        (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,m_exampleCompiled.id);
       IntestOutputSink sink;
       int code = theApp.RunCommand(m_projectDir,cmdLine,sink,true);
       sink.Done();
