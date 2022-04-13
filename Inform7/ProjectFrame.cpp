@@ -2892,7 +2892,7 @@ void ProjectFrame::OnSkeinLink(const char* url, TabInterface* from)
     // Show the appropriate node
     Skein::Node* node = m_skein.FindNode(nodeId);
     if (node != NULL)
-    {}//XXXXDK Show in testing tab? Select transcript?
+    {}//XXXXDK Show in testing tab with appropriate transcript
   }
 }
 
