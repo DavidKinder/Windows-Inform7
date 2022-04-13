@@ -110,16 +110,8 @@ protected:
   afx_msg void OnPlayTest();
   afx_msg void OnPlayRefresh();
   afx_msg void OnPlayLoad();
-
   afx_msg void OnPlayReplay();
-  afx_msg void OnUpdateReplayAll(CCmdUI *pCmdUI);
   afx_msg void OnReplayAll();
-  afx_msg void OnUpdateReplayChanged(CCmdUI *pCmdUI);
-  afx_msg void OnReplayChanged(UINT nID);
-  afx_msg void OnUpdateReplayDiffer(CCmdUI *pCmdUI);
-  afx_msg void OnReplayDiffer(UINT nID);
-  afx_msg void OnUpdateReplayDifferSkein(CCmdUI *pCmdUI);
-  afx_msg void OnReplayDifferSkein();
 
   afx_msg void OnUpdateReleaseGame(CCmdUI *pCmdUI);
   afx_msg void OnReleaseGame(UINT nID);

@@ -108,14 +108,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_PLAY_REFRESH, OnPlayRefresh)
   ON_COMMAND(ID_PLAY_LOAD, OnPlayLoad)
 
-  ON_UPDATE_COMMAND_UI(ID_REPLAY_ALL, OnUpdateReplayAll)
   ON_COMMAND(ID_REPLAY_ALL, OnReplayAll)
-  ON_UPDATE_COMMAND_UI_RANGE(ID_REPLAY_CHANGED_PREV, ID_REPLAY_CHANGED_NEXT, OnUpdateReplayChanged)
-  ON_COMMAND_RANGE(ID_REPLAY_CHANGED_PREV, ID_REPLAY_CHANGED_NEXT, OnReplayChanged)
-  ON_UPDATE_COMMAND_UI_RANGE(ID_REPLAY_DIFF_PREV, ID_REPLAY_DIFF_NEXT, OnUpdateReplayDiffer)
-  ON_COMMAND_RANGE(ID_REPLAY_DIFF_PREV, ID_REPLAY_DIFF_NEXT, OnReplayDiffer)
-  ON_UPDATE_COMMAND_UI(ID_REPLAY_DIFF_NEXT_SKEIN, OnUpdateReplayDifferSkein)
-  ON_COMMAND(ID_REPLAY_DIFF_NEXT_SKEIN, OnReplayDifferSkein)
 
   ON_UPDATE_COMMAND_UI_RANGE(ID_RELEASE_GAME, ID_RELEASE_TEST, OnUpdateReleaseGame)
   ON_COMMAND_RANGE(ID_RELEASE_GAME, ID_RELEASE_TEST, OnReleaseGame)
@@ -1502,14 +1495,6 @@ void ProjectFrame::OnPlayLoad()
   m_game.RunInterpreter(path.Left(split),path.Mid(split+1),glulx);
 }
 
-void ProjectFrame::OnUpdateReplayAll(CCmdUI *pCmdUI)
-{
-  bool enable = !m_busy && m_playThreads.empty();
-  if (enable)
-    enable = SendMessage(WM_CANPLAYALL) != 0;
-  pCmdUI->Enable(enable);
-}
-
 void ProjectFrame::OnReplayAll()
 {
   // Discard any previous threads to be played
@@ -1538,30 +1523,6 @@ void ProjectFrame::OnReplayAll()
   // Play the thread leading to the first node
   m_skein.SetCurrent(firstEnd);
   OnPlayReplay();
-}
-
-void ProjectFrame::OnUpdateReplayChanged(CCmdUI *pCmdUI)
-{
-}
-
-void ProjectFrame::OnReplayChanged(UINT nID)
-{
-}
-
-void ProjectFrame::OnUpdateReplayDiffer(CCmdUI *pCmdUI)
-{
-}
-
-void ProjectFrame::OnReplayDiffer(UINT nID)
-{
-}
-
-void ProjectFrame::OnUpdateReplayDifferSkein(CCmdUI *pCmdUI)
-{
-}
-
-void ProjectFrame::OnReplayDifferSkein()
-{
 }
 
 void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)

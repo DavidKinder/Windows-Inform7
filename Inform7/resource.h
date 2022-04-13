@@ -49,11 +49,6 @@
 #define ID_PLAY_LOAD                    225
 #define ID_PLAY_REPLAY                  226
 #define ID_REPLAY_ALL                   231
-#define ID_REPLAY_CHANGED_PREV          232
-#define ID_REPLAY_CHANGED_NEXT          233
-#define ID_REPLAY_DIFF_PREV             234
-#define ID_REPLAY_DIFF_NEXT             235
-#define ID_REPLAY_DIFF_NEXT_SKEIN       236
 #define ID_RELEASE_GAME                 240
 #define ID_RELEASE_TEST                 241
 #define ID_RELEASE_MATERIALS            242
