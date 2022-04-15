@@ -2614,11 +2614,11 @@ CString ProjectFrame::Inform7CommandLine(bool release)
   CString executable, arguments;
   if (version == NI_BUILD)
   {
-    CString i7format = m_settings.GetI7OutputFormat(release);
+    CString i7format = m_settings.GetOutputNewFormat(release);
     executable.Format("%s\\Compilers\\inform7",(LPCSTR)dir);
     arguments.Format(
       "%s%s-internal \"%s\\Internal\" -project \"%s\" -format=%s",
-      (release ? "-release " : "-debug "),
+      (release ? "-release " : ""),
       ((m_settings.m_predictable && !release)) ? "-rng " : "",
       (LPCSTR)dir,(LPCSTR)m_projectDir,(LPCSTR)i7format);
   }

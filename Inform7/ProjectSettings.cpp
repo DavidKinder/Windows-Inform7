@@ -157,7 +157,7 @@ CString ProjectSettings::GetOutputFormat(void)
   return "";
 }
 
-CString ProjectSettings::GetI7OutputFormat(bool release)
+CString ProjectSettings::GetOutputNewFormat(bool release)
 {
   switch (m_output)
   {
