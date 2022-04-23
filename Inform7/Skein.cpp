@@ -189,7 +189,7 @@ bool Skein::Instance::Save(const char* path)
   fprintf(skeinFile,
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     "<Skein rootNode=\"%s\">\n"
-    "  <generator>Windows Inform 7 " NI_BUILD "</generator>\n"
+    "  <generator>Windows Inform " NI_BUILD "</generator>\n"
     "  <activeNode nodeId=\"%s\"/>\n",
     root->GetUniqueId(),current->GetUniqueId());
   root->SaveNodes(skeinFile);
@@ -1343,7 +1343,7 @@ void Skein::Node::CompareWithExpected(void)
 
 void Skein::Node::OverwriteBanner(CStringW& inStr)
 {
-  // Does this text contain an Inform 7 banner?
+  // Does this text contain an Inform banner?
   int i = inStr.Find(L"\nRelease ");
   if (i >= 0)
   {

@@ -2366,7 +2366,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
     GetPanel(0)->CompileProject(TabInterface::RanInform7,code);
     GetPanel(1)->CompileProject(TabInterface::RanInform7,code);
 
-    // Warn if Microsoft Defender Antivirus might be slowing down the Inform 7 compiler
+    // Warn if Microsoft Defender Antivirus might be slowing down the compiler
     if (!test && (code == 0))
     {
       if (theApp.GetProfileInt("Window","Slow Compile Warn",1) != 0)
@@ -2383,9 +2383,9 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
           config.pszMainIcon = TD_WARNING_ICON;
           config.pszMainInstruction = L"It took longer than expected to convert the story text to Inform 6 code.";
           config.pszContent =
-            L"Microsoft Defender Antivirus is known to slow Inform 7 down. If it is enabled then you should "
-            L"consider configuring it to exclude from scanning the Inform 7 installation directory, the "
-            L"\"My Documents\\Inform\" directory, and any directories containing Inform 7 projects. This can be "
+            L"Microsoft Defender Antivirus is known to slow Inform down. If it is enabled then you should "
+            L"consider configuring it to exclude from scanning the Inform installation directory, the "
+            L"\"My Documents\\Inform\" directory, and any directories containing Inform projects. This can be "
             L"done from the \"Windows Security\" app: go to \"Virus and Threat Protection\", "
             L"then \"Manage Settings\", then \"Add or Remove Exclusions\".";
           config.pszVerificationText = L"Don't warn about this any more";
