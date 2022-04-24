@@ -24,6 +24,6 @@ popd
 
 pushd Installer
 "%ProgramFiles(x86)%\NSIS\makensis" Inform7.nsi
-move I7*Windows*.exe \Temp
+move Inform*Windows*.exe \Temp
 popd
 

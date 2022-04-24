@@ -214,7 +214,7 @@ BEGIN
     POPUP "&Help"
     BEGIN
         MENUITEM "Inform &Help\tF1",            ID_HELP_INDEX
-        MENUITEM "&Windows Inform Notes",       ID_HELP_WINDOWS
+        MENUITEM "Inform for &Windows Notes",   ID_HELP_WINDOWS
         MENUITEM "&Licence",                    ID_HELP_LICENCE
         MENUITEM SEPARATOR
         MENUITEM "Help on Installed E&xtensions", ID_HELP_EXTENSIONS

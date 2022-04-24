@@ -1,16 +1,16 @@
-; Install script for Windows Inform 7
+; Install script for Inform for Windows
 
 !include "MUI2.nsh"
 !include "Inform7.nsh"
 
-Name "Windows Inform 7"
-Caption "Windows Inform 7 (${BUILD}) Setup"
+Name "Inform for Windows"
+Caption "Inform for Windows (${BUILD}) Setup"
 BrandingText "NullSoft Install System"
 Unicode true
 ManifestDPIAware true
 
 SetCompressor /SOLID lzma
-OutFile "I7_${BUILD}_Windows.exe"
+OutFile "Inform_${BUILD}_Windows.exe"
 
 InstallDir "$PROGRAMFILES64\Inform 7"
 InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory"
@@ -23,14 +23,14 @@ InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory"
 !define MUI_HEADERIMAGE_BITMAP "Back.bmp"
 !define MUI_HEADERIMAGE_BITMAP_NOSTRETCH
 
-!define MUI_WELCOMEPAGE_TEXT "Setup will guide you through the installation of Inform 7, a design system for interactive fiction based on natural language.$\r$\n$\r$\n$_CLICK"
+!define MUI_WELCOMEPAGE_TEXT "Setup will guide you through the installation of Inform, a design system for interactive fiction based on natural language.$\r$\n$\r$\n$_CLICK"
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW SetWelcomeBitmap
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW SetFinishBitmap
-!define MUI_FINISHPAGE_RUN $INSTDIR\Inform7.exe
+!define MUI_FINISHPAGE_RUN $INSTDIR\Inform.exe
 !insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_UNPAGE_CONFIRM
@@ -60,7 +60,8 @@ Section "DoInstall"
 
   SetOutPath "$INSTDIR"
 
-  ; Remove old libcef files
+  ; Remove old versions of files
+  Delete "$INSTDIR\Inform7.exe"
   Delete "$INSTDIR\natives_blob.bin"
   Delete "$INSTDIR\Chrome\*.pak"
 
@@ -68,12 +69,13 @@ Section "DoInstall"
   WriteUninstaller "Uninstall.exe"
 
   SetShellVarContext all
-  CreateShortCut "$SMPROGRAMS\Inform 7.lnk" "$INSTDIR\Inform7.exe"
+  Delete "$SMPROGRAMS\Inform 7.lnk"
+  CreateShortCut "$SMPROGRAMS\Inform.lnk" "$INSTDIR\Inform.exe"
   SetShellVarContext current
   
   WriteRegStr HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory" "$INSTDIR"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayName" "Inform 7 (64-bit)"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayIcon" "$INSTDIR\Inform7.exe,0"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayName" "Inform for Windows"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayIcon" "$INSTDIR\Inform.exe,0"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayVersion" ${BUILD}
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "Publisher" "David Kinder"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "UninstallString" '"$INSTDIR\Uninstall.exe"'
@@ -97,7 +99,7 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\Symbols"
   RMDir /r "$INSTDIR\Web"
 
-  Delete "$INSTDIR\Inform7.exe"
+  Delete "$INSTDIR\Inform.exe"
   Delete "$INSTDIR\Uninstall.exe"
   Delete "$INSTDIR\chrome_elf.dll"
   Delete "$INSTDIR\libcef.dll"
@@ -107,14 +109,13 @@ Section "Uninstall"
   Delete "$INSTDIR\icudtl.dat"
   Delete "$INSTDIR\snapshot_blob.bin"
   Delete "$INSTDIR\v8_context_snapshot.bin"
-  Delete "$INSTDIR\Inform7.VisualElementsManifest.xml"
+  Delete "$INSTDIR\Inform.VisualElementsManifest.xml"
   RMDir "$INSTDIR"
 
   SetShellVarContext all
-  Delete "$SMPROGRAMS\Inform 7.lnk"
+  Delete "$SMPROGRAMS\Inform.lnk"
   SetShellVarContext current
 
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64"
 
 SectionEnd
-
