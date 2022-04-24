@@ -2607,7 +2607,8 @@ void ProjectFrame::UpdateExtensionsMenu(void)
 
 CString ProjectFrame::Inform7CommandLine(bool release)
 {
-  CString dir = theApp.GetAppDir();
+  CString app = theApp.GetAppDir();
+  CString home = theApp.GetHomeDir();
   CString format = m_settings.GetOutputFormat();
   CString version = m_settings.GetCompilerVersion();
 
@@ -2615,30 +2616,30 @@ CString ProjectFrame::Inform7CommandLine(bool release)
   if (version == INFORM_VER)
   {
     CString i7format = m_settings.GetOutputNewFormat(release);
-    executable.Format("%s\\Compilers\\inform7",(LPCSTR)dir);
+    executable.Format("%s\\Compilers\\inform7",(LPCSTR)app);
     arguments.Format(
-      "%s%s-internal \"%s\\Internal\" -project \"%s\" -format=%s",
+      "%s%s-internal \"%s\\Internal\" -external \"%s\\Inform\" -project \"%s\" -format=%s",
       (release ? "-release " : ""),
       ((m_settings.m_predictable && !release)) ? "-rng " : "",
-      (LPCSTR)dir,(LPCSTR)m_projectDir,(LPCSTR)i7format);
+      (LPCSTR)app,(LPCSTR)home,(LPCSTR)m_projectDir,(LPCSTR)i7format);
   }
   else if ((version == "6L38") || (version == "6M62"))
   {
-    executable.Format("%s\\Compilers\\%s\\ni",(LPCSTR)dir,(LPCSTR)version);
+    executable.Format("%s\\Compilers\\%s\\ni",(LPCSTR)app,(LPCSTR)version);
     arguments.Format(
       "%s%s-internal \"%s\\Retrospective\\%s\" -project \"%s\" -format=%s",
       (release ? "-release " : ""),
       ((m_settings.m_predictable && !release)) ? "-rng " : "",
-      (LPCSTR)dir,(LPCSTR)version,(LPCSTR)m_projectDir,(LPCSTR)format);
+      (LPCSTR)app,(LPCSTR)version,(LPCSTR)m_projectDir,(LPCSTR)format);
   }
   else if (version == "6L02")
   {
-    executable.Format("%s\\Compilers\\%s\\ni",(LPCSTR)dir,(LPCSTR)version);
+    executable.Format("%s\\Compilers\\%s\\ni",(LPCSTR)app,(LPCSTR)version);
     arguments.Format(
       "%s%s-rules \"%s\\Retrospective\\%s\\Extensions\" -package \"%s\" -extension=%s",
       (release ? "-release " : ""),
       ((m_settings.m_predictable && !release)) ? "-rng " : "",
-      (LPCSTR)dir,(LPCSTR)version,(LPCSTR)m_projectDir,(LPCSTR)format);
+      (LPCSTR)app,(LPCSTR)version,(LPCSTR)m_projectDir,(LPCSTR)format);
   }
   else
     ASSERT(FALSE);
@@ -2654,12 +2655,12 @@ CString ProjectFrame::Inform7CommandLine(bool release)
 
 CString ProjectFrame::Inform6CommandLine(bool release)
 {
-  CString dir = theApp.GetAppDir();
+  CString app = theApp.GetAppDir();
   CString switches = m_settings.GetInformSwitches(release,m_I6debug);
   CString format = m_settings.GetOutputFormat();
 
   CString executable, arguments;
-  executable.Format("%s\\Compilers\\inform6",(LPCSTR)dir);
+  executable.Format("%s\\Compilers\\inform6",(LPCSTR)app);
   arguments.Format("%s +include_path=..\\Source,.\\ auto.inf output.%s",
     (LPCSTR)switches,(LPCSTR)format);
 
@@ -2674,10 +2675,10 @@ CString ProjectFrame::Inform6CommandLine(bool release)
 
 CString ProjectFrame::IntestSourceCommandLine(void)
 {
-  CString dir = theApp.GetAppDir();
+  CString app = theApp.GetAppDir();
 
   CString executable, arguments;
-  executable.Format("%s\\Compilers\\intest",(LPCSTR)dir);
+  executable.Format("%s\\Compilers\\intest",(LPCSTR)app);
   arguments.Format(
     "\"%s\" -no-history -threads=1 -using -extension Source\\extension.i7x"
     " -do -source %c -to Source\\story.ni -concordance %c",
