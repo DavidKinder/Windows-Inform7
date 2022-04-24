@@ -1121,7 +1121,7 @@ InformApp::CreatedProcess InformApp::RunCensus(void)
   return CreateProcess(NULL,command,start,true);
 }
 
-int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output, bool hasSymbols)
+int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
 {
   CWaitCursor wc;
 
@@ -1193,7 +1193,7 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output,
     }
 
     // If the process failed, print any stack trace
-    if ((result != 0) && hasSymbols)
+    if (result != 0)
     {
       std::string trace = GetTraceForProcess(cp.processId);
       if (!trace.empty())

@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include <dbghelp.h>
+#include <psapi.h>
 
 namespace {
 
@@ -15,7 +16,12 @@ void PrintStackTrace(HANDLE process, HANDLE thread,
   SymSetOptions(SYMOPT_DEFERRED_LOADS|SYMOPT_LOAD_LINES);
 
   // Load any symbols
-  CString symPath = theApp.GetAppDir()+"\\Symbols";
+  char symPath[MAX_PATH];
+  if (GetModuleFileNameEx(process,0,symPath,MAX_PATH) == 0)
+    return;
+  char* p = strrchr(symPath,'\\');
+  if (p != NULL)
+    *p = 0;
   if (SymInitialize(process,symPath,TRUE) == 0)
     return;
 

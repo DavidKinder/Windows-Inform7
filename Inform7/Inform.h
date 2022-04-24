@@ -158,7 +158,7 @@ public:
   void WaitForProcessEnd(HANDLE process);
   void AddProcessToJob(HANDLE process);
   CreatedProcess RunCensus(void);
-  int RunCommand(const char* dir, CString& command, OutputSink& output, bool hasSymbols);
+  int RunCommand(const char* dir, CString& command, OutputSink& output);
   void HandleDebugEvents(void);
   CString GetTraceForProcess(DWORD processId);
   void WriteLog(const char* msg);

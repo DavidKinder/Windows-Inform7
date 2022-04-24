@@ -1769,7 +1769,7 @@ void ProjectFrame::OnReleaseGame(UINT nID)
       cmdLine.Format("\"%s\" %s",(LPCSTR)executable,(LPCSTR)arguments);
 
       m_outputFileLoc.Empty();
-      code = theApp.RunCommand(m_projectDir,cmdLine,*this,true);
+      code = theApp.RunCommand(m_projectDir,cmdLine,*this);
 
       GetPanel(0)->CompileProject(TabInterface::RanInblorb,code);
       GetPanel(1)->CompileProject(TabInterface::RanInblorb,code);
@@ -2328,7 +2328,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
 
     // Run intest to extract the example
     IntestOutputSink sink;
-    code = theApp.RunCommand(m_projectDir,IntestSourceCommandLine(),sink,true);
+    code = theApp.RunCommand(m_projectDir,IntestSourceCommandLine(),sink);
     sink.Done();
 
     // Read the intest output describing how to map from example story line numbers
@@ -2358,8 +2358,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
   if (code == 0)
   {
     m_last5StartTime = ::GetTickCount();
-    code = theApp.RunCommand(NULL,Inform7CommandLine(release),*this,
-      m_settings.GetCompilerVersion() == INFORM_VER);
+    code = theApp.RunCommand(NULL,Inform7CommandLine(release),*this);
     if (code != 0)
       failed = "i7";
 
@@ -2402,7 +2401,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
   if (code == 0)
   {
     SendMessage(WM_PROGRESS,100,(LPARAM)"Creating story file");
-    code = theApp.RunCommand(m_projectDir+"\\Build",Inform6CommandLine(release),*this,true);
+    code = theApp.RunCommand(m_projectDir+"\\Build",Inform6CommandLine(release),*this);
     if (code != 0)
     {
       failed = "i6";
@@ -2735,7 +2734,7 @@ void ProjectFrame::GenerateIntestReport(CString result)
     (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,m_exampleCompiled.id,
     (LPCSTR)result,(LPCSTR)nodeId,nodeCount,m_exampleCompiled.index);
   IntestOutputSink sink;
-  int code = theApp.RunCommand(m_projectDir,cmdLine,sink,true);
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
   sink.Done();
 
   if (code == 0)
@@ -2761,7 +2760,7 @@ void ProjectFrame::GenerateIntestCombinedReport(void)
     " -combine Build\\Inform-Report.html -%d -to Build\\Problems.html",
     (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,m_examples.GetSize());
   IntestOutputSink sink;
-  int code = theApp.RunCommand(m_projectDir,cmdLine,sink,true);
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
   sink.Done();
 
   if (code == 0)
@@ -3194,7 +3193,7 @@ bool ProjectFrame::UpdateExampleList(void)
     " -using -extension Source\\extension.i7x -do -catalogue",
     (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir);
   IntestOutputSink sink;
-  int code = theApp.RunCommand(m_projectDir,cmdLine,sink,true);
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
   sink.Done();
 
   if (!theApp.IsValidFrame(this))
@@ -3344,7 +3343,7 @@ void ProjectFrame::TestCurrentExample(bool testAll)
         " -using -extension Source\\extension.i7x -do -script %c",
         (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,m_exampleCompiled.id);
       IntestOutputSink sink;
-      int code = theApp.RunCommand(m_projectDir,cmdLine,sink,true);
+      int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
       sink.Done();
 
       if (code == 0)
