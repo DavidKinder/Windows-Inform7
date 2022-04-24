@@ -1335,7 +1335,7 @@ void InformApp::FindCompilerVersions(void)
       if (retroLine.GetLength() > 0)
       {
         char id[8], label[64], desc[256];
-        if (sscanf(retroLine,"'%[^']','%[^']','%[^']'",id,label,desc) == 3)
+        if (sscanf(retroLine,"'%[^']' , '%[^']' , '%[^']'",id,label,desc) == 3)
           m_versions.push_back(CompilerVersion(id,label,desc));
       }
     }
