@@ -1347,8 +1347,8 @@ void Skein::Node::OverwriteBanner(CStringW& inStr)
   int i = inStr.Find(L"\nRelease ");
   if (i >= 0)
   {
-    int release, serial, build;
-    if (swscanf((LPCWSTR)inStr+i,L"\nRelease %d / Serial number %d / Inform 7 build %d",&release,&serial,&build) == 3)
+    int release, serial;
+    if (swscanf((LPCWSTR)inStr+i,L"\nRelease %d / Serial number %d / Inform 7 ",&release,&serial) == 2)
     {
       // Replace the banner line with asterisks
       for (int j = i+1; j < inStr.GetLength(); j++)
