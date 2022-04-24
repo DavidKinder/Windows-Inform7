@@ -189,7 +189,7 @@ bool Skein::Instance::Save(const char* path)
   fprintf(skeinFile,
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     "<Skein rootNode=\"%s\">\n"
-    "  <generator>Windows Inform " NI_BUILD "</generator>\n"
+    "  <generator>Windows Inform " INFORM_VER "</generator>\n"
     "  <activeNode nodeId=\"%s\"/>\n",
     root->GetUniqueId(),current->GetUniqueId());
   root->SaveNodes(skeinFile);

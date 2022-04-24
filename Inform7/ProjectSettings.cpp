@@ -172,7 +172,7 @@ CString ProjectSettings::GetOutputNewFormat(bool release)
 CString ProjectSettings::GetCompilerVersion(void)
 {
   if (m_compilerVersion.IsEmpty() || (m_compilerVersion == "****"))
-    return NI_BUILD;
+    return INFORM_VER;
   return m_compilerVersion;
 }
 

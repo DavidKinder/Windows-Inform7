@@ -1,2 +1,2 @@
-#define BUILD_DATE "7th April 2022"
-#define NI_BUILD "6U76"
+#define BUILD_DATE "24th April 2022"
+#define INFORM_VER "10.1.0"

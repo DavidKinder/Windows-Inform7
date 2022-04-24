@@ -4,13 +4,13 @@
 !include "Inform7.nsh"
 
 Name "Inform for Windows"
-Caption "Inform for Windows (${BUILD}) Setup"
+Caption "Inform for Windows ${INFORM_VER}"
 BrandingText "NullSoft Install System"
 Unicode true
 ManifestDPIAware true
 
 SetCompressor /SOLID lzma
-OutFile "Inform_${BUILD}_Windows.exe"
+OutFile "Inform_${INFORM_VER}_Windows.exe"
 
 InstallDir "$PROGRAMFILES64\Inform 7"
 InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory"
@@ -76,7 +76,7 @@ Section "DoInstall"
   WriteRegStr HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory" "$INSTDIR"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayName" "Inform for Windows"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayIcon" "$INSTDIR\Inform.exe,0"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayVersion" ${BUILD}
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "DisplayVersion" ${INFORM_VER}
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "Publisher" "David Kinder"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "UninstallString" '"$INSTDIR\Uninstall.exe"'
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Inform 7 x64" "NoModify" 1

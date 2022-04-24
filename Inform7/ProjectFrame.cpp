@@ -2359,7 +2359,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
   {
     m_last5StartTime = ::GetTickCount();
     code = theApp.RunCommand(NULL,Inform7CommandLine(release),*this,
-      m_settings.GetCompilerVersion() == NI_BUILD);
+      m_settings.GetCompilerVersion() == INFORM_VER);
     if (code != 0)
       failed = "i7";
 
@@ -2612,7 +2612,7 @@ CString ProjectFrame::Inform7CommandLine(bool release)
   CString version = m_settings.GetCompilerVersion();
 
   CString executable, arguments;
-  if (version == NI_BUILD)
+  if (version == INFORM_VER)
   {
     CString i7format = m_settings.GetOutputNewFormat(release);
     executable.Format("%s\\Compilers\\inform7",(LPCSTR)dir);
@@ -2622,7 +2622,7 @@ CString ProjectFrame::Inform7CommandLine(bool release)
       ((m_settings.m_predictable && !release)) ? "-rng " : "",
       (LPCSTR)dir,(LPCSTR)m_projectDir,(LPCSTR)i7format);
   }
-  else if (version >= "6L38") // 6L38 and 6M62
+  else if ((version == "6L38") || (version == "6M62"))
   {
     executable.Format("%s\\Compilers\\%s\\ni",(LPCSTR)dir,(LPCSTR)version);
     arguments.Format(
@@ -2640,6 +2640,8 @@ CString ProjectFrame::Inform7CommandLine(bool release)
       ((m_settings.m_predictable && !release)) ? "-rng " : "",
       (LPCSTR)dir,(LPCSTR)version,(LPCSTR)m_projectDir,(LPCSTR)format);
   }
+  else
+    ASSERT(FALSE);
 
   CString output;
   output.Format("%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
