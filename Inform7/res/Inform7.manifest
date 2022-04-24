@@ -7,7 +7,7 @@
  <assemblyIdentity
    version="1.0.0.0"
    processorArchitecture="amd64"
-   name="Inform7"
+   name="Inform"
    type="win32"/>
 
  <description>Inform for Windows</description>
