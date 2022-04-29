@@ -390,10 +390,8 @@ public:
       "inform",CEF_SCHEME_OPTION_STANDARD|CEF_SCHEME_OPTION_CORS_ENABLED);
   }
 
-  // Disable scaling of images by the Windows DPI setting
   void OnBeforeCommandLineProcessing(const CefString&, CefRefPtr<CefCommandLine> cmdLine)
   {
-    cmdLine->AppendSwitchWithValue("force-device-scale-factor","1");
     cmdLine->AppendSwitch("disable-gpu-shader-disk-cache");
   }
 
@@ -625,21 +623,23 @@ private:
     return "";
   }
 
-  // Remove escape sequences (e.g. "[=0x20=]") from the input string
-  CStringW UnescapeUnicode(const char* input)
+  // Remove escape sequences (e.g. "[=0x20=]") from the UTF-8 input string
+  CStringW UnescapeUnicode(const char* inputUtf8)
   {
-    size_t len = strlen(input);
+    CStringW input = TextFormat::UTF8ToUnicode(inputUtf8);
+    int len = input.GetLength();
+
     CStringW output;
-    output.Preallocate((int)len);
-    for (size_t i = 0; i < len; i++)
+    output.Preallocate(len);
+    for (int i = 0; i < len; i++)
     {
-      char c = input[i];
+      WCHAR c = input[i];
       if (c == '[')
       {
         int unicode = 0;
-        if (sscanf(input+i,"[=0x%x=]",&unicode) == 1)
+        if (swscanf((LPCWSTR)input+i,L"[=0x%x=]",&unicode) == 1)
         {
-          output.AppendChar((char)unicode);
+          output.AppendChar((WCHAR)unicode);
           i += 9;
           continue;
         }
@@ -881,7 +881,7 @@ void ReportHtml::UpdateWebBrowserPreferences(CFrameWnd* frame)
     CefRefPtr<CefValue> cefFixedFontName = CefValue::Create();
     cefFixedFontName->SetString(theApp.GetFontName(InformApp::FontFixedWidth));
     CefRefPtr<CefValue> cefFontSize = CefValue::Create();
-    cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),DPI::getWindowDPI(it->first),64));
+    cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),DPI::getWindowDPI(it->first),72));
 
     CefString err;
     auto context = it->second;
