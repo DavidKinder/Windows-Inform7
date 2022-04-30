@@ -7,7 +7,6 @@
 #include "Panel.h"
 #include "Messages.h"
 #include "TextFormat.h"
-#include "DpiFunctions.h"
 
 #include "include/cef_app.h"
 #include "include/cef_browser.h"
@@ -880,8 +879,14 @@ void ReportHtml::UpdateWebBrowserPreferences(CFrameWnd* frame)
     cefFontName->SetString(theApp.GetFontName(InformApp::FontDisplay));
     CefRefPtr<CefValue> cefFixedFontName = CefValue::Create();
     cefFixedFontName->SetString(theApp.GetFontName(InformApp::FontFixedWidth));
+
+    // The awkward scaling factor here comes from wanting HTML text with a size tag
+    // of 2 to match the display font. The units of the font size settings appear to
+    // be in pixels at 96 DPI, so there is a factor of 96/72 to go from points to
+    // 96 DPI pixels. There is then a further factor of 125% to account for the
+    // size=2 tag.
     CefRefPtr<CefValue> cefFontSize = CefValue::Create();
-    cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),DPI::getWindowDPI(it->first),72));
+    cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),96*125,72*100));
 
     CefString err;
     auto context = it->second;
