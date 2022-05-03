@@ -459,7 +459,9 @@ class I7CefClient : public CefClient,
   public CefRequestHandler,
   public CefLoadHandler,
   public CefContextMenuHandler,
-  public CefFocusHandler
+  public CefFocusHandler,
+  public CefResourceRequestHandler,
+  public CefResponseFilter
 {
 public:
   I7CefClient()
@@ -547,6 +549,14 @@ public:
     return false;
   }
 
+  // Implement CefRequestHandler to filter response content
+  CefRefPtr<CefResourceRequestHandler> GetResourceRequestHandler(CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request, bool is_navigation, bool is_download,
+    const CefString& request_initiator, bool& disable_default_handling)
+  {
+    return this;
+  }
+
   CefRefPtr<CefLoadHandler> GetLoadHandler()
   {
     return this;
@@ -605,6 +615,49 @@ public:
     else
       ASSERT(FALSE);
     return false;
+  }
+
+  // Implement CefResourceRequestHandler to filter response content
+  CefRefPtr<CefResponseFilter> GetResourceResponseFilter(CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request, CefRefPtr<CefResponse> response)
+  {
+    CString url = request->GetURL().ToString().c_str();
+    int period = url.ReverseFind('.');
+    if (period > 0)
+    {
+      // Get the file extension from the URL
+      CString ext = url.Mid(period+1).MakeLower();
+
+      // Filter HTML and CSS files
+      if ((ext == "html") || (ext == "css"))
+        return this;
+    }
+    return nullptr;
+  }
+
+  // Implement CefResponseFilter to filter response content
+  bool InitFilter()
+  {
+    return true;
+  }
+
+  // Implement CefResponseFilter to filter response content
+  FilterStatus Filter(void* data_in, size_t data_in_size, size_t& data_in_read,
+    void* data_out, size_t data_out_size, size_t& data_out_written)
+  {
+    data_in_read = data_in_size;
+    data_out_written = data_in_size;
+    if (data_in)
+    {
+      // Copy the response
+      memcpy(data_out,data_in,data_in_size);
+
+      // Remove unwanted font specifications
+      EraseString((char*)data_out,data_in_size,"font-family: lucida grande",';');
+      EraseString((char*)data_out,data_in_size,"font-family: \"Lucida Grande\"",';');
+      EraseString((char*)data_out,data_in_size,"face=\"lucida grande",'\"');
+    }
+    return RESPONSE_FILTER_DONE;
   }
 
 private:
@@ -681,6 +734,35 @@ private:
           }
         }
       }
+    }
+  }
+
+  // Erase a substring of "str" from occurences of "start" to the "end" character
+  void EraseString(char* str, size_t len, const char* start, char end)
+  {
+    const size_t startLen = strlen(start);
+
+    char* p = str;
+    while (p < str+len)
+    {
+      if (*p == *start) // Match first character?
+      {
+        if (strncmp(p,start,startLen) == 0) // Match all of "start" string?
+        {
+          // Erase until end or "end" character
+          bool erase = true;
+          while (erase && (p < str+len))
+          {
+            erase = (*p != end);
+            *p = ' ';
+            p++;
+          }
+        }
+        else
+          p++;
+      }
+      else
+        p++;
     }
   }
 
