@@ -365,7 +365,12 @@ void WelcomeLauncherView::OnSize(UINT nType, int cx, int cy)
 
 void WelcomeLauncherView::OnOpenProject(UINT nID)
 {
-  CString dir = (*(theApp.GetRecentProjectList()))[nID - IDC_OPEN_0];
+  int i = nID - IDC_OPEN_0;
+  RecentProjectList* recent = theApp.GetRecentProjectList();
+
+  CString dir;
+  if (i < recent->GetSize())
+    dir = (*recent)[i];
   if (dir.IsEmpty())
     ProjectFrame::StartExistingProject(theApp.GetLastProjectDir(),this);
   else
