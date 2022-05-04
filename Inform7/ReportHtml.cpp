@@ -743,7 +743,7 @@ private:
     const size_t startLen = strlen(start);
 
     char* p = str;
-    while (p < str+len)
+    while (p < str+len-startLen)
     {
       if (*p == *start) // Match first character?
       {
