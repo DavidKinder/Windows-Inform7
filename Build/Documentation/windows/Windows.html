@@ -1,36 +1,30 @@
 ﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<title>Notes on the Windows version of Inform 7</title>
+<title>Notes on the Windows version of Inform</title>
 </head>
-<body><font size=2><h3>Windows Inform 7</h3>
+<body><font size=2><h3>Inform for Windows</h3>
 <p>
-<p>This Windows version of Inform 7 was created by David Kinder, based on a design by Graham Nelson, Andrew Hunter and
+<p>This Windows version of Inform was created by David Kinder, based on a design by Graham Nelson, Andrew Hunter and
 Toby Nelson.
 <p>
 <h4>Windows Defender</h4>
-If you are running Windows Defender then you will find that Inform 7 can be very slow to compile and to search
+If you are running Windows Defender then you will find that Inform can be very slow to compile and to search
 documentation. The problem is that Windows Defender insists on scanning every HTML file that applications open or create.
-The only solution to this is to exclude from scanning the Inform 7 installation directory, the "My Documents\Inform"
-directory, and any directories containing Inform 7 projects. This can be done from the "Windows Security" app: go to
+The only solution to this is to exclude from scanning the Inform installation directory, the "My Documents\Inform"
+directory, and any directories containing Inform projects. This can be done from the "Windows Security" app: go to
 "Virus and Threat Protection", then "Manage Settings", then "Add or Remove Exclusions".
 <p>
 <h4>Dictionaries</h4>
 <p>
 To install a new dictionary language for spell-checking, download the appropriate dictionary from 
 <a href="https://cgit.freedesktop.org/libreoffice/dictionaries/tree/">LibreOffice</a>.
-Copy the ".aff" and ".dic" files into the "Dictionaries" sub-directory of your Inform 7 installation. Re-start
-Inform 7 and open the spell-checker: your new dictionary should be included in the drop-down list of languages.
+Copy the ".aff" and ".dic" files into the "Dictionaries" sub-directory of your Inform installation. Re-start
+Inform and open the spell-checker: your new dictionary should be included in the drop-down list of languages.
 <p>
 <h4>Home Directory</h4>
 <p>
 The directory that Inform uses to store extensions, documentation, etc. (which defaults to the user's "My Documents"
 folder) can be changed by creating a text file "home.txt" in the same directory as the Inform executable,
 containing the path to the required home directory.
-<p>
-<h4>Inform 6</h4>
-The bundled Inform 6 compiler is generally the latest release, though sometimes it proves necessary to use a version
-of Inform 6 with further patches beyond the latest release. There is an active
-<a href="https://github.com/DavidKinder/Inform6">GitHub Inform 6 project</a>
-which contains the revisions of the Inform 6 compiler used.
 </font></body></html>

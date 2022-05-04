@@ -21,7 +21,9 @@ DebugX64/
 Release/
 ReleaseX64/
 GPUCache/
-Distribution/
+Distribution/inweb/
+Distribution/intest/
+Distribution/inform/
 Distribution_*/
 Projects/
 Tools/

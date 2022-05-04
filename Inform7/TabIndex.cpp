@@ -114,7 +114,7 @@ bool TabIndex::SaveProject(const char* path, bool primary)
 
 void TabIndex::CompileProject(CompileStage stage, int code)
 {
-  if (stage == RanNaturalInform)
+  if (stage == RanInform7)
   {
     if (code == 0)
     {

@@ -60,7 +60,7 @@ BOOL AboutDialog::OnInitDialog()
 
   CString version1, version2;
   m_version.GetWindowText(version1);
-  version2.Format(version1,BUILD_DATE,NI_BUILD);
+  version2.Format(version1,INFORM_VER,BUILD_DATE);
   m_version.SetWindowText(version2);
 
   const char* text1 =

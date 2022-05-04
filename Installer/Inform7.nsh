@@ -1,1 +1,1 @@
-!define BUILD 6M62
+!define INFORM_VER 10.1.0

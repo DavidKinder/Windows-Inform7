@@ -7,7 +7,6 @@
 #include "Panel.h"
 #include "Messages.h"
 #include "TextFormat.h"
-#include "DpiFunctions.h"
 
 #include "include/cef_app.h"
 #include "include/cef_browser.h"
@@ -390,10 +389,8 @@ public:
       "inform",CEF_SCHEME_OPTION_STANDARD|CEF_SCHEME_OPTION_CORS_ENABLED);
   }
 
-  // Disable scaling of images by the Windows DPI setting
   void OnBeforeCommandLineProcessing(const CefString&, CefRefPtr<CefCommandLine> cmdLine)
   {
-    cmdLine->AppendSwitchWithValue("force-device-scale-factor","1");
     cmdLine->AppendSwitch("disable-gpu-shader-disk-cache");
   }
 
@@ -462,7 +459,9 @@ class I7CefClient : public CefClient,
   public CefRequestHandler,
   public CefLoadHandler,
   public CefContextMenuHandler,
-  public CefFocusHandler
+  public CefFocusHandler,
+  public CefResourceRequestHandler,
+  public CefResponseFilter
 {
 public:
   I7CefClient()
@@ -550,6 +549,14 @@ public:
     return false;
   }
 
+  // Implement CefRequestHandler to filter response content
+  CefRefPtr<CefResourceRequestHandler> GetResourceRequestHandler(CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request, bool is_navigation, bool is_download,
+    const CefString& request_initiator, bool& disable_default_handling)
+  {
+    return this;
+  }
+
   CefRefPtr<CefLoadHandler> GetLoadHandler()
   {
     return this;
@@ -610,6 +617,49 @@ public:
     return false;
   }
 
+  // Implement CefResourceRequestHandler to filter response content
+  CefRefPtr<CefResponseFilter> GetResourceResponseFilter(CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request, CefRefPtr<CefResponse> response)
+  {
+    CString url = request->GetURL().ToString().c_str();
+    int period = url.ReverseFind('.');
+    if (period > 0)
+    {
+      // Get the file extension from the URL
+      CString ext = url.Mid(period+1).MakeLower();
+
+      // Filter HTML and CSS files
+      if ((ext == "html") || (ext == "css"))
+        return this;
+    }
+    return nullptr;
+  }
+
+  // Implement CefResponseFilter to filter response content
+  bool InitFilter()
+  {
+    return true;
+  }
+
+  // Implement CefResponseFilter to filter response content
+  FilterStatus Filter(void* data_in, size_t data_in_size, size_t& data_in_read,
+    void* data_out, size_t data_out_size, size_t& data_out_written)
+  {
+    data_in_read = data_in_size;
+    data_out_written = data_in_size;
+    if (data_in)
+    {
+      // Copy the response
+      memcpy(data_out,data_in,data_in_size);
+
+      // Remove unwanted font specifications
+      EraseString((char*)data_out,data_in_size,"font-family: lucida grande",';');
+      EraseString((char*)data_out,data_in_size,"font-family: \"Lucida Grande\"",';');
+      EraseString((char*)data_out,data_in_size,"face=\"lucida grande",'\"');
+    }
+    return RESPONSE_FILTER_DONE;
+  }
+
 private:
   IMPLEMENT_REFCOUNTING(I7CefClient);
 
@@ -625,21 +675,23 @@ private:
     return "";
   }
 
-  // Remove NI-generated escapes (e.g. "[=0x20=]") from the input string
-  CStringW UnescapeUnicode(const char* input)
+  // Remove escape sequences (e.g. "[=0x20=]") from the UTF-8 input string
+  CStringW UnescapeUnicode(const char* inputUtf8)
   {
-    size_t len = strlen(input);
+    CStringW input = TextFormat::UTF8ToUnicode(inputUtf8);
+    int len = input.GetLength();
+
     CStringW output;
-    output.Preallocate((int)len);
-    for (size_t i = 0; i < len; i++)
+    output.Preallocate(len);
+    for (int i = 0; i < len; i++)
     {
-      char c = input[i];
+      WCHAR c = input[i];
       if (c == '[')
       {
         int unicode = 0;
-        if (sscanf(input+i,"[=0x%x=]",&unicode) == 1)
+        if (swscanf((LPCWSTR)input+i,L"[=0x%x=]",&unicode) == 1)
         {
-          output.AppendChar((char)unicode);
+          output.AppendChar((WCHAR)unicode);
           i += 9;
           continue;
         }
@@ -682,6 +734,35 @@ private:
           }
         }
       }
+    }
+  }
+
+  // Erase a substring of "str" from occurences of "start" to the "end" character
+  void EraseString(char* str, size_t len, const char* start, char end)
+  {
+    const size_t startLen = strlen(start);
+
+    char* p = str;
+    while (p < str+len-startLen)
+    {
+      if (*p == *start) // Match first character?
+      {
+        if (strncmp(p,start,startLen) == 0) // Match all of "start" string?
+        {
+          // Erase until end or "end" character
+          bool erase = true;
+          while (erase && (p < str+len))
+          {
+            erase = (*p != end);
+            *p = ' ';
+            p++;
+          }
+        }
+        else
+          p++;
+      }
+      else
+        p++;
     }
   }
 
@@ -880,8 +961,14 @@ void ReportHtml::UpdateWebBrowserPreferences(CFrameWnd* frame)
     cefFontName->SetString(theApp.GetFontName(InformApp::FontDisplay));
     CefRefPtr<CefValue> cefFixedFontName = CefValue::Create();
     cefFixedFontName->SetString(theApp.GetFontName(InformApp::FontFixedWidth));
+
+    // The awkward scaling factor here comes from wanting HTML text with a size tag
+    // of 2 to match the display font. The units of the font size settings appear to
+    // be in pixels at 96 DPI, so there is a factor of 96/72 to go from points to
+    // 96 DPI pixels. There is then a further factor of 125% to account for the
+    // size=2 tag.
     CefRefPtr<CefValue> cefFontSize = CefValue::Create();
-    cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),DPI::getWindowDPI(it->first),64));
+    cefFontSize->SetInt(MulDiv(theApp.GetFontSize(InformApp::FontDisplay),96*125,72*100));
 
     CefString err;
     auto context = it->second;

@@ -5,17 +5,23 @@
 #include <sstream>
 
 #include <dbghelp.h>
+#include <psapi.h>
 
 namespace {
 
-void PrintStackTrace(HANDLE process, HANDLE thread, const CString& imageFile, LPVOID imageBase, DWORD imageSize,
+void PrintStackTrace(HANDLE process, HANDLE thread,
   DWORD machine, DWORD64 pc, DWORD64 framePtr, DWORD64 stackPtr, PVOID context, std::ostream& log)
 {
   // Set symbol options
   SymSetOptions(SYMOPT_DEFERRED_LOADS|SYMOPT_LOAD_LINES);
 
   // Load any symbols
-  CString symPath = theApp.GetAppDir()+"\\Symbols";
+  char symPath[MAX_PATH];
+  if (GetModuleFileNameEx(process,0,symPath,MAX_PATH) == 0)
+    return;
+  char* p = strrchr(symPath,'\\');
+  if (p != NULL)
+    *p = 0;
   if (SymInitialize(process,symPath,TRUE) == 0)
     return;
 
@@ -89,7 +95,7 @@ void LogStackTrace(void)
   context.ContextFlags = CONTEXT_FULL;
 #ifdef _WIN64
   RtlCaptureContext(&context);
-  PrintStackTrace(process,thread,0,0,0,IMAGE_FILE_MACHINE_AMD64,context.Rip,context.Rbp,context.Rsp,&context,log);
+  PrintStackTrace(process,thread,IMAGE_FILE_MACHINE_AMD64,context.Rip,context.Rbp,context.Rsp,&context,log);
 #else
   {
     __asm    call x
@@ -98,14 +104,14 @@ void LogStackTrace(void)
     __asm    mov context.Ebp, ebp
     __asm    mov context.Esp, esp
   }
-  PrintStackTrace(process,thread,0,0,0,IMAGE_FILE_MACHINE_I386,context.Eip,context.Ebp,context.Esp,&context,log);
+  PrintStackTrace(process,thread,IMAGE_FILE_MACHINE_I386,context.Eip,context.Ebp,context.Esp,&context,log);
 #endif
   log.close();
 }
 
 } // unnamed namespace
 
-CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString& imageFile, LPVOID imageBase, DWORD imageSize)
+CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode)
 {
   std::ostringstream log;
   log << "Exception code 0x" << std::hex << exCode << std::endl;
@@ -121,7 +127,7 @@ CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString
       context.ContextFlags = CONTEXT_FULL;
       if (Wow64GetThreadContext(thread,&context))
       {
-        PrintStackTrace(process,thread,imageFile,imageBase,imageSize,
+        PrintStackTrace(process,thread,
           IMAGE_FILE_MACHINE_I386,context.Eip,context.Ebp,context.Esp,&context,log);
       }
     }
@@ -131,7 +137,7 @@ CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString
       context.ContextFlags = CONTEXT_FULL;
       if (GetThreadContext(thread,&context))
       {
-        PrintStackTrace(process,thread,imageFile,imageBase,imageSize,
+        PrintStackTrace(process,thread,
           IMAGE_FILE_MACHINE_AMD64,context.Rip,context.Rbp,context.Rsp,&context,log);
       }
     }
@@ -141,7 +147,7 @@ CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString
   context.ContextFlags = CONTEXT_FULL;
   if (GetThreadContext(thread,&context))
   {
-    PrintStackTrace(process,thread,imageFile,imageBase,imageSize,
+    PrintStackTrace(process,thread,
       IMAGE_FILE_MACHINE_I386,context.Eip,context.Ebp,context.Esp,&context,log);
   }
 #endif

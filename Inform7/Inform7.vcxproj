@@ -14,6 +14,7 @@
     <ProjectGuid>{9B6F4174-A3CE-4559-887E-FD4A2CF2CC38}</ProjectGuid>
     <Keyword>MFCProj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Inform</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">

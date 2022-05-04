@@ -126,7 +126,7 @@ void TabResults::CompileProject(CompileStage stage, int code)
     m_inform6 = NoError;
     break;
 
-  case RanNaturalInform:
+  case RanInform7:
     // Load in the report
     switch (code)
     {
@@ -184,16 +184,16 @@ void TabResults::CompileProject(CompileStage stage, int code)
     }
     break;
 
-  case RanCBlorb:
+  case RanInblorb:
     switch (code)
     {
     case 0:
-      // Show the cBlorb status report
+      // Show the inblorb status report
       m_report.Navigate(TextFormat::AnsiToUTF8(m_projectDir+CBLORB_FILE),false);
       SetActiveTab(ResTab_Report,false);
       break;
     default:
-      // Show the generic cBlorb error page
+      // Show the generic inblorb error page
       m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
         "\\Documentation\\sections\\ErrorCblorb.html"),false);
       SetActiveTab(ResTab_Report,false);
