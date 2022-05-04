@@ -6,6 +6,7 @@
 #include "Inform.h"
 #include "Panel.h"
 #include "Messages.h"
+#include "TabExtensions.h"
 #include "TextFormat.h"
 
 #include "include/cef_app.h"
@@ -622,6 +623,9 @@ public:
     CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request, CefRefPtr<CefResponse> response)
   {
     CString url = request->GetURL().ToString().c_str();
+    if (url == TabExtensions::GetPublicLibraryURL())
+      return this;
+
     int period = url.ReverseFind('.');
     if (period > 0)
     {
@@ -645,17 +649,17 @@ public:
   FilterStatus Filter(void* data_in, size_t data_in_size, size_t& data_in_read,
     void* data_out, size_t data_out_size, size_t& data_out_written)
   {
-    data_in_read = data_in_size;
-    data_out_written = data_in_size;
+    data_in_read = min(data_in_size,data_out_size);
+    data_out_written = data_in_read;
     if (data_in)
     {
       // Copy the response
-      memcpy(data_out,data_in,data_in_size);
+      memcpy(data_out,data_in,data_in_read);
 
       // Remove unwanted font specifications
-      EraseString((char*)data_out,data_in_size,"font-family: lucida grande",';');
-      EraseString((char*)data_out,data_in_size,"font-family: \"Lucida Grande\"",';');
-      EraseString((char*)data_out,data_in_size,"face=\"lucida grande",'\"');
+      EraseString((char*)data_out,data_in_read,"font-family: lucida grande",';');
+      EraseString((char*)data_out,data_in_read,"font-family: \"Lucida Grande\"",';');
+      EraseString((char*)data_out,data_in_read,"face=\"lucida grande",'\"');
     }
     return RESPONSE_FILTER_DONE;
   }
