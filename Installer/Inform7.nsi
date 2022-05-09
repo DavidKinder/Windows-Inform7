@@ -62,8 +62,12 @@ Section "DoInstall"
 
   ; Remove old versions of files
   Delete "$INSTDIR\Inform7.exe"
+  Delete "$INSTDIR\Inform7.VisualElementsManifest.xml"
   Delete "$INSTDIR\natives_blob.bin"
-  Delete "$INSTDIR\Chrome\*.pak"
+  RMDir /r "$INSTDIR\Chrome"
+  RMDir /r "$INSTDIR\Compilers"
+  RMDir /r "$INSTDIR\Documentation"
+  RMDir /r "$INSTDIR\Internal"
   RMDir /r "$INSTDIR\Symbols"
 
   File /r "..\Build\*.*"
