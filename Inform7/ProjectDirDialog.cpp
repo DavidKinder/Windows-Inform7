@@ -65,7 +65,7 @@ public:
     if (SUCCEEDED(m_dialog.CoCreateInstance(open ? __uuidof(FileOpenDialog) : __uuidof(FileSaveDialog))))
     {
       // Set up the dialog
-      COMDLG_FILTERSPEC filter[] = { { L"Inform 7 projects", L"" } };
+      COMDLG_FILTERSPEC filter[] = { { L"Inform projects", L"" } };
       m_dialog->SetFileTypes(1,filter);
       m_dialog->SetTitle(CStringW(title));
       m_dialog->SetFileNameLabel(L"Project &name:");

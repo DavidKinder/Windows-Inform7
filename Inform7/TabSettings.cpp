@@ -104,6 +104,7 @@ void TabSettings::UpdateFromSettings(void)
   }
 
   // Compiler version
+  AddVersions();
   int versionIdx = 0, i = 0;
   const auto& versions = theApp.GetCompilerVersions();
   for (auto it = versions.begin(); it != versions.end(); ++it, ++i)
@@ -255,11 +256,7 @@ namespace
 void TabSettings::OnInitialUpdate()
 {
   CFormView::OnInitialUpdate();
-
-  const auto& versions = theApp.GetCompilerVersions();
-  for (auto it = versions.begin(); it != versions.end(); ++it)
-    m_version.AddString(it->label);
-
+  AddVersions();
   Layout();
 }
 
@@ -288,6 +285,16 @@ void TabSettings::OnDraw(CDC* pDC)
   for (int i = 0; i < 4; i++)
     pDC->DrawText(m_labelTexts[i],m_labelRects[i],DT_WORDBREAK);
   pDC->SelectObject(oldFont);
+}
+
+void TabSettings::AddVersions(void)
+{
+  if (m_version.GetCount() == 0)
+  {
+    const auto& versions = theApp.GetCompilerVersions();
+    for (auto it = versions.begin(); it != versions.end(); ++it)
+     m_version.AddString(it->label);
+  }
 }
 
 void TabSettings::Layout(void)

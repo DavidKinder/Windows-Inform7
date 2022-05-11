@@ -25,7 +25,7 @@ extern "C" {
 
 #include <dbghelp.h>
 
-CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode, const CString& imageFile, LPVOID imageBase, DWORD imageSize);
+CString GetStackTrace(HANDLE process, HANDLE thread, DWORD exCode);
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -92,9 +92,8 @@ BOOL InformApp::InitInstance()
     HookApiFunction("libcef.dll","kernel32.dll","CreateProcessW",(PROC)HookCreateProcessW);
   }
 
-  // Set the HOME environment variable to the My Documents folder,
-  // used by the Natural Inform compiler, and make sure directories
-  // under My Documents exist.
+  // Set the HOME environment variable to the My Documents folder, used
+  // by the compiler, and make sure directories under My Documents exist.
   SetMyDocuments(false);
 
   SetRegistryKey("David Kinder");
@@ -102,9 +101,8 @@ BOOL InformApp::InitInstance()
   if (!ReportHtml::InitWebBrowser())
     return FALSE;
 
-  // Repeat this call, but now allow dialogs to indicate problems,
-  // as by this point only the main Inform 7 application is here, not
-  // any of the CEF worker processes.
+  // Repeat this call, but now allow dialogs to indicate problems, as by this point
+  // only the main application is here, not any of the CEF worker processes.
   SetMyDocuments(true);
 
   // Load the recently used project list
@@ -119,7 +117,7 @@ BOOL InformApp::InitInstance()
 
   // Find and create documentation for extensions
   FindExtensions();
-  CreatedProcess ni = RunCensus();
+  CreatedProcess i7 = RunCensus();
 
   // Initialize finding in files
   FindInFiles::InitInstance();
@@ -139,10 +137,10 @@ BOOL InformApp::InitInstance()
   }
 
   // Make sure that any census failure is reported
-  if (ni.process != INVALID_HANDLE_VALUE)
+  if (i7.process != INVALID_HANDLE_VALUE)
   {
     if (m_pMainWnd->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
-      ((ProjectFrame*)m_pMainWnd)->MonitorProcess(ni,ProjectFrame::ProcessNoAction,"ni (census)");
+      ((ProjectFrame*)m_pMainWnd)->MonitorProcess(i7,ProjectFrame::ProcessNoAction,"inform7 (census)");
   }
   return TRUE;
 }
@@ -228,9 +226,6 @@ void InformApp::HandleDebugEvents(void)
           dp.process = debug.u.CreateProcessInfo.hProcess;
           dp.thread = debug.u.CreateProcessInfo.hThread;
           dp.threadId = debug.dwThreadId;
-          dp.imageBase = debug.u.CreateProcessInfo.lpBaseOfImage;
-          if (debug.u.CreateProcessInfo.hFile != 0)
-            dp.imageSize = ::GetFileSize(debug.u.CreateProcessInfo.hFile,NULL);
         }
       }
       if (debug.u.CreateProcessInfo.hFile != 0)
@@ -281,8 +276,7 @@ void InformApp::HandleDebugEvents(void)
               if (m_traces.size() > 16)
                 m_traces.clear();
               m_traces[debug.dwProcessId] = GetStackTrace(
-                dp.process,dp.thread,debug.u.Exception.ExceptionRecord.ExceptionCode,
-                dp.imageFile,dp.imageBase,dp.imageSize);
+                dp.process,dp.thread,debug.u.Exception.ExceptionRecord.ExceptionCode);
             }
             ::TerminateProcess(it->second.process,kill);
           }
@@ -1060,7 +1054,7 @@ void InformApp::RunMessagePump(void)
     RestoreWaitCursor();
 }
 
-InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug, const char* exeFile)
+InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug)
 {
   BOOL flags = CREATE_NO_WINDOW;
   if (debug)
@@ -1081,7 +1075,6 @@ InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& com
     if (debug)
     {
       DebugProcess dp;
-      dp.imageFile = exeFile;
       m_debugging[process.dwProcessId] = dp;
     }
 
@@ -1117,7 +1110,7 @@ void InformApp::AddProcessToJob(HANDLE process)
 InformApp::CreatedProcess InformApp::RunCensus(void)
 {
   CString command, dir = GetAppDir();
-  command.Format("\"%s\\Compilers\\ni\" -internal \"%s\\Internal\" -census",
+  command.Format("\"%s\\Compilers\\inform7\" -internal \"%s\\Internal\" -census",
     (LPCSTR)dir,(LPCSTR)dir);
 
   STARTUPINFO start;
@@ -1125,10 +1118,10 @@ InformApp::CreatedProcess InformApp::RunCensus(void)
   start.cb = sizeof start;
   start.wShowWindow = SW_HIDE;
   start.dwFlags = STARTF_USESHOWWINDOW;
-  return CreateProcess(NULL,command,start,true,"ni.exe");
+  return CreateProcess(NULL,command,start,true);
 }
 
-int InformApp::RunCommand(const char* dir, CString& command, const char* exeFile, OutputSink& output, bool hasSymbols)
+int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
 {
   CWaitCursor wc;
 
@@ -1150,7 +1143,7 @@ int InformApp::RunCommand(const char* dir, CString& command, const char* exeFile
   start.dwFlags = STARTF_USESTDHANDLES|STARTF_USESHOWWINDOW;
 
   // Create the process for the command
-  CreatedProcess cp = CreateProcess(dir,command,start,true,exeFile);
+  CreatedProcess cp = CreateProcess(dir,command,start,true);
 
   DWORD result = 512;
   if (cp.process != INVALID_HANDLE_VALUE)
@@ -1200,7 +1193,7 @@ int InformApp::RunCommand(const char* dir, CString& command, const char* exeFile
     }
 
     // If the process failed, print any stack trace
-    if ((result != 0) && hasSymbols)
+    if (result != 0)
     {
       std::string trace = GetTraceForProcess(cp.processId);
       if (!trace.empty())
@@ -1342,7 +1335,7 @@ void InformApp::FindCompilerVersions(void)
       if (retroLine.GetLength() > 0)
       {
         char id[8], label[64], desc[256];
-        if (sscanf(retroLine,"'%[^']','%[^']','%[^']'",id,label,desc) == 3)
+        if (sscanf(retroLine,"'%[^']' , '%[^']' , '%[^']'",id,label,desc) == 3)
           m_versions.push_back(CompilerVersion(id,label,desc));
       }
     }

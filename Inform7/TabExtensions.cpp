@@ -27,6 +27,12 @@ const char* TabExtensions::m_files[TabExtensions::Number_ExtTabs] =
   "http://www.emshort.com/pl/"
 };
 
+const char* TabExtensions::GetPublicLibraryURL(void)
+{
+  ASSERT(sizeof m_files / sizeof m_files[0] == 3);
+  return m_files[2];
+}
+
 TabExtensions::TabExtensions() : m_initialised(false), m_notify(NULL)
 {
 }
@@ -92,7 +98,7 @@ BOOL TabExtensions::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERIN
 
 void TabExtensions::CompileProject(CompileStage stage, int code)
 {
-  if (stage == RanNaturalInform)
+  if (stage == RanInform7)
   {
     if (code == 0)
     {

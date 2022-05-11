@@ -1,7 +1,7 @@
 @echo off
 pushd \Programs
 "%ProgramFiles(x86)%\Zip\zip" -j \Temp\Windows_UI_source.zip Adv\Inform7\COPYING
-"%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\MakeDist.bat
+"%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\Make*.bat
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\BuildDate\*.vcxproj Adv\Inform7\BuildDate\*.cpp
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\Inform7\res\* Adv\Inform7\Inform7\*.cpp Adv\Inform7\Inform7\*.h Adv\Inform7\Inform7\*.rc Adv\Inform7\Inform7\*.vcxproj Adv\Inform7\Inform7\*.filters Adv\Inform7\Inform7\*.sln
 "%ProgramFiles(x86)%\Zip\zip" -r \Temp\Windows_UI_source.zip Adv\Inform7\Inform7\Scintilla\*
@@ -22,8 +22,12 @@ pushd \Programs
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Libraries\libmodplug\*
 popd
 
+pushd Build
+"%ProgramFiles(x86)%\Zip\zip" -r \Temp\Inform_Windows.zip *.*
+popd
+
 pushd Installer
 "%ProgramFiles(x86)%\NSIS\makensis" Inform7.nsi
-move I7*Windows*.exe \Temp
+move Inform*Windows*.exe \Temp
 popd
 

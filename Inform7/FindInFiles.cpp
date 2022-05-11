@@ -765,7 +765,7 @@ void FindInFiles::WaitForCensus(void)
     {
       if (frames[i]->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
       {
-        if (((ProjectFrame*)frames[i])->IsProcessRunning("ni (census)"))
+        if (((ProjectFrame*)frames[i])->IsProcessRunning("inform7 (census)"))
           findNow = false;
       }
     }

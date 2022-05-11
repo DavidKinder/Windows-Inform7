@@ -53,6 +53,7 @@ protected:
   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
   virtual void OnDraw(CDC* pDC);
 
+  void AddVersions(void);
   void Layout(void);
 
   BOOL Create(DWORD, const RECT&, CWnd*, UINT);

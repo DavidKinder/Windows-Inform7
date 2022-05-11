@@ -1077,11 +1077,11 @@ LRESULT ProjectFrame::OnWantStop(WPARAM wparam, LPARAM lparam)
 
 LRESULT ProjectFrame::OnRunCensus(WPARAM wparam, LPARAM lparam)
 {
-  InformApp::CreatedProcess ni = theApp.RunCensus();
-  if (ni.process != INVALID_HANDLE_VALUE)
+  InformApp::CreatedProcess i7 = theApp.RunCensus();
+  if (i7.process != INVALID_HANDLE_VALUE)
   {
-    MonitorProcess(ni,
-      (wparam != 0) ? ProcessHelpExtensions : ProcessNoAction,"ni (census)");
+    MonitorProcess(i7,
+      (wparam != 0) ? ProcessHelpExtensions : ProcessNoAction,"inform7 (census)");
   }
   return 0;
 }
@@ -1565,8 +1565,8 @@ void ProjectFrame::OnReleaseGame(UINT nID)
     if (m_settings.m_blorb)
     {
       CString executable, arguments;
-      executable.Format("%s\\Compilers\\cblorb",(LPCSTR)theApp.GetAppDir());
-      arguments.Format("-windows Release.blurb Build\\output.%s",blorbExt);
+      executable.Format("%s\\Compilers\\inblorb",(LPCSTR)theApp.GetAppDir());
+      arguments.Format("Release.blurb Build\\output.%s",blorbExt);
 
       CString output;
       output.Format("%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
@@ -1576,12 +1576,12 @@ void ProjectFrame::OnReleaseGame(UINT nID)
       cmdLine.Format("\"%s\" %s",(LPCSTR)executable,(LPCSTR)arguments);
 
       m_outputFileLoc.Empty();
-      code = theApp.RunCommand(m_projectDir,cmdLine,"cblorb.exe",*this,true);
+      code = theApp.RunCommand(m_projectDir,cmdLine,*this);
 
-      GetPanel(0)->CompileProject(TabInterface::RanCBlorb,code);
-      GetPanel(1)->CompileProject(TabInterface::RanCBlorb,code);
+      GetPanel(0)->CompileProject(TabInterface::RanInblorb,code);
+      GetPanel(1)->CompileProject(TabInterface::RanInblorb,code);
 
-      // If cBlorb picked a location to save the file, use it
+      // If inblorb picked a location to save the file, use it
       releasePath = m_outputFileLoc;
     }
 
@@ -2135,7 +2135,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
 
     // Run intest to extract the example
     IntestOutputSink sink;
-    code = theApp.RunCommand(NULL,IntestSourceCommandLine(),"intest.exe",sink,true);
+    code = theApp.RunCommand(m_projectDir,IntestSourceCommandLine(),sink);
     sink.Done();
 
     // Read the intest output describing how to map from example story line numbers
@@ -2161,19 +2161,18 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
     GetPanel(1)->CompileProject(TabInterface::RanIntestSource,code);
   }
 
-  // Run Natural Inform
+  // Run Inform 7
   if (code == 0)
   {
     m_last5StartTime = ::GetTickCount();
-    code = theApp.RunCommand(NULL,NaturalCommandLine(release),"ni.exe",*this,
-      m_settings.GetCompilerVersion() == NI_BUILD);
+    code = theApp.RunCommand(NULL,Inform7CommandLine(release),*this);
     if (code != 0)
       failed = "i7";
 
-    GetPanel(0)->CompileProject(TabInterface::RanNaturalInform,code);
-    GetPanel(1)->CompileProject(TabInterface::RanNaturalInform,code);
+    GetPanel(0)->CompileProject(TabInterface::RanInform7,code);
+    GetPanel(1)->CompileProject(TabInterface::RanInform7,code);
 
-    // Warn if Microsoft Defender Antivirus might be slowing down the Natural Inform compiler
+    // Warn if Microsoft Defender Antivirus might be slowing down the compiler
     if (!test && (code == 0))
     {
       if (theApp.GetProfileInt("Window","Slow Compile Warn",1) != 0)
@@ -2190,9 +2189,9 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
           config.pszMainIcon = TD_WARNING_ICON;
           config.pszMainInstruction = L"It took longer than expected to convert the story text to Inform 6 code.";
           config.pszContent =
-            L"Microsoft Defender Antivirus is known to slow Inform 7 down. If it is enabled then you should "
-            L"consider configuring it to exclude from scanning the Inform 7 installation directory, the "
-            L"\"My Documents\\Inform\" directory, and any directories containing Inform 7 projects. This can be "
+            L"Microsoft Defender Antivirus is known to slow Inform down. If it is enabled then you should "
+            L"consider configuring it to exclude from scanning the Inform installation directory, the "
+            L"\"My Documents\\Inform\" directory, and any directories containing Inform projects. This can be "
             L"done from the \"Windows Security\" app: go to \"Virus and Threat Protection\", "
             L"then \"Manage Settings\", then \"Add or Remove Exclusions\".";
           config.pszVerificationText = L"Don't warn about this any more";
@@ -2209,7 +2208,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
   if (code == 0)
   {
     SendMessage(WM_PROGRESS,100,(LPARAM)"Creating story file");
-    code = theApp.RunCommand(m_projectDir+"\\Build",InformCommandLine(release),"inform6.exe",*this,true);
+    code = theApp.RunCommand(m_projectDir+"\\Build",Inform6CommandLine(release),*this);
     if (code != 0)
     {
       failed = "i6";
@@ -2412,40 +2411,44 @@ void ProjectFrame::UpdateExtensionsMenu(void)
   }
 }
 
-CString ProjectFrame::NaturalCommandLine(bool release)
+CString ProjectFrame::Inform7CommandLine(bool release)
 {
-  CString dir = theApp.GetAppDir();
+  CString app = theApp.GetAppDir();
+  CString home = theApp.GetHomeDir();
   CString format = m_settings.GetOutputFormat();
   CString version = m_settings.GetCompilerVersion();
 
   CString executable, arguments;
-  if (version == NI_BUILD)
+  if (version == INFORM_VER)
   {
-    executable.Format("%s\\Compilers\\ni",(LPCSTR)dir);
+    CString i7format = m_settings.GetOutputNewFormat(release);
+    executable.Format("%s\\Compilers\\inform7",(LPCSTR)app);
     arguments.Format(
-      "%s%s-internal \"%s\\Internal\" -project \"%s\" -format=%s",
+      "%s%s-internal \"%s\\Internal\" -external \"%s\\Inform\" -project \"%s\" -format=%s",
       (release ? "-release " : ""),
       ((m_settings.m_predictable && !release)) ? "-rng " : "",
-      (LPCSTR)dir,(LPCSTR)m_projectDir,(LPCSTR)format);
+      (LPCSTR)app,(LPCSTR)home,(LPCSTR)m_projectDir,(LPCSTR)i7format);
   }
-  else if (version >= "6L38")
+  else if ((version == "6L38") || (version == "6M62"))
   {
-    executable.Format("%s\\Compilers\\%s\\ni",(LPCSTR)dir,(LPCSTR)version);
+    executable.Format("%s\\Compilers\\%s\\ni",(LPCSTR)app,(LPCSTR)version);
     arguments.Format(
       "%s%s-internal \"%s\\Retrospective\\%s\" -project \"%s\" -format=%s",
       (release ? "-release " : ""),
       ((m_settings.m_predictable && !release)) ? "-rng " : "",
-      (LPCSTR)dir,(LPCSTR)version,(LPCSTR)m_projectDir,(LPCSTR)format);
+      (LPCSTR)app,(LPCSTR)version,(LPCSTR)m_projectDir,(LPCSTR)format);
   }
   else if (version == "6L02")
   {
-    executable.Format("%s\\Compilers\\%s\\ni",(LPCSTR)dir,(LPCSTR)version);
+    executable.Format("%s\\Compilers\\%s\\ni",(LPCSTR)app,(LPCSTR)version);
     arguments.Format(
       "%s%s-rules \"%s\\Retrospective\\%s\\Extensions\" -package \"%s\" -extension=%s",
       (release ? "-release " : ""),
       ((m_settings.m_predictable && !release)) ? "-rng " : "",
-      (LPCSTR)dir,(LPCSTR)version,(LPCSTR)m_projectDir,(LPCSTR)format);
+      (LPCSTR)app,(LPCSTR)version,(LPCSTR)m_projectDir,(LPCSTR)format);
   }
+  else
+    ASSERT(FALSE);
 
   CString output;
   output.Format("%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
@@ -2456,14 +2459,14 @@ CString ProjectFrame::NaturalCommandLine(bool release)
   return cmdLine;
 }
 
-CString ProjectFrame::InformCommandLine(bool release)
+CString ProjectFrame::Inform6CommandLine(bool release)
 {
-  CString dir = theApp.GetAppDir();
+  CString app = theApp.GetAppDir();
   CString switches = m_settings.GetInformSwitches(release,m_I6debug);
   CString format = m_settings.GetOutputFormat();
 
   CString executable, arguments;
-  executable.Format("%s\\Compilers\\inform6",(LPCSTR)dir);
+  executable.Format("%s\\Compilers\\inform6",(LPCSTR)app);
   arguments.Format("%s +include_path=..\\Source,.\\ auto.inf output.%s",
     (LPCSTR)switches,(LPCSTR)format);
 
@@ -2478,15 +2481,14 @@ CString ProjectFrame::InformCommandLine(bool release)
 
 CString ProjectFrame::IntestSourceCommandLine(void)
 {
-  CString dir = theApp.GetAppDir();
+  CString app = theApp.GetAppDir();
 
   CString executable, arguments;
-  executable.Format("%s\\Compilers\\intest",(LPCSTR)dir);
+  executable.Format("%s\\Compilers\\intest",(LPCSTR)app);
   arguments.Format(
-    "-no-history -threads=1 -using -extension \"%s\\Source\\extension.i7x\""
-    " -do -source %c -to \"%s\\Source\\story.ni\" -concordance %c",
-    (LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id,(LPCSTR)m_projectDir,
-    (LPCSTR)m_exampleCompiled.id);
+    "\"%s\" -no-history -threads=1 -using -extension Source\\extension.i7x"
+    " -do -source %c -to Source\\story.ni -concordance %c",
+    (LPCSTR)m_projectDir,m_exampleCompiled.id,m_exampleCompiled.id);
 
   CString output;
   output.Format("\n%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
@@ -2533,13 +2535,13 @@ void ProjectFrame::GenerateIntestReport(CString result)
   // Run intest to generate a problem report
   CString cmdLine;
   cmdLine.Format(
-    "\"%s\\Compilers\\intest\" -no-history -threads=1 -using"
-    " -extension \"%s\\Source\\extension.i7x\" -do -report %c %s"
-    " \"%s\\Build\\Problems.html\" n%s t%d -to \"%s\\Build\\Inform-Report-%d.html\"",
-    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id,(LPCSTR)result,
-    (LPCSTR)m_projectDir,(LPCSTR)nodeId,nodeCount,(LPCSTR)m_projectDir,m_exampleCompiled.index);
+    "\"%s\\Compilers\\intest\" \"%s\" -no-history -threads=1 -using"
+    " -extension Source\\extension.i7x -do -report %c %s"
+    " Build\\Problems.html n%s t%d -to Build\\Inform-Report-%d.html",
+    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,m_exampleCompiled.id,
+    (LPCSTR)result,(LPCSTR)nodeId,nodeCount,m_exampleCompiled.index);
   IntestOutputSink sink;
-  int code = theApp.RunCommand(m_projectDir,cmdLine,"intest.exe",sink,true);
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
   sink.Done();
 
   if (code == 0)
@@ -2560,12 +2562,12 @@ void ProjectFrame::GenerateIntestCombinedReport(void)
   // Run intest to generate a combined report for all the tests
   CString cmdLine;
   cmdLine.Format(
-    "\"%s\\Compilers\\intest\" -no-history -threads=1 -using -extension \"%s\\Source\\extension.i7x\""
-    " -do -combine \"%s\\Build\\Inform-Report.html\" -%d -to \"%s\\Build\\Problems.html\"",
-    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_projectDir,m_examples.GetSize(),
-    (LPCSTR)m_projectDir);
+    "\"%s\\Compilers\\intest\" \"%s\" -no-history -threads=1 -using"
+    " -extension Source\\extension.i7x -do"
+    " -combine Build\\Inform-Report.html -%d -to Build\\Problems.html",
+    (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,m_examples.GetSize());
   IntestOutputSink sink;
-  int code = theApp.RunCommand(m_projectDir,cmdLine,"intest.exe",sink,true);
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
   sink.Done();
 
   if (code == 0)
@@ -2994,11 +2996,11 @@ bool ProjectFrame::UpdateExampleList(void)
   // Run intest to list the examples
   CString cmdLine;
   cmdLine.Format(
-    "\"%s\\Compilers\\intest\" -no-history -threads=1"
-    " -using -extension \"%s\\Source\\extension.i7x\" -do -catalogue",
+    "\"%s\\Compilers\\intest\" \"%s\" -no-history -threads=1"
+    " -using -extension Source\\extension.i7x -do -catalogue",
     (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir);
   IntestOutputSink sink;
-  int code = theApp.RunCommand(m_projectDir,cmdLine,"intest.exe",sink,true);
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
   sink.Done();
 
   if (!theApp.IsValidFrame(this))
@@ -3144,11 +3146,11 @@ void ProjectFrame::TestCurrentExample(bool testAll)
       // Run intest to get the list of test commands
       CString cmdLine;
       cmdLine.Format(
-        "\"%s\\Compilers\\intest\" -no-history -threads=1"
-        " -using -extension \"%s\\Source\\extension.i7x\" -do -script %c",
-        (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,(LPCSTR)m_exampleCompiled.id);
+        "\"%s\\Compilers\\intest\" \"%s\" -no-history -threads=1"
+        " -using -extension Source\\extension.i7x -do -script %c",
+        (LPCSTR)theApp.GetAppDir(),(LPCSTR)m_projectDir,m_exampleCompiled.id);
       IntestOutputSink sink;
-      int code = theApp.RunCommand(m_projectDir,cmdLine,"intest.exe",sink,true);
+      int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
       sink.Done();
 
       if (code == 0)

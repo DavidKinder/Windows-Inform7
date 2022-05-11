@@ -55,9 +55,9 @@ public:
   enum CompileStage
   {
     CompileStart,
-    RanNaturalInform,
+    RanInform7,
     RanInform6,
-    RanCBlorb,
+    RanInblorb,
     RanIntestSource,
     RanIntestReport
   };

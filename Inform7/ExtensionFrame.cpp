@@ -191,7 +191,7 @@ void ExtensionFrame::OnFileSave()
   {
     MessageBox(
       "Extensions should be saved in the \"Inform\\Extensions\" area\n"
-      "under \"My Documents\", and not where Inform 7 has been installed.",
+      "under \"My Documents\", and not where Inform has been installed.",
       INFORM_TITLE,MB_ICONERROR|MB_OK);
     return;
   }

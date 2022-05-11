@@ -200,7 +200,7 @@ BEGIN
     POPUP "&Help"
     BEGIN
         MENUITEM "Inform &Help\tF1",            ID_HELP_INDEX
-        MENUITEM "&Windows Inform Notes",       ID_HELP_WINDOWS
+        MENUITEM "Inform for &Windows Notes",   ID_HELP_WINDOWS
         MENUITEM "&Licence",                    ID_HELP_LICENCE
         MENUITEM SEPARATOR
         MENUITEM "Help on Installed E&xtensions", ID_HELP_EXTENSIONS
@@ -405,14 +405,14 @@ END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 206, 203
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "Inform 7 for Windows"
+CAPTION "Inform for Windows"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_CREDITS,"RichEdit50W",WS_VSCROLL | WS_TABSTOP | 0x804,4,53,202,120
-    CTEXT           "Copyright 2006-2021 David Kinder (front end), Graham Nelson et al (compiler).",IDC_COPYRIGHT,25,182,156,17
+    CTEXT           "Copyright 2006-2022 David Kinder (front end), Graham Nelson et al (compiler).",IDC_COPYRIGHT,25,182,156,17
     CTEXT           "Inform",IDC_TITLE,23,22,159,15,SS_CENTERIMAGE
     CONTROL         "",IDC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,79,1,48,18
-    CTEXT           "Inform 7 for Windows (%s; %s)",IDC_VERSION,1,42,203,9
+    CTEXT           "Inform for Windows %s (%s)",IDC_VERSION,1,42,203,9
 END
 
 IDD_SETTINGS DIALOGEX 0, 0, 300, 286
@@ -707,14 +707,14 @@ BEGIN
     BEGIN
         BLOCK "080904e4"
         BEGIN
-            VALUE "Comments", "Front-end for Inform 7"
-            VALUE "FileDescription", "Inform 7 for Windows"
-            VALUE "FileVersion", "7.0"
-            VALUE "InternalName", "Inform7"
-            VALUE "LegalCopyright", "(c) 2006-2021 David Kinder"
-            VALUE "OriginalFilename", "Inform7.exe"
+            VALUE "Comments", "Inform for Windows"
+            VALUE "FileDescription", "Inform for Windows"
+            VALUE "FileVersion", "7.10.1"
+            VALUE "InternalName", "Inform"
+            VALUE "LegalCopyright", "(c) 2006-2022 David Kinder"
+            VALUE "OriginalFilename", "Inform.exe"
             VALUE "ProductName", "Inform"
-            VALUE "ProductVersion", "7.0"
+            VALUE "ProductVersion", "7.10.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -1146,7 +1146,7 @@ BEGIN
     ID_HELP_EXTENSIONS      "Show the page listing installed extensions"
     ID_HELP_RECIPES         "Show the recipe book page, listing all the examples"
     ID_APP_PREFS            "Change the application preferences"
-    ID_APP_WEBPAGE          "Go to the Inform 7 web site"
+    ID_APP_WEBPAGE          "Go to the Inform web site"
     ID_HEAD_SHOW            "Show the contents list of the headings in the source"
     ID_HEAD_CURRENT         "Only show the section containing the cursor in the source"
     ID_HEAD_INCREASE        "Show the section at the next lower heading level in the source"
@@ -1159,7 +1159,7 @@ END
 STRINGTABLE
 BEGIN
     AFX_IDS_APP_TITLE       "Inform"
-    AFX_IDS_IDLEMESSAGE     "Windows Inform 7 build %s"
+    AFX_IDS_IDLEMESSAGE     "Windows Inform build %s"
 END
 
 STRINGTABLE

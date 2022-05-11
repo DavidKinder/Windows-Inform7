@@ -1,6 +1,6 @@
 // Conversion of Nick Gravgaard's elastic tabstop GEdit plugin to Scintilla, modified to follow
-// Andrew Hunder's Inform 7 OS X implementation in terms of where to apply elastic tabstops
-// (that is, only on lines that do not start with tabstops, and are not purely whitespace).
+// the Mac OS X Inform implementation in terms of where to apply elastic tabstops (that is,
+// only on lines that do not start with tabstops, and are not purely whitespace).
 
 #include "stdafx.h"
 

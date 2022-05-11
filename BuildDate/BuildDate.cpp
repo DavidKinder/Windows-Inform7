@@ -32,25 +32,24 @@ int main(int, char**)
   char monthYear[256];
   strftime(monthYear,256,"%B %Y",timeNow);
 
-  char buildCount[16], line[256];
-  FILE* bcFile = fopen("../Distribution/Inform7/Contents.w","rt");
-  if (bcFile == NULL)
+  char informVersion[32], line[256];
+  FILE* contentsFile = fopen("../Distribution/inform/inform7/Contents.w","rt");
+  if (contentsFile == NULL)
     return 0;
-  while (feof(bcFile) == 0)
+  while (feof(contentsFile) == 0)
   {
-    fgets(line,256,bcFile);
-    sscanf(line,"Build Number: %s",buildCount);
+    fgets(line,256,contentsFile);
+    sscanf(line,"Version Number: %s",informVersion);
   }
-  fclose(bcFile);
-  buildCount[4] = 0;
+  fclose(contentsFile);
 
   FILE* outFile = fopen("Build.h","wt");
   fprintf(outFile,"#define BUILD_DATE \"%d%s %s\"\n",timeNow->tm_mday,afterNum,monthYear);
-  fprintf(outFile,"#define NI_BUILD \"%s\"\n",buildCount);
+  fprintf(outFile,"#define INFORM_VER \"%s\"\n",informVersion);
   fclose(outFile);
 
   outFile = fopen("..\\Installer\\Inform7.nsh","wt");
-  fprintf(outFile,"!define BUILD %s\n",buildCount);
+  fprintf(outFile,"!define INFORM_VER %s\n",informVersion);
   fclose(outFile);
   return 0;
 }

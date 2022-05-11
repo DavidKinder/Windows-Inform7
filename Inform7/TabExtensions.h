@@ -35,6 +35,8 @@ public:
 
   void SetLinkNotify(LinkNotify* notify);
 
+  static const char* GetPublicLibraryURL(void);
+
 protected:
   virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 

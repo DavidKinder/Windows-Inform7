@@ -13,6 +13,7 @@ Build/Interpreters/
 Build/Retrospective/
 Build/Symbols/
 Build/Web/
+Build_*/
 *.user
 .vs/
 Debug/
@@ -20,7 +21,10 @@ DebugX64/
 Release/
 ReleaseX64/
 GPUCache/
-Distribution/
+Distribution/inweb/
+Distribution/intest/
+Distribution/inform/
+Distribution_*/
 Projects/
 Tools/
-
+todo.txt
