@@ -1,6 +1,6 @@
 @echo off
 pushd \Programs
-"%ProgramFiles(x86)%\Zip\zip" -j \Temp\Windows_UI_source.zip Adv\Inform7\COPYING
+"%ProgramFiles(x86)%\Zip\zip" -j \Temp\Windows_UI_source.zip Adv\Inform7\LICENSE
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\Make*.bat
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\BuildDate\*.vcxproj Adv\Inform7\BuildDate\*.cpp
 "%ProgramFiles(x86)%\Zip\zip" \Temp\Windows_UI_source.zip Adv\Inform7\Inform7\res\* Adv\Inform7\Inform7\*.cpp Adv\Inform7\Inform7\*.h Adv\Inform7\Inform7\*.rc Adv\Inform7\Inform7\*.vcxproj Adv\Inform7\Inform7\*.filters Adv\Inform7\Inform7\*.sln
