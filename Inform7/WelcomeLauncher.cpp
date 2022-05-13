@@ -18,7 +18,6 @@ IMPLEMENT_DYNAMIC(WelcomeLauncherView, CFormView)
 
 WelcomeLauncherView::WelcomeLauncherView() : CFormView(WelcomeLauncherView::IDD)
 {
-  m_recentCount = 0;
   m_rightGapPerDpi = 0.0;
   m_bottomGapPerDpi = 0.0;
 }
@@ -366,11 +365,10 @@ void WelcomeLauncherView::OnSize(UINT nType, int cx, int cy)
 void WelcomeLauncherView::OnOpenProject(UINT nID)
 {
   int i = nID - IDC_OPEN_0;
-  RecentProjectList* recent = theApp.GetRecentProjectList();
 
   CString dir;
-  if (i < recent->GetSize())
-    dir = (*recent)[i];
+  if (i < m_recentProjects.GetSize())
+    dir = m_recentProjects[i];
   if (dir.IsEmpty())
     ProjectFrame::StartExistingProject(theApp.GetLastProjectDir(),this);
   else
@@ -532,7 +530,9 @@ void WelcomeLauncherView::UpdateRecent(void)
 
   RecentProjectList* recent = theApp.GetRecentProjectList();
   recent->RemoveInvalid();
+
   int idx = 0;
+  m_recentProjects.RemoveAll();
   while (idx < recent->GetSize())
   {
     CString display;
@@ -540,6 +540,7 @@ void WelcomeLauncherView::UpdateRecent(void)
     if (display.IsEmpty())
       break;
 
+    m_recentProjects.Add((*recent)[idx]);
     CommandButton& cmd = m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW];
     if (show)
       cmd.ShowWindow(SW_SHOW);
@@ -555,7 +556,6 @@ void WelcomeLauncherView::UpdateRecent(void)
     cmd.SetIcon("Icon-Folder");
     idx++;
   }
-  m_recentCount = idx;
   if (show)
   {
     for (; idx < RECENT_MAX; ++idx)
@@ -667,7 +667,7 @@ void WelcomeLauncherView::ShowHtml(bool show)
 {
   for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_BOOK_CHANGES; id++)
   {
-    if ((id >= m_recentCount + IDC_OPEN_0) && (id < RECENT_MAX + IDC_OPEN_0))
+    if ((id >= m_recentProjects.GetSize() + IDC_OPEN_0) && (id < RECENT_MAX + IDC_OPEN_0))
       continue;
     if (id == IDC_STATIC_SUMMON)
       continue;
