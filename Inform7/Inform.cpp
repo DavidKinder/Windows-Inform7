@@ -140,7 +140,7 @@ BOOL InformApp::InitInstance()
   if (i7.process != INVALID_HANDLE_VALUE)
   {
     if (m_pMainWnd->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
-      ((ProjectFrame*)m_pMainWnd)->MonitorProcess(i7,ProjectFrame::ProcessNoAction,"inform7 (census)");
+      ((ProjectFrame*)m_pMainWnd)->MonitorProcess(i7,ProjectFrame::ProcessNoAction,"Extension census");
   }
   return TRUE;
 }

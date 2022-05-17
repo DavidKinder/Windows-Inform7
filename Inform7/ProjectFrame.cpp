@@ -1149,7 +1149,7 @@ LRESULT ProjectFrame::OnRunCensus(WPARAM wparam, LPARAM lparam)
   if (i7.process != INVALID_HANDLE_VALUE)
   {
     MonitorProcess(i7,
-      (wparam != 0) ? ProcessHelpExtensions : ProcessNoAction,"inform7 (census)");
+      (wparam != 0) ? ProcessHelpExtensions : ProcessNoAction,"Extension census");
   }
   return 0;
 }
