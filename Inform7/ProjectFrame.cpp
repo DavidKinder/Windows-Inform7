@@ -736,10 +736,8 @@ LRESULT ProjectFrame::OnPlaySkein(WPARAM wparam, LPARAM)
   // Check if the new node is reachable from the currently played node in the skein
   bool reachable = playNode->FindAncestor(newNode) != NULL;
 
-  // Build and run if the game is not running, or if the new node is unreachable
-  if (!m_game.IsRunning())
-    OnPlayReplay();
-  else if (!reachable)
+  // Build and run if the game is not running, needs compiling, or if the new node is unreachable
+  if (!m_game.IsRunning() || m_needCompile || !reachable)
     OnPlayReplay();
   else
     m_game.InputFromSkein();
