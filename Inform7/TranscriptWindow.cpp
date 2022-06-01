@@ -582,7 +582,6 @@ void TranscriptWindow::SkeinChanged(Skein::Change change)
     Invalidate();
     break;
   case Skein::LockChanged:
-  case Skein::TranscriptThreadChanged:
     break;
   default:
     ASSERT(FALSE);

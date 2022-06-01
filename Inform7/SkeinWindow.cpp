@@ -559,7 +559,6 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
   case Skein::ThreadChanged:
   case Skein::NodeColourChanged:
   case Skein::LockChanged:
-  case Skein::TranscriptThreadChanged:
     Invalidate();
     break;
   default:

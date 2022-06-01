@@ -190,7 +190,6 @@ public:
     NodeTextChanged,
     NodeColourChanged,
     LockChanged,
-    TranscriptThreadChanged,
   };
 
   enum Show
