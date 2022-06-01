@@ -476,15 +476,8 @@ void SkeinWindow::OnDraw(CDC* pDC)
 
     // Work out the position of the centre of the root node
     CPoint rootCentre(origin);
+    rootCentre.x += GetTotalSize().cx/2;
     rootCentre.y += GetNodeYPos(0,1);
-
-    // If there is no horizontal scrollbar, centre the root node
-    BOOL horiz, vert;
-    CheckScrollBars(horiz,vert);
-    if (horiz)
-      rootCentre.x += GetTotalSize().cx/2;
-    else
-      rootCentre.x += client.Width()/2;
 
     // Get relevant state from the project frame
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
@@ -592,7 +585,7 @@ void SkeinWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
   case Skein::JustShow:
   case Skein::JustSelect:
   case Skein::ShowSelect:
-  case Skein::ShowNewLine:
+  case Skein::ShowNewLine: //XXXXDK don't move?
     {
       // Work out the position of the node
       int x = (GetTotalSize().cx/2)+node->GetX();
@@ -687,7 +680,7 @@ CSize SkeinWindow::GetLayoutSize(bool force)
     // Get the size of the tree
     int width, depth;
     m_skein->GetTreeExtent(width,depth);
-    size.cx = width + (m_fontSize.cx*6);
+    size.cx = width + (m_fontSize.cx*10);
     size.cy = GetNodeYPos(depth-1,2);
   }
   return size;
@@ -695,7 +688,7 @@ CSize SkeinWindow::GetLayoutSize(bool force)
 
 int SkeinWindow::GetNodeYPos(int nodes, int ends)
 {
-  return (int)(m_fontSize.cy*((2.8*nodes)+(2.2*ends)));
+  return (int)(m_fontSize.cy*((2.8*nodes)+(1.6*ends)));
 }
 
 void SkeinWindow::SetFontsBitmaps(void)

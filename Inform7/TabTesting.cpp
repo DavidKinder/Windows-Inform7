@@ -105,7 +105,7 @@ void TabTesting::OpenProject(const char* path, bool primary)
     m_skein->Load(path);
     m_skein->GetRoot()->SetLine(GetStoryName());
   }
-  m_skeinWindow->Layout(false);
+  m_skeinWindow->Layout(true);
 }
 
 bool TabTesting::SaveProject(const char* path, bool primary)
@@ -225,7 +225,7 @@ void TabTesting::ShowNode(Skein::Node* node, Skein::Show why)
 void TabTesting::SkeinChanged(void)
 {
   m_skein->GetRoot()->SetLine(GetStoryName());
-  m_skeinWindow->Layout(false);
+  m_skeinWindow->Layout(true);
 }
 
 void TabTesting::Animate(int pct)
