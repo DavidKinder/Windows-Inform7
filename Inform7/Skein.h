@@ -22,7 +22,7 @@ public:
   void SetFile(const char* fileName);
   bool ChangeFile(const char* fileName, const char* path);
 
-  void Reset(bool current);
+  void Reset(bool playTo);
   void Layout(CDC& dc, int spacing, bool force);
   void GetTreeExtent(int& width, int& depth);
 
@@ -150,9 +150,9 @@ public:
 
   Node* GetRoot(void);
 
-  Node* GetCurrent(void);
-  void SetCurrent(Node* node);
-  bool InCurrentThread(Node* node);
+  Node* GetPlayTo(void);
+  void SetPlayTo(Node* node);
+  bool InPlayThread(Node* node);
   bool InThread(Node* node, Node* endNode);
   Node* GetPlayed(void);
 
@@ -226,9 +226,8 @@ private:
     CString skeinFile;
     bool edited;
     Node* root;
-    Node* current;
 
-    Instance() : edited(false), root(NULL), current(NULL)
+    Instance() : edited(false), root(NULL)
     {
     }
 
@@ -239,5 +238,9 @@ private:
 
   bool m_layout;
   std::vector<Listener*> m_listeners;
+
+  // The node to play down to
+  Node* m_playTo;
+  // The last node that was played
   Node* m_played;
 };

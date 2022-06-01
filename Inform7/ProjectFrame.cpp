@@ -727,14 +727,14 @@ void ProjectFrame::OnUpdateFrameTitle(BOOL)
 
 LRESULT ProjectFrame::OnPlaySkein(WPARAM wparam, LPARAM)
 {
-  Skein::Node* current = m_skein.GetCurrent();
+  Skein::Node* playNode = m_skein.GetPlayTo();
   Skein::Node* newNode = (Skein::Node*)wparam;
 
-  // Change the current node
-  m_skein.SetCurrent(newNode);
+  // Change the node being played to
+  m_skein.SetPlayTo(newNode);
 
-  // Check if the new node is reachable from the current node in the skein
-  bool reachable = current->FindAncestor(newNode) != NULL;
+  // Check if the new node is reachable from the currently played node in the skein
+  bool reachable = playNode->FindAncestor(newNode) != NULL;
 
   // Build and run if the game is not running, or if the new node is unreachable
   if (!m_game.IsRunning())
@@ -907,7 +907,7 @@ LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
       return 0;
 
     // Play the node without recompiling
-    m_skein.SetCurrent(play.node);
+    m_skein.SetPlayTo(play.node);
     m_game.StopInterpreter(false);
     m_skein.Reset(false);
     GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
@@ -1520,7 +1520,7 @@ LRESULT ProjectFrame::OnReplayAll(WPARAM, LPARAM)
   m_playThreads.push(showError);
 
   // Play the thread leading to the first node
-  m_skein.SetCurrent(firstEnd);
+  m_skein.SetPlayTo(firstEnd);
   OnPlayReplay();
   return 0;
 }
@@ -2507,24 +2507,24 @@ void ProjectFrame::GenerateIntestReport(CString result)
   if (result.IsEmpty())
   {
     // Find the node to report, and what the result was
-    Skein::Node* current = m_skein.GetCurrent();
-    Skein::Node* report = current;
-    while (current != NULL)
+    Skein::Node* node = m_skein.GetPlayTo();
+    Skein::Node* report = node;
+    while (node != NULL)
     {
-      if (current->GetExpectedText().IsEmpty())
+      if (node->GetExpectedText().IsEmpty())
       {
         result = "cursed";
-        report = current;
+        report = node;
       }
-      else if (current->GetDiffers() != Skein::Node::ExpectedSame)
+      else if (node->GetDiffers() != Skein::Node::ExpectedSame)
       {
         if (result.IsEmpty())
           result = "wrong";
         if (result == "wrong")
-          report = current;
+          report = node;
       }
 
-      current = current->GetParent();
+      node = node->GetParent();
       nodeCount++;
     }
     if (result.IsEmpty())

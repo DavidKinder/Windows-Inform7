@@ -12,8 +12,8 @@ Skein::Skein() : m_layout(false)
 {
   m_inst.skeinFile = "Skein.skein";
   m_inst.root = new Node(L"- start -",L"",L"",L"",false);
-  m_inst.current = m_inst.root;
 
+  m_playTo = m_inst.root;
   m_played = m_inst.root;
 }
 
@@ -29,20 +29,20 @@ Skein::Node* Skein::GetRoot(void)
   return m_inst.root;
 }
 
-Skein::Node* Skein::GetCurrent(void)
+Skein::Node* Skein::GetPlayTo(void)
 {
-  return m_inst.current;
+  return m_playTo;
 }
 
-void Skein::SetCurrent(Node* node)
+void Skein::SetPlayTo(Node* node)
 {
-  m_inst.current = node;
+  m_playTo = node;
   NotifyChange(ThreadChanged);
 }
 
-bool Skein::InCurrentThread(Node* node)
+bool Skein::InPlayThread(Node* node)
 {
-  return InThread(node,m_inst.current);
+  return InThread(node,m_playTo);
 }
 
 bool Skein::InThread(Node* node, Node* endNode)
@@ -142,16 +142,13 @@ void Skein::Load(const char* path)
     item = NULL;
   }
 
-  // Get the root and current nodes
+  // Get the root node
   CStringW root = StringFromXML(doc,L"/Skein/@rootNode");
-  CStringW current = StringFromXML(doc,L"/Skein/activeNode/@nodeId");
 
   // Discard the current skein and replace with the new
   delete m_inst.root;
   m_inst.root = nodes[root];
-  m_inst.current = nodes[current];
-  if (m_inst.current == NULL)
-    m_inst.current = m_inst.root;
+  m_playTo = m_inst.root;
   m_played = m_inst.root;
 
   m_layout = false;
@@ -189,9 +186,8 @@ bool Skein::Instance::Save(const char* path)
   fprintf(skeinFile,
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     "<Skein rootNode=\"%s\">\n"
-    "  <generator>Windows Inform " INFORM_VER "</generator>\n"
-    "  <activeNode nodeId=\"%s\"/>\n",
-    root->GetUniqueId(),current->GetUniqueId());
+    "  <generator>Windows Inform " INFORM_VER "</generator>\n",
+    root->GetUniqueId());
   root->SaveNodes(skeinFile);
   fprintf(skeinFile,"</Skein>\n");
   fclose(skeinFile);
@@ -203,7 +199,7 @@ void Skein::Reset()
 {
   delete m_inst.root;
   m_inst.root = new Node(L"- start -",L"",L"",L"",false);
-  m_inst.current = m_inst.root;
+  m_playTo = m_inst.root;
   m_played = m_inst.root;
 
   m_layout = false;
@@ -293,10 +289,10 @@ bool Skein::ChangeFile(const char* fileName, const char* path)
   return true;
 }
 
-void Skein::Reset(bool current)
+void Skein::Reset(bool playTo)
 {
-  if (current)
-    m_inst.current = m_inst.root;
+  if (playTo)
+    m_playTo = m_inst.root;
 
   m_played = m_inst.root;
   NotifyChange(ThreadChanged);
@@ -410,16 +406,16 @@ void Skein::NewLine(const CStringW& line)
   CStringW nodeLine = EscapeLine(line,UsePrintable);
 
   // Is there a child node with the same line?
-  Node* node = m_inst.current->Find(nodeLine);
+  Node* node = m_playTo->Find(nodeLine);
   if (node == NULL)
   {
     node = new Node(nodeLine,L"",L"",L"",false);
-    m_inst.current->Add(node);
+    m_playTo->Add(node);
     nodeAdded = true;
   }
 
-  // Make this the new current node
-  m_inst.current = node;
+  // Make this the new node being played
+  m_playTo = node;
   m_played = node;
 
   // Notify any listeners
@@ -438,7 +434,7 @@ void Skein::NewLine(const CStringW& line)
 bool Skein::NextLine(CStringW& line)
 {
   // Find the next node to use
-  Node* next = m_played->FindAncestor(m_inst.current);
+  Node* next = m_played->FindAncestor(m_playTo);
   if (next != NULL)
   {
     line = EscapeLine(next->GetLine(),UseCharacters);
@@ -499,7 +495,7 @@ CStringW Skein::EscapeLine(const CStringW& line, EscapeAction action)
 bool Skein::GetLineFromHistory(CStringW& line, int history)
 {
   // Find the node to return the line from
-  Node* node = m_inst.current;
+  Node* node = m_playTo;
   while (--history > 0)
   {
     node = node->GetParent();
@@ -546,12 +542,12 @@ bool Skein::RemoveAll(Node* node, bool notify)
   Node* parent = node->GetParent();
   if (parent != NULL)
   {
-    bool inCurrent = InCurrentThread(node);
+    bool inPlay = InPlayThread(node);
     removed = parent->Remove(node);
 
-    if (inCurrent)
+    if (inPlay)
     {
-      m_inst.current = m_inst.root;
+      m_playTo = m_inst.root;
       m_played = m_inst.root;
     }
 
@@ -570,12 +566,12 @@ bool Skein::RemoveSingle(Node* node)
   Node* parent = node->GetParent();
   if (parent != NULL)
   {
-    bool inCurrent = InCurrentThread(node);
+    bool inPlay = InPlayThread(node);
     removed = parent->RemoveSingle(node);
 
-    if (inCurrent)
+    if (inPlay)
     {
-      m_inst.current = m_inst.root;
+      m_playTo = m_inst.root;
       m_played = m_inst.root;
     }
 
@@ -637,13 +633,13 @@ void Skein::Unlock(Node* node, bool notify)
 void Skein::Trim(Node* node, bool running, bool notify)
 {
   // Only delete unlocked nodes. If the game is running, only delete
-  // if the node is not in the current thread as well.
-  bool inCurrent = InCurrentThread(node);
-  if ((node->GetParent() != NULL) && !node->GetLocked() && !(running && inCurrent))
+  // if the node is not in the currently played thread as well.
+  bool inPlay = InPlayThread(node);
+  if ((node->GetParent() != NULL) && !node->GetLocked() && !(running && inPlay))
   {
-    if (inCurrent)
+    if (inPlay)
     {
-      m_inst.current = m_inst.root;
+      m_playTo = m_inst.root;
       m_played = m_inst.root;
     }
     RemoveAll(node,false);

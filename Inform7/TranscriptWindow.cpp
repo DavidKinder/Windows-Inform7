@@ -462,9 +462,9 @@ void TranscriptWindow::SetSkein(Skein* skein)
 void TranscriptWindow::GetSkeinNodes(void)
 {
   bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
-  m_skeinPlayed = gameRunning ? m_skein->GetPlayed() : m_skein->GetCurrent();
+  m_skeinPlayed = gameRunning ? m_skein->GetPlayed() : m_skein->GetPlayTo();
   m_skeinSelected = NULL;
-  m_skeinEndThread = m_skein->GetThreadEnd(m_skein->GetCurrent());
+  m_skeinEndThread = m_skein->GetThreadEnd(m_skein->GetPlayTo());
 }
 
 void TranscriptWindow::Layout(void)
