@@ -189,16 +189,14 @@ public:
     ThreadChanged,
     NodeTextChanged,
     NodeColourChanged,
-    LockChanged,
+    LockChanged
   };
 
   enum Show
   {
-    JustShow,
-    JustSelect,
-    ShowSelect,
+    ShowNode,
     ShowNewLine,
-    ShowNewTranscript,
+    ShowNewTranscript
   };
 
   class Listener

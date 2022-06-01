@@ -363,7 +363,7 @@ void TabTesting::OnSkeinLabel()
       CStringW labelW(labelA);
       it = labels.find(labelW);
       if (it != labels.end())
-        m_skeinWindow->SkeinShowNode(it->second,Skein::JustShow);
+        m_skeinWindow->SkeinShowNode(it->second,Skein::ShowNode);
     }
   }
 }

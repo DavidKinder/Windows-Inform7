@@ -31,7 +31,7 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
   ON_MESSAGE(WM_LABELNODE, OnLabelNode)
 END_MESSAGE_MAP()
 
-SkeinWindow::SkeinWindow() : m_skein(NULL),
+SkeinWindow::SkeinWindow() : m_skein(NULL), m_threadEnd(NULL),
   m_mouseOverNode(NULL), m_mouseOverMenu(false), m_lastClick(false), m_lastClickTime(0),
   m_pctAnim(-1), m_anchorWindow(NULL)
 {
@@ -414,7 +414,10 @@ void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
       // If a single click has happened, just select the node
       Skein::Node* node = NodeAtPoint(m_lastPoint);
       if (node != NULL)
-      {}//XXXXDK make this the selected node / transcript
+      {
+        m_threadEnd = m_skein->GetThreadEnd(node);
+        Invalidate();
+      }
     }
   }
 
@@ -546,6 +549,8 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
   {
   case Skein::TreeChanged:
   case Skein::NodeTextChanged:
+    if (m_threadEnd && !m_skein->IsValidNode(m_threadEnd))
+      m_threadEnd = NULL;//XXXXDK hide transcript?
     Layout(false);
     Invalidate();
     break;
@@ -582,10 +587,9 @@ void SkeinWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
 
   switch (why)
   {
-  case Skein::JustShow:
-  case Skein::JustSelect:
-  case Skein::ShowSelect:
-  case Skein::ShowNewLine: //XXXXDK don't move?
+  case Skein::ShowNode:
+  case Skein::ShowNewLine:
+    if (!NodeFullyVisible(node))
     {
       // Work out the position of the node
       int x = (GetTotalSize().cx/2)+node->GetX();
@@ -648,7 +652,7 @@ void SkeinWindow::Animate(int pct)
 
 Skein::Node* SkeinWindow::GetTranscriptEnd(void)
 {
-  return NULL;//XXXXDK Show transcript in skein window
+  return m_threadEnd;
 }
 
 CSize SkeinWindow::GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL bVert)
@@ -1221,6 +1225,22 @@ Skein::Node* SkeinWindow::NodeAtPoint(const CPoint& point)
       return it->first;
   }
   return NULL;
+}
+
+bool SkeinWindow::NodeFullyVisible(Skein::Node* node)
+{
+  std::map<Skein::Node*,CRect>::const_iterator it = m_nodes.find(node);
+  if (it == m_nodes.end())
+    return false;
+
+  CRect client;
+  GetClientRect(client);
+
+  if ((it->second.left < client.left) || (it->second.right > client.right))
+    return false;
+  if ((it->second.top < client.top) || (it->second.bottom > client.bottom))
+    return false;
+  return true;
 }
 
 bool SkeinWindow::ShowLabel(Skein::Node* node)

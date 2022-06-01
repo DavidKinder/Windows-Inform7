@@ -600,31 +600,7 @@ void TranscriptWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
 
   switch (why)
   {
-  case Skein::ShowSelect:
-    m_skeinSelected = node; // Intentional fall-through
-  case Skein::JustShow:
-    if (ScrollToNode(node) == false)
-    {
-      m_skeinEndThread = m_skein->GetThreadEnd(node);
-      Layout();
-      ScrollToNode(node);
-    }
-    Invalidate();
-    break;
-  case Skein::JustSelect:
-    if (m_skein->InThread(node,m_skeinEndThread))
-    {
-      m_skeinSelected = NULL;
-      m_skeinEndThread = NULL;
-    }
-    else
-    {
-      m_skeinSelected = node;
-      m_skeinEndThread = m_skein->GetThreadEnd(node);
-    }
-    Layout();
-    ScrollToNode(node);
-    Invalidate();
+  case Skein::ShowNode://XXXXDK decide on action
     break;
   case Skein::ShowNewLine:
     break;

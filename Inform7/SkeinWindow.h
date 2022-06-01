@@ -81,6 +81,7 @@ private:
   void RemoveExcessSeparators(CMenu* menu);
 
   Skein::Node* NodeAtPoint(const CPoint& point);
+  bool NodeFullyVisible(Skein::Node* node);
   bool ShowLabel(Skein::Node* node);
   void StartEdit(Skein::Node* node, bool label);
 
@@ -103,6 +104,8 @@ private:
     bool& unselected, bool& selected, bool& active, bool& differs, int& count);
 
   Skein* m_skein;
+  Skein::Node* m_threadEnd;
+
   std::map<Skein::Node*,CRect> m_nodes;
   CDibSection* m_bitmaps[Number_Bitmaps];
 
