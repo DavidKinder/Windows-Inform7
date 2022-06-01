@@ -1707,7 +1707,7 @@ void ProjectFrame::OnWindowShowIndex(UINT nID)
 
 void ProjectFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
 {
-  CMenu* windowMenu = GetMenu()->GetSubMenu(6);
+  CMenu* windowMenu = GetMenu()->GetSubMenu(5);
   int maximum = 9;
 
   // Remove any existing items in the window list
