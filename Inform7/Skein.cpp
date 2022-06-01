@@ -278,6 +278,9 @@ bool Skein::ChangeFile(const char* fileName, const char* path)
     {
       m_inst = *it;
       m_other.erase(it);
+      m_playTo = m_inst.root;
+      m_played = m_inst.root;
+
       m_layout = false;
       NotifyChange(TreeChanged);
       return true;
