@@ -8,8 +8,11 @@
 #define new DEBUG_NEW
 #endif
 
-Skein::Skein() : m_layout(false)
+Skein::Skein()
 {
+  for (int i = 0; i < LAYOUTS; i++)
+    m_laidOut[i] = false;
+
   m_inst.skeinFile = "Skein.skein";
   m_inst.root = new Node(L"- start -",L"",L"",L"",false);
 
@@ -151,7 +154,7 @@ void Skein::Load(const char* path)
   m_playTo = m_inst.root;
   m_played = m_inst.root;
 
-  m_layout = false;
+  InvalidateLayout();
   NotifyChange(TreeChanged);
   NotifyEdit(false);
 }
@@ -202,7 +205,7 @@ void Skein::Reset()
   m_playTo = m_inst.root;
   m_played = m_inst.root;
 
-  m_layout = false;
+  InvalidateLayout();
   NotifyChange(TreeChanged);
   NotifyEdit(false);
 }
@@ -235,7 +238,7 @@ void Skein::Import(const char* path)
 
     if (added)
     {
-      m_layout = false;
+      InvalidateLayout();
       NotifyChange(TreeChanged);
       NotifyEdit(true);
     }
@@ -281,7 +284,7 @@ bool Skein::ChangeFile(const char* fileName, const char* path)
       m_playTo = m_inst.root;
       m_played = m_inst.root;
 
-      m_layout = false;
+      InvalidateLayout();
       NotifyChange(TreeChanged);
       return true;
     }
@@ -301,11 +304,19 @@ void Skein::Reset(bool playTo)
   NotifyChange(ThreadChanged);
 }
 
-void Skein::Layout(CDC& dc, int spacing, bool force)
+void Skein::InvalidateLayout(void)
 {
+  for (int i = 0; i < LAYOUTS; i++)
+    m_laidOut[i] = false;
+}
+
+void Skein::Layout(CDC& dc, int idx, int spacing, bool force)
+{
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
   if (force)
-    m_inst.root->ClearWidths();
-  if (force || (m_layout == false))
+    m_inst.root->ClearWidths(idx);
+  if (force || (m_laidOut[idx] == false))
   {
     std::vector<std::vector<Node*> > nodesByDepth;
     m_inst.root->GetNodesByDepth(0,nodesByDepth);
@@ -318,37 +329,37 @@ void Skein::Layout(CDC& dc, int spacing, bool force)
       for (size_t col = 0; col < rowNodes.size(); ++col)
       {
         Node* node = rowNodes[col];
-        int width = node->GetLineWidth(dc);
-        width = max(width,node->GetLabelTextWidth());
+        int width = node->CalcLineWidth(dc,idx);
+        width = max(width,node->GetLabelTextWidth(idx));
         int x_next = x + (width/2);
 
         // Centre a parent node between its children
         int numc = node->GetNumChildren();
         if (numc > 0)
         {
-          int x_first_child = node->GetChild(0)->GetX();
-          int x_last_child = node->GetChild(numc-1)->GetX();
+          int x_first_child = node->GetChild(0)->GetX(idx);
+          int x_last_child = node->GetChild(numc-1)->GetX(idx);
           int x_centre = (x_first_child + x_last_child)/2;
-          node->SetX(x_centre);
+          node->SetX(idx,x_centre);
           if (x_next > x_centre)
           {
             // Move this node and all its children to the right
-            node->ShiftX(x_next - x_centre);
+            node->ShiftX(idx,x_next - x_centre);
 
             // Move all nodes after this node to the right
             for (size_t col2 = col+1; col2 < rowNodes.size(); ++col2)
-              rowNodes[col2]->ShiftX(x_next - x_centre);
+              rowNodes[col2]->ShiftX(idx,x_next - x_centre);
           }
         }
         else
-          node->SetX(x_next);
+          node->SetX(idx,x_next);
 
-        x = node->GetX() + (width/2) + spacing;
+        x = node->GetX(idx) + (width/2) + spacing;
       }
     }
 
     // Shift the entire tree so that is centered horizontally
-    m_inst.root->ShiftX(-m_inst.root->GetX());
+    m_inst.root->ShiftX(idx,-m_inst.root->GetX(idx));
     int xmin = 0, xmax = 0;
     bool valid = false;
     for (size_t row = 0; row < nodesByDepth.size(); ++row)
@@ -358,8 +369,8 @@ void Skein::Layout(CDC& dc, int spacing, bool force)
       {
         Node* node1 = rowNodes[0];
         Node* node2 = rowNodes[rowNodes.size()-1];
-        int x1 = node1->GetX() - (node1->GetLayoutWidth()/2);
-        int x2 = node2->GetX() + (node2->GetLayoutWidth()/2);
+        int x1 = node1->GetX(idx) - (node1->GetLayoutWidth(idx)/2);
+        int x2 = node2->GetX(idx) + (node2->GetLayoutWidth(idx)/2);
         if (!valid || (x1 < xmin))
           xmin = x1;
         if (!valid || (x2 > xmax))
@@ -368,12 +379,12 @@ void Skein::Layout(CDC& dc, int spacing, bool force)
       }
     }
     if (valid)
-      m_inst.root->ShiftX((xmin + xmax) / -2);
+      m_inst.root->ShiftX(idx,(xmin + xmax) / -2);
   }
-  m_layout = true;
+  m_laidOut[idx] = true;
 }
 
-void Skein::GetTreeExtent(int& width, int& depth)
+void Skein::GetTreeExtent(int idx, int& width, int& depth)
 {
   std::vector<std::vector<Node*> > nodesByDepth;
   m_inst.root->GetNodesByDepth(0,nodesByDepth);
@@ -390,8 +401,8 @@ void Skein::GetTreeExtent(int& width, int& depth)
     {
       Node* node1 = rowNodes[0];
       Node* node2 = rowNodes[rowNodes.size()-1];
-      int x1 = node1->GetX() - (node1->GetLayoutWidth()/2);
-      int x2 = node2->GetX() + (node2->GetLayoutWidth()/2);
+      int x1 = node1->GetX(idx) - (node1->GetLayoutWidth(idx)/2);
+      int x2 = node2->GetX(idx) + (node2->GetLayoutWidth(idx)/2);
       if (!valid || (x1 < xmin))
         xmin = x1;
       if (!valid || (x2 > xmax))
@@ -424,7 +435,7 @@ void Skein::NewLine(const CStringW& line)
   // Notify any listeners
   if (nodeAdded)
   {
-    m_layout = false;
+    InvalidateLayout();
     NotifyChange(TreeChanged);
     NotifyEdit(true);
   }
@@ -519,7 +530,7 @@ Skein::Node* Skein::AddNew(Node* node)
   Node* newNode = new Node(L"",L"",L"",L"",false);
   node->Add(newNode);
 
-  m_layout = false;
+  InvalidateLayout();
   NotifyChange(TreeChanged);
   NotifyEdit(true);
 
@@ -532,7 +543,7 @@ Skein::Node* Skein::AddNewParent(Node* node)
   node->GetParent()->Replace(node,newNode);
   newNode->Add(node);
 
-  m_layout = false;
+  InvalidateLayout();
   NotifyChange(TreeChanged);
   NotifyEdit(true);
 
@@ -554,7 +565,7 @@ bool Skein::RemoveAll(Node* node, bool notify)
       m_played = m_inst.root;
     }
 
-    m_layout = false;
+    InvalidateLayout();
     if (notify)
       NotifyChange(TreeChanged);
   }
@@ -578,7 +589,7 @@ bool Skein::RemoveSingle(Node* node)
       m_played = m_inst.root;
     }
 
-    m_layout = false;
+    InvalidateLayout();
     NotifyChange(TreeChanged);
   }
   if (removed)
@@ -590,7 +601,8 @@ void Skein::SetLine(Node* node, LPCWSTR line)
 {
   if (node->SetLine(line))
     NotifyEdit(true);
-  m_layout = false;
+
+  InvalidateLayout();
   NotifyChange(NodeTextChanged);
 }
 
@@ -598,7 +610,8 @@ void Skein::SetLabel(Node* node, LPCWSTR label)
 {
   if (node->SetLabel(label))
     NotifyEdit(true);
-  m_layout = false;
+
+  InvalidateLayout();
   NotifyChange(NodeTextChanged);
 }
 
@@ -884,9 +897,7 @@ Skein::Node::Node(const CStringW& line, const CStringW& label, const CStringW& t
   const CStringW& expected, bool changed)
   : m_parent(NULL), m_line(line), m_label(label),
     m_textTranscript(transcript), m_textExpected(expected),
-    m_locked(false), m_changed(changed), m_differs(ExpectedDifferent),
-    m_width(-1), m_lineWidth(-1), m_labelWidth(-1), m_x(0),
-    m_anim(false), m_animX(0), m_animDepth(0)
+    m_locked(false), m_changed(changed), m_differs(ExpectedDifferent)
 {
   static unsigned long counter = 0;
 
@@ -929,9 +940,8 @@ bool Skein::Node::SetLine(LPCWSTR line)
 {
   bool change = (m_line != line);
   m_line = line;
-  m_width = -1;
-  m_lineWidth = -1;
-  m_labelWidth = -1;
+  for (int i = 0; i < LAYOUTS; i++)
+    m_layout[i].ClearWidths();
   return change;
 }
 
@@ -944,9 +954,8 @@ bool Skein::Node::SetLabel(LPCWSTR label)
 {
   bool change = (m_label != label);
   m_label = label;
-  m_width = -1;
-  m_lineWidth = -1;
-  m_labelWidth = -1;
+  for (int i = 0; i < LAYOUTS; i++)
+    m_layout[i].ClearWidths();
   return change;
 }
 
@@ -1011,55 +1020,64 @@ bool Skein::Node::SetExpectedText(LPCWSTR text)
   return (oldExpected != m_textExpected);
 }
 
-int Skein::Node::GetLineWidth(CDC& dc)
+int Skein::Node::CalcLineWidth(CDC& dc, int idx)
 {
-  if (m_width < 0)
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+  LayoutInfo& info = m_layout[idx];
+
+  if (info.width < 0)
   {
     SIZE size;
     ::GetTextExtentPoint32W(dc.GetSafeHdc(),m_line,(UINT)wcslen(m_line),&size);
-    m_width = size.cx;
-    m_lineWidth = size.cx;
+    info.width = size.cx;
+    info.lineWidth = size.cx;
 
     if (wcslen(m_label) > 0)
     {
       ::GetTextExtentPoint32W(dc.GetSafeHdc(),m_label,(UINT)wcslen(m_label),&size);
-      m_labelWidth = size.cx;
+      info.labelWidth = size.cx;
     }
     else
-      m_labelWidth = 0;
+      info.labelWidth = 0;
 
     CSize minSize = dc.GetTextExtent("    ",4);
-    if (m_width < minSize.cx)
-      m_width = minSize.cx;
-    if (m_labelWidth < minSize.cx)
-      m_labelWidth = minSize.cx;
+    if (info.width < minSize.cx)
+      info.width = minSize.cx;
+    if (info.labelWidth < minSize.cx)
+      info.labelWidth = minSize.cx;
   }
-  return m_width;
+  return info.width;
 }
 
-int Skein::Node::GetLayoutWidth(void)
+int Skein::Node::GetLayoutWidth(int idx)
 {
-  return max(m_width,m_labelWidth);
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+  LayoutInfo& info = m_layout[idx];
+
+  return max(info.width,info.labelWidth);
 }
 
-int Skein::Node::GetLineTextWidth(void)
+int Skein::Node::GetLineTextWidth(int idx)
 {
-  return m_lineWidth;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  return m_layout[idx].lineWidth;
 }
 
-int Skein::Node::GetLabelTextWidth(void)
+int Skein::Node::GetLabelTextWidth(int idx)
 {
-  return m_labelWidth;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  return m_layout[idx].labelWidth;
 }
 
-void Skein::Node::ClearWidths(void)
+void Skein::Node::ClearWidths(int idx)
 {
-  m_width = -1;
-  m_lineWidth = -1;
-  m_labelWidth = -1;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
 
+  m_layout[idx].ClearWidths();
   for (int i = 0; i < m_children.GetSize(); i++)
-    m_children[i]->ClearWidths();
+    m_children[i]->ClearWidths(idx);
 }
 
 int Skein::Node::GetDepth(void)
@@ -1226,54 +1244,72 @@ void Skein::Node::GetNodesByDepth(int depth, std::vector<std::vector<Node*> >& n
     m_children[i]->GetNodesByDepth(depth+1,nodesByDepth);
 }
 
-int Skein::Node::GetX(void)
+int Skein::Node::GetX(int idx)
 {
-  return m_x;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  return m_layout[idx].x;
 }
 
-void Skein::Node::SetX(int x)
+void Skein::Node::SetX(int idx, int x)
 {
-  m_x = x;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  m_layout[idx].x = x;
 }
 
-void Skein::Node::ShiftX(int shift)
+void Skein::Node::ShiftX(int idx, int shift)
 {
-  m_x += shift;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  m_layout[idx].x += shift;
   for (int i = 0; i < m_children.GetSize(); i++)
-    m_children[i]->ShiftX(shift);
+    m_children[i]->ShiftX(idx,shift);
 }
 
 void Skein::Node::AnimatePrepare(int depth)
 {
-  m_anim = true;
-  m_animX = m_x;
-  m_animDepth = depth;
-
+  for (int i = 0; i < LAYOUTS; i++)
+  {
+    LayoutInfo& info = m_layout[i];
+    info.anim = true;
+    info.animX = info.x;
+    info.animDepth = depth;
+  }
   for (int i = 0; i < m_children.GetSize(); i++)
     m_children[i]->AnimatePrepare(depth+1);
 }
 
 void Skein::Node::AnimateClear(void)
 {
-  m_anim = false;
-  m_animX = 0;
-  m_animDepth = 0;
-
+  for (int i = 0; i < LAYOUTS; i++)
+  {
+    LayoutInfo& info = m_layout[i];
+    info.anim = false;
+    info.animX = 0;
+    info.animDepth = 0;
+  }
   for (int i = 0; i < m_children.GetSize(); i++)
     m_children[i]->AnimateClear();
 }
 
-int Skein::Node::GetAnimateX(int pct)
+int Skein::Node::GetAnimateX(int idx, int pct)
 {
-  if (m_anim && (pct >= 0) && (pct < 100))
-    return m_animX + (((m_x - m_animX) * pct) / 100);
-  return m_x;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+  LayoutInfo& info = m_layout[idx];
+
+  if (info.anim && (pct >= 0) && (pct < 100))
+    return info.animX + (((info.x - info.animX) * pct) / 100);
+  return info.x;
 }
 
-int Skein::Node::GetAnimateY(int depth, int spacing, int pct)
+int Skein::Node::GetAnimateY(int idx, int depth, int spacing, int pct)
 {
-  if (m_anim && (pct >= 0) && (pct < 100))
-    return ((m_animDepth - depth) * spacing * (100 - pct)) / 100;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+  LayoutInfo& info = m_layout[idx];
+
+  if (info.anim && (pct >= 0) && (pct < 100))
+    return ((info.animDepth - depth) * spacing * (100 - pct)) / 100;
   return 0;
 }
 
@@ -1365,4 +1401,16 @@ CStringW Skein::Node::StripWhite(const CStringW& inStr)
     }
   }
   return outStr;
+}
+
+Skein::Node::LayoutInfo::LayoutInfo()
+  : width(-1), lineWidth(-1), labelWidth(-1), x(0), anim(false), animX(0), animDepth(0)
+{
+}
+
+void Skein::Node::LayoutInfo::ClearWidths()
+{
+  width = -1;
+  lineWidth = -1;
+  labelWidth = -1;
 }

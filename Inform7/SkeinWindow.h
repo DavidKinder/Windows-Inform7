@@ -18,7 +18,7 @@ public:
   SkeinWindow();
   virtual ~SkeinWindow();
 
-  void SetSkein(Skein* skein);
+  void SetSkein(Skein* skein, int idx);
   void Layout(bool force);
   void PrefsChanged(void);
 
@@ -104,6 +104,7 @@ private:
     bool& unselected, bool& selected, bool& active, bool& differs, int& count);
 
   Skein* m_skein;
+  int m_skeinIndex;
   Skein::Node* m_threadEnd;
 
   std::map<Skein::Node*,CRect> m_nodes;

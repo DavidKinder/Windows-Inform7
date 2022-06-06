@@ -244,8 +244,8 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   ((TabStory*)GetPanel(1)->GetTab(Panel::Tab_Story))->SetGame(&m_game);
 
   // Set up the testing tabs
-  ((TabTesting*)GetPanel(0)->GetTab(Panel::Tab_Testing))->SetSkein(&m_skein);
-  ((TabTesting*)GetPanel(1)->GetTab(Panel::Tab_Testing))->SetSkein(&m_skein);
+  ((TabTesting*)GetPanel(0)->GetTab(Panel::Tab_Testing))->SetSkein(&m_skein,0);
+  ((TabTesting*)GetPanel(1)->GetTab(Panel::Tab_Testing))->SetSkein(&m_skein,1);
 
   // Set up the settings tabs
   ((TabSettings*)GetPanel(0)->GetTab(Panel::Tab_Settings))->SetSettings(&m_settings);

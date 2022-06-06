@@ -211,10 +211,10 @@ void TabTesting::LinkError(const char* url)
 {
 }
 
-void TabTesting::SetSkein(Skein* skein)
+void TabTesting::SetSkein(Skein* skein, int idx)
 {
   m_skein = skein;
-  m_skeinWindow->SetSkein(skein);
+  m_skeinWindow->SetSkein(skein,idx);
 }
 
 void TabTesting::ShowNode(Skein::Node* node, Skein::Show why)

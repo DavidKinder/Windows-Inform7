@@ -6,6 +6,8 @@
 #include <set>
 #include <vector>
 
+#define LAYOUTS 2
+
 class Skein
 {
 public:
@@ -23,8 +25,9 @@ public:
   bool ChangeFile(const char* fileName, const char* path);
 
   void Reset(bool playTo);
-  void Layout(CDC& dc, int spacing, bool force);
-  void GetTreeExtent(int& width, int& depth);
+  void InvalidateLayout(void);
+  void Layout(CDC& dc, int idx, int spacing, bool force);
+  void GetTreeExtent(int idx, int& width, int& depth);
 
   void NewLine(const CStringW& line);
   bool NextLine(CStringW& line);
@@ -84,11 +87,11 @@ public:
     bool CanBless(void);
     bool SetExpectedText(LPCWSTR text);
 
-    int GetLineWidth(CDC& dc);
-    int GetLayoutWidth(void);
-    int GetLineTextWidth(void);
-    int GetLabelTextWidth(void);
-    void ClearWidths(void);
+    int CalcLineWidth(CDC& dc, int idx);
+    int GetLayoutWidth(int idx);
+    int GetLineTextWidth(int idx);
+    int GetLabelTextWidth(int idx);
+    void ClearWidths(int idx);
 
     int GetDepth(void);
 
@@ -108,14 +111,14 @@ public:
     bool HasLabels(void);
 
     void GetNodesByDepth(int depth, std::vector<std::vector<Node*> >& nodesByDepth);
-    int GetX(void);
-    void SetX(int x);
-    void ShiftX(int shift);
+    int GetX(int idx);
+    void SetX(int idx, int x);
+    void ShiftX(int idx, int shift);
 
     void AnimatePrepare(int depth);
     void AnimateClear(void);
-    int GetAnimateX(int pct);
-    int GetAnimateY(int depth, int spacing, int pct);
+    int GetAnimateX(int idx, int pct);
+    int GetAnimateY(int idx, int depth, int spacing, int pct);
 
   private:
     void CompareWithExpected(void);
@@ -135,17 +138,24 @@ public:
     bool m_changed;
     ExpectedCompare m_differs;
 
-    int m_width;
-    int m_lineWidth;
-    int m_labelWidth;
-    int m_x;
-
-    bool m_anim;
-    int m_animX;
-    int m_animDepth;
-
     Node* m_parent;
     CArray<Node*> m_children;
+
+    struct LayoutInfo
+    {
+      int width;
+      int lineWidth;
+      int labelWidth;
+      int x;
+
+      bool anim;
+      int animX;
+      int animDepth;
+
+      LayoutInfo();
+      void ClearWidths();
+    };
+    LayoutInfo m_layout[LAYOUTS];
   };
 
   Node* GetRoot(void);
@@ -233,7 +243,7 @@ private:
   Instance m_inst;
   std::vector<Instance> m_other;
 
-  bool m_layout;
+  bool m_laidOut[LAYOUTS];
   std::vector<Listener*> m_listeners;
 
   // The node to play down to

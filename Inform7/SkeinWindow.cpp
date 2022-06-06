@@ -31,7 +31,7 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
   ON_MESSAGE(WM_LABELNODE, OnLabelNode)
 END_MESSAGE_MAP()
 
-SkeinWindow::SkeinWindow() : m_skein(NULL), m_threadEnd(NULL),
+SkeinWindow::SkeinWindow() : m_skein(NULL), m_skeinIndex(-1), m_threadEnd(NULL),
   m_mouseOverNode(NULL), m_mouseOverMenu(false), m_lastClick(false), m_lastClickTime(0),
   m_pctAnim(-1), m_anchorWindow(NULL)
 {
@@ -475,7 +475,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
   if (m_skein->IsActive())
   {
     // Redo the layout if needed
-    m_skein->Layout(dc,m_fontSize.cx*8,false);
+    m_skein->Layout(dc,m_skeinIndex,m_fontSize.cx*8,false);
 
     // Work out the position of the centre of the root node
     CPoint rootCentre(origin);
@@ -517,10 +517,11 @@ BOOL SkeinWindow::PreCreateWindow(CREATESTRUCT& cs)
   return CScrollView::PreCreateWindow(cs);
 }
 
-void SkeinWindow::SetSkein(Skein* skein)
+void SkeinWindow::SetSkein(Skein* skein, int idx)
 {
   m_skein = skein;
   m_skein->AddListener(this);
+  m_skeinIndex = idx;
   Layout(false);
 }
 
@@ -592,7 +593,7 @@ void SkeinWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
     if (!NodeFullyVisible(node))
     {
       // Work out the position of the node
-      int x = (GetTotalSize().cx/2)+node->GetX();
+      int x = (GetTotalSize().cx/2)+node->GetX(m_skeinIndex);
       int y = GetNodeYPos(node->GetDepth()-1,1);
       if (y < 0)
         y = 0;
@@ -677,13 +678,13 @@ CSize SkeinWindow::GetLayoutSize(bool force)
     // Redo the layout if needed
     CDC* dc = GetDC();
     CFont* font = dc->SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
-    m_skein->Layout(*dc,m_fontSize.cx*8,force);
+    m_skein->Layout(*dc,m_skeinIndex,m_fontSize.cx*8,force);
     dc->SelectObject(font);
     ReleaseDC(dc);
 
     // Get the size of the tree
     int width, depth;
-    m_skein->GetTreeExtent(width,depth);
+    m_skein->GetTreeExtent(m_skeinIndex,width,depth);
     size.cx = width + (m_fontSize.cx*10);
     size.cy = GetNodeYPos(depth-1,2);
   }
@@ -727,8 +728,8 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, Skein::Node* thread
   const CPoint& siblingCentre, int depth, int spacing, bool gameRunning)
 {
   CPoint nodeCentre(
-    siblingCentre.x + node->GetAnimateX(m_pctAnim),
-    siblingCentre.y + node->GetAnimateY(depth,spacing,m_pctAnim));
+    siblingCentre.x + node->GetAnimateX(m_skeinIndex,m_pctAnim),
+    siblingCentre.y + node->GetAnimateY(m_skeinIndex,depth,spacing,m_pctAnim));
 
   switch (phase)
   {
@@ -769,7 +770,7 @@ void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, cons
   // Get the text associated with the node
   LPCWSTR line = node->GetLine();
   LPCWSTR label = node->GetLabel();
-  int width = node->GetLineWidth(dc);
+  int width = node->CalcLineWidth(dc,m_skeinIndex);
 
   // Check if this node is visible before drawing
   CRect nodeArea(centre,CSize(width+m_fontSize.cx*8,m_fontSize.cy*3));
@@ -795,7 +796,7 @@ void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, cons
 
     // Change the font, if needed
     CFont* oldFont = NULL;
-    int textWidth = node->GetLineTextWidth();
+    int textWidth = node->GetLineTextWidth(m_skeinIndex);
     if (node == m_skein->GetRoot())
     {
       oldFont = dc.SelectObject(&m_boldFont);
@@ -1262,7 +1263,7 @@ void SkeinWindow::StartEdit(Skein::Node* node, bool label)
 
     if (label)
     {
-      nodeRect.InflateRect((node->GetLabelTextWidth()-nodeRect.Width())/2,0);
+      nodeRect.InflateRect((node->GetLabelTextWidth(m_skeinIndex)-nodeRect.Width())/2,0);
       nodeRect.InflateRect(m_fontSize.cx,0);
       nodeRect.top += (back->GetSize().cy/2);
       nodeRect.top -= (int)(0.12*m_fontSize.cy);
