@@ -59,6 +59,23 @@ bool Skein::InThread(Node* node, Node* endNode)
   return false;
 }
 
+Skein::Node* Skein::ChildInThread(Node* node, Node* endNode)
+{
+  if (node->GetNumChildren() > 0)
+  {
+    while (endNode != NULL)
+    {
+      for (int i = 0; i < node->GetNumChildren(); i++)
+      {
+        if (endNode == node->GetChild(i))
+          return endNode;
+      }
+      endNode = endNode->GetParent();
+    }
+  }
+  return NULL;
+}
+
 Skein::Node* Skein::GetPlayed(void)
 {
   return m_played;
@@ -310,7 +327,7 @@ void Skein::InvalidateLayout(void)
     m_laidOut[i] = false;
 }
 
-void Skein::Layout(CDC& dc, int idx, int spacing, bool force)
+void Skein::Layout(CDC& dc, int idx, Node* threadEndNode, int spacing, bool force)
 {
   ASSERT((idx >= 0) && (idx < LAYOUTS));
 
@@ -329,14 +346,33 @@ void Skein::Layout(CDC& dc, int idx, int spacing, bool force)
       for (size_t col = 0; col < rowNodes.size(); ++col)
       {
         Node* node = rowNodes[col];
+        int numc = node->GetNumChildren();
+        Node* childInThread = ChildInThread(node,threadEndNode);
+
+        // Set the initial position of the node
         int width = node->CalcLineWidth(dc,idx);
         width = max(width,node->GetLabelTextWidth(idx));
         int x_next = x + (width/2);
+        node->SetX(idx,x_next);
 
-        // Centre a parent node between its children
-        int numc = node->GetNumChildren();
-        if (numc > 0)
+        if (childInThread != NULL)
         {
+          // Put all selected nodes on the same vertical line
+          int x_child = childInThread->GetX(idx);
+          node->SetX(idx,x_child);
+          if (x_next > x_child)
+          {
+            // Move this node and all its children to the right
+            node->ShiftX(idx,x_next - x_child);
+
+            // Move all nodes after this node to the right
+            for (size_t col2 = col+1; col2 < rowNodes.size(); ++col2)
+              rowNodes[col2]->ShiftX(idx,x_next - x_child);
+          }
+        }
+        else if (numc > 0)
+        {
+          // Centre a parent node between its children
           int x_first_child = node->GetChild(0)->GetX(idx);
           int x_last_child = node->GetChild(numc-1)->GetX(idx);
           int x_centre = (x_first_child + x_last_child)/2;
@@ -351,8 +387,6 @@ void Skein::Layout(CDC& dc, int idx, int spacing, bool force)
               rowNodes[col2]->ShiftX(idx,x_next - x_centre);
           }
         }
-        else
-          node->SetX(idx,x_next);
 
         x = node->GetX(idx) + (width/2) + spacing;
       }

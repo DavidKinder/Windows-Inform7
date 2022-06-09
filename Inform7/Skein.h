@@ -11,6 +11,8 @@
 class Skein
 {
 public:
+  class Node;
+
   Skein();
   ~Skein();
 
@@ -26,7 +28,7 @@ public:
 
   void Reset(bool playTo);
   void InvalidateLayout(void);
-  void Layout(CDC& dc, int idx, int spacing, bool force);
+  void Layout(CDC& dc, int idx, Node* threadEndNode, int spacing, bool force);
   void GetTreeExtent(int idx, int& width, int& depth);
 
   void NewLine(const CStringW& line);
@@ -164,6 +166,7 @@ public:
   void SetPlayTo(Node* node);
   bool InPlayThread(Node* node);
   bool InThread(Node* node, Node* endNode);
+  Node* Skein::ChildInThread(Node* node, Node* endNode);
   Node* GetPlayed(void);
 
   Node* AddNew(Node* node);

@@ -416,6 +416,7 @@ void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
       if (node != NULL)
       {
         m_threadEnd = m_skein->GetThreadEnd(node);
+        Layout(true);
         Invalidate();
       }
     }
@@ -475,7 +476,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
   if (m_skein->IsActive())
   {
     // Redo the layout if needed
-    m_skein->Layout(dc,m_skeinIndex,m_fontSize.cx*8,false);
+    m_skein->Layout(dc,m_skeinIndex,m_threadEnd,m_fontSize.cx*8,false);
 
     // Work out the position of the centre of the root node
     CPoint rootCentre(origin);
@@ -678,7 +679,7 @@ CSize SkeinWindow::GetLayoutSize(bool force)
     // Redo the layout if needed
     CDC* dc = GetDC();
     CFont* font = dc->SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
-    m_skein->Layout(*dc,m_skeinIndex,m_fontSize.cx*8,force);
+    m_skein->Layout(*dc,m_skeinIndex,m_threadEnd,m_fontSize.cx*8,force);
     dc->SelectObject(font);
     ReleaseDC(dc);
 
