@@ -476,7 +476,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
   if (m_skein->IsActive())
   {
     // Redo the layout if needed
-    m_skein->Layout(dc,m_skeinIndex,m_threadEnd,m_fontSize.cx*8,false);
+    m_skein->Layout(dc,m_skeinIndex,m_threadEnd,m_fontSize.cx*6,false);
 
     // Work out the position of the centre of the root node
     CPoint rootCentre(origin);
@@ -679,7 +679,7 @@ CSize SkeinWindow::GetLayoutSize(bool force)
     // Redo the layout if needed
     CDC* dc = GetDC();
     CFont* font = dc->SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
-    m_skein->Layout(*dc,m_skeinIndex,m_threadEnd,m_fontSize.cx*8,force);
+    m_skein->Layout(*dc,m_skeinIndex,m_threadEnd,m_fontSize.cx*6,force);
     dc->SelectObject(font);
     ReleaseDC(dc);
 
@@ -774,7 +774,7 @@ void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, cons
   int width = node->CalcLineWidth(dc,m_skeinIndex);
 
   // Check if this node is visible before drawing
-  CRect nodeArea(centre,CSize(width+m_fontSize.cx*8,m_fontSize.cy*3));
+  CRect nodeArea(centre,CSize(width+m_fontSize.cx*6,m_fontSize.cy*3));
   nodeArea.OffsetRect(nodeArea.Width()/-2,nodeArea.Height()/-2);
   CRect intersect;
   if (intersect.IntersectRect(client,nodeArea))
@@ -826,6 +826,9 @@ void SkeinWindow::DrawNodeBack(Skein::Node* node, CDibSection& bitmap, const CPo
 {
   int y = centre.y-(back->GetSize().cy/2)+(int)(0.12*m_fontSize.cy);
   int edgeWidth = (m_fontSize.cx*7)/2;
+
+  // Part of the width is taken up with the rounded edges
+  width -= m_fontSize.cx*2;
 
   // Draw the rounded edges of the background
   bitmap.AlphaBlend(back,0,0,edgeWidth,back->GetSize().cy,
@@ -1273,7 +1276,7 @@ void SkeinWindow::StartEdit(Skein::Node* node, bool label)
     }
     else
     {
-      nodeRect.DeflateRect(m_fontSize.cx*3,0);
+      nodeRect.DeflateRect(m_fontSize.cx*2,0);
       nodeRect.top += (back->GetSize().cy/2);
       nodeRect.top -= (int)(0.12*m_fontSize.cy);
       nodeRect.top -= (int)(0.5*m_fontSize.cy);
