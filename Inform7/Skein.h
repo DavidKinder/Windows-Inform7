@@ -102,6 +102,7 @@ public:
     void RemoveAll(void);
     bool RemoveSingle(Node* child);
     void Replace(Node* oldNode, Node* newNode);
+    bool SortChildren(void);
 
     Node* Find(const CStringW& line);
     Node* FindAncestor(Node* descendant);
@@ -173,6 +174,7 @@ public:
   Node* AddNewParent(Node* node);
   bool RemoveAll(Node* node, bool notify = true);
   bool RemoveSingle(Node* node);
+  void SortSiblings(Node* node);
   void SetLine(Node* node, LPCWSTR line);
 
   void SetLabel(Node* node, LPCWSTR label);

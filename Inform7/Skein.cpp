@@ -459,6 +459,7 @@ void Skein::NewLine(const CStringW& line)
   {
     node = new Node(nodeLine,L"",L"",L"",false);
     m_playTo->Add(node);
+    m_playTo->SortChildren();
     nodeAdded = true;
   }
 
@@ -629,6 +630,19 @@ bool Skein::RemoveSingle(Node* node)
   if (removed)
     NotifyEdit(true);
   return removed;
+}
+
+void Skein::SortSiblings(Node* node)
+{
+  Node* parent = node->GetParent();
+  if (parent != NULL)
+  {
+    if (parent->SortChildren())
+    {
+      InvalidateLayout();
+      NotifyChange(TreeChanged);
+    }
+  }
 }
 
 void Skein::SetLine(Node* node, LPCWSTR line)
@@ -1184,6 +1198,37 @@ void Skein::Node::Replace(Node* oldNode, Node* newNode)
       newNode->SetParent(this);
     }
   }
+}
+
+static int CompareByLine(const void* element1, const void* element2)
+{
+  Skein::Node* node1 = *((Skein::Node**)element1);
+  Skein::Node* node2 = *((Skein::Node**)element2);
+  return node1->GetLine().Compare(node2->GetLine());
+}
+
+bool Skein::Node::SortChildren(void)
+{
+  if (!m_children.IsEmpty())
+  {
+    // Sort a copy of the children array
+    CArray<Node*> sorted;
+    sorted.Copy(m_children);
+    qsort(sorted.GetData(),sorted.GetSize(),sizeof (Node*),CompareByLine);
+
+    // Has the order changed?
+    for (int i = 0; i < m_children.GetSize(); i++)
+    {
+      if (sorted[i] != m_children[i])
+      {
+        // Use the sorted array
+        m_children.RemoveAll();
+        m_children.Copy(sorted);
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 Skein::Node* Skein::Node::Find(const CStringW& line)

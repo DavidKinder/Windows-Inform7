@@ -433,6 +433,7 @@ LRESULT SkeinWindow::OnRenameNode(WPARAM node, LPARAM line)
 
   AnimatePrepare();
   m_skein->SetLine(theNode,(LPWSTR)line);
+  m_skein->SortSiblings(theNode);
   GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
   return 0;
 }
