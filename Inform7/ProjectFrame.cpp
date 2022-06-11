@@ -77,6 +77,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_RUNCENSUS, OnRunCensus)
   ON_MESSAGE(WM_STORYNAME, OnStoryName)
   ON_MESSAGE(WM_REPLAYALL, OnReplayAll)
+  ON_MESSAGE(WM_TESTINGTABSHOWN, OnTestingTabShown)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -1521,6 +1522,16 @@ LRESULT ProjectFrame::OnReplayAll(WPARAM, LPARAM)
   m_skein.SetPlayTo(firstEnd);
   OnPlayReplay();
   return 0;
+}
+
+LRESULT ProjectFrame::OnTestingTabShown(WPARAM wparam, LPARAM)
+{
+  if (wparam != 0)
+  {
+    m_settings.m_testingTabShownCount++;
+    m_settings.m_changed = true;
+  }
+  return m_settings.m_testingTabShownCount;
 }
 
 void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)

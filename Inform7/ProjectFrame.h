@@ -87,6 +87,7 @@ protected:
   afx_msg LRESULT OnRunCensus(WPARAM, LPARAM);
   afx_msg LRESULT OnStoryName(WPARAM, LPARAM);
   afx_msg LRESULT OnReplayAll(WPARAM, LPARAM);
+  afx_msg LRESULT OnTestingTabShown(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();

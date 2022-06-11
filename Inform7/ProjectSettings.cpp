@@ -45,6 +45,7 @@ void ProjectSettings::Load(const char* path)
     break;
   }
   m_compilerVersion = propList.GetString(L"IFOutputSettings",L"IFSettingCompilerVersion");
+  m_testingTabShownCount = propList.GetNumber(L"IFMiscSettings",L"IFSettingTestingTabShownCount");
 
   // Cope with old settings files
   if (propList.Exists(L"IFCompilerOptions",L"IFSettingNobbleRng"))
@@ -87,7 +88,11 @@ bool ProjectSettings::Save(const char* path)
     "\t<dict>\n"
     "\t\t<key>IFSettingInfix</key>\n"
     "\t\t<false/>\n"
-    "\t</dict>\n");
+    "\t\t<key>IFSettingTestingTabShownCount</key>\n"
+    "\t\t<integer>%d</integer>\n"
+    "\t</dict>\n",
+    m_testingTabShownCount
+  );
 
   fprintf(settingsFile,
     "\t<key>IFOutputSettings</key>\n"
@@ -181,5 +186,6 @@ void ProjectSettings::SetDefaults(void)
   m_output = OutputGlulx;
   m_blorb = true;
   m_predictable = false;
+  m_testingTabShownCount = 0;
   m_changed = false;
 }

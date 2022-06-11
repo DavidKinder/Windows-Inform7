@@ -84,6 +84,9 @@ void TabTesting::MakeActive(TabState& state)
   m_skeinWindow->SetFocus();
 
   state.tab = Panel::Tab_Testing;
+
+  SendMessage(WM_UPDATEHELP);
+  GetParentFrame()->SendMessage(WM_TESTINGTABSHOWN,1);
 }
 
 BOOL TabTesting::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
@@ -296,7 +299,7 @@ LRESULT TabTesting::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
 LRESULT TabTesting::OnUpdateHelp(WPARAM, LPARAM)
 {
   bool active = m_skein->IsActive();
-  bool showWelcome = false;//XXXXDK
+  bool showWelcome = GetParentFrame()->SendMessage(WM_TESTINGTABSHOWN,0) < 10;
   bool anyPurple = false, anyGrey = false, anyBlue = false, anyBadge = false;
   int count = 0;
   if (active)

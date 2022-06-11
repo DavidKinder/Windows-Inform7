@@ -199,3 +199,8 @@ enum FindCommand
 
 // Sent to the window frame to trigger replaying all skein threads.
 #define WM_REPLAYALL      WM_APP+42
+
+// Sent to the window frame to get the number of times that the Testing tab
+// has been shown for this project. If wParam is not zero the number of times
+// is incremented.
+#define WM_TESTINGTABSHOWN WM_APP+43
