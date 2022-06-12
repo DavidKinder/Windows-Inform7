@@ -415,9 +415,10 @@ void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
       Skein::Node* node = NodeAtPoint(m_lastPoint);
       if (node != NULL)
       {
+        AnimatePrepare();
         m_threadEnd = m_skein->GetThreadEnd(node);
         Layout(true);
-        Invalidate();
+        GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
       }
     }
   }
