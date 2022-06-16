@@ -2725,16 +2725,16 @@ int ProjectFrame::ChoosePanel(Panel::Tabs newTab)
   else if (leftTab == newTab)
     return 0;
 
-  // Always try to use the left panel for source
+  // Always use the right panel for the story
+  if (newTab == Panel::Tab_Story)
+    return 1;
+
+  // Always use the left panel for source
   if (newTab == Panel::Tab_Source)
     return 0;
 
-  // If the right panel is not source, use that
-  if (rightTab != Panel::Tab_Source)
-    return 1;
-
-  // Use the left panel unless that is source too
-  return (leftTab == Panel::Tab_Source) ? 1 : 0;
+  // If the right panel only is source, use the left, otherwise the right
+  return (leftTab != Panel::Tab_Source) && (rightTab == Panel::Tab_Source) ? 0 : 1;
 }
 
 // Implementation of InformApp::OutputSink
