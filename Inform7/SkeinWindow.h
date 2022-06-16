@@ -60,7 +60,6 @@ private:
   CSize GetLayoutSize(bool force);
   CSize GetLayoutSpacing(void);
   CSize GetLayoutBorder(void);
-  CPoint GetRootOrigin(const CPoint& viewOrigin);
 
   void SetFontsBitmaps(void);
 

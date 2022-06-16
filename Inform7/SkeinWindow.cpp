@@ -470,7 +470,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
     return;
   CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&bitmap);
   CFont* oldFont = dc.SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
-  CPoint viewOrigin = pDC->GetViewportOrg();
+  CPoint origin = pDC->GetViewportOrg();
 
   // Clear the background
   dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourBack));
@@ -480,9 +480,6 @@ void SkeinWindow::OnDraw(CDC* pDC)
     // Redo the layout if needed
     m_skein->Layout(dc,m_skeinIndex,m_threadEnd,GetLayoutSpacing(),false);
 
-    // Work out the start position for drawing the skein from
-    CPoint rootOrigin = GetRootOrigin(viewOrigin);
-
     // Get relevant state from the project frame
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
 
@@ -490,7 +487,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
     for (int i = 0; i < 2; i++)
     {
       DrawNodeTree(i,m_skein->GetRoot(),GetTranscriptEnd(),dc,bitmap,client,
-        rootOrigin,CPoint(0,0),gameRunning);
+        origin+GetLayoutBorder(),CPoint(0,0),gameRunning);
     }
 
     // If the edit window is visible, exclude the area under it to reduce flicker
@@ -499,13 +496,13 @@ void SkeinWindow::OnDraw(CDC* pDC)
       CRect editRect;
       m_edit.GetWindowRect(&editRect);
       ScreenToClient(&editRect);
-      editRect -= viewOrigin;
+      editRect -= origin;
       pDC->ExcludeClipRect(editRect);
     }
   }
 
   // Draw the memory bitmap on the window's device context
-  pDC->BitBlt(-viewOrigin.x,-viewOrigin.y,client.Width(),client.Height(),&dc,0,0,SRCCOPY);
+  pDC->BitBlt(-origin.x,-origin.y,client.Width(),client.Height(),&dc,0,0,SRCCOPY);
 
   // Restore the original device context settings
   dc.SelectObject(oldFont);
@@ -594,7 +591,7 @@ void SkeinWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
     if (!NodeFullyVisible(node))
     {
       // Work out the position of the node
-      CPoint origin = GetRootOrigin(CPoint());
+      CPoint origin = GetLayoutBorder();
       int x = origin.x + node->GetX(m_skeinIndex);
       int y = origin.y + node->GetY(m_skeinIndex);
 
@@ -703,14 +700,6 @@ CSize SkeinWindow::GetLayoutSpacing(void)
 CSize SkeinWindow::GetLayoutBorder(void)
 {
   return CSize(m_fontSize.cx*5,(int)(m_fontSize.cy*1.6));
-}
-
-CPoint SkeinWindow::GetRootOrigin(const CPoint& viewOrigin)
-{
-  CPoint rootOrigin(viewOrigin);
-  rootOrigin.x += GetTotalSize().cx/2;
-  rootOrigin.y += GetLayoutBorder().cy;
-  return rootOrigin;
 }
 
 void SkeinWindow::SetFontsBitmaps(void)

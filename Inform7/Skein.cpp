@@ -393,28 +393,19 @@ void Skein::Layout(CDC& dc, int idx, Node* threadEndNode, const CSize& spacing, 
       }
     }
 
-    // Shift the entire tree so that is centered horizontally
-    m_inst.root->ShiftX(idx,-m_inst.root->GetX(idx));
-    int xmin = 0, xmax = 0;
-    bool valid = false;
+    // Shift the entire tree so that the origin is the left edge
+    int x_leftmost = 0;
     for (size_t row = 0; row < nodesByDepth.size(); ++row)
     {
       const std::vector<Node*>& rowNodes = nodesByDepth[row];
       if (rowNodes.size() > 0)
       {
-        Node* node1 = rowNodes[0];
-        Node* node2 = rowNodes[rowNodes.size()-1];
-        int x1 = node1->GetX(idx) - (node1->GetLayoutWidth(idx)/2);
-        int x2 = node2->GetX(idx) + (node2->GetLayoutWidth(idx)/2);
-        if (!valid || (x1 < xmin))
-          xmin = x1;
-        if (!valid || (x2 > xmax))
-          xmax = x2;
-        valid = true;
+        int x = rowNodes[0]->GetX(idx);
+        if (x < x_leftmost)
+          x_leftmost = x;
       }
     }
-    if (valid)
-      m_inst.root->ShiftX(idx,(xmin + xmax) / -2);
+    m_inst.root->ShiftX(idx,-x_leftmost);
   }
   m_laidOut[idx] = true;
 }
