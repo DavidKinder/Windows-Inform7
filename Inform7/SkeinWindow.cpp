@@ -31,7 +31,7 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
   ON_MESSAGE(WM_LABELNODE, OnLabelNode)
 END_MESSAGE_MAP()
 
-SkeinWindow::SkeinWindow() : m_skein(NULL), m_skeinIndex(-1), m_threadEnd(NULL),
+SkeinWindow::SkeinWindow() : m_skein(NULL), m_skeinIndex(-1), m_transcriptNode(NULL),
   m_mouseOverNode(NULL), m_mouseOverMenu(false), m_lastClick(false), m_lastClickTime(0),
   m_pctAnim(-1), m_anchorWindow(NULL)
 {
@@ -416,7 +416,7 @@ void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
       if (node != NULL)
       {
         AnimatePrepare();
-        m_threadEnd = m_skein->GetThreadEnd(node);
+        m_transcriptNode = m_skein->GetThreadEnd(node);
         Layout(true);
         GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
       }
@@ -478,7 +478,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
   if (m_skein->IsActive())
   {
     // Redo the layout if needed
-    m_skein->Layout(dc,m_skeinIndex,m_threadEnd,GetLayoutSpacing(),false);
+    m_skein->Layout(dc,m_skeinIndex,GetLayoutSpacing(),false,m_transcriptNode);
 
     // Get relevant state from the project frame
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
@@ -486,8 +486,8 @@ void SkeinWindow::OnDraw(CDC* pDC)
     // Draw all nodes
     for (int i = 0; i < 2; i++)
     {
-      DrawNodeTree(i,m_skein->GetRoot(),GetTranscriptEnd(),dc,bitmap,client,
-        origin+GetLayoutBorder(),CPoint(0,0),gameRunning);
+      DrawNodeTree(i,m_skein->GetRoot(),dc,bitmap,
+        client,origin+GetLayoutBorder(),CPoint(0,0),gameRunning);
     }
 
     // If the edit window is visible, exclude the area under it to reduce flicker
@@ -548,8 +548,8 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
   {
   case Skein::TreeChanged:
   case Skein::NodeTextChanged:
-    if (m_threadEnd && !m_skein->IsValidNode(m_threadEnd))
-      m_threadEnd = NULL;//XXXXDK hide transcript?
+    if (m_transcriptNode && !m_skein->IsValidNode(m_transcriptNode))
+      m_transcriptNode = NULL;//XXXXDK hide transcript?
     Layout(false);
     Invalidate();
     break;
@@ -636,8 +636,7 @@ void SkeinWindow::SkeinNodesShown(
   if (m_skein->IsActive())
   {
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
-    SkeinNodesShown(m_skein->GetRoot(),GetTranscriptEnd(),gameRunning,
-      unselected,selected,active,differs,count);
+    SkeinNodesShown(m_skein->GetRoot(),gameRunning,unselected,selected,active,differs,count);
   }
 }
 
@@ -655,7 +654,7 @@ void SkeinWindow::Animate(int pct)
 
 Skein::Node* SkeinWindow::GetTranscriptEnd(void)
 {
-  return m_threadEnd;
+  return m_transcriptNode;
 }
 
 CSize SkeinWindow::GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL bVert)
@@ -680,7 +679,7 @@ CSize SkeinWindow::GetLayoutSize(bool force)
     // Redo the layout if needed
     CDC* dc = GetDC();
     CFont* font = dc->SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
-    m_skein->Layout(*dc,m_skeinIndex,m_threadEnd,GetLayoutSpacing(),force);
+    m_skein->Layout(*dc,m_skeinIndex,GetLayoutSpacing(),force,m_transcriptNode);
     dc->SelectObject(font);
     ReleaseDC(dc);
 
@@ -729,7 +728,7 @@ void SkeinWindow::SetFontsBitmaps(void)
   m_bitmaps[DiffersBadge] = GetImage("SkeinDiffersBadge");
 }
 
-void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, Skein::Node* threadEnd, CDC& dc, CDibSection& bitmap,
+void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSection& bitmap,
   const CRect& client, const CPoint& origin, const CPoint& parent, bool gameRunning)
 {
   CSize nodePos = node->GetAnimatePos(m_skeinIndex,m_pctAnim);
@@ -748,16 +747,13 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, Skein::Node* thread
   case 1:
     // Draw the node
     DrawNode(node,dc,bitmap,client,
-      nodeCentre,m_skein->InThread(node,threadEnd),gameRunning);
+      nodeCentre,m_skein->InThread(node,m_transcriptNode),gameRunning);
     break;
   }
 
   // Draw all the node's children
   for (int i = 0; i < node->GetNumChildren(); i++)
-  {
-    DrawNodeTree(phase,node->GetChild(i),
-      threadEnd,dc,bitmap,client,origin,nodeCentre,gameRunning);
-  }
+    DrawNodeTree(phase,node->GetChild(i),dc,bitmap,client,origin,nodeCentre,gameRunning);
 }
 
 void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
@@ -1310,10 +1306,10 @@ SkeinWindow::NodeBitmap SkeinWindow::GetNodeBack(Skein::Node* node, bool selecte
   return back;
 }
 
-void SkeinWindow::SkeinNodesShown(Skein::Node* node, Skein::Node* threadEnd, bool gameRunning,
+void SkeinWindow::SkeinNodesShown(Skein::Node* node, bool gameRunning,
   bool& unselected, bool& selected, bool& active, bool& differs, int& count)
 {
-  switch (GetNodeBack(node,m_skein->InThread(node,threadEnd),gameRunning))
+  switch (GetNodeBack(node,m_skein->InThread(node,m_transcriptNode),gameRunning))
   {
   case BackActive:
     active = true;
@@ -1334,10 +1330,7 @@ void SkeinWindow::SkeinNodesShown(Skein::Node* node, Skein::Node* threadEnd, boo
   count++;
 
   for (int i = 0; i < node->GetNumChildren(); i++)
-  {
-    SkeinNodesShown(node->GetChild(i),threadEnd,gameRunning,
-      unselected,selected,active,differs,count);
-  }
+    SkeinNodesShown(node->GetChild(i),gameRunning,unselected,selected,active,differs,count);
 }
 
 SkeinWindow::CommandStartEdit::CommandStartEdit(SkeinWindow* wnd, Skein::Node* node, bool label)

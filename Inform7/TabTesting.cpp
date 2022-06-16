@@ -383,9 +383,9 @@ void TabTesting::OnSaveTranscript()
   dialog.m_ofn.lpstrTitle = "Save Transcript";
   if (dialog.DoModal() == IDOK)
   {
-    Skein::Node* threadEnd = m_skeinWindow->GetTranscriptEnd();
-    if (threadEnd)
-      m_skein->SaveTranscript(threadEnd,dialog.GetPathName());
+    Skein::Node* transcriptNode = m_skeinWindow->GetTranscriptEnd();
+    if (transcriptNode)
+      m_skein->SaveTranscript(transcriptNode,dialog.GetPathName());
   }
 }
 

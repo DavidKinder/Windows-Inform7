@@ -327,7 +327,7 @@ void Skein::InvalidateLayout(void)
     m_laidOut[i] = false;
 }
 
-void Skein::Layout(CDC& dc, int idx, Node* threadEndNode, const CSize& spacing, bool force)
+void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force, Node* transcriptNode)
 {
   ASSERT((idx >= 0) && (idx < LAYOUTS));
 
@@ -347,7 +347,7 @@ void Skein::Layout(CDC& dc, int idx, Node* threadEndNode, const CSize& spacing, 
       {
         Node* node = rowNodes[col];
         int numc = node->GetNumChildren();
-        Node* childInThread = ChildInThread(node,threadEndNode);
+        Node* transcriptChild = ChildInThread(node,transcriptNode);
 
         // Set the initial position of the node
         int width = node->CalcLineWidth(dc,idx);
@@ -356,10 +356,10 @@ void Skein::Layout(CDC& dc, int idx, Node* threadEndNode, const CSize& spacing, 
         node->SetX(idx,x_next);
         node->SetY(idx,(int)(row-1) * spacing.cy);
 
-        if (childInThread != NULL)
+        if (transcriptChild != NULL)
         {
-          // Put all selected nodes on the same vertical line
-          int x_child = childInThread->GetX(idx);
+          // Put all transcript nodes on the same vertical line
+          int x_child = transcriptChild->GetX(idx);
           node->SetX(idx,x_child);
           if (x_next > x_child)
           {

@@ -63,9 +63,8 @@ private:
 
   void SetFontsBitmaps(void);
 
-  void DrawNodeTree(int phase, Skein::Node* node, Skein::Node* threadEnd, CDC& dc,
-    CDibSection& bitmap, const CRect& client, const CPoint& origin, const CPoint& parent,
-    bool gameRunning);
+  void DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSection& bitmap,
+    const CRect& client, const CPoint& origin, const CPoint& parent, bool gameRunning);
 
   void DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
     const CPoint& centre, bool selected, bool gameRunning);
@@ -102,12 +101,12 @@ private:
   };
 
   NodeBitmap GetNodeBack(Skein::Node* node, bool selected, bool gameRunning);
-  void SkeinNodesShown(Skein::Node* node, Skein::Node* threadEnd, bool gameRunning,
+  void SkeinNodesShown(Skein::Node* node, bool gameRunning,
     bool& unselected, bool& selected, bool& active, bool& differs, int& count);
 
   Skein* m_skein;
   int m_skeinIndex;
-  Skein::Node* m_threadEnd;
+  Skein::Node* m_transcriptNode;
 
   std::map<Skein::Node*,CRect> m_nodes;
   CDibSection* m_bitmaps[Number_Bitmaps];

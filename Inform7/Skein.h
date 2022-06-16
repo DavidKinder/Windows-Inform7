@@ -28,7 +28,7 @@ public:
 
   void Reset(bool playTo);
   void InvalidateLayout(void);
-  void Layout(CDC& dc, int idx, Node* threadEndNode, const CSize& spacing, bool force);
+  void Layout(CDC& dc, int idx, const CSize& spacing, bool force, Node* transcriptNode);
   CSize GetTreeExtent(int idx);
 
   void NewLine(const CStringW& line);
