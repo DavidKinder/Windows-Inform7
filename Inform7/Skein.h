@@ -28,8 +28,8 @@ public:
 
   void Reset(bool playTo);
   void InvalidateLayout(void);
-  void Layout(CDC& dc, int idx, Node* threadEndNode, int spacing, bool force);
-  void GetTreeExtent(int idx, int& width, int& depth);
+  void Layout(CDC& dc, int idx, Node* threadEndNode, const CSize& spacing, bool force);
+  CSize GetTreeExtent(int idx);
 
   void NewLine(const CStringW& line);
   bool NextLine(CStringW& line);
@@ -95,8 +95,6 @@ public:
     int GetLabelTextWidth(int idx);
     void ClearWidths(int idx);
 
-    int GetDepth(void);
-
     void Add(Node* child);
     bool Remove(Node* child);
     void RemoveAll(void);
@@ -117,11 +115,12 @@ public:
     int GetX(int idx);
     void SetX(int idx, int x);
     void ShiftX(int idx, int shift);
+    int GetY(int idx);
+    void SetY(int idx, int y);
 
-    void AnimatePrepare(int depth);
+    void AnimatePrepare(void);
     void AnimateClear(void);
-    int GetAnimateX(int idx, int pct);
-    int GetAnimateY(int idx, int depth, int spacing, int pct);
+    CPoint GetAnimatePos(int idx, int pct);
 
   private:
     void CompareWithExpected(void);
@@ -149,11 +148,10 @@ public:
       int width;
       int lineWidth;
       int labelWidth;
-      int x;
+      CPoint pos;
 
       bool anim;
-      int animX;
-      int animDepth;
+      CPoint animPos;
 
       LayoutInfo();
       void ClearWidths();

@@ -470,7 +470,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
     return;
   CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&bitmap);
   CFont* oldFont = dc.SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
-  CPoint origin = pDC->GetViewportOrg();
+  CPoint viewOrigin = pDC->GetViewportOrg();
 
   // Clear the background
   dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourBack));
@@ -478,12 +478,10 @@ void SkeinWindow::OnDraw(CDC* pDC)
   if (m_skein->IsActive())
   {
     // Redo the layout if needed
-    m_skein->Layout(dc,m_skeinIndex,m_threadEnd,m_fontSize.cx*6,false);
+    m_skein->Layout(dc,m_skeinIndex,m_threadEnd,GetLayoutSpacing(),false);
 
-    // Work out the position of the centre of the root node
-    CPoint rootCentre(origin);
-    rootCentre.x += GetTotalSize().cx/2;
-    rootCentre.y += GetNodeYPos(0,1);
+    // Work out the start position for drawing the skein from
+    CPoint rootOrigin = GetRootOrigin(viewOrigin);
 
     // Get relevant state from the project frame
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
@@ -492,7 +490,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
     for (int i = 0; i < 2; i++)
     {
       DrawNodeTree(i,m_skein->GetRoot(),GetTranscriptEnd(),dc,bitmap,client,
-        CPoint(0,0),rootCentre,0,GetNodeYPos(1,0),gameRunning);
+        rootOrigin,CPoint(0,0),gameRunning);
     }
 
     // If the edit window is visible, exclude the area under it to reduce flicker
@@ -501,13 +499,13 @@ void SkeinWindow::OnDraw(CDC* pDC)
       CRect editRect;
       m_edit.GetWindowRect(&editRect);
       ScreenToClient(&editRect);
-      editRect -= pDC->GetViewportOrg();
+      editRect -= viewOrigin;
       pDC->ExcludeClipRect(editRect);
     }
   }
 
   // Draw the memory bitmap on the window's device context
-  pDC->BitBlt(-origin.x,-origin.y,client.Width(),client.Height(),&dc,0,0,SRCCOPY);
+  pDC->BitBlt(-viewOrigin.x,-viewOrigin.y,client.Width(),client.Height(),&dc,0,0,SRCCOPY);
 
   // Restore the original device context settings
   dc.SelectObject(oldFont);
@@ -596,15 +594,19 @@ void SkeinWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
     if (!NodeFullyVisible(node))
     {
       // Work out the position of the node
-      int x = (GetTotalSize().cx/2)+node->GetX(m_skeinIndex);
-      int y = GetNodeYPos(node->GetDepth()-1,1);
-      if (y < 0)
-        y = 0;
+      CPoint origin = GetRootOrigin(CPoint());
+      int x = origin.x + node->GetX(m_skeinIndex);
+      int y = origin.y + node->GetY(m_skeinIndex);
 
-      // Centre the node horizontally
+      // Centre the node
       CRect client;
       GetClientRect(client);
       x -= client.Width()/2;
+      y -= client.Height()/2;
+      if (x < 0)
+        x = 0;
+      if (y < 0)
+        y = 0;
 
       // Only change the co-ordinates if there are scrollbars
       BOOL horiz, vert;
@@ -644,7 +646,7 @@ void SkeinWindow::SkeinNodesShown(
 
 void SkeinWindow::AnimatePrepare()
 {
-  m_skein->GetRoot()->AnimatePrepare(0);
+  m_skein->GetRoot()->AnimatePrepare();
 }
 
 void SkeinWindow::Animate(int pct)
@@ -681,22 +683,34 @@ CSize SkeinWindow::GetLayoutSize(bool force)
     // Redo the layout if needed
     CDC* dc = GetDC();
     CFont* font = dc->SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
-    m_skein->Layout(*dc,m_skeinIndex,m_threadEnd,m_fontSize.cx*6,force);
+    m_skein->Layout(*dc,m_skeinIndex,m_threadEnd,GetLayoutSpacing(),force);
     dc->SelectObject(font);
     ReleaseDC(dc);
 
     // Get the size of the tree
-    int width, depth;
-    m_skein->GetTreeExtent(m_skeinIndex,width,depth);
-    size.cx = width + (m_fontSize.cx*10);
-    size.cy = GetNodeYPos(depth-1,2);
+    size = m_skein->GetTreeExtent(m_skeinIndex);
+    size += GetLayoutBorder();
+    size += GetLayoutBorder();
   }
   return size;
 }
 
-int SkeinWindow::GetNodeYPos(int nodes, int ends)
+CSize SkeinWindow::GetLayoutSpacing(void)
 {
-  return (int)(m_fontSize.cy*((2.8*nodes)+(1.6*ends)));
+  return CSize(m_fontSize.cx*6,(int)(m_fontSize.cy*2.8));
+}
+
+CSize SkeinWindow::GetLayoutBorder(void)
+{
+  return CSize(m_fontSize.cx*5,(int)(m_fontSize.cy*1.6));
+}
+
+CPoint SkeinWindow::GetRootOrigin(const CPoint& viewOrigin)
+{
+  CPoint rootOrigin(viewOrigin);
+  rootOrigin.x += GetTotalSize().cx/2;
+  rootOrigin.y += GetLayoutBorder().cy;
+  return rootOrigin;
 }
 
 void SkeinWindow::SetFontsBitmaps(void)
@@ -726,13 +740,11 @@ void SkeinWindow::SetFontsBitmaps(void)
   m_bitmaps[DiffersBadge] = GetImage("SkeinDiffersBadge");
 }
 
-void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, Skein::Node* threadEnd, CDC& dc,
-  CDibSection& bitmap, const CRect& client, const CPoint& parentCentre,
-  const CPoint& siblingCentre, int depth, int spacing, bool gameRunning)
+void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, Skein::Node* threadEnd, CDC& dc, CDibSection& bitmap,
+  const CRect& client, const CPoint& origin, const CPoint& parent, bool gameRunning)
 {
-  CPoint nodeCentre(
-    siblingCentre.x + node->GetAnimateX(m_skeinIndex,m_pctAnim),
-    siblingCentre.y + node->GetAnimateY(m_skeinIndex,depth,spacing,m_pctAnim));
+  CSize nodePos = node->GetAnimatePos(m_skeinIndex,m_pctAnim);
+  CPoint nodeCentre(origin.x + nodePos.cx,origin.y + nodePos.cy);
 
   switch (phase)
   {
@@ -740,22 +752,22 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, Skein::Node* thread
     // Draw a line connecting the node to its parent
     if (node->GetParent() != NULL)
     {
-      DrawNodeLine(dc,bitmap,client,parentCentre,nodeCentre,
+      DrawNodeLine(dc,bitmap,client,parent,nodeCentre,
         theApp.GetColour(InformApp::ColourSkeinLine),node->GetLocked());
     }
     break;
   case 1:
     // Draw the node
-    DrawNode(node,dc,bitmap,client,nodeCentre,m_skein->InThread(node,threadEnd),gameRunning);
+    DrawNode(node,dc,bitmap,client,
+      nodeCentre,m_skein->InThread(node,threadEnd),gameRunning);
     break;
   }
 
   // Draw all the node's children
-  CPoint childSiblingCentre(siblingCentre.x,siblingCentre.y+spacing);
   for (int i = 0; i < node->GetNumChildren(); i++)
   {
-    DrawNodeTree(phase,node->GetChild(i),threadEnd,dc,bitmap,client,
-      nodeCentre,childSiblingCentre,depth+1,spacing,gameRunning);
+    DrawNodeTree(phase,node->GetChild(i),
+      threadEnd,dc,bitmap,client,origin,nodeCentre,gameRunning);
   }
 }
 
@@ -776,7 +788,8 @@ void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, cons
   int width = node->CalcLineWidth(dc,m_skeinIndex);
 
   // Check if this node is visible before drawing
-  CRect nodeArea(centre,CSize(width+m_fontSize.cx*6,m_fontSize.cy*3));
+  CSize spacing = GetLayoutSpacing();
+  CRect nodeArea(centre,CSize(width+spacing.cx,spacing.cy));
   nodeArea.OffsetRect(nodeArea.Width()/-2,nodeArea.Height()/-2);
   CRect intersect;
   if (intersect.IntersectRect(client,nodeArea))

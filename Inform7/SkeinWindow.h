@@ -58,12 +58,15 @@ protected:
 
 private:
   CSize GetLayoutSize(bool force);
-  int GetNodeYPos(int nodes, int ends);
+  CSize GetLayoutSpacing(void);
+  CSize GetLayoutBorder(void);
+  CPoint GetRootOrigin(const CPoint& viewOrigin);
+
   void SetFontsBitmaps(void);
 
   void DrawNodeTree(int phase, Skein::Node* node, Skein::Node* threadEnd, CDC& dc,
-    CDibSection& bitmap, const CRect& client, const CPoint& parentCentre,
-    const CPoint& siblingCentre, int depth, int spacing, bool gameRunning);
+    CDibSection& bitmap, const CRect& client, const CPoint& origin, const CPoint& parent,
+    bool gameRunning);
 
   void DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
     const CPoint& centre, bool selected, bool gameRunning);
