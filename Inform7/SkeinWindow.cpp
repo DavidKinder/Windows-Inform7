@@ -416,7 +416,8 @@ void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
       if (node != NULL)
       {
         AnimatePrepare();
-        m_transcriptNode = m_skein->GetThreadEnd(node);
+        m_transcriptNode = m_skein->InThread(node,m_transcriptNode) ?
+          NULL : m_skein->GetThreadEnd(node);
         Layout(true);
         GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
       }
@@ -478,7 +479,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
   if (m_skein->IsActive())
   {
     // Redo the layout if needed
-    m_skein->Layout(dc,m_skeinIndex,GetLayoutSpacing(),false,m_transcriptNode);
+    SkeinLayout(dc,false);
 
     // Get relevant state from the project frame
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
@@ -539,6 +540,11 @@ void SkeinWindow::PrefsChanged(void)
   Invalidate();
 }
 
+void SkeinWindow::SkeinLayout(CDC& dc, bool force)
+{
+  m_skein->Layout(dc,m_skeinIndex,GetLayoutSpacing(),force,m_transcriptNode,300);
+}
+
 void SkeinWindow::SkeinChanged(Skein::Change change)
 {
   if (GetSafeHwnd() == 0)
@@ -547,9 +553,16 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
   switch (change)
   {
   case Skein::TreeChanged:
-  case Skein::NodeTextChanged:
     if (m_transcriptNode && !m_skein->IsValidNode(m_transcriptNode))
+    {
       m_transcriptNode = NULL;//XXXXDK hide transcript?
+      Layout(true);
+    }
+    else
+      Layout(false);
+    Invalidate();
+    break;
+  case Skein::NodeTextChanged:
     Layout(false);
     Invalidate();
     break;
@@ -679,7 +692,7 @@ CSize SkeinWindow::GetLayoutSize(bool force)
     // Redo the layout if needed
     CDC* dc = GetDC();
     CFont* font = dc->SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
-    m_skein->Layout(*dc,m_skeinIndex,GetLayoutSpacing(),force,m_transcriptNode);
+    SkeinLayout(*dc,force);
     dc->SelectObject(font);
     ReleaseDC(dc);
 

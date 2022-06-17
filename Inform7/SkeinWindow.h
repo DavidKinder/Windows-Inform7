@@ -22,6 +22,7 @@ public:
   void Layout(bool force);
   void PrefsChanged(void);
 
+  void SkeinLayout(CDC& dc, bool force);
   void SkeinChanged(Skein::Change change);
   void SkeinEdited(bool edited);
   void SkeinShowNode(Skein::Node* node, Skein::Show why);

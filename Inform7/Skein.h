@@ -28,7 +28,8 @@ public:
 
   void Reset(bool playTo);
   void InvalidateLayout(void);
-  void Layout(CDC& dc, int idx, const CSize& spacing, bool force, Node* transcriptNode);
+  void Layout(CDC& dc, int idx, const CSize& spacing, bool force,
+    Node* transcriptNode, int transcriptWidth);
   CSize GetTreeExtent(int idx);
 
   void NewLine(const CStringW& line);
@@ -94,6 +95,7 @@ public:
     int GetLineTextWidth(int idx);
     int GetLabelTextWidth(int idx);
     void ClearWidths(int idx);
+    int GetLeftmostAfterX(int idx, int x);
 
     void Add(Node* child);
     bool Remove(Node* child);

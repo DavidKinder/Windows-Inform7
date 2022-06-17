@@ -327,7 +327,8 @@ void Skein::InvalidateLayout(void)
     m_laidOut[i] = false;
 }
 
-void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force, Node* transcriptNode)
+void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force,
+  Node* transcriptNode, int transcriptWidth)
 {
   ASSERT((idx >= 0) && (idx < LAYOUTS));
 
@@ -390,6 +391,47 @@ void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force, Node* tra
         }
 
         x = node->GetX(idx) + (width/2) + spacing.cx;
+      }
+    }
+
+    // Add space for the transcript
+    if (transcriptNode != NULL)
+    {
+      // Get all nodes in the transcript, and find the right-most extent of the nodes
+      // in the the transcript.
+      int x_right = INT_MIN;
+      std::vector<Node*> transcriptNodes;
+      Node* node = transcriptNode;
+      while (node != NULL)
+      {
+        int xr = node->GetX(idx) + (node->GetLayoutWidth(idx)/2);
+        if (xr > x_right)
+          x_right = xr;
+        transcriptNodes.insert(transcriptNodes.begin(),node);
+        node = node->GetParent();
+      }
+
+      // Find the left-most extent of the nodes after the transcript
+      int x_after_left = m_inst.root->GetLeftmostAfterX(idx,transcriptNode->GetX(idx));
+
+      // Adjust to separate nodes for the transcript, if needed
+      if ((x_right > INT_MIN) && (x_after_left < INT_MAX))
+        transcriptWidth += (x_right - x_after_left);
+
+      // For each node in the transcript, shift any child nodes to the right of the
+      // child node that is also in the transcript, if any.
+      for (size_t row = 0; row < transcriptNodes.size()-1; row++)
+      {
+        bool afterTranscript = false;
+        Node* node = transcriptNodes[row];
+        for (int i = 0; i < node->GetNumChildren(); i++)
+        {
+          Node* child = node->GetChild(i);
+          if (afterTranscript)
+            child->ShiftX(idx,transcriptWidth);
+          else if (child == transcriptNodes[row+1])
+            afterTranscript = true;
+        }
       }
     }
 
@@ -1117,6 +1159,23 @@ void Skein::Node::ClearWidths(int idx)
   m_layout[idx].ClearWidths();
   for (int i = 0; i < m_children.GetSize(); i++)
     m_children[i]->ClearWidths(idx);
+}
+
+int Skein::Node::GetLeftmostAfterX(int idx, int x)
+{
+  int leftmostX = INT_MAX;
+
+  int leftX = GetX(idx) - (GetLayoutWidth(idx)/2);
+  if (leftX > x)
+    leftmostX = leftX;
+
+  for (int i = 0; i < m_children.GetSize(); i++)
+  {
+    int childLeftX = m_children[i]->GetLeftmostAfterX(idx,x);
+    if (childLeftX < leftmostX)
+      leftmostX = childLeftX;
+  }
+  return leftmostX;
 }
 
 void Skein::Node::Add(Node* child)
