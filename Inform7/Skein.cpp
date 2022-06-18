@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Skein.h"
+#include "TranscriptPane.h"
 #include "Inform.h"
 #include "TextFormat.h"
 #include "Build.h"
@@ -327,8 +328,7 @@ void Skein::InvalidateLayout(void)
     m_laidOut[i] = false;
 }
 
-void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force,
-  Node* transcriptNode, int transcriptWidth)
+void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force, TranscriptPane& transcript)
 {
   ASSERT((idx >= 0) && (idx < LAYOUTS));
 
@@ -348,7 +348,7 @@ void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force,
       {
         Node* node = rowNodes[col];
         int numc = node->GetNumChildren();
-        Node* transcriptChild = ChildInThread(node,transcriptNode);
+        Node* transcriptChild = ChildInThread(node,transcript.GetEnd());
 
         // Set the initial position of the node
         int width = node->CalcLineWidth(dc,idx);
@@ -394,14 +394,28 @@ void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force,
       }
     }
 
+    // Shift the entire tree so that the origin is the left edge
+    int x_leftmost = 0;
+    for (size_t row = 0; row < nodesByDepth.size(); ++row)
+    {
+      const std::vector<Node*>& rowNodes = nodesByDepth[row];
+      if (rowNodes.size() > 0)
+      {
+        int x = rowNodes[0]->GetX(idx);
+        if (x < x_leftmost)
+          x_leftmost = x;
+      }
+    }
+    m_inst.root->ShiftX(idx,-x_leftmost);
+
     // Add space for the transcript
-    if (transcriptNode != NULL)
+    if (transcript.GetEnd() != NULL)
     {
       // Get all nodes in the transcript, and find the right-most extent of the nodes
       // in the the transcript.
       int x_right = INT_MIN;
       std::vector<Node*> transcriptNodes;
-      Node* node = transcriptNode;
+      Node* node = transcript.GetEnd();
       while (node != NULL)
       {
         int xr = node->GetX(idx) + (node->GetLayoutWidth(idx)/2);
@@ -411,11 +425,16 @@ void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force,
         node = node->GetParent();
       }
 
-      // Find the left-most extent of the nodes after the transcript
-      int x_after_left = m_inst.root->GetLeftmostAfterX(idx,transcriptNode->GetX(idx));
+      // Set the origin of the transcript
+      int transcriptMarginX = (int)(spacing.cx*0.7);
+      transcript.SetOrigin(x_right+transcriptMarginX,m_inst.root->GetY(idx)-(spacing.cy/4));
 
-      // Adjust to separate nodes for the transcript, if needed
-      if ((x_right > INT_MIN) && (x_after_left < INT_MAX))
+      // Find the left-most extent of the nodes after the transcript
+      int x_after_left = m_inst.root->GetLeftmostAfterX(idx,transcript.GetEnd()->GetX(idx));
+
+      // Adjust the layout to make space for the transcript, if needed
+      int transcriptWidth = transcript.GetWidth() + (transcriptMarginX*2);
+      if (x_after_left < INT_MAX)
         transcriptWidth += (x_right - x_after_left);
 
       // For each node in the transcript, shift any child nodes to the right of the
@@ -434,20 +453,6 @@ void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force,
         }
       }
     }
-
-    // Shift the entire tree so that the origin is the left edge
-    int x_leftmost = 0;
-    for (size_t row = 0; row < nodesByDepth.size(); ++row)
-    {
-      const std::vector<Node*>& rowNodes = nodesByDepth[row];
-      if (rowNodes.size() > 0)
-      {
-        int x = rowNodes[0]->GetX(idx);
-        if (x < x_leftmost)
-          x_leftmost = x;
-      }
-    }
-    m_inst.root->ShiftX(idx,-x_leftmost);
   }
   m_laidOut[idx] = true;
 }
@@ -1395,16 +1400,27 @@ void Skein::Node::SetY(int idx, int y)
   m_layout[idx].pos.y = y;
 }
 
-void Skein::Node::AnimatePrepare(void)
+void Skein::Node::AnimatePrepare(int idx)
 {
-  for (int i = 0; i < LAYOUTS; i++)
+  if (idx < 0)
   {
-    LayoutInfo& info = m_layout[i];
+    for (int i = 0; i < LAYOUTS; i++)
+    {
+      LayoutInfo& info = m_layout[i];
+      info.anim = true;
+      info.animPos = info.pos;
+    }
+  }
+  else
+  {
+    ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+    LayoutInfo& info = m_layout[idx];
     info.anim = true;
     info.animPos = info.pos;
   }
   for (int i = 0; i < m_children.GetSize(); i++)
-    m_children[i]->AnimatePrepare();
+    m_children[i]->AnimatePrepare(idx);
 }
 
 void Skein::Node::AnimateClear(void)
@@ -1436,6 +1452,13 @@ CPoint Skein::Node::GetAnimatePos(int idx, int pct)
     y = info.pos.y;
   }
   return CSize(x,y);
+}
+
+bool Skein::Node::IsAnimated(int idx)
+{
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  return m_layout[idx].anim;
 }
 
 const CStringW& Skein::Node::GetTranscriptText(void)

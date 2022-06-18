@@ -3,6 +3,7 @@
 #include "Dib.h"
 #include "Skein.h"
 #include "SkeinEdit.h"
+#include "TranscriptPane.h"
 #include "Messages.h"
 
 #include <map>
@@ -29,6 +30,7 @@ public:
   void SkeinNodesShown(
     bool& unselected, bool& selected, bool& active, bool& differs, int& count);
   void AnimatePrepare();
+  void AnimatePrepareOnlyThis();
   void Animate(int pct);
   Skein::Node* GetTranscriptEnd(void);
 
@@ -107,7 +109,6 @@ private:
 
   Skein* m_skein;
   int m_skeinIndex;
-  Skein::Node* m_transcriptNode;
 
   std::map<Skein::Node*,CRect> m_nodes;
   CDibSection* m_bitmaps[Number_Bitmaps];
@@ -123,6 +124,8 @@ private:
   bool m_lastClick;
   DWORD m_lastClickTime;
   CPoint m_lastPoint;
+
+  TranscriptPane m_transcript;
 
   SkeinMouseAnchorWnd* m_anchorWindow;
   friend class SkeinMouseAnchorWnd;

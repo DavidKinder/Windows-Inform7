@@ -8,6 +8,8 @@
 
 #define LAYOUTS 2
 
+class TranscriptPane;
+
 class Skein
 {
 public:
@@ -28,8 +30,9 @@ public:
 
   void Reset(bool playTo);
   void InvalidateLayout(void);
+
   void Layout(CDC& dc, int idx, const CSize& spacing, bool force,
-    Node* transcriptNode, int transcriptWidth);
+    TranscriptPane& transcript);
   CSize GetTreeExtent(int idx);
 
   void NewLine(const CStringW& line);
@@ -120,9 +123,10 @@ public:
     int GetY(int idx);
     void SetY(int idx, int y);
 
-    void AnimatePrepare(void);
+    void AnimatePrepare(int idx);
     void AnimateClear(void);
     CPoint GetAnimatePos(int idx, int pct);
+    bool IsAnimated(int idx);
 
   private:
     void CompareWithExpected(void);

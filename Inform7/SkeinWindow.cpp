@@ -31,7 +31,7 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
   ON_MESSAGE(WM_LABELNODE, OnLabelNode)
 END_MESSAGE_MAP()
 
-SkeinWindow::SkeinWindow() : m_skein(NULL), m_skeinIndex(-1), m_transcriptNode(NULL),
+SkeinWindow::SkeinWindow() : m_skein(NULL), m_skeinIndex(-1),
   m_mouseOverNode(NULL), m_mouseOverMenu(false), m_lastClick(false), m_lastClickTime(0),
   m_pctAnim(-1), m_anchorWindow(NULL)
 {
@@ -415,9 +415,9 @@ void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
       Skein::Node* node = NodeAtPoint(m_lastPoint);
       if (node != NULL)
       {
-        AnimatePrepare();
-        m_transcriptNode = m_skein->InThread(node,m_transcriptNode) ?
-          NULL : m_skein->GetThreadEnd(node);
+        AnimatePrepareOnlyThis();
+        m_transcript.SetEnd(m_skein->InThread(node,m_transcript.GetEnd()) ?
+          NULL : m_skein->GetThreadEnd(node));
         Layout(true);
         GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
       }
@@ -485,11 +485,18 @@ void SkeinWindow::OnDraw(CDC* pDC)
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
 
     // Draw all nodes
+    CSize border = GetLayoutBorder();
+    CSize spacing = GetLayoutSpacing();
+    Skein::Node* rootNode = m_skein->GetRoot();
     for (int i = 0; i < 2; i++)
     {
-      DrawNodeTree(i,m_skein->GetRoot(),dc,bitmap,
-        client,origin+GetLayoutBorder(),CPoint(0,0),gameRunning);
+      DrawNodeTree(i,rootNode,dc,bitmap,
+        client,origin+border,CPoint(0,0),gameRunning);
     }
+
+    // Draw the transcript, if visible
+    if (m_transcript.GetEnd())
+      m_transcript.Draw(dc,origin+border,rootNode);
 
     // If the edit window is visible, exclude the area under it to reduce flicker
     if (m_edit.IsWindowVisible())
@@ -519,8 +526,9 @@ BOOL SkeinWindow::PreCreateWindow(CREATESTRUCT& cs)
 void SkeinWindow::SetSkein(Skein* skein, int idx)
 {
   m_skein = skein;
-  m_skein->AddListener(this);
   m_skeinIndex = idx;
+  m_transcript.SetSkeinIndex(idx);
+  m_skein->AddListener(this);
   Layout(false);
 }
 
@@ -542,7 +550,8 @@ void SkeinWindow::PrefsChanged(void)
 
 void SkeinWindow::SkeinLayout(CDC& dc, bool force)
 {
-  m_skein->Layout(dc,m_skeinIndex,GetLayoutSpacing(),force,m_transcriptNode,300);
+  CSize spacing = GetLayoutSpacing();
+  m_skein->Layout(dc,m_skeinIndex,spacing,force,m_transcript);
 }
 
 void SkeinWindow::SkeinChanged(Skein::Change change)
@@ -553,9 +562,9 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
   switch (change)
   {
   case Skein::TreeChanged:
-    if (m_transcriptNode && !m_skein->IsValidNode(m_transcriptNode))
+    if (m_transcript.GetEnd() && !m_skein->IsValidNode(m_transcript.GetEnd()))
     {
-      m_transcriptNode = NULL;//XXXXDK hide transcript?
+      m_transcript.SetEnd(NULL);
       Layout(true);
     }
     else
@@ -655,7 +664,12 @@ void SkeinWindow::SkeinNodesShown(
 
 void SkeinWindow::AnimatePrepare()
 {
-  m_skein->GetRoot()->AnimatePrepare();
+  m_skein->GetRoot()->AnimatePrepare(-1);
+}
+
+void SkeinWindow::AnimatePrepareOnlyThis()
+{
+  m_skein->GetRoot()->AnimatePrepare(m_skeinIndex);
 }
 
 void SkeinWindow::Animate(int pct)
@@ -667,7 +681,7 @@ void SkeinWindow::Animate(int pct)
 
 Skein::Node* SkeinWindow::GetTranscriptEnd(void)
 {
-  return m_transcriptNode;
+  return m_transcript.GetEnd();
 }
 
 CSize SkeinWindow::GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL bVert)
@@ -760,7 +774,7 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSectio
   case 1:
     // Draw the node
     DrawNode(node,dc,bitmap,client,
-      nodeCentre,m_skein->InThread(node,m_transcriptNode),gameRunning);
+      nodeCentre,m_skein->InThread(node,m_transcript.GetEnd()),gameRunning);
     break;
   }
 
@@ -1322,7 +1336,7 @@ SkeinWindow::NodeBitmap SkeinWindow::GetNodeBack(Skein::Node* node, bool selecte
 void SkeinWindow::SkeinNodesShown(Skein::Node* node, bool gameRunning,
   bool& unselected, bool& selected, bool& active, bool& differs, int& count)
 {
-  switch (GetNodeBack(node,m_skein->InThread(node,m_transcriptNode),gameRunning))
+  switch (GetNodeBack(node,m_skein->InThread(node,m_transcript.GetEnd()),gameRunning))
   {
   case BackActive:
     active = true;
