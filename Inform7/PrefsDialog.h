@@ -80,7 +80,6 @@ private:
   SourceWindow m_preview;
   SourceWindow m_tabPreview;
 
-  BOOL m_indentWrapped;
   BOOL m_autoIndent;
   BOOL m_autoSpaceTables;
   BOOL m_autoNumber;
