@@ -36,7 +36,6 @@ BEGIN_MESSAGE_MAP(PrefsEditPage, CPropertyPage)
   ON_CBN_SELCHANGE(IDC_SUBST_STYLE, OnChangeStyle)
   ON_BN_CLICKED(IDC_SUBST_UNDER, OnChangeStyle)
   ON_CBN_SELCHANGE(IDC_SUBST_SIZE, OnChangeStyle)
-  ON_BN_CLICKED(IDC_INDENT, OnChangeStyle)
   ON_BN_CLICKED(IDC_ELASTIC_TABS, OnChangeStyle)
   ON_WM_HSCROLL()
   ON_MESSAGE(WM_AFTERFONTSET, OnAfterFontSet)
@@ -112,8 +111,6 @@ void PrefsEditPage::ReadSettings(void)
 
     if (registryKey.QueryDWORDValue("Source Tab Size Chars",value) == ERROR_SUCCESS)
       m_tabSize = value;
-    if (registryKey.QueryDWORDValue("Indent Wrapped Lines",value) == ERROR_SUCCESS)
-      m_indentWrapped = value;
     if (registryKey.QueryDWORDValue("Auto Indent",value) == ERROR_SUCCESS)
       m_autoIndent = value;
     if (registryKey.QueryDWORDValue("Auto Space Tables",value) == ERROR_SUCCESS)
@@ -158,7 +155,6 @@ void PrefsEditPage::WriteSettings(void)
     registryKey.SetDWORDValue("Substitutions Size",m_sizeSubst);
 
     registryKey.SetDWORDValue("Source Tab Size Chars",m_tabSize);
-    registryKey.SetDWORDValue("Indent Wrapped Lines",m_indentWrapped);
     registryKey.SetDWORDValue("Auto Indent",m_autoIndent);
     registryKey.SetDWORDValue("Auto Space Tables",m_autoSpaceTables);
     registryKey.SetDWORDValue("Auto Number Sections",m_autoNumber);
@@ -184,7 +180,6 @@ void PrefsEditPage::DoDataExchange(CDataExchange* pDX)
   DDX_CBIndex(pDX, IDC_SUBST_SIZE, m_sizeSubst);
   DDX_Control(pDX, IDC_TABSIZE, m_tabSizeCtrl);
   DDX_Slider(pDX, IDC_TABSIZE, m_tabSize);
-  DDX_Check(pDX, IDC_INDENT, m_indentWrapped);
   DDX_Check(pDX, IDC_AUTO_INDENT, m_autoIndent);
   DDX_Check(pDX, IDC_ELASTIC_TABS, m_autoSpaceTables);
   DDX_Check(pDX, IDC_AUTO_NUMBER, m_autoNumber);
@@ -397,10 +392,9 @@ void PrefsEditPage::SetDefaults(void)
   m_sizeSubst = 0;
 
   m_tabSize = 8;
-  m_indentWrapped = TRUE;
   m_autoIndent = TRUE;
   m_autoSpaceTables = TRUE;
-  m_autoNumber = FALSE;
+  m_autoNumber = TRUE;
 }
 
 void PrefsEditPage::AdjustControlRow(int ctrlId, int top, int ctrlId1, int ctrlId2)
@@ -548,11 +542,6 @@ bool PrefsEditPage::GetDWord(const char* name, DWORD& value)
   else if (n == "Source Tab Size Chars")
   {
     value = m_tabSize;
-    return true;
-  }
-  else if (n == "Indent Wrapped Lines")
-  {
-    value = m_indentWrapped;
     return true;
   }
   else if (n == "Auto Indent")
