@@ -939,7 +939,7 @@ void SkeinWindow::DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client
   const CPoint& from, const CPoint& to, COLORREF fore, bool bold)
 {
   int p1x = from.x;
-  int p1y = from.y+(int)(0.8*m_fontSize.cy);
+  int p1y = from.y;
   int p2x = to.x;
   int p2y = to.y-(int)(0.7*m_fontSize.cy);
 
