@@ -1240,22 +1240,6 @@ void SourceEdit::LoadSettings(SourceSettings& set, COLORREF back)
   if (set.GetDWord("Auto Space Tables",value))
     elastic = (value != 0);
   SetElasticTabStops(elastic);
-
-  // Adjust wrapped line indentation
-  bool indent = true;
-  if (set.GetDWord("Indent Wrapped Lines",value))
-    indent = (value != 0);
-  if (indent)
-  {
-    int indent = (int)((CallEdit(SCI_GETTABWIDTH) / 3.0) + 0.5);
-    CallEdit(SCI_SETWRAPSTARTINDENT,indent);
-    CallEdit(SCI_SETWRAPINDENTMODE,SC_WRAPINDENT_INDENT);
-  }
-  else
-  {
-    CallEdit(SCI_SETWRAPSTARTINDENT,0);
-    CallEdit(SCI_SETWRAPINDENTMODE,SC_WRAPINDENT_FIXED);
-  }
 }
 
 void SourceEdit::PrefsChanged(void)
