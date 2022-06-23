@@ -108,7 +108,7 @@ void TabTesting::OpenProject(const char* path, bool primary)
     m_skein->Load(path);
     m_skein->GetRoot()->SetLine(GetStoryName());
   }
-  m_skeinWindow->Layout(true);
+  m_skeinWindow->Layout(Skein::LayoutRecalculate);
 }
 
 bool TabTesting::SaveProject(const char* path, bool primary)
@@ -228,7 +228,7 @@ void TabTesting::ShowNode(Skein::Node* node, Skein::Show why)
 void TabTesting::SkeinChanged(void)
 {
   m_skein->GetRoot()->SetLine(GetStoryName());
-  m_skeinWindow->Layout(true);
+  m_skeinWindow->Layout(Skein::LayoutRecalculate);
 }
 
 void TabTesting::Animate(int pct)
@@ -284,7 +284,7 @@ LRESULT TabTesting::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
     {
       m_label.EnableWindow(m_skein->HasLabels() ? TRUE : FALSE);
       m_play.EnableWindow(GetParentFrame()->SendMessage(WM_CANPLAYALL) != 0);
-      m_save.EnableWindow(m_skeinWindow->GetTranscriptEnd() != NULL);
+      m_save.EnableWindow(m_skeinWindow->IsTranscriptActive());
     }
     else
     {
@@ -382,11 +382,7 @@ void TabTesting::OnSaveTranscript()
     "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||",this);
   dialog.m_ofn.lpstrTitle = "Save Transcript";
   if (dialog.DoModal() == IDOK)
-  {
-    Skein::Node* transcriptNode = m_skeinWindow->GetTranscriptEnd();
-    if (transcriptNode)
-      m_skein->SaveTranscript(transcriptNode,dialog.GetPathName());
-  }
+    m_skeinWindow->SaveTranscript(dialog.GetPathName());
 }
 
 void TabTesting::OnToggleHelp()

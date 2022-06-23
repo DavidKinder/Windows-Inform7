@@ -60,23 +60,6 @@ bool Skein::InThread(Node* node, Node* endNode)
   return false;
 }
 
-Skein::Node* Skein::ChildInThread(Node* node, Node* endNode)
-{
-  if (node->GetNumChildren() > 0)
-  {
-    while (endNode != NULL)
-    {
-      for (int i = 0; i < node->GetNumChildren(); i++)
-      {
-        if (endNode == node->GetChild(i))
-          return endNode;
-      }
-      endNode = endNode->GetParent();
-    }
-  }
-  return NULL;
-}
-
 Skein::Node* Skein::GetPlayed(void)
 {
   return m_played;
@@ -328,13 +311,14 @@ void Skein::InvalidateLayout(void)
     m_laidOut[i] = false;
 }
 
-void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force, TranscriptPane& transcript)
+void Skein::Layout(CDC& dc, int idx, LayoutMode mode, const CSize& spacing, TranscriptPane& transcript)
 {
   ASSERT((idx >= 0) && (idx < LAYOUTS));
 
-  if (force)
+  if (mode == LayoutRecalculate)
     m_inst.root->ClearWidths(idx);
-  if (force || (m_laidOut[idx] == false))
+
+  if ((mode > LayoutDefault) || (m_laidOut[idx] == false))
   {
     std::vector<std::vector<Node*> > nodesByDepth;
     m_inst.root->GetNodesByDepth(0,nodesByDepth);
@@ -348,7 +332,7 @@ void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force, Transcrip
       {
         Node* node = rowNodes[col];
         int numc = node->GetNumChildren();
-        Node* transcriptChild = ChildInThread(node,transcript.GetEnd());
+        Node* transcriptChild = transcript.ContainsChildNode(node);
 
         // Set the initial position of the node
         int width = node->CalcLineWidth(dc,idx);
@@ -409,30 +393,58 @@ void Skein::Layout(CDC& dc, int idx, const CSize& spacing, bool force, Transcrip
     m_inst.root->ShiftX(idx,-x_leftmost);
 
     // Add space for the transcript
-    if (transcript.GetEnd() != NULL)
+    if (transcript.IsActive())
     {
-      // Get all nodes in the transcript, and find the right-most extent of the nodes
-      // in the the transcript.
-      int x_right = INT_MIN;
+      // Layout the transcript
+      transcript.Layout(dc);
+
+      // Get all nodes in the transcript
       std::vector<Node*> transcriptNodes;
-      Node* node = transcript.GetEnd();
-      while (node != NULL)
+      transcript.GetNodes(transcriptNodes);
+
+      // Find the right-most extent of the nodes in the the transcript.
+      int x_right = INT_MIN;
+      for (size_t i = 0; i < transcriptNodes.size(); i++)
       {
+        Node* node = transcriptNodes[i];
         int xr = node->GetX(idx) + (node->GetLayoutWidth(idx)/2);
         if (xr > x_right)
           x_right = xr;
-        transcriptNodes.insert(transcriptNodes.begin(),node);
-        node = node->GetParent();
       }
 
       // Set the origin of the transcript
       int transcriptMarginX = (int)(spacing.cx*0.7);
-      transcript.SetOrigin(x_right+transcriptMarginX,m_inst.root->GetY(idx)-(spacing.cy/4));
+      transcript.SetOrigin(x_right+transcriptMarginX,m_inst.root->GetY(idx));
+
+      // Adjust the layout to make space for the transcript vertically
+      for (size_t row = 0; row < transcriptNodes.size(); row++)
+      {
+        if (row+1 < nodesByDepth.size())
+        {
+          const std::vector<Node*>& rowNodes = nodesByDepth[row+1];
+          if (rowNodes.size() > 0)
+          {
+            int y_spacing = rowNodes[0]->GetY(idx) - transcriptNodes[row]->GetY(idx);
+            int t_height = transcript.GetRowHeight((int)row);
+
+            // Add a bit more space for the last row of the transcript
+            if (row == transcriptNodes.size()-1)
+              t_height += spacing.cx / 2;
+
+            if (y_spacing < t_height)
+            {
+              int y_shift = t_height - y_spacing;
+              for (size_t col = 0; col < rowNodes.size(); ++col)
+                rowNodes[col]->ShiftY(idx,y_shift);
+            }
+          }
+        }
+      }
 
       // Find the left-most extent of the nodes after the transcript
-      int x_after_left = m_inst.root->GetLeftmostAfterX(idx,transcript.GetEnd()->GetX(idx));
+      int x_after_left = m_inst.root->GetLeftmostAfterX(idx,transcriptNodes[0]->GetX(idx));
 
-      // Adjust the layout to make space for the transcript, if needed
+      // Adjust the layout to make space for the transcript horizontally
       int transcriptWidth = transcript.GetWidth() + (transcriptMarginX*2);
       if (x_after_left < INT_MAX)
         transcriptWidth += (x_right - x_after_left);
@@ -870,37 +882,6 @@ Skein::Node* Skein::FindNode(const char* id, Node* node)
       return foundNode;
   }
   return NULL;
-}
-
-void Skein::SaveTranscript(Node* node, const char* path)
-{
-  std::vector<Node*> list;
-  do
-  {
-    list.push_back(node);
-    node = node->GetParent();
-  }
-  while (node != NULL);
-
-  FILE* transcript = fopen(path,"wt");
-  if (transcript == NULL)
-    return;
-
-  for (std::vector<Node*>::reverse_iterator it = list.rbegin(); it != list.rend(); ++it)
-  {
-    if (it == list.rbegin())
-    {
-      fprintf(transcript,"%s",
-        (LPCTSTR)TextFormat::UnicodeToUTF8((*it)->GetTranscriptText()));
-    }
-    else
-    {
-      fprintf(transcript,"%s\n%s",
-        (LPCTSTR)TextFormat::UnicodeToUTF8((*it)->GetLine()),
-        (LPCTSTR)TextFormat::UnicodeToUTF8((*it)->GetTranscriptText()));
-    }
-  }
-  fclose(transcript);
 }
 
 void Skein::AddListener(Listener* listener)
@@ -1398,6 +1379,15 @@ void Skein::Node::SetY(int idx, int y)
   ASSERT((idx >= 0) && (idx < LAYOUTS));
 
   m_layout[idx].pos.y = y;
+}
+
+void Skein::Node::ShiftY(int idx, int shift)
+{
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  m_layout[idx].pos.y += shift;
+  for (int i = 0; i < m_children.GetSize(); i++)
+    m_children[i]->ShiftY(idx,shift);
 }
 
 void Skein::Node::AnimatePrepare(int idx)

@@ -1,4 +1,5 @@
 #include "stdafx.h"
+/*
 #include "TranscriptWindow.h"
 #include "Inform.h"
 #include "Messages.h"
@@ -983,3 +984,4 @@ void TranscriptWindow::DrawInsideRect(CDC& dc, const CRect& rect, const CSize& s
   dc.FillSolidRect(rect.right-size.cx,rect.top+1,size.cx,rect.Height()-1,colour);
   dc.FillSolidRect(rect.left,rect.bottom-size.cy,rect.Width(),size.cy,colour);
 }
+*/

@@ -31,8 +31,15 @@ public:
   void Reset(bool playTo);
   void InvalidateLayout(void);
 
-  void Layout(CDC& dc, int idx, const CSize& spacing, bool force,
-    TranscriptPane& transcript);
+  enum LayoutMode
+  {
+    LayoutDefault,
+    LayoutReposition,
+    LayoutRecalculate
+  };
+
+  void Layout(CDC& dc, int idx, LayoutMode mode,
+    const CSize& spacing, TranscriptPane& transcript);
   CSize GetTreeExtent(int idx);
 
   void NewLine(const CStringW& line);
@@ -122,6 +129,7 @@ public:
     void ShiftX(int idx, int shift);
     int GetY(int idx);
     void SetY(int idx, int y);
+    void ShiftY(int idx, int shift);
 
     void AnimatePrepare(int idx);
     void AnimateClear(void);
@@ -171,7 +179,6 @@ public:
   void SetPlayTo(Node* node);
   bool InPlayThread(Node* node);
   bool InThread(Node* node, Node* endNode);
-  Node* Skein::ChildInThread(Node* node, Node* endNode);
   Node* GetPlayed(void);
 
   Node* AddNew(Node* node);
@@ -199,8 +206,6 @@ public:
   Node* GetFirstDifferent(Node* node = NULL);
   void GetAllNodes(CArray<Skein::Node*,Skein::Node*>& nodes, Node* node = NULL);
   Node* FindNode(const char* id, Node* node = NULL);
-
-  void SaveTranscript(Node* node, const char* path);
 
   enum Change
   {

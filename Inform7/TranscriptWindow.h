@@ -1,5 +1,5 @@
 #pragma once
-
+/*
 #include "Skein.h"
 #include "RichEdit.h"
 #include "TranscriptEdit.h"
@@ -161,3 +161,4 @@ private:
   void DrawText(CDC& dc, CRect& rect, const CStringW& text, const Diff::DiffResults& diffs);
   void DrawInsideRect(CDC& dc, const CRect& rect, const CSize& size, COLORREF colour);
 };
+*/

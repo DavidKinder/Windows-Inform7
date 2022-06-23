@@ -61,7 +61,7 @@ void SkeinWindow::OnSize(UINT nType, int cx, int cy)
   CScrollView::OnSize(nType,cx,cy);
 
   if (m_skein != NULL)
-    Layout(false);
+    Layout(Skein::LayoutDefault);
 }
 
 void SkeinWindow::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
@@ -416,9 +416,9 @@ void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
       if (node != NULL)
       {
         AnimatePrepareOnlyThis();
-        m_transcript.SetEnd(m_skein->InThread(node,m_transcript.GetEnd()) ?
-          NULL : m_skein->GetThreadEnd(node));
-        Layout(true);
+        m_transcript.SetEndNode(m_transcript.ContainsNode(node) ?
+          NULL : m_skein->GetThreadEnd(node),this);
+        Layout(Skein::LayoutReposition);
         GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
       }
     }
@@ -471,7 +471,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
     return;
   CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&bitmap);
   CFont* oldFont = dc.SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
-  CPoint origin = pDC->GetViewportOrg();
+  CPoint viewOrigin = pDC->GetViewportOrg();
 
   // Clear the background
   dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourBack));
@@ -479,24 +479,23 @@ void SkeinWindow::OnDraw(CDC* pDC)
   if (m_skein->IsActive())
   {
     // Redo the layout if needed
-    SkeinLayout(dc,false);
+    SkeinLayout(dc,Skein::LayoutDefault);
 
     // Get relevant state from the project frame
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
 
     // Draw all nodes
-    CSize border = GetLayoutBorder();
-    CSize spacing = GetLayoutSpacing();
+    CSize drawOrigin = viewOrigin+GetLayoutBorder();
     Skein::Node* rootNode = m_skein->GetRoot();
     for (int i = 0; i < 2; i++)
     {
       DrawNodeTree(i,rootNode,dc,bitmap,
-        client,origin+border,CPoint(0,0),gameRunning);
+        client,drawOrigin,CPoint(0,0),gameRunning);
     }
 
     // Draw the transcript, if visible
-    if (m_transcript.GetEnd())
-      m_transcript.Draw(dc,origin+border,rootNode);
+    if (m_transcript.IsActive())
+      m_transcript.Draw(dc,drawOrigin,rootNode,m_skeinIndex);
 
     // If the edit window is visible, exclude the area under it to reduce flicker
     if (m_edit.IsWindowVisible())
@@ -504,13 +503,13 @@ void SkeinWindow::OnDraw(CDC* pDC)
       CRect editRect;
       m_edit.GetWindowRect(&editRect);
       ScreenToClient(&editRect);
-      editRect -= origin;
+      editRect -= viewOrigin;
       pDC->ExcludeClipRect(editRect);
     }
   }
 
   // Draw the memory bitmap on the window's device context
-  pDC->BitBlt(-origin.x,-origin.y,client.Width(),client.Height(),&dc,0,0,SRCCOPY);
+  pDC->BitBlt(-viewOrigin.x,-viewOrigin.y,client.Width(),client.Height(),&dc,0,0,SRCCOPY);
 
   // Restore the original device context settings
   dc.SelectObject(oldFont);
@@ -527,16 +526,15 @@ void SkeinWindow::SetSkein(Skein* skein, int idx)
 {
   m_skein = skein;
   m_skeinIndex = idx;
-  m_transcript.SetSkeinIndex(idx);
   m_skein->AddListener(this);
-  Layout(false);
+  Layout(Skein::LayoutDefault);
 }
 
-void SkeinWindow::Layout(bool force)
+void SkeinWindow::Layout(Skein::LayoutMode mode)
 {
   CRect client;
   GetClientRect(client);
-  SetScrollSizes(MM_TEXT,GetLayoutSize(force),client.Size());
+  SetScrollSizes(MM_TEXT,GetLayoutSize(mode),client.Size());
 }
 
 void SkeinWindow::PrefsChanged(void)
@@ -544,14 +542,14 @@ void SkeinWindow::PrefsChanged(void)
   m_boldFont.DeleteObject();
   SetFontsBitmaps();
 
-  Layout(true);
+  Layout(Skein::LayoutRecalculate);
   Invalidate();
 }
 
-void SkeinWindow::SkeinLayout(CDC& dc, bool force)
+void SkeinWindow::SkeinLayout(CDC& dc, Skein::LayoutMode mode)
 {
   CSize spacing = GetLayoutSpacing();
-  m_skein->Layout(dc,m_skeinIndex,spacing,force,m_transcript);
+  m_skein->Layout(dc,m_skeinIndex,mode,spacing,m_transcript);
 }
 
 void SkeinWindow::SkeinChanged(Skein::Change change)
@@ -562,17 +560,17 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
   switch (change)
   {
   case Skein::TreeChanged:
-    if (m_transcript.GetEnd() && !m_skein->IsValidNode(m_transcript.GetEnd()))
+    if (m_transcript.IsActive() && !m_transcript.AreNodesValid(m_skein))
     {
-      m_transcript.SetEnd(NULL);
-      Layout(true);
+      m_transcript.SetEndNode(NULL,this);
+      Layout(Skein::LayoutReposition);
     }
     else
-      Layout(false);
+      Layout(Skein::LayoutDefault);
     Invalidate();
     break;
   case Skein::NodeTextChanged:
-    Layout(false);
+    Layout(Skein::LayoutDefault);
     Invalidate();
     break;
   case Skein::ThreadChanged:
@@ -679,9 +677,14 @@ void SkeinWindow::Animate(int pct)
   UpdateWindow();
 }
 
-Skein::Node* SkeinWindow::GetTranscriptEnd(void)
+bool SkeinWindow::IsTranscriptActive(void)
 {
-  return m_transcript.GetEnd();
+  return m_transcript.IsActive();
+}
+
+void SkeinWindow::SaveTranscript(const char* path)
+{
+  m_transcript.SaveTranscript(path);
 }
 
 CSize SkeinWindow::GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL bVert)
@@ -698,7 +701,7 @@ CSize SkeinWindow::GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL b
   return sizeRet;
 }
 
-CSize SkeinWindow::GetLayoutSize(bool force)
+CSize SkeinWindow::GetLayoutSize(Skein::LayoutMode mode)
 {
   CSize size(0,0);
   if (m_skein->IsActive())
@@ -706,14 +709,30 @@ CSize SkeinWindow::GetLayoutSize(bool force)
     // Redo the layout if needed
     CDC* dc = GetDC();
     CFont* font = dc->SelectObject(theApp.GetFont(this,InformApp::FontDisplay));
-    SkeinLayout(*dc,force);
+    SkeinLayout(*dc,mode);
     dc->SelectObject(font);
     ReleaseDC(dc);
 
     // Get the size of the tree
     size = m_skein->GetTreeExtent(m_skeinIndex);
-    size += GetLayoutBorder();
-    size += GetLayoutBorder();
+    if (m_transcript.IsActive())
+    {
+      // Is the transcript to the right of the skein?
+      CPoint transOrigin = m_transcript.GetOrigin();
+      int transcriptRight = transOrigin.x + m_transcript.GetWidth();
+      if (transcriptRight > size.cx)
+        size.cx = transcriptRight;
+
+      // Is the transcript taller than the skein?
+      int transcriptBottom = transOrigin.y + m_transcript.GetHeight();
+      if (transcriptBottom > size.cy)
+        size.cy = transcriptBottom;
+    }
+
+    // Add border space to all sides
+    CSize border = GetLayoutBorder();
+    size += border;
+    size += border;
   }
   return size;
 }
@@ -753,6 +772,9 @@ void SkeinWindow::SetFontsBitmaps(void)
   m_bitmaps[MenuSelected] = GetImage("Skein-selected-menu");
   m_bitmaps[MenuOver] = GetImage("Skein-over-menu");
   m_bitmaps[DiffersBadge] = GetImage("SkeinDiffersBadge");
+
+  // Set the transcript's fonts
+  m_transcript.SetFontsBitmaps(this,m_bitmaps[BackActive]->GetSize().cy);
 }
 
 void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSection& bitmap,
@@ -773,8 +795,7 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSectio
     break;
   case 1:
     // Draw the node
-    DrawNode(node,dc,bitmap,client,
-      nodeCentre,m_skein->InThread(node,m_transcript.GetEnd()),gameRunning);
+    DrawNode(node,dc,bitmap,client,nodeCentre,m_transcript.ContainsNode(node),gameRunning);
     break;
   }
 
@@ -1336,7 +1357,7 @@ SkeinWindow::NodeBitmap SkeinWindow::GetNodeBack(Skein::Node* node, bool selecte
 void SkeinWindow::SkeinNodesShown(Skein::Node* node, bool gameRunning,
   bool& unselected, bool& selected, bool& active, bool& differs, int& count)
 {
-  switch (GetNodeBack(node,m_skein->InThread(node,m_transcript.GetEnd()),gameRunning))
+  switch (GetNodeBack(node,m_transcript.ContainsNode(node),gameRunning))
   {
   case BackActive:
     active = true;

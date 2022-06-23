@@ -20,10 +20,10 @@ public:
   virtual ~SkeinWindow();
 
   void SetSkein(Skein* skein, int idx);
-  void Layout(bool force);
+  void Layout(Skein::LayoutMode mode);
   void PrefsChanged(void);
 
-  void SkeinLayout(CDC& dc, bool force);
+  void SkeinLayout(CDC& dc, Skein::LayoutMode mode);
   void SkeinChanged(Skein::Change change);
   void SkeinEdited(bool edited);
   void SkeinShowNode(Skein::Node* node, Skein::Show why);
@@ -32,7 +32,9 @@ public:
   void AnimatePrepare();
   void AnimatePrepareOnlyThis();
   void Animate(int pct);
-  Skein::Node* GetTranscriptEnd(void);
+
+  bool IsTranscriptActive(void);
+  void SaveTranscript(const char* path);
 
   virtual CSize GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL bVert);
 
@@ -60,7 +62,7 @@ protected:
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 
 private:
-  CSize GetLayoutSize(bool force);
+  CSize GetLayoutSize(Skein::LayoutMode mode);
   CSize GetLayoutSpacing(void);
   CSize GetLayoutBorder(void);
 
