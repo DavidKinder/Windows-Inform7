@@ -35,10 +35,13 @@ public:
 
 private:
   void ClearNodes(void);
+  CSize GetBorder(void);
 
   struct NodeLayout
   {
     NodeLayout(Skein::Node* node);
+
+    void AddText(LPCWSTR text, bool bold);
 
     Skein::Node* node;
     RichDrawText* draw;

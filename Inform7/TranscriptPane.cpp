@@ -29,6 +29,7 @@ void TranscriptPane::SetFontsBitmaps(CWnd* wnd, int nodeHeight)
 
 void TranscriptPane::SetOrigin(int x, int y)
 {
+  // Shift the origin so that the transcript is aligned with the top edge of a node
   m_origin.x = x;
   m_origin.y = y - (m_nodeHeight/2);
 }
@@ -40,14 +41,26 @@ CPoint TranscriptPane::GetOrigin(void)
 
 void TranscriptPane::Layout(CDC& dc)
 {
+  CSize border = GetBorder();
   for (auto& nl : m_nodes)
   {
-    nl.draw->SetText(nl.node->GetTranscriptText());
+    nl.draw->SetText(L"");
 
+    // Add the input line for every node except the root node
+    if (nl.node->GetParent())
+    {
+      CStringW line = nl.node->GetLine();
+      line.AppendChar(L'\n');
+      nl.AddText(line,true);
+    }
+
+    nl.AddText(nl.node->GetTranscriptText(),false);
+
+    // Work out the height of the text for this node
     CRect r(0,0,GetWidth(),0);
-    r.DeflateRect(m_fontSize.cx*4/3,0);
+    r.DeflateRect(border.cx,0);
     nl.draw->SizeText(dc,r);
-    nl.height = r.Height() + (m_nodeHeight/2);
+    nl.height = r.Height() + (border.cy*2);
   }
 }
 
@@ -56,14 +69,17 @@ void TranscriptPane::DrawArrows(CDC& dc, CPoint origin, int skeinIndex)
   CPen linePen(PS_DOT,1,theApp.GetColour(InformApp::ColourSkeinLine));
   for (auto& nl : m_nodes)
   {
+    // Draw a background
     int x = nl.node->GetX(skeinIndex);
     int y = nl.node->GetY(skeinIndex);
     dc.FillSolidRect(origin.x+x,origin.y+y,m_origin.x-x,3,theApp.GetColour(InformApp::ColourBack));
 
+    // Draw a dotted line
     CPen* oldPen = dc.SelectObject(&linePen);
     dc.MoveTo(origin.x+x,origin.y+y);
     dc.LineTo(origin.x+m_origin.x,origin.y+y);
 
+    // Draw the arrow head
     for (int i = 0; i < 4; i++)
       dc.FillSolidRect(origin.x+m_origin.x-2-(i*2),origin.y+y-i,2,(i*2)+1,theApp.GetColour(InformApp::ColourSkeinLine));
   }
@@ -74,14 +90,17 @@ void TranscriptPane::Draw(CDC& dc, CPoint origin)
   origin += m_origin;
   dc.FillSolidRect(origin.x,origin.y,GetWidth(),GetHeight(),theApp.GetColour(InformApp::ColourTranscriptBack));
 
+  CSize border = GetBorder();
   CPen linePen(PS_DASH,1,theApp.GetColour(InformApp::ColourTranscriptLine));
   for (auto& nl : m_nodes)
   {
+    // Draw the text in the transcript
     CRect r(origin,CSize(GetWidth(),nl.height));
-    r.DeflateRect(m_fontSize.cx*4/3,m_nodeHeight/4);
+    r.DeflateRect(border);
     dc.SetBkMode(TRANSPARENT);
     nl.draw->DrawText(dc,r);
 
+    // For all but the last entry, add a dashed line as a separator
     if (nl.node != m_nodes.back().node)
     {
       CPen* oldPen = dc.SelectObject(&linePen);
@@ -98,9 +117,13 @@ void TranscriptPane::Draw(CDC& dc, CPoint origin)
 void TranscriptPane::SetEndNode(Skein::Node* node, CWnd* wnd)
 {
   ClearNodes();
+
+  // Find all nodes in the transcript
   while (node != NULL)
   {
     auto it = m_nodes.emplace(m_nodes.begin(),node);
+
+    // Set up a windowless rich edit control for each element
     it->draw = new RichDrawText();
     it->draw->FontChanged(DPI::getWindowDPI(wnd));//XXXXDK dpi or prefs change too
 
@@ -147,9 +170,15 @@ bool TranscriptPane::AreNodesValid(Skein* skein)
 
 void TranscriptPane::ClearNodes(void)
 {
+  // Delete windowless rich edit controls before clearing the array
   for (auto& nl : m_nodes)
     delete nl.draw;
   m_nodes.clear();
+}
+
+CSize TranscriptPane::GetBorder(void)
+{
+  return CSize(m_fontSize.cx*4/3,m_nodeHeight/6);
 }
 
 bool TranscriptPane::IsActive(void)
@@ -201,4 +230,20 @@ void TranscriptPane::SaveTranscript(const char* path)
 
 TranscriptPane::NodeLayout::NodeLayout(Skein::Node* n) : node(n), draw(NULL), height(0)
 {
+}
+
+void TranscriptPane::NodeLayout::AddText(LPCWSTR text, bool bold)
+{
+  // Get a range at the end of the windowless rich edit control
+  CComPtr<ITextRange> range;
+  draw->Range(0,0,&range);
+  range->MoveStart(tomStory,1,NULL);
+
+  // Set the new text in the range at the end
+  range->SetText(CComBSTR(text));
+
+  // Adjust the font for the range
+  CComPtr<ITextFont> font;
+  range->GetFont(&font);
+  font->SetBold(bold ? tomTrue : tomFalse);
 }
