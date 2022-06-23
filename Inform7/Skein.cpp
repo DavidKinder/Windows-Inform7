@@ -41,7 +41,7 @@ Skein::Node* Skein::GetPlayTo(void)
 void Skein::SetPlayTo(Node* node)
 {
   m_playTo = node;
-  NotifyChange(ThreadChanged);
+  NotifyChange(PlayedChanged);
 }
 
 bool Skein::InPlayThread(Node* node)
@@ -302,7 +302,7 @@ void Skein::Reset(bool playTo)
     m_playTo = m_inst.root;
 
   m_played = m_inst.root;
-  NotifyChange(ThreadChanged);
+  NotifyChange(PlayedChanged);
 }
 
 void Skein::InvalidateLayout(void)
@@ -525,7 +525,7 @@ void Skein::NewLine(const CStringW& line)
     NotifyEdit(true);
   }
   else
-    NotifyChange(ThreadChanged);
+    NotifyChange(PlayedChanged);
 
   NotifyShowNode(node,ShowNewLine);
 }
@@ -538,7 +538,7 @@ bool Skein::NextLine(CStringW& line)
   {
     line = EscapeLine(next->GetLine(),UseCharacters);
     m_played = next;
-    NotifyChange(ThreadChanged);
+    NotifyChange(PlayedChanged);
     NotifyShowNode(next,ShowNewLine);
     return true;
   }

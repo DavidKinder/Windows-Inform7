@@ -51,30 +51,46 @@ void TranscriptPane::Layout(CDC& dc)
   }
 }
 
-void TranscriptPane::Draw(CDC& dc, CPoint origin, Skein::Node* rootNode, int skeinIndex)
+void TranscriptPane::DrawArrows(CDC& dc, CPoint origin, int skeinIndex)
 {
-  if (!rootNode->IsAnimated(skeinIndex))
+  CPen linePen(PS_DOT,1,theApp.GetColour(InformApp::ColourSkeinLine));
+  for (auto& nl : m_nodes)
   {
-    origin += m_origin;
-    dc.FillSolidRect(origin.x,origin.y,GetWidth(),GetHeight(),theApp.GetColour(InformApp::ColourTranscriptBack));
+    int x = nl.node->GetX(skeinIndex);
+    int y = nl.node->GetY(skeinIndex);
+    dc.FillSolidRect(origin.x+x,origin.y+y,m_origin.x-x,3,theApp.GetColour(InformApp::ColourBack));
 
-    CPen dashPen(PS_DASH,1,theApp.GetColour(InformApp::ColourTranscriptLine));
-    for (auto& nl : m_nodes)
+    CPen* oldPen = dc.SelectObject(&linePen);
+    dc.MoveTo(origin.x+x,origin.y+y);
+    dc.LineTo(origin.x+m_origin.x,origin.y+y);
+
+    for (int i = 0; i < 4; i++)
+      dc.FillSolidRect(origin.x+m_origin.x-2-(i*2),origin.y+y-i,2,(i*2)+1,theApp.GetColour(InformApp::ColourSkeinLine));
+  }
+}
+
+void TranscriptPane::Draw(CDC& dc, CPoint origin)
+{
+  origin += m_origin;
+  dc.FillSolidRect(origin.x,origin.y,GetWidth(),GetHeight(),theApp.GetColour(InformApp::ColourTranscriptBack));
+
+  CPen linePen(PS_DASH,1,theApp.GetColour(InformApp::ColourTranscriptLine));
+  for (auto& nl : m_nodes)
+  {
+    CRect r(origin,CSize(GetWidth(),nl.height));
+    r.DeflateRect(m_fontSize.cx*4/3,m_nodeHeight/4);
+    dc.SetBkMode(TRANSPARENT);
+    nl.draw->DrawText(dc,r);
+
+    if (nl.node != m_nodes.back().node)
     {
-      CRect r(origin,CSize(GetWidth(),nl.height));
-      r.DeflateRect(m_fontSize.cx*4/3,m_nodeHeight/4);
-      nl.draw->DrawText(dc,r);
+      CPen* oldPen = dc.SelectObject(&linePen);
+      int y = origin.y + nl.height;
+      dc.MoveTo(origin.x,y);
+      dc.LineTo(origin.x+GetWidth(),y);
+      dc.SelectObject(oldPen);
 
-      if (nl.node != m_nodes.back().node)
-      {
-        CPen* oldPen = dc.SelectObject(&dashPen);
-        int y = origin.y + nl.height;
-        dc.MoveTo(origin.x,y);
-        dc.LineTo(origin.x+GetWidth(),y);
-        dc.SelectObject(oldPen);
-
-        origin.y += nl.height;
-      }
+      origin.y += nl.height;
     }
   }
 }

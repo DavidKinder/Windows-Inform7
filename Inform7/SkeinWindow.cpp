@@ -5,8 +5,6 @@
 #include "Dialogs.h"
 #include "DpiFunctions.h"
 
-#include <math.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -484,18 +482,23 @@ void SkeinWindow::OnDraw(CDC* pDC)
     // Get relevant state from the project frame
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
 
+    // Is the transcript to be drawn?
+    Skein::Node* rootNode = m_skein->GetRoot();
+    bool drawTranscript = m_transcript.IsActive() && !rootNode->IsAnimated(m_skeinIndex);
+
     // Draw all nodes
     CSize drawOrigin = viewOrigin+GetLayoutBorder();
-    Skein::Node* rootNode = m_skein->GetRoot();
     for (int i = 0; i < 2; i++)
     {
       DrawNodeTree(i,rootNode,dc,bitmap,
         client,drawOrigin,CPoint(0,0),gameRunning);
+      if ((i == 0) && drawTranscript)
+        m_transcript.DrawArrows(dc,drawOrigin,m_skeinIndex);
     }
 
     // Draw the transcript, if visible
-    if (m_transcript.IsActive())
-      m_transcript.Draw(dc,drawOrigin,rootNode,m_skeinIndex);
+    if (drawTranscript)
+      m_transcript.Draw(dc,drawOrigin);
 
     // If the edit window is visible, exclude the area under it to reduce flicker
     if (m_edit.IsWindowVisible())
@@ -559,7 +562,7 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
 
   switch (change)
   {
-  case Skein::TreeChanged:
+  case Skein::TreeChanged://XXXXDK Update transcript
     if (m_transcript.IsActive() && !m_transcript.AreNodesValid(m_skein))
     {
       m_transcript.SetEndNode(NULL,this);
@@ -569,11 +572,11 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
       Layout(Skein::LayoutDefault);
     Invalidate();
     break;
-  case Skein::NodeTextChanged:
+  case Skein::NodeTextChanged://XXXXDK Update transcript
     Layout(Skein::LayoutDefault);
     Invalidate();
     break;
-  case Skein::ThreadChanged:
+  case Skein::PlayedChanged:
   case Skein::NodeColourChanged:
   case Skein::LockChanged:
     Invalidate();

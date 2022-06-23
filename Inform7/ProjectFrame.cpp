@@ -2272,7 +2272,7 @@ void ProjectFrame::RunProject(void)
     m_settings.m_output == ProjectSettings::OutputGlulx);
 
   // Send out a skein notification now that the game is running
-  m_skein.NotifyChange(Skein::ThreadChanged);
+  m_skein.NotifyChange(Skein::PlayedChanged);
 }
 
 void ProjectFrame::CleanProject(void)

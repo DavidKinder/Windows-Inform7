@@ -210,7 +210,7 @@ public:
   enum Change
   {
     TreeChanged,
-    ThreadChanged,
+    PlayedChanged,
     NodeTextChanged,
     NodeColourChanged,
     LockChanged

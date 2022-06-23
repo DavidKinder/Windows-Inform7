@@ -17,7 +17,8 @@ public:
   CPoint GetOrigin(void);
 
   void Layout(CDC& dc);
-  void Draw(CDC& dc, CPoint origin, Skein::Node* rootNode, int skeinIndex);
+  void DrawArrows(CDC& dc, CPoint origin, int skeinIndex);
+  void Draw(CDC& dc, CPoint origin);
 
   void SetEndNode(Skein::Node* node, CWnd* wnd);
   bool ContainsNode(Skein::Node* node);
