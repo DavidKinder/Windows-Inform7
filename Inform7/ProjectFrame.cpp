@@ -2525,7 +2525,7 @@ void ProjectFrame::GenerateIntestReport(CString result)
         result = "cursed";
         report = node;
       }
-      else if (node->GetDiffers() != Skein::Node::ExpectedSame)
+      else if (node->GetDiffers())
       {
         if (result.IsEmpty())
           result = "wrong";

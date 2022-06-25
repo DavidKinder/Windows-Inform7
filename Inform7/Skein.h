@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Diff.h"
+#include "TranscriptDiff.h"
 
 #include <map>
-#include <set>
 #include <vector>
 
 #define LAYOUTS 2
@@ -78,18 +77,9 @@ public:
 
     const CStringW& GetTranscriptText(void);
     const CStringW& GetExpectedText(void);
-    const Diff::DiffResults& GetTranscriptDiffs(void);
-    const Diff::DiffResults& GetExpectedDiffs(void);
 
     bool GetChanged(void);
-
-    enum ExpectedCompare
-    {
-      ExpectedSame,
-      ExpectedNearlySame,
-      ExpectedDifferent,
-    };
-    ExpectedCompare GetDiffers(void);
+    bool GetDiffers(void);
 
     bool GetLocked(void);
     bool SetLocked(bool locked);
@@ -97,7 +87,6 @@ public:
     void NewTranscriptText(const CStringW& transcript);
 
     bool Bless(void);
-    bool CanBless(void);
     bool SetExpectedText(LPCWSTR text);
 
     int CalcLineWidth(CDC& dc, int idx);
@@ -138,21 +127,15 @@ public:
 
   private:
     void CompareWithExpected(void);
-    void OverwriteBanner(CStringW& inStr);
     CStringW StripWhite(const CStringW& inStr);
 
     CStringW m_line;
     CStringW m_label;
     CString m_id;
 
-    CStringW m_textTranscript;
-    CStringW m_textExpected;
-    Diff::DiffResults m_diffTranscript;
-    Diff::DiffResults m_diffExpected;
-
     bool m_locked;
     bool m_changed;
-    ExpectedCompare m_differs;
+    TranscriptDiff m_diff;
 
     Node* m_parent;
     CArray<Node*> m_children;

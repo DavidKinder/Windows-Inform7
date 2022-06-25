@@ -906,7 +906,7 @@ void SkeinWindow::DrawNodeBack(Skein::Node* node, CDibSection& bitmap, const CPo
     CSize(width+(2*edgeWidth),back->GetSize().cy));
 
   // Draw the "differs badge", if needed
-  if ((node->GetDiffers() != Skein::Node::ExpectedSame) && (node->GetExpectedText().IsEmpty() == FALSE))
+  if (node->GetDiffers() && (node->GetExpectedText().IsEmpty() == FALSE))
   {
     CRect badgeRect = GetBadgeRect(nodeRect);
     bitmap.AlphaBlend(m_bitmaps[DiffersBadge],badgeRect.left,badgeRect.top);
@@ -1376,7 +1376,7 @@ void SkeinWindow::SkeinNodesShown(Skein::Node* node, bool gameRunning,
     break;
   }
 
-  if ((node->GetDiffers() != Skein::Node::ExpectedSame) && (node->GetExpectedText().IsEmpty() == FALSE))
+  if (node->GetDiffers() && (node->GetExpectedText().IsEmpty() == FALSE))
     differs = true;
   count++;
 

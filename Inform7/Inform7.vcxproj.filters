@@ -244,9 +244,6 @@
     <ClInclude Include="..\..\Glk\GlkDll\GlkSoundOGG.h">
       <Filter>Sound</Filter>
     </ClInclude>
-    <ClInclude Include="Diff.h">
-      <Filter>Skein</Filter>
-    </ClInclude>
     <ClInclude Include="Skein.h">
       <Filter>Skein</Filter>
     </ClInclude>
@@ -257,9 +254,6 @@
       <Filter>Skein</Filter>
     </ClInclude>
     <ClInclude Include="TranscriptEdit.h">
-      <Filter>Skein</Filter>
-    </ClInclude>
-    <ClInclude Include="TranscriptWindow.h">
       <Filter>Skein</Filter>
     </ClInclude>
     <ClInclude Include="SearchBar.h">
@@ -333,6 +327,12 @@
     </ClInclude>
     <ClInclude Include="CommandButton.h">
       <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="TranscriptPane.h">
+      <Filter>Skein</Filter>
+    </ClInclude>
+    <ClInclude Include="TranscriptDiff.h">
+      <Filter>Skein</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -477,9 +477,6 @@
     <ClCompile Include="..\..\Glk\GlkDll\GlkSoundOGG.cpp">
       <Filter>Sound</Filter>
     </ClCompile>
-    <ClCompile Include="Diff.cpp">
-      <Filter>Skein</Filter>
-    </ClCompile>
     <ClCompile Include="Skein.cpp">
       <Filter>Skein</Filter>
     </ClCompile>
@@ -490,9 +487,6 @@
       <Filter>Skein</Filter>
     </ClCompile>
     <ClCompile Include="TranscriptEdit.cpp">
-      <Filter>Skein</Filter>
-    </ClCompile>
-    <ClCompile Include="TranscriptWindow.cpp">
       <Filter>Skein</Filter>
     </ClCompile>
     <ClCompile Include="SearchBar.cpp">
@@ -1454,6 +1448,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\views\overlay_controller_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp\views</Filter>
+    </ClCompile>
+    <ClCompile Include="TranscriptPane.cpp">
+      <Filter>Skein</Filter>
+    </ClCompile>
+    <ClCompile Include="TranscriptDiff.cpp">
+      <Filter>Skein</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

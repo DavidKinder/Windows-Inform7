@@ -181,7 +181,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="CommandButton.h" />
     <ClInclude Include="PageTab.h" />
     <ClInclude Include="ContentsWindow.h" />
-    <ClInclude Include="Diff.h" />
     <ClInclude Include="EditFind.h" />
     <ClInclude Include="ExtensionFrame.h" />
     <ClInclude Include="FindAllHelper.h" />
@@ -225,6 +224,8 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="SourceSettings.h" />
     <ClInclude Include="SourceWindow.h" />
     <ClInclude Include="SpellCheck.h" />
+    <ClInclude Include="TranscriptDiff.h" />
+    <ClInclude Include="TranscriptPane.h" />
     <ClInclude Include="WelcomeLauncher.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StopButton.h" />
@@ -240,7 +241,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="TabStory.h" />
     <ClInclude Include="TextFormat.h" />
     <ClInclude Include="TranscriptEdit.h" />
-    <ClInclude Include="TranscriptWindow.h" />
     <ClInclude Include="UnicodeEdit.h" />
   </ItemGroup>
   <ItemGroup>
@@ -2059,7 +2059,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="CommandButton.cpp" />
     <ClCompile Include="PageTab.cpp" />
     <ClCompile Include="ContentsWindow.cpp" />
-    <ClCompile Include="Diff.cpp" />
     <ClCompile Include="EditFind.cpp" />
     <ClCompile Include="ElasticTabStops.cpp" />
     <ClCompile Include="ExtensionFrame.cpp" />
@@ -2334,6 +2333,8 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="SourceSettings.cpp" />
     <ClCompile Include="SourceWindow.cpp" />
     <ClCompile Include="SpellCheck.cpp" />
+    <ClCompile Include="TranscriptDiff.cpp" />
+    <ClCompile Include="TranscriptPane.cpp" />
     <ClCompile Include="WelcomeLauncher.cpp" />
     <ClCompile Include="StackTrace.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -2352,7 +2353,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="TabStory.cpp" />
     <ClCompile Include="TextFormat.cpp" />
     <ClCompile Include="TranscriptEdit.cpp" />
-    <ClCompile Include="TranscriptWindow.cpp" />
     <ClCompile Include="UnicodeEdit.cpp" />
   </ItemGroup>
   <ItemGroup>

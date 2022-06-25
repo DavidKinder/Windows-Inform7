@@ -785,7 +785,7 @@ bool Skein::CanBless(Node* node, bool all)
   bool canBless = false;
   while (node != NULL)
   {
-    canBless |= node->CanBless();
+    canBless |= node->GetDiffers();
     node = all ? node->GetParent() : NULL;
   }
   return canBless;
@@ -845,7 +845,7 @@ Skein::Node* Skein::GetFirstDifferent(Node* node)
     node = m_inst.root;
 
   // If this node differs, return it
-  if (node->GetDiffers() != Skein::Node::ExpectedSame)
+  if (node->GetDiffers())
     return node;
 
   // Look for differing child nodes
@@ -962,13 +962,13 @@ int Skein::IntFromXML(IXMLDOMNode* node, LPWSTR query)
 
 Skein::Node::Node(const CStringW& line, const CStringW& label, const CStringW& transcript,
   const CStringW& expected, bool changed)
-  : m_parent(NULL), m_line(line), m_label(label),
-    m_textTranscript(transcript), m_textExpected(expected),
-    m_locked(false), m_changed(changed), m_differs(ExpectedDifferent)
+  : m_parent(NULL), m_line(line), m_label(label), m_locked(false), m_changed(changed)
 {
   static unsigned long counter = 0;
-
   m_id.Format("node-%lu",counter++);
+
+  m_diff.SetIdeal(expected);
+  m_diff.SetActual(transcript);
   CompareWithExpected();
 }
 
@@ -1036,9 +1036,9 @@ bool Skein::Node::GetChanged(void)
   return m_changed;
 }
 
-Skein::Node::ExpectedCompare Skein::Node::GetDiffers(void)
+bool Skein::Node::GetDiffers(void)
 {
-  return m_differs;
+  return m_diff.HasDiff();
 }
 
 bool Skein::Node::GetLocked(void)
@@ -1055,36 +1055,30 @@ bool Skein::Node::SetLocked(bool locked)
 
 void Skein::Node::NewTranscriptText(const CStringW& transcript)
 {
-  if (!m_textTranscript.IsEmpty())
-    m_changed = !(m_textTranscript == transcript);
-  m_textTranscript = transcript;
-  m_textTranscript.Replace('\r','\n');
-  CompareWithExpected();
+  m_changed = m_diff.SetActual(transcript);
+  if (m_changed)
+    CompareWithExpected();
 }
 
 bool Skein::Node::Bless(void)
 {
-  bool differs = (m_differs != ExpectedSame);
-  m_textExpected = m_textTranscript;
-  m_differs = ExpectedSame;
-
-  m_diffExpected.clear();
-  m_diffTranscript.clear();
-  return differs;
-}
-
-bool Skein::Node::CanBless(void)
-{
-  return (m_differs != ExpectedSame);
+  CStringW actual = m_diff.GetActual();
+  if (m_diff.SetIdeal(actual))
+  {
+    CompareWithExpected();
+    return true;
+  }
+  return false;
 }
 
 bool Skein::Node::SetExpectedText(LPCWSTR text)
 {
-  CStringW oldExpected = m_textExpected;
-  m_textExpected = text;
-  m_textExpected.Replace('\r','\n');
-  CompareWithExpected();
-  return (oldExpected != m_textExpected);
+  if (m_diff.SetIdeal(text))
+  {
+    CompareWithExpected();
+    return true;
+  }
+  return false;
 }
 
 int Skein::Node::CalcLineWidth(CDC& dc, int idx)
@@ -1288,8 +1282,8 @@ void Skein::Node::SaveNodes(FILE* skeinFile)
     "    <changed>%s</changed>\n",
     (LPCTSTR)m_id,
     (LPCTSTR)TextFormat::ToXML_UTF8(m_line),
-    (LPCTSTR)TextFormat::ToXML_UTF8(m_textTranscript),
-    (LPCTSTR)TextFormat::ToXML_UTF8(m_textExpected),
+    (LPCTSTR)TextFormat::ToXML_UTF8(m_diff.GetActual()),
+    (LPCTSTR)TextFormat::ToXML_UTF8(m_diff.GetIdeal()),
     ToXML_UTF8(m_changed));
 
   if (m_label.GetLength() > 0)
@@ -1453,70 +1447,21 @@ bool Skein::Node::IsAnimated(int idx)
 
 const CStringW& Skein::Node::GetTranscriptText(void)
 {
-  return m_textTranscript;
+  return m_diff.GetActual();
 }
 
 const CStringW& Skein::Node::GetExpectedText(void)
 {
-  return m_textExpected;
-}
-
-const Diff::DiffResults& Skein::Node::GetTranscriptDiffs(void)
-{
-  return m_diffTranscript;
-}
-
-const Diff::DiffResults& Skein::Node::GetExpectedDiffs(void)
-{
-  return m_diffExpected;
+  return m_diff.GetIdeal();
 }
 
 void Skein::Node::CompareWithExpected(void)
 {
-  CStringW textExpected(m_textExpected);
-  CStringW textTranscript(m_textTranscript);
-  OverwriteBanner(textExpected);
-  OverwriteBanner(textTranscript);
-
-  m_differs = !(textTranscript == textExpected) ? ExpectedDifferent : ExpectedSame;
-  if (m_differs == ExpectedDifferent)
-  {
-    if ((textTranscript.IsEmpty() == FALSE) && (textExpected.IsEmpty() == FALSE))
-    {
-      if (StripWhite(textTranscript).CompareNoCase(StripWhite(textExpected)) == 0)
-        m_differs = ExpectedNearlySame;
-    }
-  }
-
-  m_diffExpected.clear();
-  m_diffTranscript.clear();
-  if ((m_differs == ExpectedDifferent) && (textExpected.IsEmpty() == FALSE))
-  {
-    Diff::DiffStrings(textExpected,textTranscript,m_diffExpected,m_diffTranscript);
-  }
+  //XXXXDK IFSkeinItem.m differences
+  m_diff.Diff();
 }
 
-void Skein::Node::OverwriteBanner(CStringW& inStr)
-{
-  // Does this text contain an Inform banner?
-  int i = inStr.Find(L"\nRelease ");
-  if (i >= 0)
-  {
-    int release, serial;
-    if (swscanf((LPCWSTR)inStr+i,L"\nRelease %d / Serial number %d / Inform 7 ",&release,&serial) == 2)
-    {
-      // Replace the banner line with asterisks
-      for (int j = i+1; j < inStr.GetLength(); j++)
-      {
-        if (inStr.GetAt(j) == '\n')
-          break;
-        inStr.SetAt(j,'*');
-      }
-    }
-  }
-}
-
-CStringW Skein::Node::StripWhite(const CStringW& inStr)
+CStringW Skein::Node::StripWhite(const CStringW& inStr)//XXXXDK use?
 {
   CStringW outStr;
   outStr.Preallocate(inStr.GetLength()+1);
