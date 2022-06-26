@@ -921,6 +921,8 @@ void SkeinWindow::DrawNodeBack(Skein::Node* node, CDibSection& bitmap, const CPo
 
   // Part of the width is taken up with the rounded edges
   width -= m_fontSize.cx*2;
+  if (width < 0)
+    width = 0;
 
   // Draw the rounded edges of the background
   bitmap.AlphaBlend(back,0,0,edgeWidth,back->GetSize().cy,
