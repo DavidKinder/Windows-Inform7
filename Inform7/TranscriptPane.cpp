@@ -262,7 +262,7 @@ void TranscriptPane::ValidateNodes(Skein* skein, CWnd* wnd)
 
   // If there is a valid node still present use it as the new end, otherwise clear everything
   if (!allValid)
-    SetEndNode(validNode,wnd);
+    SetEndNode(skein->GetThreadEnd(validNode),wnd);
 }
 
 void TranscriptPane::ClearNodes(void)
