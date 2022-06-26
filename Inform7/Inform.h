@@ -73,6 +73,8 @@ public:
     ColourBorder,
     ColourTranscriptBack,
     ColourTranscriptLine,
+    ColourTranscriptDelete,
+    ColourTranscriptInsert,
     ColourHyperlink,
     ColourContents,
     ColourContentsSelect,

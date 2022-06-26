@@ -527,7 +527,7 @@ void Skein::NewLine(const CStringW& line)
   else
     NotifyChange(PlayedChanged);
 
-  NotifyShowNode(node,ShowNewLine);
+  NotifyShowNode(node);
 }
 
 bool Skein::NextLine(CStringW& line)
@@ -539,7 +539,7 @@ bool Skein::NextLine(CStringW& line)
     line = EscapeLine(next->GetLine(),UseCharacters);
     m_played = next;
     NotifyChange(PlayedChanged);
-    NotifyShowNode(next,ShowNewLine);
+    NotifyShowNode(next);
     return true;
   }
   return false;
@@ -551,9 +551,9 @@ void Skein::UpdateAfterPlaying(const CStringW& transcript)
   if (transcript.IsEmpty() == FALSE)
     m_played->NewTranscriptText(transcript);
 
-  NotifyChange(NodeColourChanged);
+  NotifyChange(NodeTranscriptChanged);
   if (transcript.IsEmpty() == FALSE)
-    NotifyShowNode(m_played,ShowNewTranscript);
+    NotifyShowNode(m_played);
 }
 
 static const wchar_t* escapes[] =
@@ -777,7 +777,7 @@ void Skein::Bless(Node* node, bool all)
       NotifyEdit(true);
     node = all ? node->GetParent() : NULL;
   }
-  NotifyChange(NodeColourChanged);
+  NotifyChange(NodeTranscriptChanged);
 }
 
 bool Skein::CanBless(Node* node, bool all)
@@ -795,7 +795,7 @@ void Skein::SetExpectedText(Node* node, LPCWSTR text)
 {
   if (node->SetExpectedText(text))
     NotifyEdit(true);
-  NotifyChange(NodeColourChanged);
+  NotifyChange(NodeTranscriptChanged);
 }
 
 Skein::Node* Skein::GetThreadEnd(Node* node)
@@ -905,10 +905,10 @@ void Skein::NotifyEdit(bool edited)
   }
 }
 
-void Skein::NotifyShowNode(Node* node, Show why)
+void Skein::NotifyShowNode(Node* node)
 {
   for (std::vector<Listener*>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
-    (*it)->SkeinShowNode(node,why);
+    (*it)->SkeinShowNode(node);
 }
 
 LPCTSTR Skein::ToXML_UTF8(bool value)
@@ -962,13 +962,12 @@ int Skein::IntFromXML(IXMLDOMNode* node, LPWSTR query)
 
 Skein::Node::Node(const CStringW& line, const CStringW& label, const CStringW& transcript,
   const CStringW& expected, bool changed)
-  : m_parent(NULL), m_line(line), m_label(label), m_locked(false), m_changed(changed)
+  : m_parent(NULL), m_line(line), m_label(label), 
+    m_textTranscript(transcript), m_textExpected(expected),
+    m_locked(false), m_changed(changed)
 {
   static unsigned long counter = 0;
   m_id.Format("node-%lu",counter++);
-
-  m_diff.SetIdeal(expected);
-  m_diff.SetActual(transcript);
   CompareWithExpected();
 }
 
@@ -1053,18 +1052,23 @@ bool Skein::Node::SetLocked(bool locked)
   return change;
 }
 
-void Skein::Node::NewTranscriptText(const CStringW& transcript)
+void Skein::Node::NewTranscriptText(LPCWSTR text)
 {
-  m_changed = m_diff.SetActual(transcript);
-  if (m_changed)
+  CStringW newTranscript(text);
+  newTranscript.Replace('\r','\n');
+
+  if (m_textTranscript != newTranscript)
+  {
+    m_textTranscript = newTranscript;
     CompareWithExpected();
+  }
 }
 
 bool Skein::Node::Bless(void)
 {
-  CStringW actual = m_diff.GetActual();
-  if (m_diff.SetIdeal(actual))
+  if (m_textExpected != m_textTranscript)
   {
+    m_textExpected = m_textTranscript;
     CompareWithExpected();
     return true;
   }
@@ -1073,8 +1077,12 @@ bool Skein::Node::Bless(void)
 
 bool Skein::Node::SetExpectedText(LPCWSTR text)
 {
-  if (m_diff.SetIdeal(text))
+  CStringW newExpected(text);
+  newExpected.Replace('\r','\n');
+
+  if (m_textExpected != newExpected)
   {
+    m_textExpected = newExpected;
     CompareWithExpected();
     return true;
   }
@@ -1282,8 +1290,8 @@ void Skein::Node::SaveNodes(FILE* skeinFile)
     "    <changed>%s</changed>\n",
     (LPCTSTR)m_id,
     (LPCTSTR)TextFormat::ToXML_UTF8(m_line),
-    (LPCTSTR)TextFormat::ToXML_UTF8(m_diff.GetActual()),
-    (LPCTSTR)TextFormat::ToXML_UTF8(m_diff.GetIdeal()),
+    (LPCTSTR)TextFormat::ToXML_UTF8(m_textTranscript),
+    (LPCTSTR)TextFormat::ToXML_UTF8(m_textExpected),
     ToXML_UTF8(m_changed));
 
   if (m_label.GetLength() > 0)
@@ -1447,43 +1455,106 @@ bool Skein::Node::IsAnimated(int idx)
 
 const CStringW& Skein::Node::GetTranscriptText(void)
 {
-  return m_diff.GetActual();
+  return m_textTranscript;
 }
 
 const CStringW& Skein::Node::GetExpectedText(void)
 {
-  return m_diff.GetIdeal();
+  return m_textExpected;
+}
+
+const TranscriptDiff& Skein::Node::GetTranscriptDiff(void)
+{
+  return m_diff;
+}
+
+static CStringW PromptForString(const CStringW& str)
+{
+  int lastCarriageReturnIndex = str.ReverseFind('\n');
+  if (lastCarriageReturnIndex < 0)
+    return L"";
+  return str.Mid(lastCarriageReturnIndex + 1);
+}
+
+static CStringW StringByRemovingPrompt(const CStringW& str)
+{
+  int lastCarriageReturnIndex = str.ReverseFind('\n');
+  if (lastCarriageReturnIndex < 0)
+    return str;
+  return str.Left(lastCarriageReturnIndex);
+}
+
+static CStringW TrailingWhitespace(const CStringW& str)
+{
+  // Search backwards from the end of the string for a non-whitespace character
+  for (int i = str.GetLength() - 1; i >= 0; i--)
+  {
+    if (!isspace(str[i]))
+      return str.Mid(i+1);
+  }
+  return str;
+}
+
+static CStringW LeadingWhitespace(const CStringW& str)
+{
+  // Find the first non-whitespace character
+  for (int i = 0; i < str.GetLength(); i++)
+  {
+    if (!isspace(str[i]))
+      return str.Left(i);
+  }
+  return str;
+}
+
+CStringW StringByRemovingTrailingWhitespace(const CStringW& str)
+{
+  CStringW trailing = TrailingWhitespace(str);
+  return str.Left(str.GetLength() - trailing.GetLength());
+}
+
+CStringW StringByRemovingLeadingWhitespace(const CStringW& str)
+{
+  CStringW leading = LeadingWhitespace(str);
+  return str.Mid(leading.GetLength());
 }
 
 void Skein::Node::CompareWithExpected(void)
 {
-  //XXXXDK IFSkeinItem.m differences
-  m_diff.Diff();
-}
+  CStringW localIdeal = m_textExpected;
+  CStringW localActual = m_textTranscript;
 
-CStringW Skein::Node::StripWhite(const CStringW& inStr)//XXXXDK use?
-{
-  CStringW outStr;
-  outStr.Preallocate(inStr.GetLength()+1);
-  for (int i = 0; i < inStr.GetLength(); i++)
+  // Remove matching prompts
+  bool promptsMatch = PromptForString(localActual).Compare(PromptForString(localIdeal)) == 0;
+  bool idealHasStandardPrompt  = localIdeal.Right(2).Compare(L"\n>") == 0;
+  bool actualHasStandardPrompt = localActual.Right(2).Compare(L"\n>") == 0;
+  bool hasIdealOutput  = localIdeal.GetLength() > 0;
+  bool hasActualOutput = localActual.GetLength() > 0;
+  bool canRemovePrompt = promptsMatch || (!hasActualOutput && idealHasStandardPrompt) || (!hasIdealOutput && actualHasStandardPrompt);
+  if (canRemovePrompt)
   {
-    WCHAR c = inStr.GetAt(i);
-    switch (c)
-    {
-    case L'\n':
-    case L'\r':
-    case L' ':
-    case L'\t':
-      break;
-    case '>':
-      if (i < inStr.GetLength()-1)
-        outStr.AppendChar(c);
-    default:
-      outStr.AppendChar(c);
-      break;
-    }
+    localIdeal  = StringByRemovingPrompt(localIdeal);
+    localActual = StringByRemovingPrompt(localActual);
   }
-  return outStr;
+
+  // Remove matching trailing whitespace
+  CStringW idealTrailingWhitespace  = TrailingWhitespace(localIdeal);
+  CStringW actualTrailingWhitespace = TrailingWhitespace(localActual);
+  if ((idealTrailingWhitespace.Compare(actualTrailingWhitespace) == 0) || !hasIdealOutput || !hasActualOutput)
+  {
+    localIdeal  = StringByRemovingTrailingWhitespace(localIdeal);
+    localActual = StringByRemovingTrailingWhitespace(localActual);
+  }
+
+  // Remove matching leading whitespace
+  CStringW idealLeadingWhitespace  = LeadingWhitespace(localIdeal);
+  CStringW actualLeadingWhitespace = LeadingWhitespace(localActual);
+  if ((idealLeadingWhitespace.Compare(actualLeadingWhitespace) == 0) || !hasIdealOutput || !hasActualOutput)
+  {
+    localIdeal  = StringByRemovingLeadingWhitespace(localIdeal);
+    localActual = StringByRemovingLeadingWhitespace(localActual);
+  }
+
+  m_diff.Diff(localIdeal,localActual);
 }
 
 Skein::Node::LayoutInfo::LayoutInfo()

@@ -31,7 +31,7 @@ END_MESSAGE_MAP()
 
 SkeinWindow::SkeinWindow() : m_skein(NULL), m_skeinIndex(-1),
   m_mouseOverNode(NULL), m_mouseOverMenu(false), m_lastClick(false), m_lastClickTime(0),
-  m_pctAnim(-1), m_anchorWindow(NULL)
+  m_pctAnim(-1), m_showTranscriptAfterAnim(false), m_anchorWindow(NULL)
 {
 }
 
@@ -135,6 +135,13 @@ void SkeinWindow::OnLButtonUp(UINT nFlags, CPoint point)
       // Start a timer to expire after the double click time
       SetTimer(1,::GetDoubleClickTime(),NULL);
     }
+  }
+
+  // Is the user clicking in the transcript?
+  if (m_transcript.IsActive())
+  {
+    if (m_transcript.LButtonUp(point,m_skein))
+      return;
   }
 
   m_lastClick = !dclick;
@@ -330,6 +337,12 @@ void SkeinWindow::OnMouseMove(UINT nFlags, CPoint point)
     Invalidate();
   }
 
+  if (m_transcript.IsActive())
+  {
+    if (m_transcript.MouseMove(point))
+      Invalidate();
+  }
+
   CScrollView::OnMouseMove(nFlags,point);
 }
 
@@ -414,10 +427,13 @@ void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
       if (node != NULL)
       {
         AnimatePrepareOnlyThis();
+        if (!m_transcript.IsActive())
+          m_showTranscriptAfterAnim = true;
         m_transcript.SetEndNode(m_transcript.ContainsNode(node) ?
           NULL : m_skein->GetThreadEnd(node),this);
         Layout(Skein::LayoutReposition);
         GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
+        UpdateHelp();
       }
     }
   }
@@ -484,7 +500,18 @@ void SkeinWindow::OnDraw(CDC* pDC)
 
     // Is the transcript to be drawn?
     Skein::Node* rootNode = m_skein->GetRoot();
-    bool drawTranscript = m_transcript.IsActive() && !rootNode->IsAnimated(m_skeinIndex);
+    bool drawTranscript = false;
+    if (m_transcript.IsActive())
+    {
+      drawTranscript = true;
+      if (m_showTranscriptAfterAnim)
+      {
+        if (rootNode->IsAnimated(m_skeinIndex))
+          drawTranscript = false;
+        else
+          m_showTranscriptAfterAnim = false;
+      }
+    }
 
     // Draw all nodes
     CSize drawOrigin = viewOrigin+GetLayoutBorder();
@@ -498,7 +525,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
 
     // Draw the transcript, if visible
     if (drawTranscript)
-      m_transcript.Draw(dc,drawOrigin);
+      m_transcript.Draw(dc,drawOrigin,bitmap);
 
     // If the edit window is visible, exclude the area under it to reduce flicker
     if (m_edit.IsWindowVisible())
@@ -530,6 +557,7 @@ void SkeinWindow::SetSkein(Skein* skein, int idx)
   m_skein = skein;
   m_skeinIndex = idx;
   m_skein->AddListener(this);
+  m_transcript.SetEndNode(NULL,this);
   Layout(Skein::LayoutDefault);
 }
 
@@ -551,8 +579,11 @@ void SkeinWindow::PrefsChanged(void)
 
 void SkeinWindow::SkeinLayout(CDC& dc, Skein::LayoutMode mode)
 {
-  CSize spacing = GetLayoutSpacing();
-  m_skein->Layout(dc,m_skeinIndex,mode,spacing,m_transcript);
+  if (m_skein->IsActive())
+  {
+    CSize spacing = GetLayoutSpacing();
+    m_skein->Layout(dc,m_skeinIndex,mode,spacing,m_transcript);
+  }
 }
 
 void SkeinWindow::SkeinChanged(Skein::Change change)
@@ -562,22 +593,26 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
 
   switch (change)
   {
-  case Skein::TreeChanged://XXXXDK Update transcript
-    if (m_transcript.IsActive() && !m_transcript.AreNodesValid(m_skein))
+  case Skein::TreeChanged:
+    if (m_transcript.IsActive())
     {
-      m_transcript.SetEndNode(NULL,this);
+      m_transcript.ValidateNodes(m_skein,this);
       Layout(Skein::LayoutReposition);
     }
     else
       Layout(Skein::LayoutDefault);
     Invalidate();
     break;
-  case Skein::NodeTextChanged://XXXXDK Update transcript
+  case Skein::NodeTextChanged:
     Layout(Skein::LayoutDefault);
     Invalidate();
     break;
+  case Skein::NodeTranscriptChanged:
+    if (m_transcript.IsActive())
+      Layout(Skein::LayoutReposition);
+    Invalidate();
+    break;
   case Skein::PlayedChanged:
-  case Skein::NodeColourChanged:
   case Skein::LockChanged:
     Invalidate();
     break;
@@ -586,14 +621,7 @@ void SkeinWindow::SkeinChanged(Skein::Change change)
     break;
   }
 
-  // Update the help to match what is shown
-  CWnd* wnd = this;
-  while (wnd != NULL)
-  {
-    if (wnd->IsKindOf(RUNTIME_CLASS(TabTesting)))
-      ((TabTesting*)wnd)->PostMessage(WM_UPDATEHELP);
-    wnd = wnd->GetParent();
-  }
+  UpdateHelp();
 }
 
 void SkeinWindow::SkeinEdited(bool edited)
@@ -602,48 +630,37 @@ void SkeinWindow::SkeinEdited(bool edited)
     GetParentFrame()->SendMessage(WM_PROJECTEDITED,0);
 }
 
-void SkeinWindow::SkeinShowNode(Skein::Node* node, Skein::Show why)
+void SkeinWindow::SkeinShowNode(Skein::Node* node)
 {
   if (GetSafeHwnd() == 0)
     return;
 
-  switch (why)
+  if (!NodeFullyVisible(node))
   {
-  case Skein::ShowNode:
-  case Skein::ShowNewLine:
-    if (!NodeFullyVisible(node))
-    {
-      // Work out the position of the node
-      CPoint origin = GetLayoutBorder();
-      int x = origin.x + node->GetX(m_skeinIndex);
-      int y = origin.y + node->GetY(m_skeinIndex);
+    // Work out the position of the node
+    CPoint origin = GetLayoutBorder();
+    int x = origin.x + node->GetX(m_skeinIndex);
+    int y = origin.y + node->GetY(m_skeinIndex);
 
-      // Centre the node
-      CRect client;
-      GetClientRect(client);
-      x -= client.Width()/2;
-      y -= client.Height()/2;
-      if (x < 0)
-        x = 0;
-      if (y < 0)
-        y = 0;
+    // Centre the node
+    CRect client;
+    GetClientRect(client);
+    x -= client.Width()/2;
+    y -= client.Height()/2;
+    if (x < 0)
+      x = 0;
+    if (y < 0)
+      y = 0;
 
-      // Only change the co-ordinates if there are scrollbars
-      BOOL horiz, vert;
-      CheckScrollBars(horiz,vert);
-      if (horiz == FALSE)
-        x = 0;
-      if (vert == FALSE)
-        y = 0;
+    // Only change the co-ordinates if there are scrollbars
+    BOOL horiz, vert;
+    CheckScrollBars(horiz,vert);
+    if (horiz == FALSE)
+      x = 0;
+    if (vert == FALSE)
+      y = 0;
 
-      ScrollToPosition(CPoint(x,y));
-    }
-    break;
-  case Skein::ShowNewTranscript:
-    break;
-  default:
-    ASSERT(FALSE);
-    break;
+    ScrollToPosition(CPoint(x,y));
   }
 }
 
@@ -663,14 +680,34 @@ void SkeinWindow::SkeinNodesShown(
   }
 }
 
+void SkeinWindow::UpdateHelp(void)
+{
+  // Update the help to match what is shown
+  CWnd* wnd = this;
+  while (wnd != NULL)
+  {
+    if (wnd->IsKindOf(RUNTIME_CLASS(TabTesting)))
+      ((TabTesting*)wnd)->PostMessage(WM_UPDATEHELP);
+    wnd = wnd->GetParent();
+  }
+}
+
+void SkeinWindow::TranscriptShown(bool& transcript, bool& anyTick, bool& anyCross)
+{
+  transcript = m_transcript.IsActive();
+  m_transcript.Shown(anyTick,anyCross);
+}
+
 void SkeinWindow::AnimatePrepare()
 {
-  m_skein->GetRoot()->AnimatePrepare(-1);
+  if (m_skein->IsActive())
+    m_skein->GetRoot()->AnimatePrepare(-1);
 }
 
 void SkeinWindow::AnimatePrepareOnlyThis()
 {
-  m_skein->GetRoot()->AnimatePrepare(m_skeinIndex);
+  if (m_skein->IsActive())
+    m_skein->GetRoot()->AnimatePrepare(m_skeinIndex);
 }
 
 void SkeinWindow::Animate(int pct)
@@ -775,9 +812,13 @@ void SkeinWindow::SetFontsBitmaps(void)
   m_bitmaps[MenuSelected] = GetImage("Skein-selected-menu");
   m_bitmaps[MenuOver] = GetImage("Skein-over-menu");
   m_bitmaps[DiffersBadge] = GetImage("SkeinDiffersBadge");
+  m_bitmaps[BlessButton] = GetImage("Trans-tick-off");
+  m_bitmaps[BlessButtonOver] = GetImage("Trans-tick");
+  m_bitmaps[CurseButton] = GetImage("Trans-cross-off");
+  m_bitmaps[CurseButtonOver] = GetImage("Trans-cross");
 
-  // Set the transcript's fonts
-  m_transcript.SetFontsBitmaps(this,m_bitmaps[BackActive]->GetSize().cy);
+  // Set the transcript's fonts and bitmaps
+  m_transcript.SetFontsBitmaps(this,m_bitmaps);
 }
 
 void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSection& bitmap,

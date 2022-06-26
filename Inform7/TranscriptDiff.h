@@ -5,13 +5,8 @@
 class TranscriptDiff
 {
 public:
-  const CStringW& GetIdeal(void);
-  bool SetIdeal(LPCWSTR ideal);
-  const CStringW& GetActual(void);
-  bool SetActual(LPCWSTR actual);
-
-  void Diff(void);
-  bool HasDiff(void);
+  void Diff(LPCWSTR ideal, LPCWSTR actual);
+  bool HasDiff(void) const;
 
   struct Range
   {
@@ -35,16 +30,21 @@ public:
     DiffEdit();
     DiffEdit(Range frag, EFormOfEdit edit);
 
+    CStringW SubString(const CStringW& str) const;
+
     Range fragment;
     EFormOfEdit formOfEdit;
   };
+
+  typedef std::vector<DiffEdit> DiffEdits;
+  const DiffEdits& GetDifferences(void) const;
+  CStringW SubString(const DiffEdit& diff) const;
+  LPCWSTR GetIdeal(void) const;
 
 private:
   void DiffOuterRange(Range rangeA, Range rangeB);
   void DiffInnerRange(Range rangeA, Range rangeB);
   bool IsWordBoundary(LPCWSTR str, size_t index);
-
-  typedef std::vector<DiffEdit> DiffEdits;
 
   CStringW m_ideal;
   CStringW m_actual;

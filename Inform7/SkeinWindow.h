@@ -26,9 +26,10 @@ public:
   void SkeinLayout(CDC& dc, Skein::LayoutMode mode);
   void SkeinChanged(Skein::Change change);
   void SkeinEdited(bool edited);
-  void SkeinShowNode(Skein::Node* node, Skein::Show why);
+  void SkeinShowNode(Skein::Node* node);
   void SkeinNodesShown(
     bool& unselected, bool& selected, bool& active, bool& differs, int& count);
+  void TranscriptShown(bool& transcript, bool& anyTick, bool& anyCross);
   void AnimatePrepare();
   void AnimatePrepareOnlyThis();
   void Animate(int pct);
@@ -37,6 +38,24 @@ public:
   void SaveTranscript(const char* path);
 
   virtual CSize GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL bVert);
+
+  enum NodeBitmap
+  {
+    BackActive = 0,
+    BackUnselected,
+    BackSelected,
+    MenuActive,
+    MenuUnselected,
+    MenuSelected,
+    MenuOver,
+    DiffersBadge,
+    BlessButton,
+    BlessButtonOver,
+    CurseButton,
+    CurseButtonOver,
+    Number_Bitmaps,
+    No_Bitmap = -1
+  };
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -91,23 +110,10 @@ private:
   bool ShowLabel(Skein::Node* node);
   void StartEdit(Skein::Node* node, bool label);
 
-  enum NodeBitmap
-  {
-    BackActive = 0,
-    BackUnselected,
-    BackSelected,
-    MenuActive,
-    MenuUnselected,
-    MenuSelected,
-    MenuOver,
-    DiffersBadge,
-    Number_Bitmaps,
-    No_Bitmap = -1
-  };
-
   NodeBitmap GetNodeBack(Skein::Node* node, bool selected, bool gameRunning);
   void SkeinNodesShown(Skein::Node* node, bool gameRunning,
     bool& unselected, bool& selected, bool& active, bool& differs, int& count);
+  void UpdateHelp(void);
 
   Skein* m_skein;
   int m_skeinIndex;
@@ -128,6 +134,7 @@ private:
   CPoint m_lastPoint;
 
   TranscriptPane m_transcript;
+  bool m_showTranscriptAfterAnim;
 
   SkeinMouseAnchorWnd* m_anchorWindow;
   friend class SkeinMouseAnchorWnd;

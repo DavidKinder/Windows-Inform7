@@ -220,9 +220,9 @@ void TabTesting::SetSkein(Skein* skein, int idx)
   m_skeinWindow->SetSkein(skein,idx);
 }
 
-void TabTesting::ShowNode(Skein::Node* node, Skein::Show why)
+void TabTesting::ShowNode(Skein::Node* node)
 {
-  m_skeinWindow->SkeinShowNode(node,why);
+  m_skeinWindow->SkeinShowNode(node);
 }
 
 void TabTesting::SkeinChanged(void)
@@ -301,18 +301,22 @@ LRESULT TabTesting::OnUpdateHelp(WPARAM, LPARAM)
   bool active = m_skein->IsActive();
   bool showWelcome = GetParentFrame()->SendMessage(WM_TESTINGTABSHOWN,0) < 10;
   bool anyPurple = false, anyGrey = false, anyBlue = false, anyBadge = false;
+  bool transcript = false, anyTick = false, anyCross = false;
   int count = 0;
   if (active)
+  {
     m_skeinWindow->SkeinNodesShown(anyGrey,anyBlue,anyPurple,anyBadge,count);
+    m_skeinWindow->TranscriptShown(transcript,anyTick,anyCross);
+  }
 
   SetHelpVisible("welcome",active && showWelcome);
   SetHelpVisible("title",active);
   SetHelpVisible("purple",anyPurple);
   SetHelpVisible("grey",anyGrey || anyBlue);
   SetHelpVisible("blue",anyGrey || anyBlue);
-  SetHelpVisible("report",false);//XXXXDK
-  SetHelpVisible("tick",false);//XXXXDK
-  SetHelpVisible("cross",false);//XXXXDK
+  SetHelpVisible("report",transcript);
+  SetHelpVisible("tick",anyTick || anyCross);
+  SetHelpVisible("cross",anyCross);
   SetHelpVisible("badge",anyBadge);
   SetHelpVisible("threads",count >= 2);
   SetHelpVisible("knots",count == 1);
@@ -366,7 +370,7 @@ void TabTesting::OnSkeinLabel()
       CStringW labelW(labelA);
       it = labels.find(labelW);
       if (it != labels.end())
-        m_skeinWindow->SkeinShowNode(it->second,Skein::ShowNode);
+        m_skeinWindow->SkeinShowNode(it->second);
     }
   }
 }

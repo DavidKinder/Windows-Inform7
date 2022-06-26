@@ -253,9 +253,6 @@
     <ClInclude Include="SkeinWindow.h">
       <Filter>Skein</Filter>
     </ClInclude>
-    <ClInclude Include="TranscriptEdit.h">
-      <Filter>Skein</Filter>
-    </ClInclude>
     <ClInclude Include="SearchBar.h">
       <Filter>Search</Filter>
     </ClInclude>
@@ -484,9 +481,6 @@
       <Filter>Skein</Filter>
     </ClCompile>
     <ClCompile Include="SkeinWindow.cpp">
-      <Filter>Skein</Filter>
-    </ClCompile>
-    <ClCompile Include="TranscriptEdit.cpp">
       <Filter>Skein</Filter>
     </ClCompile>
     <ClCompile Include="SearchBar.cpp">

@@ -21,32 +21,6 @@
 
 #define MINIMUM_SPLICE_WORTH_BOTHERING_WITH 5
 
-const CStringW& TranscriptDiff::GetIdeal(void)
-{
-  return m_ideal;
-}
-
-bool TranscriptDiff::SetIdeal(LPCWSTR ideal)
-{
-  CStringW prev = m_ideal;
-  m_ideal = ideal;
-  m_ideal.Replace('\r','\n');
-  return m_ideal != prev;
-}
-
-const CStringW& TranscriptDiff::GetActual(void)
-{
-  return m_actual;
-}
-
-bool TranscriptDiff::SetActual(LPCWSTR actual)
-{
-  CStringW prev = m_actual;
-  m_actual = actual;
-  m_actual.Replace('\r','\n');
-  return m_actual != prev;
-}
-
 /* The diff algorithm.
    We do this in the simplest way possible. This outer routine, which is not
    recursively called, sets up the returned structure and sends it back.
@@ -54,8 +28,10 @@ bool TranscriptDiff::SetActual(LPCWSTR actual)
    Note that a sequence of edits with no insertions or deletions means the
    match was in fact perfect, and is converted to an empty sequence.
 */
-void TranscriptDiff::Diff(void)
+void TranscriptDiff::Diff(LPCWSTR ideal, LPCWSTR actual)
 {
+  m_ideal = ideal;
+  m_actual = actual;
   m_diffs.clear();
 
   DiffOuterRange(Range(0,m_ideal.GetLength()),Range(0,m_actual.GetLength()));
@@ -68,9 +44,33 @@ void TranscriptDiff::Diff(void)
   m_diffs.clear();
 }
 
-bool TranscriptDiff::HasDiff(void)
+bool TranscriptDiff::HasDiff(void) const
 {
   return (m_diffs.size() > 0);
+}
+
+const TranscriptDiff::DiffEdits& TranscriptDiff::GetDifferences(void) const
+{
+  return m_diffs;
+}
+
+CStringW TranscriptDiff::SubString(const DiffEdit& diff) const
+{
+  switch (diff.formOfEdit)
+  {
+  case TranscriptDiff::DELETE_EDIT:
+  case TranscriptDiff::PRESERVE_EDIT:
+    return diff.SubString(m_ideal);
+  case TranscriptDiff::PRESERVE_ACTUAL_EDIT:
+  case TranscriptDiff::INSERT_EDIT:
+    return diff.SubString(m_actual);
+  }
+  return L"";
+}
+
+LPCWSTR TranscriptDiff::GetIdeal(void) const
+{
+  return m_ideal;
 }
 
 static TranscriptDiff::Range MatchRegEx(std::wregex& regexp, LPCWSTR str, TranscriptDiff::Range inRange)
@@ -246,7 +246,7 @@ void TranscriptDiff::DiffInnerRange(Range rangeA, Range rangeB)
 
 bool TranscriptDiff::IsWordBoundary(LPCWSTR str, size_t index)
 {
-  if (::IsCharAlphaW(str[index]) && ::IsCharAlphaW(str[index+1]))
+  if (iswalpha(str[index]) && iswalpha(str[index+1]))
     return false;
   return true;
 }
@@ -272,4 +272,9 @@ TranscriptDiff::DiffEdit::DiffEdit(Range frag, EFormOfEdit edit)
 {
   fragment = frag;
   formOfEdit = edit;
+}
+
+CStringW TranscriptDiff::DiffEdit::SubString(const CStringW& str) const
+{
+  return str.Mid((int)fragment.location,(int)fragment.length);
 }

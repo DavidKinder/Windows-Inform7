@@ -77,6 +77,7 @@ public:
 
     const CStringW& GetTranscriptText(void);
     const CStringW& GetExpectedText(void);
+    const TranscriptDiff& GetTranscriptDiff(void);
 
     bool GetChanged(void);
     bool GetDiffers(void);
@@ -84,7 +85,7 @@ public:
     bool GetLocked(void);
     bool SetLocked(bool locked);
 
-    void NewTranscriptText(const CStringW& transcript);
+    void NewTranscriptText(LPCWSTR text);
 
     bool Bless(void);
     bool SetExpectedText(LPCWSTR text);
@@ -127,15 +128,17 @@ public:
 
   private:
     void CompareWithExpected(void);
-    CStringW StripWhite(const CStringW& inStr);
 
     CStringW m_line;
     CStringW m_label;
     CString m_id;
 
+    CStringW m_textTranscript;
+    CStringW m_textExpected;
+    TranscriptDiff m_diff;
+
     bool m_locked;
     bool m_changed;
-    TranscriptDiff m_diff;
 
     Node* m_parent;
     CArray<Node*> m_children;
@@ -195,15 +198,8 @@ public:
     TreeChanged,
     PlayedChanged,
     NodeTextChanged,
-    NodeColourChanged,
+    NodeTranscriptChanged,
     LockChanged
-  };
-
-  enum Show
-  {
-    ShowNode,
-    ShowNewLine,
-    ShowNewTranscript
   };
 
   class Listener
@@ -211,13 +207,13 @@ public:
   public:
     virtual void SkeinChanged(Change change) = 0;
     virtual void SkeinEdited(bool edited) = 0;
-    virtual void SkeinShowNode(Node* node, Show why) = 0;
+    virtual void SkeinShowNode(Node* node) = 0;
   };
 
   void AddListener(Listener* listener);
   void NotifyChange(Change change);
   void NotifyEdit(bool edited);
-  void NotifyShowNode(Node* node, Show why);
+  void NotifyShowNode(Node* node);
 
 private:
   static LPCTSTR ToXML_UTF8(bool value);

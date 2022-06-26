@@ -499,6 +499,10 @@ COLORREF InformApp::GetColour(Colours colour)
     return RGB(0xf3,0xd8,0x65);
   case ColourTranscriptLine:
     return RGB(0x81,0x81,0x81);
+  case ColourTranscriptDelete:
+    return RGB(0xff,0x00,0x19);
+  case ColourTranscriptInsert:
+    return RGB(0x00,0xbf,0x00);
   case ColourHyperlink:
     return RGB(0x00,0x00,0xff);
   case ColourContents:

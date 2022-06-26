@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "TranscriptPane.h"
+#include "SkeinWindow.h"
 #include "Inform.h"
 #include "DpiFunctions.h"
 #include "TextFormat.h"
@@ -8,7 +9,7 @@
 #define new DEBUG_NEW
 #endif
 
-TranscriptPane::TranscriptPane() : m_nodeHeight(0)
+TranscriptPane::TranscriptPane() : m_nodeHeight(0), m_mouseOverButton(-1)
 {
 }
 
@@ -17,14 +18,15 @@ TranscriptPane::~TranscriptPane()
   ClearNodes();
 }
 
-void TranscriptPane::SetFontsBitmaps(CWnd* wnd, int nodeHeight)
+void TranscriptPane::SetFontsBitmaps(CWnd* wnd, CDibSection** bitmaps)
 {
   CFont* font = theApp.GetFont(wnd,InformApp::FontDisplay);
   m_fontSize = theApp.MeasureFont(wnd,font);
+  m_bitmaps = bitmaps;
 
   // Use a slightly smaller node height to take account of the node image
   // containing a little white space at the top and bottom edges.
-  m_nodeHeight = (int)(nodeHeight * 0.8);
+  m_nodeHeight = (int)(m_bitmaps[SkeinWindow::BackActive]->GetSize().cy * 0.8);
 }
 
 void TranscriptPane::SetOrigin(int x, int y)
@@ -39,6 +41,14 @@ CPoint TranscriptPane::GetOrigin(void)
   return m_origin;
 }
 
+static COLORREF AlphaBlend(COLORREF col1, COLORREF col2, double alpha)
+{
+  double r = (GetRValue(col1)*alpha)+(GetRValue(col2)*(1.0-alpha));
+  double g = (GetGValue(col1)*alpha)+(GetGValue(col2)*(1.0-alpha));
+  double b = (GetBValue(col1)*alpha)+(GetBValue(col2)*(1.0-alpha));
+  return RGB((BYTE)r,(BYTE)g,(BYTE)b);
+}
+
 void TranscriptPane::Layout(CDC& dc)
 {
   CSize border = GetBorder();
@@ -51,14 +61,45 @@ void TranscriptPane::Layout(CDC& dc)
     {
       CStringW line = nl.node->GetLine();
       line.AppendChar(L'\n');
-      nl.AddText(line,true);
+      nl.AddText(line,true,false,theApp.GetColour(InformApp::ColourTranscriptBack));
     }
 
-    nl.AddText(nl.node->GetTranscriptText(),false);
+    const TranscriptDiff& diffs = nl.node->GetTranscriptDiff();
+    if (diffs.HasDiff())
+    {
+      COLORREF back = theApp.GetColour(InformApp::ColourTranscriptBack);
+      COLORREF del = AlphaBlend(theApp.GetColour(InformApp::ColourTranscriptDelete),back,0.45);
+      COLORREF ins = AlphaBlend(theApp.GetColour(InformApp::ColourTranscriptInsert),back,0.45);
+
+      // Show the differences between the expected text and the actual transcript
+      for (auto& diff : diffs.GetDifferences())
+      {
+        switch (diff.formOfEdit)
+        {
+        case TranscriptDiff::DELETE_EDIT:
+          nl.AddText(diffs.SubString(diff),false,true,del);
+          break;
+        case TranscriptDiff::PRESERVE_EDIT:
+        case TranscriptDiff::PRESERVE_ACTUAL_EDIT:
+          nl.AddText(diffs.SubString(diff),false,false,back);
+          break;
+        case TranscriptDiff::INSERT_EDIT:
+          nl.AddText(diffs.SubString(diff),false,false,ins);
+          break;
+        }
+      }
+    }
+    else
+    {
+      // No differences, so show the expected text
+      nl.AddText(diffs.GetIdeal(),false,false,theApp.GetColour(InformApp::ColourTranscriptBack));
+    }
 
     // Work out the height of the text for this node
     CRect r(0,0,GetWidth(),0);
     r.DeflateRect(border.cx,0);
+    if (m_bitmaps[SkeinWindow::BlessButton]->GetSize().cx > border.cx)
+      r.right -= (m_bitmaps[SkeinWindow::BlessButton]->GetSize().cx - border.cx);
     nl.draw->SizeText(dc,r);
     nl.height = r.Height() + (border.cy*2);
   }
@@ -85,33 +126,78 @@ void TranscriptPane::DrawArrows(CDC& dc, CPoint origin, int skeinIndex)
   }
 }
 
-void TranscriptPane::Draw(CDC& dc, CPoint origin)
+void TranscriptPane::Draw(CDC& dc, CPoint origin, CDibSection& bitmap)
 {
   origin += m_origin;
   dc.FillSolidRect(origin.x,origin.y,GetWidth(),GetHeight(),theApp.GetColour(InformApp::ColourTranscriptBack));
 
   CSize border = GetBorder();
   CPen linePen(PS_DASH,1,theApp.GetColour(InformApp::ColourTranscriptLine));
-  for (auto& nl : m_nodes)
+  for (int i = 0; i < m_nodes.size(); i++)
   {
+    auto& nl = m_nodes[i];
+
     // Draw the text in the transcript
     CRect r(origin,CSize(GetWidth(),nl.height));
     r.DeflateRect(border);
+    if (m_bitmaps[SkeinWindow::BlessButton]->GetSize().cx > border.cx)
+      r.right -= (m_bitmaps[SkeinWindow::BlessButton]->GetSize().cx - border.cx);
     dc.SetBkMode(TRANSPARENT);
     nl.draw->DrawText(dc,r);
 
     // For all but the last entry, add a dashed line as a separator
+    int y = origin.y + nl.height;
     if (nl.node != m_nodes.back().node)
     {
       CPen* oldPen = dc.SelectObject(&linePen);
-      int y = origin.y + nl.height;
       dc.MoveTo(origin.x,y);
       dc.LineTo(origin.x+GetWidth(),y);
       dc.SelectObject(oldPen);
+    }
 
-      origin.y += nl.height;
+    // Draw the button to bless or curse the transcript
+    CDibSection* btnImage = NULL;
+    if (i == m_mouseOverButton)
+      btnImage = m_bitmaps[nl.node->GetDiffers() ? SkeinWindow::BlessButtonOver : SkeinWindow::CurseButtonOver];
+    else
+      btnImage = m_bitmaps[nl.node->GetDiffers() ? SkeinWindow::BlessButton : SkeinWindow::CurseButton];
+    CSize btnSize = btnImage->GetSize();
+    nl.buttonRect.left = origin.x + GetWidth() - btnSize.cx;
+    nl.buttonRect.top = y - btnSize.cy;
+    nl.buttonRect.right = nl.buttonRect.left + btnSize.cx;
+    nl.buttonRect.bottom = nl.buttonRect.top + btnSize.cy;
+    bitmap.AlphaBlend(btnImage,nl.buttonRect.TopLeft().x,nl.buttonRect.TopLeft().y);
+
+    origin.y += nl.height;
+  }
+}
+
+bool TranscriptPane::MouseMove(CPoint point)
+{
+  int previousButton = m_mouseOverButton;
+  m_mouseOverButton = -1;
+  for (int i = 0; i < m_nodes.size(); i++)
+  {
+    if (m_nodes[i].buttonRect.PtInRect(point))
+      m_mouseOverButton = i;
+  }
+  return (m_mouseOverButton != previousButton);
+}
+
+bool TranscriptPane::LButtonUp(CPoint point, Skein* skein)
+{
+  for (const auto& nl : m_nodes)
+  {
+    if (nl.buttonRect.PtInRect(point))
+    {
+      if (nl.node->GetDiffers())
+        skein->Bless(nl.node,false);
+      else
+        skein->SetExpectedText(nl.node,L"");
+      return true;
     }
   }
+  return false;
 }
 
 void TranscriptPane::SetEndNode(Skein::Node* node, CWnd* wnd)
@@ -158,14 +244,25 @@ void TranscriptPane::GetNodes(std::vector<Skein::Node*>& nodes)
     nodes.push_back(nl.node);
 }
 
-bool TranscriptPane::AreNodesValid(Skein* skein)
+void TranscriptPane::ValidateNodes(Skein* skein, CWnd* wnd)
 {
-  for (const auto& nl : m_nodes)
+  Skein::Node* validNode = NULL;
+  bool allValid = true;
+
+  for (int i = 0; i < m_nodes.size(); i++)
   {
-    if (!skein->IsValidNode(nl.node))
-      return false;
+    if (skein->IsValidNode(m_nodes[i].node))
+    {
+      if (i > 0)
+        validNode = m_nodes[i].node;
+    }
+    else
+      allValid = false;
   }
-  return true;
+
+  // If there is a valid node still present use it as the new end, otherwise clear everything
+  if (!allValid)
+    SetEndNode(validNode,wnd);
 }
 
 void TranscriptPane::ClearNodes(void)
@@ -186,9 +283,20 @@ bool TranscriptPane::IsActive(void)
   return m_nodes.size() > 0;
 }
 
+void TranscriptPane::Shown(bool& anyTick, bool& anyCross)
+{
+  for (auto& nl : m_nodes)
+  {
+    if (nl.node->GetDiffers())
+      anyTick = true;
+    else
+      anyCross = true;
+  }
+}
+
 int TranscriptPane::GetWidth(void)
 {
-  return m_fontSize.cx*66;
+  return m_fontSize.cx*68;
 }
 
 int TranscriptPane::GetHeight(void)
@@ -232,7 +340,7 @@ TranscriptPane::NodeLayout::NodeLayout(Skein::Node* n) : node(n), draw(NULL), he
 {
 }
 
-void TranscriptPane::NodeLayout::AddText(LPCWSTR text, bool bold)
+void TranscriptPane::NodeLayout::AddText(LPCWSTR text, bool bold, bool strike, COLORREF back)
 {
   // Get a range at the end of the windowless rich edit control
   CComPtr<ITextRange> range;
@@ -246,4 +354,7 @@ void TranscriptPane::NodeLayout::AddText(LPCWSTR text, bool bold)
   CComPtr<ITextFont> font;
   range->GetFont(&font);
   font->SetBold(bold ? tomTrue : tomFalse);
+  font->SetStrikeThrough(strike ? tomTrue : tomFalse);
+  font->SetBackColor(back);
+  font->SetForeColor(theApp.GetColour(InformApp::ColourText));
 }

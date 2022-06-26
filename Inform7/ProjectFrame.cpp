@@ -834,7 +834,7 @@ LRESULT ProjectFrame::OnShowSkein(WPARAM wparam, LPARAM lparam)
     panel = GetPanel(GetPanel(0)->IsChild(wnd) ? 0 : 1);
 
   // Move the skein to the given node and show the testing tab
-  ((TabTesting*)panel->GetTab(Panel::Tab_Testing))->ShowNode(node,Skein::ShowNode);
+  ((TabTesting*)panel->GetTab(Panel::Tab_Testing))->ShowNode(node);
   panel->SetActiveTab(Panel::Tab_Testing);
   return 0;
 }

@@ -240,7 +240,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="TabSource.h" />
     <ClInclude Include="TabStory.h" />
     <ClInclude Include="TextFormat.h" />
-    <ClInclude Include="TranscriptEdit.h" />
     <ClInclude Include="UnicodeEdit.h" />
   </ItemGroup>
   <ItemGroup>
@@ -2352,7 +2351,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="TabSource.cpp" />
     <ClCompile Include="TabStory.cpp" />
     <ClCompile Include="TextFormat.cpp" />
-    <ClCompile Include="TranscriptEdit.cpp" />
     <ClCompile Include="UnicodeEdit.cpp" />
   </ItemGroup>
   <ItemGroup>
