@@ -27,6 +27,10 @@ void TranscriptPane::SetFontsBitmaps(CWnd* wnd, CDibSection** bitmaps)
   // Use a slightly smaller node height to take account of the node image
   // containing a little white space at the top and bottom edges.
   m_nodeHeight = (int)(m_bitmaps[SkeinWindow::BackActive]->GetSize().cy * 0.8);
+
+  // Update the font for any existing windowless rich edit controls
+  for (auto& nl : m_nodes)
+    nl.draw->FontChanged(DPI::getWindowDPI(wnd));
 }
 
 void TranscriptPane::SetOrigin(int x, int y)
@@ -211,7 +215,7 @@ void TranscriptPane::SetEndNode(Skein::Node* node, CWnd* wnd)
 
     // Set up a windowless rich edit control for each element
     it->draw = new RichDrawText();
-    it->draw->FontChanged(DPI::getWindowDPI(wnd));//XXXXDK dpi or prefs change too
+    it->draw->FontChanged(DPI::getWindowDPI(wnd));
 
     node = node->GetParent();
   }
