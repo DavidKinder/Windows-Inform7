@@ -630,7 +630,7 @@ void SkeinWindow::SkeinEdited(bool edited)
     GetParentFrame()->SendMessage(WM_PROJECTEDITED,0);
 }
 
-void SkeinWindow::SkeinShowNode(Skein::Node* node)
+void SkeinWindow::SkeinShowNode(Skein::Node* node, bool select)
 {
   if (GetSafeHwnd() == 0)
     return;
@@ -661,6 +661,17 @@ void SkeinWindow::SkeinShowNode(Skein::Node* node)
       y = 0;
 
     ScrollToPosition(CPoint(x,y));
+  }
+
+  if (select)
+  {
+    AnimatePrepareOnlyThis();
+    if (!m_transcript.IsActive())
+      m_showTranscriptAfterAnim = true;
+    m_transcript.SetEndNode(m_skein->GetThreadEnd(node),this);
+    Layout(Skein::LayoutReposition);
+    GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
+    UpdateHelp();
   }
 }
 

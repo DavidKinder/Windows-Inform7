@@ -834,7 +834,7 @@ LRESULT ProjectFrame::OnShowSkein(WPARAM wparam, LPARAM lparam)
     panel = GetPanel(GetPanel(0)->IsChild(wnd) ? 0 : 1);
 
   // Move the skein to the given node and show the testing tab
-  ((TabTesting*)panel->GetTab(Panel::Tab_Testing))->ShowNode(node);
+  ((TabTesting*)panel->GetTab(Panel::Tab_Testing))->SelectNode(node);
   panel->SetActiveTab(Panel::Tab_Testing);
   return 0;
 }
@@ -2903,7 +2903,11 @@ void ProjectFrame::OnSkeinLink(const char* url, TabInterface* from)
     // Show the appropriate node
     Skein::Node* node = m_skein.FindNode(nodeId);
     if (node != NULL)
-    {}//XXXXDK Show in testing tab with appropriate transcript
+    {
+      Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Testing));
+      ((TabTesting*)panel->GetTab(Panel::Tab_Testing))->SelectNode(node);
+      panel->SetActiveTab(Panel::Tab_Testing);
+    }
   }
 }
 

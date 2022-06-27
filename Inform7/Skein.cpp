@@ -908,7 +908,7 @@ void Skein::NotifyEdit(bool edited)
 void Skein::NotifyShowNode(Node* node)
 {
   for (std::vector<Listener*>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
-    (*it)->SkeinShowNode(node);
+    (*it)->SkeinShowNode(node,false);
 }
 
 LPCTSTR Skein::ToXML_UTF8(bool value)

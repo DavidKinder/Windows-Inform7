@@ -220,9 +220,9 @@ void TabTesting::SetSkein(Skein* skein, int idx)
   m_skeinWindow->SetSkein(skein,idx);
 }
 
-void TabTesting::ShowNode(Skein::Node* node)
+void TabTesting::SelectNode(Skein::Node* node)
 {
-  m_skeinWindow->SkeinShowNode(node);
+  m_skeinWindow->SkeinShowNode(node,true);
 }
 
 void TabTesting::SkeinChanged(void)
@@ -370,7 +370,7 @@ void TabTesting::OnSkeinLabel()
       CStringW labelW(labelA);
       it = labels.find(labelW);
       if (it != labels.end())
-        m_skeinWindow->SkeinShowNode(it->second);
+        m_skeinWindow->SkeinShowNode(it->second,false);
     }
   }
 }

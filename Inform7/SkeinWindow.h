@@ -26,7 +26,7 @@ public:
   void SkeinLayout(CDC& dc, Skein::LayoutMode mode);
   void SkeinChanged(Skein::Change change);
   void SkeinEdited(bool edited);
-  void SkeinShowNode(Skein::Node* node);
+  void SkeinShowNode(Skein::Node* node, bool select);
   void SkeinNodesShown(
     bool& unselected, bool& selected, bool& active, bool& differs, int& count);
   void TranscriptShown(bool& transcript, bool& anyTick, bool& anyCross);

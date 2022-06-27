@@ -207,7 +207,7 @@ public:
   public:
     virtual void SkeinChanged(Change change) = 0;
     virtual void SkeinEdited(bool edited) = 0;
-    virtual void SkeinShowNode(Node* node) = 0;
+    virtual void SkeinShowNode(Node* node, bool select) = 0;
   };
 
   void AddListener(Listener* listener);
