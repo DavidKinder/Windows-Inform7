@@ -98,7 +98,7 @@ void TranscriptDiff::DiffOuterRange(Range rangeA, Range rangeB)
   if ((m_ideal.Find(L"Serial number") > 0) && (m_actual.Find(L"Serial number") > 0))
   {
     std::wregex regexp;
-    regexp.assign(L"(.*?)(Release \\d+ / Serial number \\d+ / Inform 7 build .... .I6.+?lib .+?SD).*");//XXXXDK 10.1?
+    regexp.assign(L"(.*?)(Release \\d+ \\/ Serial number \\d+ \\/ Inform 7 (build .... .I6.+?lib .+?SD|v.+? \\/ D)).*");
     Range matchRangeA2 = MatchRegEx(regexp,m_ideal,rangeA);
     if (matchRangeA2.location != -1)
     {
