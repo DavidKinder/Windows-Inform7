@@ -412,7 +412,7 @@ BEGIN
     CTEXT           "Copyright 2006-2022 David Kinder (front end), Graham Nelson et al (compiler).",IDC_COPYRIGHT,25,182,156,17
     CTEXT           "Inform",IDC_TITLE,23,22,159,15,SS_CENTERIMAGE
     CONTROL         "",IDC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,79,1,48,18
-    CTEXT           "Inform for Windows %s (%s)",IDC_VERSION,1,42,203,9
+    CTEXT           "Inform for Windows %s.%s",IDC_VERSION,1,42,203,9
 END
 
 IDD_SETTINGS DIALOGEX 0, 0, 300, 286

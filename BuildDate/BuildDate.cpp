@@ -9,32 +9,7 @@ void createOutput(void)
 {
   time_t now;
   time(&now);
-
   struct tm* timeNow = localtime(&now);
-
-  char* afterNum = NULL;
-  switch (timeNow->tm_mday)
-  {
-  case 1:
-  case 21:
-  case 31:
-    afterNum = "st";
-    break;
-  case 2:
-  case 22:
-    afterNum = "nd";
-    break;
-  case 3:
-  case 23:
-    afterNum = "rd";
-    break;
-  default:
-    afterNum = "th";
-    break;
-  }
-
-  char monthYear[256];
-  strftime(monthYear,256,"%B %Y",timeNow);
 
   char line[256];
   FILE* contentsFile = fopen("../Distribution/inform/inform7/Contents.w","rt");
@@ -47,7 +22,8 @@ void createOutput(void)
   }
   fclose(contentsFile);
 
-  sprintf(line,"#define BUILD_DATE \"%d%s %s\"\n",timeNow->tm_mday,afterNum,monthYear);
+  sprintf(line,"#define BUILD_DATE \"%04d%02d%02d\"\n",
+    timeNow->tm_year+1900,timeNow->tm_mon+1,timeNow->tm_mday);
   buildHeader = line;
   sprintf(line,"#define INFORM_VER \"%s\"\n",informVersion);
   buildHeader += line;
