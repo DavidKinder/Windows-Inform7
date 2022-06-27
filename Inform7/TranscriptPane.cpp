@@ -251,8 +251,8 @@ void TranscriptPane::GetNodes(std::vector<Skein::Node*>& nodes)
 void TranscriptPane::ValidateNodes(Skein* skein, CWnd* wnd)
 {
   Skein::Node* validNode = NULL;
-  bool allValid = true;
 
+  // Find the last valid node, if any
   for (int i = 0; i < m_nodes.size(); i++)
   {
     if (skein->IsValidNode(m_nodes[i].node))
@@ -260,13 +260,10 @@ void TranscriptPane::ValidateNodes(Skein* skein, CWnd* wnd)
       if (i > 0)
         validNode = m_nodes[i].node;
     }
-    else
-      allValid = false;
   }
 
   // If there is a valid node still present use it as the new end, otherwise clear everything
-  if (!allValid)
-    SetEndNode(validNode ? skein->GetThreadEnd(validNode) : NULL,wnd);
+  SetEndNode(validNode ? skein->GetThreadEnd(validNode) : NULL,wnd);
 }
 
 void TranscriptPane::ClearNodes(void)
