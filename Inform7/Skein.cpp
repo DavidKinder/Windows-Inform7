@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "stdafx.h"
 #include "Skein.h"
 #include "TranscriptPane.h"
 #include "Inform.h"
@@ -667,6 +668,8 @@ bool Skein::RemoveSingle(Node* node)
   {
     bool inPlay = InPlayThread(node);
     removed = parent->RemoveSingle(node);
+    if (removed)
+      parent->SortChildren();
 
     if (inPlay)
     {
