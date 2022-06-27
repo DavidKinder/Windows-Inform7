@@ -136,16 +136,13 @@
     <ClInclude Include="TabSettings.h">
       <Filter>Tabs</Filter>
     </ClInclude>
-    <ClInclude Include="TabSkein.h">
+    <ClInclude Include="TabTesting.h">
       <Filter>Tabs</Filter>
     </ClInclude>
     <ClInclude Include="TabSource.h">
       <Filter>Tabs</Filter>
     </ClInclude>
     <ClInclude Include="TabStory.h">
-      <Filter>Tabs</Filter>
-    </ClInclude>
-    <ClInclude Include="TabTranscript.h">
       <Filter>Tabs</Filter>
     </ClInclude>
     <ClInclude Include="AboutDialog.h">
@@ -247,9 +244,6 @@
     <ClInclude Include="..\..\Glk\GlkDll\GlkSoundOGG.h">
       <Filter>Sound</Filter>
     </ClInclude>
-    <ClInclude Include="Diff.h">
-      <Filter>Skein</Filter>
-    </ClInclude>
     <ClInclude Include="Skein.h">
       <Filter>Skein</Filter>
     </ClInclude>
@@ -257,12 +251,6 @@
       <Filter>Skein</Filter>
     </ClInclude>
     <ClInclude Include="SkeinWindow.h">
-      <Filter>Skein</Filter>
-    </ClInclude>
-    <ClInclude Include="TranscriptEdit.h">
-      <Filter>Skein</Filter>
-    </ClInclude>
-    <ClInclude Include="TranscriptWindow.h">
       <Filter>Skein</Filter>
     </ClInclude>
     <ClInclude Include="SearchBar.h">
@@ -337,6 +325,12 @@
     <ClInclude Include="CommandButton.h">
       <Filter>Controls</Filter>
     </ClInclude>
+    <ClInclude Include="TranscriptPane.h">
+      <Filter>Skein</Filter>
+    </ClInclude>
+    <ClInclude Include="TranscriptDiff.h">
+      <Filter>Skein</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -378,16 +372,13 @@
     <ClCompile Include="TabSettings.cpp">
       <Filter>Tabs</Filter>
     </ClCompile>
-    <ClCompile Include="TabSkein.cpp">
+    <ClCompile Include="TabTesting.cpp">
       <Filter>Tabs</Filter>
     </ClCompile>
     <ClCompile Include="TabSource.cpp">
       <Filter>Tabs</Filter>
     </ClCompile>
     <ClCompile Include="TabStory.cpp">
-      <Filter>Tabs</Filter>
-    </ClCompile>
-    <ClCompile Include="TabTranscript.cpp">
       <Filter>Tabs</Filter>
     </ClCompile>
     <ClCompile Include="AboutDialog.cpp">
@@ -483,9 +474,6 @@
     <ClCompile Include="..\..\Glk\GlkDll\GlkSoundOGG.cpp">
       <Filter>Sound</Filter>
     </ClCompile>
-    <ClCompile Include="Diff.cpp">
-      <Filter>Skein</Filter>
-    </ClCompile>
     <ClCompile Include="Skein.cpp">
       <Filter>Skein</Filter>
     </ClCompile>
@@ -493,12 +481,6 @@
       <Filter>Skein</Filter>
     </ClCompile>
     <ClCompile Include="SkeinWindow.cpp">
-      <Filter>Skein</Filter>
-    </ClCompile>
-    <ClCompile Include="TranscriptEdit.cpp">
-      <Filter>Skein</Filter>
-    </ClCompile>
-    <ClCompile Include="TranscriptWindow.cpp">
       <Filter>Skein</Filter>
     </ClCompile>
     <ClCompile Include="SearchBar.cpp">
@@ -1460,6 +1442,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\views\overlay_controller_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp\views</Filter>
+    </ClCompile>
+    <ClCompile Include="TranscriptPane.cpp">
+      <Filter>Skein</Filter>
+    </ClCompile>
+    <ClCompile Include="TranscriptDiff.cpp">
+      <Filter>Skein</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

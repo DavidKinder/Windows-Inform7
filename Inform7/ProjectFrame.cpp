@@ -18,9 +18,8 @@
 #include "TabExtensions.h"
 #include "TabIndex.h"
 #include "TabResults.h"
-#include "TabSkein.h"
 #include "TabStory.h"
-#include "TabTranscript.h"
+#include "TabTesting.h"
 
 #include <sys/stat.h>
 
@@ -61,13 +60,10 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_RUNTIMEPROB, OnRuntimeProblem)
   ON_MESSAGE(WM_SEARCHSOURCE, OnSearchSource)
   ON_MESSAGE(WM_SEARCHDOC, OnSearchDoc)
-  ON_MESSAGE(WM_SHOWTRANSCRIPT, OnShowTranscript)
   ON_MESSAGE(WM_SHOWSKEIN, OnShowSkein)
-  ON_MESSAGE(WM_SELECTNODE, OnSelectNode)
   ON_MESSAGE(WM_ANIMATESKEIN, OnAnimateSkein)
   ON_MESSAGE(WM_TERPFAILED, OnTerpFailed)
   ON_MESSAGE(WM_PROJECTDIR, OnProjectDir)
-  ON_MESSAGE(WM_TRANSCRIPTEND, OnTranscriptEnd)
   ON_MESSAGE(WM_PLAYNEXTTHREAD, OnPlayNextThread)
   ON_MESSAGE(WM_CANPLAYALL, OnCanPlayAll)
   ON_MESSAGE(WM_PROJECTEDITED, OnProjectEdited)
@@ -80,7 +76,9 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_WANTSTOP, OnWantStop)
   ON_MESSAGE(WM_RUNCENSUS, OnRunCensus)
   ON_MESSAGE(WM_STORYNAME, OnStoryName)
-  
+  ON_MESSAGE(WM_REPLAYALL, OnReplayAll)
+  ON_MESSAGE(WM_TESTINGTABSHOWN, OnTestingTabShown)
+
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
   ON_COMMAND(ID_FILE_INSTALL_EXT, OnFileInstallExt)
@@ -112,19 +110,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_PLAY_REFRESH, OnPlayRefresh)
   ON_COMMAND(ID_PLAY_LOAD, OnPlayLoad)
 
-  ON_UPDATE_COMMAND_UI(ID_REPLAY_ALL, OnUpdateReplayAll)
-  ON_COMMAND(ID_REPLAY_ALL, OnReplayAll)
-  ON_UPDATE_COMMAND_UI(ID_REPLAY_SHOW_LAST, OnUpdateReplayShowLast)
-  ON_COMMAND(ID_REPLAY_SHOW_LAST, OnReplayShowLast)
-  ON_UPDATE_COMMAND_UI(ID_REPLAY_SHOW_LAST_SKEIN, OnUpdateReplayShowLast)
-  ON_COMMAND(ID_REPLAY_SHOW_LAST_SKEIN, OnReplayShowLastSkein)
-  ON_UPDATE_COMMAND_UI_RANGE(ID_REPLAY_CHANGED_PREV, ID_REPLAY_CHANGED_NEXT, OnUpdateReplayChanged)
-  ON_COMMAND_RANGE(ID_REPLAY_CHANGED_PREV, ID_REPLAY_CHANGED_NEXT, OnReplayChanged)
-  ON_UPDATE_COMMAND_UI_RANGE(ID_REPLAY_DIFF_PREV, ID_REPLAY_DIFF_NEXT, OnUpdateReplayDiffer)
-  ON_COMMAND_RANGE(ID_REPLAY_DIFF_PREV, ID_REPLAY_DIFF_NEXT, OnReplayDiffer)
-  ON_UPDATE_COMMAND_UI(ID_REPLAY_DIFF_NEXT_SKEIN, OnUpdateReplayDifferSkein)
-  ON_COMMAND(ID_REPLAY_DIFF_NEXT_SKEIN, OnReplayDifferSkein)
-
   ON_UPDATE_COMMAND_UI_RANGE(ID_RELEASE_GAME, ID_RELEASE_TEST, OnUpdateReleaseGame)
   ON_COMMAND_RANGE(ID_RELEASE_GAME, ID_RELEASE_TEST, OnReleaseGame)
   ON_COMMAND(ID_RELEASE_MATERIALS, OnReleaseMaterials)
@@ -134,8 +119,8 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_WINDOW_LEFTPANE, OnWindowLeftPane)
   ON_COMMAND(ID_WINDOW_RIGHTPANE, OnWindowRightPane)
   ON_COMMAND(ID_WINDOW_SWITCH, OnWindowSwitchPanes)
-  ON_COMMAND_RANGE(ID_WINDOW_TAB_SOURCE, ID_WINDOW_TAB_SOURCE+8, OnWindowShowTab)
-  ON_UPDATE_COMMAND_UI_RANGE(ID_WINDOW_TAB_SOURCE, ID_WINDOW_TAB_SOURCE+8, OnUpdateWindowShowTab)
+  ON_COMMAND_RANGE(ID_WINDOW_TAB_SOURCE, ID_WINDOW_TAB_SOURCE+7, OnWindowShowTab)
+  ON_UPDATE_COMMAND_UI_RANGE(ID_WINDOW_TAB_SOURCE, ID_WINDOW_TAB_SOURCE+7, OnUpdateWindowShowTab)
   ON_COMMAND_RANGE(ID_WINDOW_INDEX_HOME, ID_WINDOW_INDEX_HOME+7, OnWindowShowIndex)
   ON_UPDATE_COMMAND_UI(ID_WINDOW_LIST, OnUpdateWindowList)
   ON_COMMAND_RANGE(ID_WINDOW_LIST, ID_WINDOW_LIST+8, OnWindowList)
@@ -259,13 +244,9 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   // Set up the story tab
   ((TabStory*)GetPanel(1)->GetTab(Panel::Tab_Story))->SetGame(&m_game);
 
-  // Set up the skein tabs
-  ((TabSkein*)GetPanel(0)->GetTab(Panel::Tab_Skein))->SetSkein(&m_skein);
-  ((TabSkein*)GetPanel(1)->GetTab(Panel::Tab_Skein))->SetSkein(&m_skein);
-
-  // Set up the transcript tabs
-  ((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->SetSkein(&m_skein);
-  ((TabTranscript*)GetPanel(1)->GetTab(Panel::Tab_Transcript))->SetSkein(&m_skein);
+  // Set up the testing tabs
+  ((TabTesting*)GetPanel(0)->GetTab(Panel::Tab_Testing))->SetSkein(&m_skein,0);
+  ((TabTesting*)GetPanel(1)->GetTab(Panel::Tab_Testing))->SetSkein(&m_skein,1);
 
   // Set up the settings tabs
   ((TabSettings*)GetPanel(0)->GetTab(Panel::Tab_Settings))->SetSettings(&m_settings);
@@ -620,13 +601,9 @@ void ProjectFrame::OnChangedExample()
 
   if (m_skein.ChangeFile(id,m_projectDir))
   {
-    TabSkein* tab = (TabSkein*)(GetPanel(0)->GetTab(Panel::Tab_Skein));
+    TabTesting* tab = (TabTesting*)(GetPanel(0)->GetTab(Panel::Tab_Testing));
     tab->SkeinChanged();
-
-    GetPanel(0)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,false);
-    GetPanel(1)->GetTab(Panel::Tab_Skein)->OpenProject(m_projectDir,false);
-    GetPanel(1)->GetTab(Panel::Tab_Transcript)->OpenProject(m_projectDir,false);
-
+    GetPanel(1)->GetTab(Panel::Tab_Testing)->OpenProject(m_projectDir,false);
     m_needCompile = true;
   }
 }
@@ -751,19 +728,17 @@ void ProjectFrame::OnUpdateFrameTitle(BOOL)
 
 LRESULT ProjectFrame::OnPlaySkein(WPARAM wparam, LPARAM)
 {
-  Skein::Node* current = m_skein.GetCurrent();
+  Skein::Node* playNode = m_skein.GetPlayTo();
   Skein::Node* newNode = (Skein::Node*)wparam;
 
-  // Change the current node
-  m_skein.SetCurrent(newNode);
+  // Change the node being played to
+  m_skein.SetPlayTo(newNode);
 
-  // Check if the new node is reachable from the current node in the skein
-  bool reachable = current->FindAncestor(newNode) != NULL;
+  // Check if the new node is reachable from the currently played node in the skein
+  bool reachable = playNode->FindAncestor(newNode) != NULL;
 
-  // Build and run if the game is not running, or if the new node is unreachable
-  if (!m_game.IsRunning())
-    OnPlayReplay();
-  else if (!reachable)
+  // Build and run if the game is not running, needs compiling, or if the new node is unreachable
+  if (!m_game.IsRunning() || m_needCompile || !reachable)
     OnPlayReplay();
   else
     m_game.InputFromSkein();
@@ -809,10 +784,8 @@ LRESULT ProjectFrame::OnSelectView(WPARAM view, LPARAM wnd)
     GetPanel(panel)->SetActiveTab(Panel::Tab_Doc);
   else if (viewName == "index")
     GetPanel(panel)->SetActiveTab(Panel::Tab_Index);
-  else if (viewName == "skein")
-    GetPanel(panel)->SetActiveTab(Panel::Tab_Skein);
-  else if (viewName == "transcript")
-    GetPanel(panel)->SetActiveTab(Panel::Tab_Transcript);
+  else if ((viewName == "skein") || (viewName == "testing"))
+    GetPanel(panel)->SetActiveTab(Panel::Tab_Testing);
   return 0;
 }
 
@@ -843,34 +816,6 @@ LRESULT ProjectFrame::OnSearchDoc(WPARAM text, LPARAM)
   return 0;
 }
 
-LRESULT ProjectFrame::OnShowTranscript(WPARAM wparam, LPARAM lparam)
-{
-  Skein::Node* node = (Skein::Node*)wparam;
-  CWnd* wnd = CWnd::FromHandle((HWND)lparam);
-
-  // If the transcript is not visible, use the same panel as the calling window
-  int panel = -1;
-  if (GetPanel(0)->GetActiveTab() == Panel::Tab_Transcript)
-    panel = 0;
-  else if (GetPanel(1)->GetActiveTab() == Panel::Tab_Transcript)
-    panel = 1;
-  else
-    panel = GetPanel(0)->IsChild(wnd) ? 0 : 1;
-
-  // Move the transcript to the given node for both panels, as this involves
-  // more than just scrolling the transcript: the thread in the transcript
-  // may be changed
-  ((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::ShowSelect);
-  ((TabTranscript*)GetPanel(1)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::ShowSelect);
-
-  // Show the appropriate panel
-  GetPanel(panel)->SetActiveTab(Panel::Tab_Transcript);
-
-  // Send out a skein notification to the skein
-  m_skein.NotifyChange(Skein::TranscriptThreadChanged);
-  return 0;
-}
-
 LRESULT ProjectFrame::OnShowSkein(WPARAM wparam, LPARAM lparam)
 {
   Skein::Node* node = (Skein::Node*)wparam;
@@ -881,25 +826,16 @@ LRESULT ProjectFrame::OnShowSkein(WPARAM wparam, LPARAM lparam)
 
   // If the skein is not visible, use the same panel as the calling window
   Panel* panel = NULL;
-  if (GetPanel(0)->GetActiveTab() == Panel::Tab_Skein)
+  if (GetPanel(0)->GetActiveTab() == Panel::Tab_Testing)
     panel = GetPanel(0);
-  else if (GetPanel(1)->GetActiveTab() == Panel::Tab_Skein)
+  else if (GetPanel(1)->GetActiveTab() == Panel::Tab_Testing)
     panel = GetPanel(1);
   else
     panel = GetPanel(GetPanel(0)->IsChild(wnd) ? 0 : 1);
 
-  // Move the skein to the given node and show the tab
-  ((TabSkein*)panel->GetTab(Panel::Tab_Skein))->ShowNode(node,Skein::JustShow);
-  panel->SetActiveTab(Panel::Tab_Skein);
-  return 0;
-}
-
-LRESULT ProjectFrame::OnSelectNode(WPARAM wparam, LPARAM lparam)
-{
-  Skein::Node* node = (Skein::Node*)wparam;
-  ((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::JustSelect);
-  ((TabTranscript*)GetPanel(1)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::JustSelect);
-  m_skein.NotifyChange(Skein::TranscriptThreadChanged);
+  // Move the skein to the given node and show the testing tab
+  ((TabTesting*)panel->GetTab(Panel::Tab_Testing))->SelectNode(node);
+  panel->SetActiveTab(Panel::Tab_Testing);
   return 0;
 }
 
@@ -911,8 +847,8 @@ LRESULT ProjectFrame::OnAnimateSkein(WPARAM wparam, LPARAM lparam)
     animate = false;
 
   // Don't animate if the skein isn't shown anywhere
-  bool skein0 = (GetPanel(0)->GetActiveTab() == Panel::Tab_Skein);
-  bool skein1 = (GetPanel(1)->GetActiveTab() == Panel::Tab_Skein);
+  bool skein0 = (GetPanel(0)->GetActiveTab() == Panel::Tab_Testing);
+  bool skein1 = (GetPanel(1)->GetActiveTab() == Panel::Tab_Testing);
   if (!skein0 && !skein1)
     animate = false;
 
@@ -921,16 +857,16 @@ LRESULT ProjectFrame::OnAnimateSkein(WPARAM wparam, LPARAM lparam)
     for (int pct = 0; pct < 100; pct += 10)
     {
       if (skein0)
-        ((TabSkein*)GetPanel(0)->GetTab(Panel::Tab_Skein))->Animate(pct);
+        ((TabTesting*)GetPanel(0)->GetTab(Panel::Tab_Testing))->Animate(pct);
       if (skein1)
-        ((TabSkein*)GetPanel(1)->GetTab(Panel::Tab_Skein))->Animate(pct);
+        ((TabTesting*)GetPanel(1)->GetTab(Panel::Tab_Testing))->Animate(pct);
       ::Sleep(5);
     }
   }
 
   m_skein.GetRoot()->AnimateClear();
-  ((TabSkein*)GetPanel(0)->GetTab(Panel::Tab_Skein))->Animate(-1);
-  ((TabSkein*)GetPanel(1)->GetTab(Panel::Tab_Skein))->Animate(-1);
+  ((TabTesting*)GetPanel(0)->GetTab(Panel::Tab_Testing))->Animate(-1);
+  ((TabTesting*)GetPanel(1)->GetTab(Panel::Tab_Testing))->Animate(-1);
 
   if (lparam != 0)
   {
@@ -953,11 +889,6 @@ LRESULT ProjectFrame::OnProjectDir(WPARAM wparam, LPARAM lparam)
   return (LRESULT)(LPCSTR)m_projectDir;
 }
 
-LRESULT ProjectFrame::OnTranscriptEnd(WPARAM wparam, LPARAM lparam)
-{
-  return (LRESULT)((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->GetEndNode();
-}
-
 LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
 {
   // Get the next skein thread task, if any
@@ -975,7 +906,7 @@ LRESULT ProjectFrame::OnPlayNextThread(WPARAM wparam, LPARAM lparam)
       return 0;
 
     // Play the node without recompiling
-    m_skein.SetCurrent(play.node);
+    m_skein.SetPlayTo(play.node);
     m_game.StopInterpreter(false);
     m_skein.Reset(false);
     GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
@@ -1510,7 +1441,7 @@ void ProjectFrame::OnPlayTest()
         m_progress.LongTaskProgress("Testing",0,2);
       m_progress.ShowStop();
       if (testAll)
-        GetPanel(ChoosePanel(Panel::Tab_Skein))->SetActiveTab(Panel::Tab_Skein);
+        GetPanel(ChoosePanel(Panel::Tab_Testing))->SetActiveTab(Panel::Tab_Testing);
       TestCurrentExample(testAll);
       if (m_playThreads.empty())
         m_progress.LongTaskDone();
@@ -1562,15 +1493,7 @@ void ProjectFrame::OnPlayLoad()
   m_game.RunInterpreter(path.Left(split),path.Mid(split+1),glulx);
 }
 
-void ProjectFrame::OnUpdateReplayAll(CCmdUI *pCmdUI)
-{
-  bool enable = !m_busy && m_playThreads.empty();
-  if (enable)
-    enable = SendMessage(WM_CANPLAYALL) != 0;
-  pCmdUI->Enable(enable);
-}
-
-void ProjectFrame::OnReplayAll()
+LRESULT ProjectFrame::OnReplayAll(WPARAM, LPARAM)
 {
   // Discard any previous threads to be played
   while (!m_playThreads.empty())
@@ -1580,7 +1503,7 @@ void ProjectFrame::OnReplayAll()
   std::vector<Skein::Node*> ends;
   m_skein.GetThreadEnds(ends);
   if (ends.empty())
-    return;
+    return 0;
 
   // Get the first node and store the rest
   Skein::Node* firstEnd = ends[0];
@@ -1596,126 +1519,19 @@ void ProjectFrame::OnReplayAll()
   m_playThreads.push(showError);
 
   // Play the thread leading to the first node
-  m_skein.SetCurrent(firstEnd);
+  m_skein.SetPlayTo(firstEnd);
   OnPlayReplay();
+  return 0;
 }
 
-void ProjectFrame::OnUpdateReplayShowLast(CCmdUI *pCmdUI)
+LRESULT ProjectFrame::OnTestingTabShown(WPARAM wparam, LPARAM)
 {
-  pCmdUI->Enable(m_skein.IsActive());
-}
-
-void ProjectFrame::OnReplayShowLast()
-{
-  // Move the transcript to the given node for both panels, as this involves
-  // more than just scrolling the transcript: the thread in the transcript
-  // may be changed
-  Skein::Node* node = m_skein.GetCurrent();
-  ((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::JustShow);
-  ((TabTranscript*)GetPanel(1)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::JustShow);
-
-  // Show the appropriate panel
-  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Transcript));
-  panel->SetActiveTab(Panel::Tab_Transcript);
-
-  // Send out a skein notification to the skein
-  m_skein.NotifyChange(Skein::TranscriptThreadChanged);
-}
-
-void ProjectFrame::OnReplayShowLastSkein()
-{
-  SendMessage(WM_SHOWSKEIN,(WPARAM)m_skein.GetCurrent(),0);
-}
-
-void ProjectFrame::OnUpdateReplayChanged(CCmdUI *pCmdUI)
-{
-  Skein::Node* node = NULL;
-  if (m_skein.IsActive())
+  if (wparam != 0)
   {
-    TabTranscript* tab = (TabTranscript*)(GetPanel(0)->GetTab(Panel::Tab_Transcript));
-    node = tab->FindRelevantNode(
-      TranscriptWindow::TranscriptChanged,pCmdUI->m_nID == ID_REPLAY_CHANGED_NEXT);
+    m_settings.m_testingTabShownCount++;
+    m_settings.m_changed = true;
   }
-  pCmdUI->Enable(node != NULL);
-}
-
-void ProjectFrame::OnReplayChanged(UINT nID)
-{
-  // Find the node to move to
-  TabTranscript* tab = (TabTranscript*)(GetPanel(0)->GetTab(Panel::Tab_Transcript));
-  Skein::Node* node = tab->FindRelevantNode(
-    TranscriptWindow::TranscriptChanged,nID == ID_REPLAY_CHANGED_NEXT);
-  if (node == NULL)
-    return;
-
-  // Move the transcript to the given node for both panels
-  ((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::ShowSelect);
-  ((TabTranscript*)GetPanel(1)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::ShowSelect);
-
-  // Show the appropriate panel
-  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Transcript));
-  panel->SetActiveTab(Panel::Tab_Transcript);
-  m_skein.NotifyChange(Skein::TranscriptThreadChanged);
-}
-
-void ProjectFrame::OnUpdateReplayDiffer(CCmdUI *pCmdUI)
-{
-  Skein::Node* node = NULL;
-  if (m_skein.IsActive())
-  {
-    TabTranscript* tab = (TabTranscript*)(GetPanel(0)->GetTab(Panel::Tab_Transcript));
-    node = tab->FindRelevantNode(
-      TranscriptWindow::TranscriptDifferent,pCmdUI->m_nID == ID_REPLAY_DIFF_NEXT);
-  }
-  pCmdUI->Enable(node != NULL);
-}
-
-void ProjectFrame::OnReplayDiffer(UINT nID)
-{
-  // Find the node to move to
-  TabTranscript* tab = (TabTranscript*)(GetPanel(0)->GetTab(Panel::Tab_Transcript));
-  Skein::Node* node = tab->FindRelevantNode(
-    TranscriptWindow::TranscriptDifferent,nID == ID_REPLAY_DIFF_NEXT);
-  if (node == NULL)
-    return;
-
-  // Move the transcript to the given node for both panels
-  ((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::ShowSelect);
-  ((TabTranscript*)GetPanel(1)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::ShowSelect);
-
-  // Show the appropriate panel
-  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Transcript));
-  panel->SetActiveTab(Panel::Tab_Transcript);
-  m_skein.NotifyChange(Skein::TranscriptThreadChanged);
-}
-
-void ProjectFrame::OnUpdateReplayDifferSkein(CCmdUI *pCmdUI)
-{
-  Skein::Node* node = NULL;
-  if (m_skein.IsActive())
-  {
-    TabTranscript* tab = (TabTranscript*)(GetPanel(0)->GetTab(Panel::Tab_Transcript));
-    node = tab->FindRelevantNode(TranscriptWindow::SkeinDifferent,true);
-  }
-  pCmdUI->Enable(node != NULL);
-}
-
-void ProjectFrame::OnReplayDifferSkein()
-{
-  // Find the node to move to
-  TabTranscript* tab = (TabTranscript*)(GetPanel(0)->GetTab(Panel::Tab_Transcript));
-  Skein::Node* node = tab->FindRelevantNode(TranscriptWindow::SkeinDifferent,true);
-  if (node == NULL)
-    return;
-
-  // Move the transcript to the given node for both panels
-  ((TabTranscript*)GetPanel(0)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::ShowSelect);
-  ((TabTranscript*)GetPanel(1)->GetTab(Panel::Tab_Transcript))->ShowNode(node,Skein::ShowSelect);
-
-  // Show the appropriate panel
-  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Transcript));
-  panel->SetActiveTab(Panel::Tab_Transcript);
-  m_skein.NotifyChange(Skein::TranscriptThreadChanged);
+  return m_settings.m_testingTabShownCount;
 }
 
 void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)
@@ -1900,7 +1716,7 @@ void ProjectFrame::OnWindowShowIndex(UINT nID)
 
 void ProjectFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
 {
-  CMenu* windowMenu = GetMenu()->GetSubMenu(6);
+  CMenu* windowMenu = GetMenu()->GetSubMenu(5);
   int maximum = 9;
 
   // Remove any existing items in the window list
@@ -2456,7 +2272,7 @@ void ProjectFrame::RunProject(void)
     m_settings.m_output == ProjectSettings::OutputGlulx);
 
   // Send out a skein notification now that the game is running
-  m_skein.NotifyChange(Skein::ThreadChanged);
+  m_skein.NotifyChange(Skein::PlayedChanged);
 }
 
 void ProjectFrame::CleanProject(void)
@@ -2700,24 +2516,24 @@ void ProjectFrame::GenerateIntestReport(CString result)
   if (result.IsEmpty())
   {
     // Find the node to report, and what the result was
-    Skein::Node* current = m_skein.GetCurrent();
-    Skein::Node* report = current;
-    while (current != NULL)
+    Skein::Node* node = m_skein.GetPlayTo();
+    Skein::Node* report = node;
+    while (node != NULL)
     {
-      if (current->GetExpectedText().IsEmpty())
+      if (node->GetExpectedText().IsEmpty())
       {
         result = "cursed";
-        report = current;
+        report = node;
       }
-      else if (current->GetDiffers() != Skein::Node::ExpectedSame)
+      else if (node->GetDiffers())
       {
         if (result.IsEmpty())
           result = "wrong";
         if (result == "wrong")
-          report = current;
+          report = node;
       }
 
-      current = current->GetParent();
+      node = node->GetParent();
       nodeCount++;
     }
     if (result.IsEmpty())
@@ -3087,7 +2903,11 @@ void ProjectFrame::OnSkeinLink(const char* url, TabInterface* from)
     // Show the appropriate node
     Skein::Node* node = m_skein.FindNode(nodeId);
     if (node != NULL)
-      OnShowTranscript((WPARAM)node,(LPARAM)from->GetWindow());
+    {
+      Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Testing));
+      ((TabTesting*)panel->GetTab(Panel::Tab_Testing))->SelectNode(node);
+      panel->SetActiveTab(Panel::Tab_Testing);
+    }
   }
 }
 

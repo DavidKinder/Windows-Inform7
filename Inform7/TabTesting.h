@@ -7,13 +7,13 @@
 #include "FlatSplitter.h"
 #include "ReportHtml.h"
 
-class TabSkein : public TabBase, public ReportHtml::LinkConsumer
+class TabTesting : public TabBase, public ReportHtml::LinkConsumer
 {
-  DECLARE_DYNAMIC(TabSkein)
+  DECLARE_DYNAMIC(TabTesting)
 
 public:
-  TabSkein();
-  ~TabSkein();
+  TabTesting();
+  ~TabTesting();
 
   const char* GetName(void);
   void CreateTab(CWnd* parent);
@@ -39,8 +39,8 @@ public:
   void LinkError(const char* url);
   void LinkDone(void);
 
-  void SetSkein(Skein* skein);
-  void ShowNode(Skein::Node* node, Skein::Show why);
+  void SetSkein(Skein* skein, int idx);
+  void SelectNode(Skein::Node* node);
   void SkeinChanged(void);
   void Animate(int pct);
 

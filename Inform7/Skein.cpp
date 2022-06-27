@@ -1,5 +1,7 @@
 #include "stdafx.h"
+#include "stdafx.h"
 #include "Skein.h"
+#include "TranscriptPane.h"
 #include "Inform.h"
 #include "TextFormat.h"
 #include "Build.h"
@@ -8,12 +10,15 @@
 #define new DEBUG_NEW
 #endif
 
-Skein::Skein() : m_layout(false)
+Skein::Skein()
 {
+  for (int i = 0; i < LAYOUTS; i++)
+    m_laidOut[i] = false;
+
   m_inst.skeinFile = "Skein.skein";
   m_inst.root = new Node(L"- start -",L"",L"",L"",false);
-  m_inst.current = m_inst.root;
 
+  m_playTo = m_inst.root;
   m_played = m_inst.root;
 }
 
@@ -29,20 +34,20 @@ Skein::Node* Skein::GetRoot(void)
   return m_inst.root;
 }
 
-Skein::Node* Skein::GetCurrent(void)
+Skein::Node* Skein::GetPlayTo(void)
 {
-  return m_inst.current;
+  return m_playTo;
 }
 
-void Skein::SetCurrent(Node* node)
+void Skein::SetPlayTo(Node* node)
 {
-  m_inst.current = node;
-  NotifyChange(ThreadChanged);
+  m_playTo = node;
+  NotifyChange(PlayedChanged);
 }
 
-bool Skein::InCurrentThread(Node* node)
+bool Skein::InPlayThread(Node* node)
 {
-  return InThread(node,m_inst.current);
+  return InThread(node,m_playTo);
 }
 
 bool Skein::InThread(Node* node, Node* endNode)
@@ -142,19 +147,16 @@ void Skein::Load(const char* path)
     item = NULL;
   }
 
-  // Get the root and current nodes
+  // Get the root node
   CStringW root = StringFromXML(doc,L"/Skein/@rootNode");
-  CStringW current = StringFromXML(doc,L"/Skein/activeNode/@nodeId");
 
   // Discard the current skein and replace with the new
   delete m_inst.root;
   m_inst.root = nodes[root];
-  m_inst.current = nodes[current];
-  if (m_inst.current == NULL)
-    m_inst.current = m_inst.root;
+  m_playTo = m_inst.root;
   m_played = m_inst.root;
 
-  m_layout = false;
+  InvalidateLayout();
   NotifyChange(TreeChanged);
   NotifyEdit(false);
 }
@@ -189,9 +191,8 @@ bool Skein::Instance::Save(const char* path)
   fprintf(skeinFile,
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     "<Skein rootNode=\"%s\">\n"
-    "  <generator>Windows Inform " INFORM_VER "</generator>\n"
-    "  <activeNode nodeId=\"%s\"/>\n",
-    root->GetUniqueId(),current->GetUniqueId());
+    "  <generator>Windows Inform " INFORM_VER "</generator>\n",
+    root->GetUniqueId());
   root->SaveNodes(skeinFile);
   fprintf(skeinFile,"</Skein>\n");
   fclose(skeinFile);
@@ -203,10 +204,10 @@ void Skein::Reset()
 {
   delete m_inst.root;
   m_inst.root = new Node(L"- start -",L"",L"",L"",false);
-  m_inst.current = m_inst.root;
+  m_playTo = m_inst.root;
   m_played = m_inst.root;
 
-  m_layout = false;
+  InvalidateLayout();
   NotifyChange(TreeChanged);
   NotifyEdit(false);
 }
@@ -239,7 +240,7 @@ void Skein::Import(const char* path)
 
     if (added)
     {
-      m_layout = false;
+      InvalidateLayout();
       NotifyChange(TreeChanged);
       NotifyEdit(true);
     }
@@ -282,7 +283,10 @@ bool Skein::ChangeFile(const char* fileName, const char* path)
     {
       m_inst = *it;
       m_other.erase(it);
-      m_layout = false;
+      m_playTo = m_inst.root;
+      m_played = m_inst.root;
+
+      InvalidateLayout();
       NotifyChange(TreeChanged);
       return true;
     }
@@ -293,20 +297,29 @@ bool Skein::ChangeFile(const char* fileName, const char* path)
   return true;
 }
 
-void Skein::Reset(bool current)
+void Skein::Reset(bool playTo)
 {
-  if (current)
-    m_inst.current = m_inst.root;
+  if (playTo)
+    m_playTo = m_inst.root;
 
   m_played = m_inst.root;
-  NotifyChange(ThreadChanged);
+  NotifyChange(PlayedChanged);
 }
 
-void Skein::Layout(CDC& dc, int spacing, bool force)
+void Skein::InvalidateLayout(void)
 {
-  if (force)
-    m_inst.root->ClearWidths();
-  if (force || (m_layout == false))
+  for (int i = 0; i < LAYOUTS; i++)
+    m_laidOut[i] = false;
+}
+
+void Skein::Layout(CDC& dc, int idx, LayoutMode mode, const CSize& spacing, TranscriptPane& transcript)
+{
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  if (mode == LayoutRecalculate)
+    m_inst.root->ClearWidths(idx);
+
+  if ((mode > LayoutDefault) || (m_laidOut[idx] == false))
   {
     std::vector<std::vector<Node*> > nodesByDepth;
     m_inst.root->GetNodesByDepth(0,nodesByDepth);
@@ -319,70 +332,150 @@ void Skein::Layout(CDC& dc, int spacing, bool force)
       for (size_t col = 0; col < rowNodes.size(); ++col)
       {
         Node* node = rowNodes[col];
-        int width = node->GetLineWidth(dc);
-        width = max(width,node->GetLabelTextWidth());
-        int x_next = x + (width/2);
-
-        // Centre a parent node between its children
         int numc = node->GetNumChildren();
-        if (numc > 0)
+        Node* transcriptChild = transcript.ContainsChildNode(node);
+
+        // Set the initial position of the node
+        int width = node->CalcLineWidth(dc,idx);
+        width = max(width,node->GetLabelTextWidth(idx));
+        int x_next = x + (width/2);
+        node->SetX(idx,x_next);
+        node->SetY(idx,(int)(row-1) * spacing.cy);
+
+        if (transcriptChild != NULL)
         {
-          int x_first_child = node->GetChild(0)->GetX();
-          int x_last_child = node->GetChild(numc-1)->GetX();
-          int x_centre = (x_first_child + x_last_child)/2;
-          node->SetX(x_centre);
-          if (x_next > x_centre)
+          // Put all transcript nodes on the same vertical line
+          int x_child = transcriptChild->GetX(idx);
+          node->SetX(idx,x_child);
+          if (x_next > x_child)
           {
             // Move this node and all its children to the right
-            node->ShiftX(x_next - x_centre);
+            node->ShiftX(idx,x_next - x_child);
 
             // Move all nodes after this node to the right
             for (size_t col2 = col+1; col2 < rowNodes.size(); ++col2)
-              rowNodes[col2]->ShiftX(x_next - x_centre);
+              rowNodes[col2]->ShiftX(idx,x_next - x_child);
           }
         }
-        else
-          node->SetX(x_next);
+        else if (numc > 0)
+        {
+          // Centre a parent node between its children
+          int x_first_child = node->GetChild(0)->GetX(idx);
+          int x_last_child = node->GetChild(numc-1)->GetX(idx);
+          int x_centre = (x_first_child + x_last_child)/2;
+          node->SetX(idx,x_centre);
+          if (x_next > x_centre)
+          {
+            // Move this node and all its children to the right
+            node->ShiftX(idx,x_next - x_centre);
 
-        x = node->GetX() + (width/2) + spacing;
+            // Move all nodes after this node to the right
+            for (size_t col2 = col+1; col2 < rowNodes.size(); ++col2)
+              rowNodes[col2]->ShiftX(idx,x_next - x_centre);
+          }
+        }
+
+        x = node->GetX(idx) + (width/2) + spacing.cx;
       }
     }
 
-    // Shift the entire tree so that is centered horizontally
-    m_inst.root->ShiftX(-m_inst.root->GetX());
-    int xmin = 0, xmax = 0;
-    bool valid = false;
+    // Shift the entire tree so that the origin is the left edge
+    int x_leftmost = 0;
     for (size_t row = 0; row < nodesByDepth.size(); ++row)
     {
       const std::vector<Node*>& rowNodes = nodesByDepth[row];
       if (rowNodes.size() > 0)
       {
-        Node* node1 = rowNodes[0];
-        Node* node2 = rowNodes[rowNodes.size()-1];
-        int x1 = node1->GetX() - (node1->GetLayoutWidth()/2);
-        int x2 = node2->GetX() + (node2->GetLayoutWidth()/2);
-        if (!valid || (x1 < xmin))
-          xmin = x1;
-        if (!valid || (x2 > xmax))
-          xmax = x2;
-        valid = true;
+        int x = rowNodes[0]->GetX(idx);
+        if (x < x_leftmost)
+          x_leftmost = x;
       }
     }
-    if (valid)
-      m_inst.root->ShiftX((xmin + xmax) / -2);
+    m_inst.root->ShiftX(idx,-x_leftmost);
+
+    // Add space for the transcript
+    if (transcript.IsActive())
+    {
+      // Layout the transcript
+      transcript.Layout(dc);
+
+      // Get all nodes in the transcript
+      std::vector<Node*> transcriptNodes;
+      transcript.GetNodes(transcriptNodes);
+
+      // Find the right-most extent of the nodes in the the transcript.
+      int x_right = INT_MIN;
+      for (size_t i = 0; i < transcriptNodes.size(); i++)
+      {
+        Node* node = transcriptNodes[i];
+        int xr = node->GetX(idx) + (node->GetLayoutWidth(idx)/2);
+        if (xr > x_right)
+          x_right = xr;
+      }
+
+      // Set the origin of the transcript
+      int transcriptMarginX = (int)(spacing.cx*0.7);
+      transcript.SetOrigin(x_right+transcriptMarginX,m_inst.root->GetY(idx));
+
+      // Adjust the layout to make space for the transcript vertically
+      for (size_t row = 0; row < transcriptNodes.size(); row++)
+      {
+        if (row+1 < nodesByDepth.size())
+        {
+          const std::vector<Node*>& rowNodes = nodesByDepth[row+1];
+          if (rowNodes.size() > 0)
+          {
+            int y_spacing = rowNodes[0]->GetY(idx) - transcriptNodes[row]->GetY(idx);
+            int t_height = transcript.GetRowHeight((int)row);
+
+            // Add a bit more space for the last row of the transcript
+            if (row == transcriptNodes.size()-1)
+              t_height += spacing.cx / 2;
+
+            if (y_spacing < t_height)
+            {
+              int y_shift = t_height - y_spacing;
+              for (size_t col = 0; col < rowNodes.size(); ++col)
+                rowNodes[col]->ShiftY(idx,y_shift);
+            }
+          }
+        }
+      }
+
+      // Find the left-most extent of the nodes after the transcript
+      int x_after_left = m_inst.root->GetLeftmostAfterX(idx,transcriptNodes[0]->GetX(idx));
+
+      // Adjust the layout to make space for the transcript horizontally
+      int transcriptWidth = transcript.GetWidth() + (transcriptMarginX*2);
+      if (x_after_left < INT_MAX)
+        transcriptWidth += (x_right - x_after_left);
+
+      // For each node in the transcript, shift any child nodes to the right of the
+      // child node that is also in the transcript, if any.
+      for (size_t row = 0; row < transcriptNodes.size()-1; row++)
+      {
+        bool afterTranscript = false;
+        Node* node = transcriptNodes[row];
+        for (int i = 0; i < node->GetNumChildren(); i++)
+        {
+          Node* child = node->GetChild(i);
+          if (afterTranscript)
+            child->ShiftX(idx,transcriptWidth);
+          else if (child == transcriptNodes[row+1])
+            afterTranscript = true;
+        }
+      }
+    }
   }
-  m_layout = true;
+  m_laidOut[idx] = true;
 }
 
-void Skein::GetTreeExtent(int& width, int& depth)
+CSize Skein::GetTreeExtent(int idx)
 {
   std::vector<std::vector<Node*> > nodesByDepth;
   m_inst.root->GetNodesByDepth(0,nodesByDepth);
 
-  width = 0;
-  depth = (int)nodesByDepth.size();
-
-  int xmin = 0, xmax = 0;
+  int xmin = 0, xmax = 0, height = 0;
   bool valid = false;
   for (size_t row = 0; row < nodesByDepth.size(); ++row)
   {
@@ -391,17 +484,19 @@ void Skein::GetTreeExtent(int& width, int& depth)
     {
       Node* node1 = rowNodes[0];
       Node* node2 = rowNodes[rowNodes.size()-1];
-      int x1 = node1->GetX() - (node1->GetLayoutWidth()/2);
-      int x2 = node2->GetX() + (node2->GetLayoutWidth()/2);
+      int x1 = node1->GetX(idx) - (node1->GetLayoutWidth(idx)/2);
+      int x2 = node2->GetX(idx) + (node2->GetLayoutWidth(idx)/2);
       if (!valid || (x1 < xmin))
         xmin = x1;
       if (!valid || (x2 > xmax))
         xmax = x2;
       valid = true;
+
+      if (node1->GetY(idx) > height)
+        height = node1->GetY(idx);
     }
   }
-  if (valid)
-    width = (xmax - xmin);
+  return CSize(valid ? (xmax - xmin) : 0,height);
 }
 
 void Skein::NewLine(const CStringW& line)
@@ -410,41 +505,42 @@ void Skein::NewLine(const CStringW& line)
   CStringW nodeLine = EscapeLine(line,UsePrintable);
 
   // Is there a child node with the same line?
-  Node* node = m_inst.current->Find(nodeLine);
+  Node* node = m_playTo->Find(nodeLine);
   if (node == NULL)
   {
     node = new Node(nodeLine,L"",L"",L"",false);
-    m_inst.current->Add(node);
+    m_playTo->Add(node);
+    m_playTo->SortChildren();
     nodeAdded = true;
   }
 
-  // Make this the new current node
-  m_inst.current = node;
+  // Make this the new node being played
+  m_playTo = node;
   m_played = node;
 
   // Notify any listeners
   if (nodeAdded)
   {
-    m_layout = false;
+    InvalidateLayout();
     NotifyChange(TreeChanged);
     NotifyEdit(true);
   }
   else
-    NotifyChange(ThreadChanged);
+    NotifyChange(PlayedChanged);
 
-  NotifyShowNode(node,ShowNewLine);
+  NotifyShowNode(node);
 }
 
 bool Skein::NextLine(CStringW& line)
 {
   // Find the next node to use
-  Node* next = m_played->FindAncestor(m_inst.current);
+  Node* next = m_played->FindAncestor(m_playTo);
   if (next != NULL)
   {
     line = EscapeLine(next->GetLine(),UseCharacters);
     m_played = next;
-    NotifyChange(ThreadChanged);
-    NotifyShowNode(next,ShowNewLine);
+    NotifyChange(PlayedChanged);
+    NotifyShowNode(next);
     return true;
   }
   return false;
@@ -456,9 +552,9 @@ void Skein::UpdateAfterPlaying(const CStringW& transcript)
   if (transcript.IsEmpty() == FALSE)
     m_played->NewTranscriptText(transcript);
 
-  NotifyChange(NodeColourChanged);
+  NotifyChange(NodeTranscriptChanged);
   if (transcript.IsEmpty() == FALSE)
-    NotifyShowNode(m_played,ShowNewTranscript);
+    NotifyShowNode(m_played);
 }
 
 static const wchar_t* escapes[] =
@@ -499,7 +595,7 @@ CStringW Skein::EscapeLine(const CStringW& line, EscapeAction action)
 bool Skein::GetLineFromHistory(CStringW& line, int history)
 {
   // Find the node to return the line from
-  Node* node = m_inst.current;
+  Node* node = m_playTo;
   while (--history > 0)
   {
     node = node->GetParent();
@@ -520,7 +616,7 @@ Skein::Node* Skein::AddNew(Node* node)
   Node* newNode = new Node(L"",L"",L"",L"",false);
   node->Add(newNode);
 
-  m_layout = false;
+  InvalidateLayout();
   NotifyChange(TreeChanged);
   NotifyEdit(true);
 
@@ -533,7 +629,7 @@ Skein::Node* Skein::AddNewParent(Node* node)
   node->GetParent()->Replace(node,newNode);
   newNode->Add(node);
 
-  m_layout = false;
+  InvalidateLayout();
   NotifyChange(TreeChanged);
   NotifyEdit(true);
 
@@ -546,16 +642,16 @@ bool Skein::RemoveAll(Node* node, bool notify)
   Node* parent = node->GetParent();
   if (parent != NULL)
   {
-    bool inCurrent = InCurrentThread(node);
+    bool inPlay = InPlayThread(node);
     removed = parent->Remove(node);
 
-    if (inCurrent)
+    if (inPlay)
     {
-      m_inst.current = m_inst.root;
+      m_playTo = m_inst.root;
       m_played = m_inst.root;
     }
 
-    m_layout = false;
+    InvalidateLayout();
     if (notify)
       NotifyChange(TreeChanged);
   }
@@ -570,16 +666,18 @@ bool Skein::RemoveSingle(Node* node)
   Node* parent = node->GetParent();
   if (parent != NULL)
   {
-    bool inCurrent = InCurrentThread(node);
+    bool inPlay = InPlayThread(node);
     removed = parent->RemoveSingle(node);
+    if (removed)
+      parent->SortChildren();
 
-    if (inCurrent)
+    if (inPlay)
     {
-      m_inst.current = m_inst.root;
+      m_playTo = m_inst.root;
       m_played = m_inst.root;
     }
 
-    m_layout = false;
+    InvalidateLayout();
     NotifyChange(TreeChanged);
   }
   if (removed)
@@ -587,11 +685,25 @@ bool Skein::RemoveSingle(Node* node)
   return removed;
 }
 
+void Skein::SortSiblings(Node* node)
+{
+  Node* parent = node->GetParent();
+  if (parent != NULL)
+  {
+    if (parent->SortChildren())
+    {
+      InvalidateLayout();
+      NotifyChange(TreeChanged);
+    }
+  }
+}
+
 void Skein::SetLine(Node* node, LPCWSTR line)
 {
   if (node->SetLine(line))
     NotifyEdit(true);
-  m_layout = false;
+
+  InvalidateLayout();
   NotifyChange(NodeTextChanged);
 }
 
@@ -599,7 +711,8 @@ void Skein::SetLabel(Node* node, LPCWSTR label)
 {
   if (node->SetLabel(label))
     NotifyEdit(true);
-  m_layout = false;
+
+  InvalidateLayout();
   NotifyChange(NodeTextChanged);
 }
 
@@ -637,13 +750,13 @@ void Skein::Unlock(Node* node, bool notify)
 void Skein::Trim(Node* node, bool running, bool notify)
 {
   // Only delete unlocked nodes. If the game is running, only delete
-  // if the node is not in the current thread as well.
-  bool inCurrent = InCurrentThread(node);
-  if ((node->GetParent() != NULL) && !node->GetLocked() && !(running && inCurrent))
+  // if the node is not in the currently played thread as well.
+  bool inPlay = InPlayThread(node);
+  if ((node->GetParent() != NULL) && !node->GetLocked() && !(running && inPlay))
   {
-    if (inCurrent)
+    if (inPlay)
     {
-      m_inst.current = m_inst.root;
+      m_playTo = m_inst.root;
       m_played = m_inst.root;
     }
     RemoveAll(node,false);
@@ -667,7 +780,7 @@ void Skein::Bless(Node* node, bool all)
       NotifyEdit(true);
     node = all ? node->GetParent() : NULL;
   }
-  NotifyChange(NodeColourChanged);
+  NotifyChange(NodeTranscriptChanged);
 }
 
 bool Skein::CanBless(Node* node, bool all)
@@ -675,7 +788,7 @@ bool Skein::CanBless(Node* node, bool all)
   bool canBless = false;
   while (node != NULL)
   {
-    canBless |= node->CanBless();
+    canBless |= node->GetDiffers();
     node = all ? node->GetParent() : NULL;
   }
   return canBless;
@@ -685,28 +798,10 @@ void Skein::SetExpectedText(Node* node, LPCWSTR text)
 {
   if (node->SetExpectedText(text))
     NotifyEdit(true);
-  NotifyChange(NodeColourChanged);
+  NotifyChange(NodeTranscriptChanged);
 }
 
-Skein::Node* Skein::GetThreadTop(Node* node)
-{
-  while (true)
-  {
-    Node* parent = node->GetParent();
-    if (parent == NULL)
-    {
-      ASSERT(FALSE);
-      return node;
-    }
-    if (parent->GetNumChildren() != 1)
-      return node;
-    if (parent->GetParent() == NULL)
-      return node;
-    node = parent;
-  }
-}
-
-Skein::Node* Skein::GetThreadBottom(Node* node)
+Skein::Node* Skein::GetThreadEnd(Node* node)
 {
   while (true)
   {
@@ -753,7 +848,7 @@ Skein::Node* Skein::GetFirstDifferent(Node* node)
     node = m_inst.root;
 
   // If this node differs, return it
-  if (node->GetDiffers() != Skein::Node::ExpectedSame)
+  if (node->GetDiffers())
     return node;
 
   // Look for differing child nodes
@@ -792,37 +887,6 @@ Skein::Node* Skein::FindNode(const char* id, Node* node)
   return NULL;
 }
 
-void Skein::SaveTranscript(Node* node, const char* path)
-{
-  std::vector<Node*> list;
-  do
-  {
-    list.push_back(node);
-    node = node->GetParent();
-  }
-  while (node != NULL);
-
-  FILE* transcript = fopen(path,"wt");
-  if (transcript == NULL)
-    return;
-
-  for (std::vector<Node*>::reverse_iterator it = list.rbegin(); it != list.rend(); ++it)
-  {
-    if (it == list.rbegin())
-    {
-      fprintf(transcript,"%s",
-        (LPCTSTR)TextFormat::UnicodeToUTF8((*it)->GetTranscriptText()));
-    }
-    else
-    {
-      fprintf(transcript,"%s\n%s",
-        (LPCTSTR)TextFormat::UnicodeToUTF8((*it)->GetLine()),
-        (LPCTSTR)TextFormat::UnicodeToUTF8((*it)->GetTranscriptText()));
-    }
-  }
-  fclose(transcript);
-}
-
 void Skein::AddListener(Listener* listener)
 {
   m_listeners.push_back(listener);
@@ -844,10 +908,10 @@ void Skein::NotifyEdit(bool edited)
   }
 }
 
-void Skein::NotifyShowNode(Node* node, Show why)
+void Skein::NotifyShowNode(Node* node)
 {
   for (std::vector<Listener*>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
-    (*it)->SkeinShowNode(node,why);
+    (*it)->SkeinShowNode(node,false);
 }
 
 LPCTSTR Skein::ToXML_UTF8(bool value)
@@ -901,14 +965,11 @@ int Skein::IntFromXML(IXMLDOMNode* node, LPWSTR query)
 
 Skein::Node::Node(const CStringW& line, const CStringW& label, const CStringW& transcript,
   const CStringW& expected, bool changed)
-  : m_parent(NULL), m_line(line), m_label(label),
+  : m_parent(NULL), m_line(line), m_label(label), 
     m_textTranscript(transcript), m_textExpected(expected),
-    m_locked(false), m_changed(changed), m_differs(ExpectedDifferent),
-    m_width(-1), m_lineWidth(-1), m_labelWidth(-1), m_x(0),
-    m_anim(false), m_animX(0), m_animDepth(0)
+    m_locked(false), m_changed(changed)
 {
   static unsigned long counter = 0;
-
   m_id.Format("node-%lu",counter++);
   CompareWithExpected();
 }
@@ -948,9 +1009,8 @@ bool Skein::Node::SetLine(LPCWSTR line)
 {
   bool change = (m_line != line);
   m_line = line;
-  m_width = -1;
-  m_lineWidth = -1;
-  m_labelWidth = -1;
+  for (int i = 0; i < LAYOUTS; i++)
+    m_layout[i].ClearWidths();
   return change;
 }
 
@@ -963,9 +1023,8 @@ bool Skein::Node::SetLabel(LPCWSTR label)
 {
   bool change = (m_label != label);
   m_label = label;
-  m_width = -1;
-  m_lineWidth = -1;
-  m_labelWidth = -1;
+  for (int i = 0; i < LAYOUTS; i++)
+    m_layout[i].ClearWidths();
   return change;
 }
 
@@ -979,9 +1038,9 @@ bool Skein::Node::GetChanged(void)
   return m_changed;
 }
 
-Skein::Node::ExpectedCompare Skein::Node::GetDiffers(void)
+bool Skein::Node::GetDiffers(void)
 {
-  return m_differs;
+  return m_diff.HasDiff();
 }
 
 bool Skein::Node::GetLocked(void)
@@ -996,104 +1055,118 @@ bool Skein::Node::SetLocked(bool locked)
   return change;
 }
 
-void Skein::Node::NewTranscriptText(const CStringW& transcript)
+void Skein::Node::NewTranscriptText(LPCWSTR text)
 {
-  if (!m_textTranscript.IsEmpty())
-    m_changed = !(m_textTranscript == transcript);
-  m_textTranscript = transcript;
-  m_textTranscript.Replace('\r','\n');
-  CompareWithExpected();
+  CStringW newTranscript(text);
+  newTranscript.Replace('\r','\n');
+
+  if (m_textTranscript != newTranscript)
+  {
+    m_textTranscript = newTranscript;
+    CompareWithExpected();
+  }
 }
 
 bool Skein::Node::Bless(void)
 {
-  bool differs = (m_differs != ExpectedSame);
-  m_textExpected = m_textTranscript;
-  m_differs = ExpectedSame;
-
-  m_diffExpected.clear();
-  m_diffTranscript.clear();
-  return differs;
-}
-
-bool Skein::Node::CanBless(void)
-{
-  return (m_differs != ExpectedSame);
+  if (m_textExpected != m_textTranscript)
+  {
+    m_textExpected = m_textTranscript;
+    CompareWithExpected();
+    return true;
+  }
+  return false;
 }
 
 bool Skein::Node::SetExpectedText(LPCWSTR text)
 {
-  CStringW oldExpected = m_textExpected;
-  m_textExpected = text;
-  m_textExpected.Replace('\r','\n');
-  CompareWithExpected();
-  return (oldExpected != m_textExpected);
+  CStringW newExpected(text);
+  newExpected.Replace('\r','\n');
+
+  if (m_textExpected != newExpected)
+  {
+    m_textExpected = newExpected;
+    CompareWithExpected();
+    return true;
+  }
+  return false;
 }
 
-int Skein::Node::GetLineWidth(CDC& dc)
+int Skein::Node::CalcLineWidth(CDC& dc, int idx)
 {
-  if (m_width < 0)
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+  LayoutInfo& info = m_layout[idx];
+
+  if (info.width < 0)
   {
     SIZE size;
     ::GetTextExtentPoint32W(dc.GetSafeHdc(),m_line,(UINT)wcslen(m_line),&size);
-    m_width = size.cx;
-    m_lineWidth = size.cx;
+    info.width = size.cx;
+    info.lineWidth = size.cx;
 
     if (wcslen(m_label) > 0)
     {
       ::GetTextExtentPoint32W(dc.GetSafeHdc(),m_label,(UINT)wcslen(m_label),&size);
-      m_labelWidth = size.cx;
+      info.labelWidth = size.cx;
     }
     else
-      m_labelWidth = 0;
+      info.labelWidth = 0;
 
     CSize minSize = dc.GetTextExtent("    ",4);
-    if (m_width < minSize.cx)
-      m_width = minSize.cx;
-    if (m_labelWidth < minSize.cx)
-      m_labelWidth = minSize.cx;
+    if (info.width < minSize.cx)
+      info.width = minSize.cx;
+    if (info.labelWidth < minSize.cx)
+      info.labelWidth = minSize.cx;
   }
-  return m_width;
+  return info.width;
 }
 
-int Skein::Node::GetLayoutWidth(void)
+int Skein::Node::GetLayoutWidth(int idx)
 {
-  return max(m_width,m_labelWidth);
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+  LayoutInfo& info = m_layout[idx];
+
+  return max(info.width,info.labelWidth);
 }
 
-int Skein::Node::GetLineTextWidth(void)
+int Skein::Node::GetLineTextWidth(int idx)
 {
-  return m_lineWidth;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  return m_layout[idx].lineWidth;
 }
 
-int Skein::Node::GetLabelTextWidth(void)
+int Skein::Node::GetLabelTextWidth(int idx)
 {
-  return m_labelWidth;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  return m_layout[idx].labelWidth;
 }
 
-void Skein::Node::ClearWidths(void)
+void Skein::Node::ClearWidths(int idx)
 {
-  m_width = -1;
-  m_lineWidth = -1;
-  m_labelWidth = -1;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  m_layout[idx].ClearWidths();
+  for (int i = 0; i < m_children.GetSize(); i++)
+    m_children[i]->ClearWidths(idx);
+}
+
+int Skein::Node::GetLeftmostAfterX(int idx, int x)
+{
+  int leftmostX = INT_MAX;
+
+  int leftX = GetX(idx) - (GetLayoutWidth(idx)/2);
+  if (leftX > x)
+    leftmostX = leftX;
 
   for (int i = 0; i < m_children.GetSize(); i++)
-    m_children[i]->ClearWidths();
-}
-
-int Skein::Node::GetDepth(void)
-{
-  int depth = 0;
-
-  Node* node = this;
-  while (node != NULL)
   {
-    node = node->GetParent();
-    if (node != NULL)
-      depth++;
+    int childLeftX = m_children[i]->GetLeftmostAfterX(idx,x);
+    if (childLeftX < leftmostX)
+      leftmostX = childLeftX;
   }
-
-  return depth;
+  return leftmostX;
 }
 
 void Skein::Node::Add(Node* child)
@@ -1151,6 +1224,37 @@ void Skein::Node::Replace(Node* oldNode, Node* newNode)
       newNode->SetParent(this);
     }
   }
+}
+
+static int CompareByLine(const void* element1, const void* element2)
+{
+  Skein::Node* node1 = *((Skein::Node**)element1);
+  Skein::Node* node2 = *((Skein::Node**)element2);
+  return node1->GetLine().Compare(node2->GetLine());
+}
+
+bool Skein::Node::SortChildren(void)
+{
+  if (!m_children.IsEmpty())
+  {
+    // Sort a copy of the children array
+    CArray<Node*> sorted;
+    sorted.Copy(m_children);
+    qsort(sorted.GetData(),sorted.GetSize(),sizeof (Node*),CompareByLine);
+
+    // Has the order changed?
+    for (int i = 0; i < m_children.GetSize(); i++)
+    {
+      if (sorted[i] != m_children[i])
+      {
+        // Use the sorted array
+        m_children.RemoveAll();
+        m_children.Copy(sorted);
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 Skein::Node* Skein::Node::Find(const CStringW& line)
@@ -1245,55 +1349,111 @@ void Skein::Node::GetNodesByDepth(int depth, std::vector<std::vector<Node*> >& n
     m_children[i]->GetNodesByDepth(depth+1,nodesByDepth);
 }
 
-int Skein::Node::GetX(void)
+int Skein::Node::GetX(int idx)
 {
-  return m_x;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  return m_layout[idx].pos.x;
 }
 
-void Skein::Node::SetX(int x)
+void Skein::Node::SetX(int idx, int x)
 {
-  m_x = x;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  m_layout[idx].pos.x = x;
 }
 
-void Skein::Node::ShiftX(int shift)
+void Skein::Node::ShiftX(int idx, int shift)
 {
-  m_x += shift;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  m_layout[idx].pos.x += shift;
   for (int i = 0; i < m_children.GetSize(); i++)
-    m_children[i]->ShiftX(shift);
+    m_children[i]->ShiftX(idx,shift);
 }
 
-void Skein::Node::AnimatePrepare(int depth)
+int Skein::Node::GetY(int idx)
 {
-  m_anim = true;
-  m_animX = m_x;
-  m_animDepth = depth;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
 
+  return m_layout[idx].pos.y;
+}
+
+void Skein::Node::SetY(int idx, int y)
+{
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  m_layout[idx].pos.y = y;
+}
+
+void Skein::Node::ShiftY(int idx, int shift)
+{
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  m_layout[idx].pos.y += shift;
   for (int i = 0; i < m_children.GetSize(); i++)
-    m_children[i]->AnimatePrepare(depth+1);
+    m_children[i]->ShiftY(idx,shift);
+}
+
+void Skein::Node::AnimatePrepare(int idx)
+{
+  if (idx < 0)
+  {
+    for (int i = 0; i < LAYOUTS; i++)
+    {
+      LayoutInfo& info = m_layout[i];
+      info.anim = true;
+      info.animPos = info.pos;
+    }
+  }
+  else
+  {
+    ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+    LayoutInfo& info = m_layout[idx];
+    info.anim = true;
+    info.animPos = info.pos;
+  }
+  for (int i = 0; i < m_children.GetSize(); i++)
+    m_children[i]->AnimatePrepare(idx);
 }
 
 void Skein::Node::AnimateClear(void)
 {
-  m_anim = false;
-  m_animX = 0;
-  m_animDepth = 0;
-
+  for (int i = 0; i < LAYOUTS; i++)
+  {
+    LayoutInfo& info = m_layout[i];
+    info.anim = false;
+    info.animPos = CSize();
+  }
   for (int i = 0; i < m_children.GetSize(); i++)
     m_children[i]->AnimateClear();
 }
 
-int Skein::Node::GetAnimateX(int pct)
+CPoint Skein::Node::GetAnimatePos(int idx, int pct)
 {
-  if (m_anim && (pct >= 0) && (pct < 100))
-    return m_animX + (((m_x - m_animX) * pct) / 100);
-  return m_x;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+  LayoutInfo& info = m_layout[idx];
+
+  int x, y;
+  if (info.anim && (pct >= 0) && (pct < 100))
+  {
+    x = info.animPos.x + (((info.pos.x - info.animPos.x) * pct) / 100);
+    y = info.animPos.y + (((info.pos.y - info.animPos.y) * pct) / 100);
+  }
+  else
+  {
+    x = info.pos.x;
+    y = info.pos.y;
+  }
+  return CSize(x,y);
 }
 
-int Skein::Node::GetAnimateY(int depth, int spacing, int pct)
+bool Skein::Node::IsAnimated(int idx)
 {
-  if (m_anim && (pct >= 0) && (pct < 100))
-    return ((m_animDepth - depth) * spacing * (100 - pct)) / 100;
-  return 0;
+  ASSERT((idx >= 0) && (idx < LAYOUTS));
+
+  return m_layout[idx].anim;
 }
 
 const CStringW& Skein::Node::GetTranscriptText(void)
@@ -1306,82 +1466,108 @@ const CStringW& Skein::Node::GetExpectedText(void)
   return m_textExpected;
 }
 
-const Diff::DiffResults& Skein::Node::GetTranscriptDiffs(void)
+const TranscriptDiff& Skein::Node::GetTranscriptDiff(void)
 {
-  return m_diffTranscript;
+  return m_diff;
 }
 
-const Diff::DiffResults& Skein::Node::GetExpectedDiffs(void)
+static CStringW PromptForString(const CStringW& str)
 {
-  return m_diffExpected;
+  int lastCarriageReturnIndex = str.ReverseFind('\n');
+  if (lastCarriageReturnIndex < 0)
+    return L"";
+  return str.Mid(lastCarriageReturnIndex + 1);
+}
+
+static CStringW StringByRemovingPrompt(const CStringW& str)
+{
+  int lastCarriageReturnIndex = str.ReverseFind('\n');
+  if (lastCarriageReturnIndex < 0)
+    return str;
+  return str.Left(lastCarriageReturnIndex);
+}
+
+static CStringW TrailingWhitespace(const CStringW& str)
+{
+  // Search backwards from the end of the string for a non-whitespace character
+  for (int i = str.GetLength() - 1; i >= 0; i--)
+  {
+    if (!isspace(str[i]))
+      return str.Mid(i+1);
+  }
+  return str;
+}
+
+static CStringW LeadingWhitespace(const CStringW& str)
+{
+  // Find the first non-whitespace character
+  for (int i = 0; i < str.GetLength(); i++)
+  {
+    if (!isspace(str[i]))
+      return str.Left(i);
+  }
+  return str;
+}
+
+CStringW StringByRemovingTrailingWhitespace(const CStringW& str)
+{
+  CStringW trailing = TrailingWhitespace(str);
+  return str.Left(str.GetLength() - trailing.GetLength());
+}
+
+CStringW StringByRemovingLeadingWhitespace(const CStringW& str)
+{
+  CStringW leading = LeadingWhitespace(str);
+  return str.Mid(leading.GetLength());
 }
 
 void Skein::Node::CompareWithExpected(void)
 {
-  CStringW textExpected(m_textExpected);
-  CStringW textTranscript(m_textTranscript);
-  OverwriteBanner(textExpected);
-  OverwriteBanner(textTranscript);
+  CStringW localIdeal = m_textExpected;
+  CStringW localActual = m_textTranscript;
 
-  m_differs = !(textTranscript == textExpected) ? ExpectedDifferent : ExpectedSame;
-  if (m_differs == ExpectedDifferent)
+  // Remove matching prompts
+  bool promptsMatch = PromptForString(localActual).Compare(PromptForString(localIdeal)) == 0;
+  bool idealHasStandardPrompt  = localIdeal.Right(2).Compare(L"\n>") == 0;
+  bool actualHasStandardPrompt = localActual.Right(2).Compare(L"\n>") == 0;
+  bool hasIdealOutput  = localIdeal.GetLength() > 0;
+  bool hasActualOutput = localActual.GetLength() > 0;
+  bool canRemovePrompt = promptsMatch || (!hasActualOutput && idealHasStandardPrompt) || (!hasIdealOutput && actualHasStandardPrompt);
+  if (canRemovePrompt)
   {
-    if ((textTranscript.IsEmpty() == FALSE) && (textExpected.IsEmpty() == FALSE))
-    {
-      if (StripWhite(textTranscript).CompareNoCase(StripWhite(textExpected)) == 0)
-        m_differs = ExpectedNearlySame;
-    }
+    localIdeal  = StringByRemovingPrompt(localIdeal);
+    localActual = StringByRemovingPrompt(localActual);
   }
 
-  m_diffExpected.clear();
-  m_diffTranscript.clear();
-  if ((m_differs == ExpectedDifferent) && (textExpected.IsEmpty() == FALSE))
+  // Remove matching trailing whitespace
+  CStringW idealTrailingWhitespace  = TrailingWhitespace(localIdeal);
+  CStringW actualTrailingWhitespace = TrailingWhitespace(localActual);
+  if ((idealTrailingWhitespace.Compare(actualTrailingWhitespace) == 0) || !hasIdealOutput || !hasActualOutput)
   {
-    Diff::DiffStrings(textExpected,textTranscript,m_diffExpected,m_diffTranscript);
+    localIdeal  = StringByRemovingTrailingWhitespace(localIdeal);
+    localActual = StringByRemovingTrailingWhitespace(localActual);
   }
+
+  // Remove matching leading whitespace
+  CStringW idealLeadingWhitespace  = LeadingWhitespace(localIdeal);
+  CStringW actualLeadingWhitespace = LeadingWhitespace(localActual);
+  if ((idealLeadingWhitespace.Compare(actualLeadingWhitespace) == 0) || !hasIdealOutput || !hasActualOutput)
+  {
+    localIdeal  = StringByRemovingLeadingWhitespace(localIdeal);
+    localActual = StringByRemovingLeadingWhitespace(localActual);
+  }
+
+  m_diff.Diff(localIdeal,localActual);
 }
 
-void Skein::Node::OverwriteBanner(CStringW& inStr)
+Skein::Node::LayoutInfo::LayoutInfo()
+  : width(-1), lineWidth(-1), labelWidth(-1), anim(false)
 {
-  // Does this text contain an Inform banner?
-  int i = inStr.Find(L"\nRelease ");
-  if (i >= 0)
-  {
-    int release, serial;
-    if (swscanf((LPCWSTR)inStr+i,L"\nRelease %d / Serial number %d / Inform 7 ",&release,&serial) == 2)
-    {
-      // Replace the banner line with asterisks
-      for (int j = i+1; j < inStr.GetLength(); j++)
-      {
-        if (inStr.GetAt(j) == '\n')
-          break;
-        inStr.SetAt(j,'*');
-      }
-    }
-  }
 }
 
-CStringW Skein::Node::StripWhite(const CStringW& inStr)
+void Skein::Node::LayoutInfo::ClearWidths()
 {
-  CStringW outStr;
-  outStr.Preallocate(inStr.GetLength()+1);
-  for (int i = 0; i < inStr.GetLength(); i++)
-  {
-    WCHAR c = inStr.GetAt(i);
-    switch (c)
-    {
-    case L'\n':
-    case L'\r':
-    case L' ':
-    case L'\t':
-      break;
-    case '>':
-      if (i < inStr.GetLength()-1)
-        outStr.AppendChar(c);
-    default:
-      outStr.AppendChar(c);
-      break;
-    }
-  }
-  return outStr;
+  width = -1;
+  lineWidth = -1;
+  labelWidth = -1;
 }

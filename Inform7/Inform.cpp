@@ -495,20 +495,14 @@ COLORREF InformApp::GetColour(Colours colour)
     return RGB(0x60,0x60,0x60);
   case ColourBorder:
     return RGB(0xb0,0xb0,0xb0);
-  case ColourTransDiffers:
-    return RGB(0xff,0xf0,0xf0);
-  case ColourTransSame:
-    return RGB(0xf0,0xff,0xf0);
-  case ColourTransNearlySame:
-    return RGB(0xff,0xff,0xf0);
-  case ColourTransInput:
-    return RGB(0xe0,0xf0,0xff);
-  case ColourTransUnset:
-    return RGB(0xf0,0xf0,0xf0);
-  case ColourTransPlayed:
-    return RGB(0xff,0xff,0xb3);
-  case ColourTransSelect:
-    return RGB(0x66,0x66,0xff);
+  case ColourTranscriptBack:
+    return RGB(0xf3,0xd8,0x65);
+  case ColourTranscriptLine:
+    return RGB(0x81,0x81,0x81);
+  case ColourTranscriptDelete:
+    return RGB(0xff,0x00,0x19);
+  case ColourTranscriptInsert:
+    return RGB(0x00,0xbf,0x00);
   case ColourHyperlink:
     return RGB(0x00,0x00,0xff);
   case ColourContents:

@@ -26,6 +26,7 @@ public:
   bool m_blorb;
   bool m_predictable;
   CString m_compilerVersion;
+  int m_testingTabShownCount;
 
   bool m_changed;
 

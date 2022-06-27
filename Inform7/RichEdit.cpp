@@ -370,6 +370,10 @@ STDAPI ShutdownTextServices(IUnknown* pTextServices)
 
 RichDrawText::RichDrawText()
 {
+  // Attempt to load RichEdit 4.1
+  if (richLib == 0)
+    richLib = ::LoadLibrary("msftedit.dll");
+
   ::ZeroMemory(&m_charFormat,sizeof m_charFormat);
   m_charFormat.cbSize = sizeof m_charFormat;
   m_charFormat.dwMask = CFM_BOLD|CFM_CHARSET|CFM_COLOR|CFM_FACE|CFM_ITALIC|CFM_OFFSET|

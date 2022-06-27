@@ -1,14 +1,19 @@
 #pragma once
 
-#include "Diff.h"
+#include "TranscriptDiff.h"
 
 #include <map>
-#include <set>
 #include <vector>
+
+#define LAYOUTS 2
+
+class TranscriptPane;
 
 class Skein
 {
 public:
+  class Node;
+
   Skein();
   ~Skein();
 
@@ -22,9 +27,19 @@ public:
   void SetFile(const char* fileName);
   bool ChangeFile(const char* fileName, const char* path);
 
-  void Reset(bool current);
-  void Layout(CDC& dc, int spacing, bool force);
-  void GetTreeExtent(int& width, int& depth);
+  void Reset(bool playTo);
+  void InvalidateLayout(void);
+
+  enum LayoutMode
+  {
+    LayoutDefault,
+    LayoutReposition,
+    LayoutRecalculate
+  };
+
+  void Layout(CDC& dc, int idx, LayoutMode mode,
+    const CSize& spacing, TranscriptPane& transcript);
+  CSize GetTreeExtent(int idx);
 
   void NewLine(const CStringW& line);
   bool NextLine(CStringW& line);
@@ -62,41 +77,32 @@ public:
 
     const CStringW& GetTranscriptText(void);
     const CStringW& GetExpectedText(void);
-    const Diff::DiffResults& GetTranscriptDiffs(void);
-    const Diff::DiffResults& GetExpectedDiffs(void);
+    const TranscriptDiff& GetTranscriptDiff(void);
 
     bool GetChanged(void);
-
-    enum ExpectedCompare
-    {
-      ExpectedSame,
-      ExpectedNearlySame,
-      ExpectedDifferent,
-    };
-    ExpectedCompare GetDiffers(void);
+    bool GetDiffers(void);
 
     bool GetLocked(void);
     bool SetLocked(bool locked);
 
-    void NewTranscriptText(const CStringW& transcript);
+    void NewTranscriptText(LPCWSTR text);
 
     bool Bless(void);
-    bool CanBless(void);
     bool SetExpectedText(LPCWSTR text);
 
-    int GetLineWidth(CDC& dc);
-    int GetLayoutWidth(void);
-    int GetLineTextWidth(void);
-    int GetLabelTextWidth(void);
-    void ClearWidths(void);
-
-    int GetDepth(void);
+    int CalcLineWidth(CDC& dc, int idx);
+    int GetLayoutWidth(int idx);
+    int GetLineTextWidth(int idx);
+    int GetLabelTextWidth(int idx);
+    void ClearWidths(int idx);
+    int GetLeftmostAfterX(int idx, int x);
 
     void Add(Node* child);
     bool Remove(Node* child);
     void RemoveAll(void);
     bool RemoveSingle(Node* child);
     void Replace(Node* oldNode, Node* newNode);
+    bool SortChildren(void);
 
     Node* Find(const CStringW& line);
     Node* FindAncestor(Node* descendant);
@@ -108,19 +114,20 @@ public:
     bool HasLabels(void);
 
     void GetNodesByDepth(int depth, std::vector<std::vector<Node*> >& nodesByDepth);
-    int GetX(void);
-    void SetX(int x);
-    void ShiftX(int shift);
+    int GetX(int idx);
+    void SetX(int idx, int x);
+    void ShiftX(int idx, int shift);
+    int GetY(int idx);
+    void SetY(int idx, int y);
+    void ShiftY(int idx, int shift);
 
-    void AnimatePrepare(int depth);
+    void AnimatePrepare(int idx);
     void AnimateClear(void);
-    int GetAnimateX(int pct);
-    int GetAnimateY(int depth, int spacing, int pct);
+    CPoint GetAnimatePos(int idx, int pct);
+    bool IsAnimated(int idx);
 
   private:
     void CompareWithExpected(void);
-    void OverwriteBanner(CStringW& inStr);
-    CStringW StripWhite(const CStringW& inStr);
 
     CStringW m_line;
     CStringW m_label;
@@ -128,31 +135,35 @@ public:
 
     CStringW m_textTranscript;
     CStringW m_textExpected;
-    Diff::DiffResults m_diffTranscript;
-    Diff::DiffResults m_diffExpected;
+    TranscriptDiff m_diff;
 
     bool m_locked;
     bool m_changed;
-    ExpectedCompare m_differs;
-
-    int m_width;
-    int m_lineWidth;
-    int m_labelWidth;
-    int m_x;
-
-    bool m_anim;
-    int m_animX;
-    int m_animDepth;
 
     Node* m_parent;
     CArray<Node*> m_children;
+
+    struct LayoutInfo
+    {
+      int width;
+      int lineWidth;
+      int labelWidth;
+      CPoint pos;
+
+      bool anim;
+      CPoint animPos;
+
+      LayoutInfo();
+      void ClearWidths();
+    };
+    LayoutInfo m_layout[LAYOUTS];
   };
 
   Node* GetRoot(void);
 
-  Node* GetCurrent(void);
-  void SetCurrent(Node* node);
-  bool InCurrentThread(Node* node);
+  Node* GetPlayTo(void);
+  void SetPlayTo(Node* node);
+  bool InPlayThread(Node* node);
   bool InThread(Node* node, Node* endNode);
   Node* GetPlayed(void);
 
@@ -160,6 +171,7 @@ public:
   Node* AddNewParent(Node* node);
   bool RemoveAll(Node* node, bool notify = true);
   bool RemoveSingle(Node* node);
+  void SortSiblings(Node* node);
   void SetLine(Node* node, LPCWSTR line);
 
   void SetLabel(Node* node, LPCWSTR label);
@@ -174,33 +186,20 @@ public:
   bool CanBless(Node* node, bool all);
   void SetExpectedText(Node* node, LPCWSTR text);
 
-  Node* GetThreadTop(Node* node);
-  Node* GetThreadBottom(Node* node);
+  Node* GetThreadEnd(Node* node);
   bool IsValidNode(Node* testNode, Node* node = NULL);
   void GetThreadEnds(std::vector<Node*>& nodes, Node* node = NULL);
   Node* GetFirstDifferent(Node* node = NULL);
   void GetAllNodes(CArray<Skein::Node*,Skein::Node*>& nodes, Node* node = NULL);
   Node* FindNode(const char* id, Node* node = NULL);
 
-  void SaveTranscript(Node* node, const char* path);
-
   enum Change
   {
     TreeChanged,
-    ThreadChanged,
+    PlayedChanged,
     NodeTextChanged,
-    NodeColourChanged,
-    LockChanged,
-    TranscriptThreadChanged,
-  };
-
-  enum Show
-  {
-    JustShow,
-    JustSelect,
-    ShowSelect,
-    ShowNewLine,
-    ShowNewTranscript,
+    NodeTranscriptChanged,
+    LockChanged
   };
 
   class Listener
@@ -208,13 +207,13 @@ public:
   public:
     virtual void SkeinChanged(Change change) = 0;
     virtual void SkeinEdited(bool edited) = 0;
-    virtual void SkeinShowNode(Node* node, Show why) = 0;
+    virtual void SkeinShowNode(Node* node, bool select) = 0;
   };
 
   void AddListener(Listener* listener);
   void NotifyChange(Change change);
   void NotifyEdit(bool edited);
-  void NotifyShowNode(Node* node, Show why);
+  void NotifyShowNode(Node* node);
 
 private:
   static LPCTSTR ToXML_UTF8(bool value);
@@ -227,9 +226,8 @@ private:
     CString skeinFile;
     bool edited;
     Node* root;
-    Node* current;
 
-    Instance() : edited(false), root(NULL), current(NULL)
+    Instance() : edited(false), root(NULL)
     {
     }
 
@@ -238,7 +236,11 @@ private:
   Instance m_inst;
   std::vector<Instance> m_other;
 
-  bool m_layout;
+  bool m_laidOut[LAYOUTS];
   std::vector<Listener*> m_listeners;
+
+  // The node to play down to
+  Node* m_playTo;
+  // The last node that was played
   Node* m_played;
 };

@@ -156,19 +156,6 @@ BEGIN
         MENUITEM "Refresh Inde&x\tF7",          ID_PLAY_REFRESH
         MENUITEM "&Load Story...",              ID_PLAY_LOAD
     END
-    POPUP "Repl&ay"
-    BEGIN
-        MENUITEM "Replay &All Commands",        ID_REPLAY_ALL
-        MENUITEM SEPARATOR
-        MENUITEM "Show &Last Command",          ID_REPLAY_SHOW_LAST
-        MENUITEM "Show Last &Command in Skein", ID_REPLAY_SHOW_LAST_SKEIN
-        MENUITEM SEPARATOR
-        MENUITEM "Find &Previous Changed Command", ID_REPLAY_CHANGED_PREV
-        MENUITEM "Find &Next Changed Command",  ID_REPLAY_CHANGED_NEXT
-        MENUITEM "Find Previous Di&fference",   ID_REPLAY_DIFF_PREV
-        MENUITEM "Find Next &Difference",       ID_REPLAY_DIFF_NEXT
-        MENUITEM "Show Ne&xt Difference in Skein", ID_REPLAY_DIFF_NEXT_SKEIN
-    END
     POPUP "&Release"
     BEGIN
         MENUITEM "&Release\tCtrl+R",            ID_RELEASE_GAME
@@ -186,12 +173,11 @@ BEGIN
             MENUITEM "&Source\tCtrl+F1",            ID_WINDOW_TAB_SOURCE
             MENUITEM "&Results\tCtrl+F2",           ID_WINDOW_TAB_RESULTS
             MENUITEM "St&ory\tCtrl+F3",             ID_WINDOW_TAB_STORY
-            MENUITEM "Skei&n\tCtrl+F4",             ID_WINDOW_TAB_SKEIN
-            MENUITEM "&Transcript\tCtrl+F5",        ID_WINDOW_TAB_TRANSCRIPT
-            MENUITEM "Inde&x\tCtrl+F6",             ID_WINDOW_TAB_INDEX
-            MENUITEM "&Documentation\tCtrl+F7",     ID_WINDOW_TAB_DOCUMENTATION
-            MENUITEM "&Extensions\tCtrl+F8",        ID_WINDOW_TAB_EXTENSIONS
-            MENUITEM "Sett&ings\tCtrl+F9",          ID_WINDOW_TAB_SETTINGS
+            MENUITEM "&Testing\tCtrl+F4",           ID_WINDOW_TAB_TESTING
+            MENUITEM "Inde&x\tCtrl+F5",             ID_WINDOW_TAB_INDEX
+            MENUITEM "&Documentation\tCtrl+F6",     ID_WINDOW_TAB_DOCUMENTATION
+            MENUITEM "&Extensions\tCtrl+F7",        ID_WINDOW_TAB_EXTENSIONS
+            MENUITEM "Sett&ings\tCtrl+F8",          ID_WINDOW_TAB_SETTINGS
             MENUITEM SEPARATOR
             MENUITEM "Go to &Left Pane\tCtrl+1",    ID_WINDOW_LEFTPANE
             MENUITEM "Go to &Right Pane\tCtrl+2",   ID_WINDOW_RIGHTPANE
@@ -359,15 +345,14 @@ BEGIN
     "1",            ID_WINDOW_LEFTPANE,     VIRTKEY, CONTROL, NOINVERT
     "2",            ID_WINDOW_RIGHTPANE,    VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_WINDOW_SWITCH,       VIRTKEY, NOINVERT
-    VK_F7,          ID_WINDOW_TAB_DOCUMENTATION, VIRTKEY, CONTROL, NOINVERT
-    VK_F8,          ID_WINDOW_TAB_EXTENSIONS, VIRTKEY, CONTROL, NOINVERT
-    VK_F6,          ID_WINDOW_TAB_INDEX,    VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_WINDOW_TAB_DOCUMENTATION, VIRTKEY, CONTROL, NOINVERT
+    VK_F7,          ID_WINDOW_TAB_EXTENSIONS, VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          ID_WINDOW_TAB_INDEX,    VIRTKEY, CONTROL, NOINVERT
     VK_F2,          ID_WINDOW_TAB_RESULTS,  VIRTKEY, CONTROL, NOINVERT
-    VK_F9,          ID_WINDOW_TAB_SETTINGS, VIRTKEY, CONTROL, NOINVERT
-    VK_F4,          ID_WINDOW_TAB_SKEIN,    VIRTKEY, CONTROL, NOINVERT
+    VK_F8,          ID_WINDOW_TAB_SETTINGS, VIRTKEY, CONTROL, NOINVERT
+    VK_F4,          ID_WINDOW_TAB_TESTING,  VIRTKEY, CONTROL, NOINVERT
     VK_F1,          ID_WINDOW_TAB_SOURCE,   VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_WINDOW_TAB_STORY,    VIRTKEY, CONTROL, NOINVERT
-    VK_F5,          ID_WINDOW_TAB_TRANSCRIPT, VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_EXTFRAME ACCELERATORS
@@ -1136,15 +1121,6 @@ BEGIN
     ID_PLAY_REFRESH         "Translate the story and refresh the index\nRefresh"
     ID_PLAY_LOAD            "Load and play a story"
     ID_PLAY_REPLAY          "Translate the story, and re-run through the skein to the previously active play point\nReplay"
-    ID_REPLAY_ALL           "Play all threads in the skein in sequence"
-    ID_REPLAY_SHOW_LAST     "Show the last story command in the transcript"
-    ID_REPLAY_SHOW_LAST_SKEIN "Show the last story command in the skein"
-    ID_REPLAY_CHANGED_PREV  "Find the previous command in the transcript with changed text"
-    ID_REPLAY_CHANGED_NEXT  "Find the next command in the transcript with changed text"
-    ID_REPLAY_DIFF_PREV     "Find the previous command in the transcript for which the transcript and blessed text do not match"
-    ID_REPLAY_DIFF_NEXT     "Find the next command in the transcript for which the transcript and blessed text do not match"
-    ID_REPLAY_DIFF_NEXT_SKEIN 
-                            "Show the next command in the whole skein for which the transcript and blessed text do not match"
 END
 
 STRINGTABLE

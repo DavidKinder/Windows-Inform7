@@ -3,6 +3,7 @@
 #include "Dib.h"
 #include "Skein.h"
 #include "SkeinEdit.h"
+#include "TranscriptPane.h"
 #include "Messages.h"
 
 #include <map>
@@ -18,19 +19,43 @@ public:
   SkeinWindow();
   virtual ~SkeinWindow();
 
-  void SetSkein(Skein* skein);
-  void Layout(bool force);
+  void SetSkein(Skein* skein, int idx);
+  void Layout(Skein::LayoutMode mode);
   void PrefsChanged(void);
 
+  void SkeinLayout(CDC& dc, Skein::LayoutMode mode);
   void SkeinChanged(Skein::Change change);
   void SkeinEdited(bool edited);
-  void SkeinShowNode(Skein::Node* node, Skein::Show why);
+  void SkeinShowNode(Skein::Node* node, bool select);
   void SkeinNodesShown(
     bool& unselected, bool& selected, bool& active, bool& differs, int& count);
+  void TranscriptShown(bool& transcript, bool& anyTick, bool& anyCross);
   void AnimatePrepare();
+  void AnimatePrepareOnlyThis();
   void Animate(int pct);
 
+  bool IsTranscriptActive(void);
+  void SaveTranscript(const char* path);
+
   virtual CSize GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL bVert);
+
+  enum NodeBitmap
+  {
+    BackActive = 0,
+    BackUnselected,
+    BackSelected,
+    MenuActive,
+    MenuUnselected,
+    MenuSelected,
+    MenuOver,
+    DiffersBadge,
+    BlessButton,
+    BlessButtonOver,
+    CurseButton,
+    CurseButtonOver,
+    Number_Bitmaps,
+    No_Bitmap = -1
+  };
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -56,13 +81,14 @@ protected:
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 
 private:
-  CSize GetLayoutSize(bool force);
-  int GetNodeYPos(int nodes, int ends);
+  CSize GetLayoutSize(Skein::LayoutMode mode);
+  CSize GetLayoutSpacing(void);
+  CSize GetLayoutBorder(void);
+
   void SetFontsBitmaps(void);
 
-  void DrawNodeTree(int phase, Skein::Node* node, Skein::Node* threadEnd, CDC& dc,
-    CDibSection& bitmap, const CRect& client, const CPoint& parentCentre,
-    const CPoint& siblingCentre, int depth, int spacing, bool gameRunning);
+  void DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSection& bitmap,
+    const CRect& client, const CPoint& origin, const CPoint& parent, bool gameRunning);
 
   void DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
     const CPoint& centre, bool selected, bool gameRunning);
@@ -80,28 +106,18 @@ private:
   void RemoveExcessSeparators(CMenu* menu);
 
   Skein::Node* NodeAtPoint(const CPoint& point);
+  bool NodeFullyVisible(Skein::Node* node);
   bool ShowLabel(Skein::Node* node);
   void StartEdit(Skein::Node* node, bool label);
 
-  enum NodeBitmap
-  {
-    BackActive = 0,
-    BackUnselected,
-    BackSelected,
-    MenuActive,
-    MenuUnselected,
-    MenuSelected,
-    MenuOver,
-    DiffersBadge,
-    Number_Bitmaps,
-    No_Bitmap = -1
-  };
-
   NodeBitmap GetNodeBack(Skein::Node* node, bool selected, bool gameRunning);
-  void SkeinNodesShown(Skein::Node* node, Skein::Node* threadEnd, bool gameRunning,
+  void SkeinNodesShown(Skein::Node* node, bool gameRunning,
     bool& unselected, bool& selected, bool& active, bool& differs, int& count);
+  void UpdateHelp(void);
 
   Skein* m_skein;
+  int m_skeinIndex;
+
   std::map<Skein::Node*,CRect> m_nodes;
   CDibSection* m_bitmaps[Number_Bitmaps];
 
@@ -116,6 +132,9 @@ private:
   bool m_lastClick;
   DWORD m_lastClickTime;
   CPoint m_lastPoint;
+
+  TranscriptPane m_transcript;
+  bool m_showTranscriptAfterAnim;
 
   SkeinMouseAnchorWnd* m_anchorWindow;
   friend class SkeinMouseAnchorWnd;

@@ -70,13 +70,10 @@ protected:
   afx_msg LRESULT OnRuntimeProblem(WPARAM, LPARAM);
   afx_msg LRESULT OnSearchSource(WPARAM, LPARAM);
   afx_msg LRESULT OnSearchDoc(WPARAM, LPARAM);
-  afx_msg LRESULT OnShowTranscript(WPARAM, LPARAM);
   afx_msg LRESULT OnShowSkein(WPARAM, LPARAM);
-  afx_msg LRESULT OnSelectNode(WPARAM, LPARAM);
   afx_msg LRESULT OnAnimateSkein(WPARAM, LPARAM);
   afx_msg LRESULT OnTerpFailed(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectDir(WPARAM, LPARAM);
-  afx_msg LRESULT OnTranscriptEnd(WPARAM, LPARAM);
   afx_msg LRESULT OnPlayNextThread(WPARAM, LPARAM);
   afx_msg LRESULT OnCanPlayAll(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectEdited(WPARAM, LPARAM);
@@ -89,6 +86,8 @@ protected:
   afx_msg LRESULT OnWantStop(WPARAM, LPARAM);
   afx_msg LRESULT OnRunCensus(WPARAM, LPARAM);
   afx_msg LRESULT OnStoryName(WPARAM, LPARAM);
+  afx_msg LRESULT OnReplayAll(WPARAM, LPARAM);
+  afx_msg LRESULT OnTestingTabShown(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();
@@ -113,19 +112,7 @@ protected:
   afx_msg void OnPlayTest();
   afx_msg void OnPlayRefresh();
   afx_msg void OnPlayLoad();
-
   afx_msg void OnPlayReplay();
-  afx_msg void OnUpdateReplayAll(CCmdUI *pCmdUI);
-  afx_msg void OnReplayAll();
-  afx_msg void OnUpdateReplayShowLast(CCmdUI *pCmdUI);
-  afx_msg void OnReplayShowLast();
-  afx_msg void OnReplayShowLastSkein();
-  afx_msg void OnUpdateReplayChanged(CCmdUI *pCmdUI);
-  afx_msg void OnReplayChanged(UINT nID);
-  afx_msg void OnUpdateReplayDiffer(CCmdUI *pCmdUI);
-  afx_msg void OnReplayDiffer(UINT nID);
-  afx_msg void OnUpdateReplayDifferSkein(CCmdUI *pCmdUI);
-  afx_msg void OnReplayDifferSkein();
 
   afx_msg void OnUpdateReleaseGame(CCmdUI *pCmdUI);
   afx_msg void OnReleaseGame(UINT nID);
