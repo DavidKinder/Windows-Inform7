@@ -40,14 +40,8 @@ void SearchEdit::Init(UINT id, CWnd* parent)
 
 void SearchEdit::SetEditRect(void)
 {
-  CRect clientSize;
-  GetClientRect(clientSize);
-  CSize fontSize = theApp.MeasureFont(this,GetFont());
-  int ym = (clientSize.Height()-fontSize.cy)/2;
-
   CRect editSize;
   GetRect(editSize);
-  editSize.OffsetRect(0,ym);
   editSize.left += m_image->GetSize().cx+1;
   SetRect(editSize);
 }
