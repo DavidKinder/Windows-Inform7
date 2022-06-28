@@ -790,7 +790,7 @@ CSize SkeinWindow::GetLayoutSize(Skein::LayoutMode mode)
 
 CSize SkeinWindow::GetLayoutSpacing(void)
 {
-  return CSize(m_fontSize.cx*6,(int)(m_fontSize.cy*2.8));
+  return CSize(m_fontSize.cx*6,(int)(m_fontSize.cy*2.2));
 }
 
 CSize SkeinWindow::GetLayoutBorder(void)
@@ -847,6 +847,9 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSectio
       DrawNodeLine(dc,bitmap,client,parent,nodeCentre,
         theApp.GetColour(InformApp::ColourSkeinLine),node->GetLocked());
     }
+
+    // Draw the node's label, if any
+    DrawNodeLabel(node,dc,bitmap,client,nodeCentre);
     break;
   case 1:
     // Draw the node
@@ -872,7 +875,6 @@ void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, cons
 
   // Get the text associated with the node
   LPCWSTR line = node->GetLine();
-  LPCWSTR label = node->GetLabel();
   int width = node->CalcLineWidth(dc,m_skeinIndex);
 
   // Check if this node is visible before drawing
@@ -882,19 +884,6 @@ void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, cons
   CRect intersect;
   if (intersect.IntersectRect(client,nodeArea))
   {
-    // Write out the node's label, if any
-    if (ShowLabel(node))
-    {
-      SIZE size;
-      ::GetTextExtentPoint32W(dc.GetSafeHdc(),label,(UINT)wcslen(label),&size);
-      CRect labelArea(centre.x-(size.cx/2)-m_fontSize.cx,centre.y-(int)(1.6*m_fontSize.cy),
-        centre.x+(size.cx/2)+m_fontSize.cx,centre.y-(int)(0.6*m_fontSize.cy));
-      dc.SetBkColor(theApp.GetColour(InformApp::ColourBack));
-      dc.SetTextColor(theApp.GetColour(InformApp::ColourText));
-      ::ExtTextOutW(dc.GetSafeHdc(),centre.x-(size.cx/2),labelArea.top,ETO_OPAQUE,
-        labelArea,label,(UINT)wcslen(label),NULL);
-    }
-
     // Draw the node's background
     DrawNodeBack(node,bitmap,centre,width,m_bitmaps[GetNodeBack(node,selected,gameRunning)]);
 
@@ -987,6 +976,48 @@ void SkeinWindow::DrawNodeBack(Skein::Node* node, CDibSection& bitmap, const CPo
 
   // Store the node's size and position
   m_nodes[node] = nodeRect;
+}
+
+void SkeinWindow::DrawNodeLabel(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
+  const CPoint& centre)
+{
+  // Store the current device context properties
+  UINT align = dc.GetTextAlign();
+  int mode = dc.GetBkMode();
+
+  // Set the device context properties
+  dc.SetTextAlign(TA_TOP|TA_LEFT);
+  dc.SetBkMode(TRANSPARENT);
+
+  // Get the text associated with the node
+  LPCWSTR label = node->GetLabel();
+  int width = node->CalcLineWidth(dc,m_skeinIndex);
+
+  // Check if this node's label is visible before drawing
+  CSize spacing = GetLayoutSpacing();
+  CRect nodeArea(centre,CSize(width+spacing.cx,spacing.cy));
+  nodeArea.top = centre.y-(int)(1.6*m_fontSize.cy);
+  nodeArea.OffsetRect(nodeArea.Width()/-2,nodeArea.Height()/-2);
+  CRect intersect;
+  if (intersect.IntersectRect(client,nodeArea))
+  {
+    // Write out the node's label, if any
+    if (ShowLabel(node))
+    {
+      SIZE size;
+      ::GetTextExtentPoint32W(dc.GetSafeHdc(),label,(UINT)wcslen(label),&size);
+      CRect labelArea(centre.x-(size.cx/2)-m_fontSize.cx,centre.y-(int)(1.6*m_fontSize.cy),
+        centre.x+(size.cx/2)+m_fontSize.cx,centre.y-(int)(0.6*m_fontSize.cy));
+      bitmap.BlendSolidRect(labelArea,theApp.GetColour(InformApp::ColourBack),255*4/5);
+      dc.SetTextColor(theApp.GetColour(InformApp::ColourText));
+      ::ExtTextOutW(dc.GetSafeHdc(),centre.x-(size.cx/2),labelArea.top,0,
+        labelArea,label,(UINT)wcslen(label),NULL);
+    }
+  }
+
+  // Reset the device context properties
+  dc.SetTextAlign(align);
+  dc.SetBkMode(mode);
 }
 
 void SkeinWindow::DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client,

@@ -94,6 +94,8 @@ private:
     const CPoint& centre, bool selected, bool gameRunning);
   void DrawNodeBack(Skein::Node* node, CDibSection& bitmap, const CPoint& centre,
     int width, CDibSection* back);
+  void DrawNodeLabel(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
+    const CPoint& centre);
 
   void DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client,
     const CPoint& from, const CPoint& to, COLORREF fore, bool bold);
