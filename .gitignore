@@ -14,6 +14,7 @@ Build/Retrospective/
 Build/Symbols/
 Build/Web/
 Build_*/
+*.aps
 *.user
 .vs/
 Debug/

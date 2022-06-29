@@ -433,7 +433,7 @@ BEGIN
     LTEXT           "Version:",IDC_VERSION_LABEL,15,225,32,8
 END
 
-IDD_LAUNCHER DIALOGEX 0, 0, 440, 289
+IDD_LAUNCHER DIALOGEX 0, 0, 440, 265
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -446,32 +446,28 @@ BEGIN
     PUSHBUTTON      "",IDC_OPEN_5,6,132,208,11,BS_LEFT
     PUSHBUTTON      "",IDC_OPEN_6,6,144,208,11,BS_LEFT
     PUSHBUTTON      "",IDC_OPEN_7,6,156,208,11,BS_LEFT
-    PUSHBUTTON      "",IDC_OPEN_8,6,168,208,11,BS_LEFT
-    PUSHBUTTON      "",IDC_OPEN_9,6,180,208,11,BS_LEFT
     LTEXT           "Create New",IDC_STATIC_CREATE_NEW,226,58,55,11
     PUSHBUTTON      "Project",IDC_CREATE_PROJECT,226,72,208,11,BS_LEFT
     PUSHBUTTON      "Extension",IDC_CREATE_EXTENSION,226,84,208,11,BS_LEFT
-    LTEXT           "Documentation",IDC_STATIC_DOCS,226,106,100,11
-    PUSHBUTTON      "Changes to Inform",IDC_BOOK_CHANGES,226,120,208,11,BS_LEFT
-    LTEXT           "Open a Sample Project",IDC_STATIC_SAMPLE,226,142,105,11
-    PUSHBUTTON      "Onyx\t(a small project)",IDC_SAMPLE_ONYX,226,156,208,11,BS_LEFT
-    PUSHBUTTON      "Disenchantment Bay\t(a medium project)",IDC_SAMPLE_DISENCHANTMENT,226,168,208,11,BS_LEFT
-    PUSHBUTTON      "Browse Inform projects with public source at IFDB",IDC_LINK_IFDB_SRC,226,180,208,11,BS_LEFT
-    LTEXT           "Advice",IDC_STATIC_ADVICE,6,203,32,11
-    PUSHBUTTON      "• New to Inform?",IDC_ADVICE_NEW,6,218,208,9,BS_LEFT
-    PUSHBUTTON      "• Upgrading?",IDC_ADVICE_UPGRADE,6,229,208,9,BS_LEFT
-    PUSHBUTTON      "• Keyboard shortcuts",IDC_ADVICE_KEYBOARD,6,240,208,9,BS_LEFT
-    PUSHBUTTON      "• Structure of .materials folder",IDC_ADVICE_MATERIALS,6,251,208,9,BS_LEFT
-    PUSHBUTTON      "• Credits",IDC_ADVICE_CREDITS,6,262,208,9,BS_LEFT
-    LTEXT           "Community",IDC_STATIC_COMMUNITY,226,203,56,11
-    PUSHBUTTON      "• www.inform7.com",IDC_LINK_INFORM7,226,218,208,9,BS_LEFT
-    PUSHBUTTON      "• Inform at IFDB, the Interactive Fiction Database",IDC_LINK_IFDB,226,229,208,9,BS_LEFT
-    PUSHBUTTON      "• Interactive Fiction Forum",IDC_LINK_INTFIC,226,240,208,9,BS_LEFT
-    PUSHBUTTON      "• Inform Development Q&&A at the IFF",IDC_LINK_INTFIC_QA,226,251,208,9,BS_LEFT
-    PUSHBUTTON      "• IFWiki",IDC_LINK_IFWIKI,226,262,32,9,BS_LEFT
-    PUSHBUTTON      "• Planet IF Blog Aggregator",IDC_LINK_PLANETIF,260,262,98,9,BS_LEFT
-    PUSHBUTTON      "• IF Competition",IDC_LINK_IFCOMP,360,262,62,9,BS_LEFT
-    LTEXT           "Summon or dismiss this launcher with Shift+F1",IDC_STATIC_SUMMON,6,280,400,8
+    LTEXT           "Open a Sample Project",IDC_STATIC_SAMPLE,226,110,105,11
+    PUSHBUTTON      "Onyx\t(a small project)",IDC_SAMPLE_ONYX,226,124,208,11,BS_LEFT
+    PUSHBUTTON      "Disenchantment Bay\t(a medium project)",IDC_SAMPLE_DISENCHANTMENT,226,136,208,11,BS_LEFT
+    PUSHBUTTON      "Browse Inform projects with public source at IFDB",IDC_LINK_IFDB_SRC,226,148,208,11,BS_LEFT
+    LTEXT           "Advice",IDC_STATIC_ADVICE,6,179,32,11
+    PUSHBUTTON      "• New to Inform?",IDC_ADVICE_NEW,6,194,208,9,BS_LEFT
+    PUSHBUTTON      "• Upgrading?",IDC_ADVICE_UPGRADE,6,205,208,9,BS_LEFT
+    PUSHBUTTON      "• Keyboard shortcuts",IDC_ADVICE_KEYBOARD,6,216,208,9,BS_LEFT
+    PUSHBUTTON      "• Structure of .materials folder",IDC_ADVICE_MATERIALS,6,227,208,9,BS_LEFT
+    PUSHBUTTON      "• Credits",IDC_ADVICE_CREDITS,6,238,208,9,BS_LEFT
+    LTEXT           "Community",IDC_STATIC_COMMUNITY,226,179,56,11
+    PUSHBUTTON      "• www.inform7.com",IDC_LINK_INFORM7,226,194,208,9,BS_LEFT
+    PUSHBUTTON      "• Inform at IFDB, the Interactive Fiction Database",IDC_LINK_IFDB,226,205,208,9,BS_LEFT
+    PUSHBUTTON      "• Interactive Fiction Forum",IDC_LINK_INTFIC,226,216,208,9,BS_LEFT
+    PUSHBUTTON      "• Inform Development Q&&A at the IFF",IDC_LINK_INTFIC_QA,226,227,208,9,BS_LEFT
+    PUSHBUTTON      "• IFWiki",IDC_LINK_IFWIKI,226,238,32,9,BS_LEFT
+    PUSHBUTTON      "• Planet IF Blog Aggregator",IDC_LINK_PLANETIF,260,238,98,9,BS_LEFT
+    PUSHBUTTON      "• IF Competition",IDC_LINK_IFCOMP,360,238,62,9,BS_LEFT
+    CTEXT           "Summon or dismiss this launcher with Shift+F1",IDC_STATIC_SUMMON,6,256,428,8
 END
 
 IDD_SEARCH DIALOGEX 0, 0, 174, 18
@@ -748,7 +744,6 @@ BEGIN
         LEFTMARGIN, 6
         RIGHTMARGIN, 434
         TOPMARGIN, 2
-        BOTTOMMARGIN, 288
     END
 
     IDD_SEARCH, DIALOG

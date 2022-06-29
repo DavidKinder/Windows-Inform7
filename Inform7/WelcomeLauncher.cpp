@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "WelcomeLauncher.h"
-#include "BookFrame.h"
 #include "DpiFunctions.h"
 #include "Inform.h"
 #include "ProjectFrame.h"
@@ -12,7 +11,7 @@
 #define new DEBUG_NEW
 #endif
 
-#define RECENT_MAX 10
+#define RECENT_MAX 8
 
 IMPLEMENT_DYNAMIC(WelcomeLauncherView, CFormView)
 
@@ -27,10 +26,9 @@ BEGIN_MESSAGE_MAP(WelcomeLauncherView, CFormView)
   ON_WM_ERASEBKGND()
   ON_WM_LBUTTONUP()
   ON_WM_SIZE()
-  ON_COMMAND_RANGE(IDC_OPEN_0, IDC_OPEN_9, OnOpenProject)
+  ON_COMMAND_RANGE(IDC_OPEN_0, IDC_OPEN_7, OnOpenProject)
   ON_COMMAND(IDC_CREATE_PROJECT, OnCreateProject)
   ON_COMMAND(IDC_CREATE_EXTENSION, OnCreateExtProject)
-  ON_COMMAND(IDC_BOOK_CHANGES, OnShowChangesBook)
   ON_COMMAND_RANGE(IDC_SAMPLE_ONYX, IDC_SAMPLE_DISENCHANTMENT, OnCopySampleProject)
   ON_COMMAND_RANGE(IDC_ADVICE_NEW, IDC_ADVICE_CREDITS, OnClickedAdvice)
   ON_COMMAND_RANGE(IDC_LINK_INFORM7, IDC_LINK_IFDB_SRC, OnClickedLink)
@@ -71,8 +69,8 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
   m_html.SetWindowText("Advice");
 
   // Subclass command buttons
-  ASSERT((sizeof m_cmds / sizeof m_cmds[0]) == (IDC_BOOK_CHANGES - IDC_ADVICE_NEW + 1));
-  for (int id = IDC_ADVICE_NEW; id <= IDC_BOOK_CHANGES; id++)
+  ASSERT((sizeof m_cmds / sizeof m_cmds[0]) == (IDC_SAMPLE_DISENCHANTMENT - IDC_ADVICE_NEW + 1));
+  for (int id = IDC_ADVICE_NEW; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
   {
     CommandButton& cmd = m_cmds[id - IDC_ADVICE_NEW];
     cmd.SubclassDlgItem(id,this);
@@ -87,8 +85,6 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
     case IDC_OPEN_5:
     case IDC_OPEN_6:
     case IDC_OPEN_7:
-    case IDC_OPEN_8:
-    case IDC_OPEN_9:
       cmd.SetBackSysColor(COLOR_BTNFACE);
       cmd.ShowWindow(SW_SHOW);
       break;
@@ -108,10 +104,6 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
     case IDC_LINK_IFDB_SRC:
       cmd.SetBackSysColor(COLOR_BTNFACE);
       cmd.SetIcon("Icon-New");
-      break;
-    case IDC_BOOK_CHANGES:
-      cmd.SetBackSysColor(COLOR_BTNFACE);
-      cmd.SetIcon("Inform");
       break;
     default:
       cmd.SetBackSysColor(COLOR_WINDOW);
@@ -140,7 +132,7 @@ CSize WelcomeLauncherView::GetTotalSize() const
   int w = 0;
   int h = 0;
 
-  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_BOOK_CHANGES; id++)
+  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
   {
     CRect r;
     GetDlgItem(id)->GetWindowRect(r);
@@ -385,13 +377,6 @@ void WelcomeLauncherView::OnCreateExtProject()
   ProjectFrame::StartNewExtProject(theApp.GetLastProjectDir(),this,NULL);
 }
 
-void WelcomeLauncherView::OnShowChangesBook()
-{
-  CString bookDir = theApp.GetAppDir();
-  bookDir.Append("\\Books\\Changes to Inform");
-  BookFrame::ShowBook(bookDir);
-}
-
 void WelcomeLauncherView::OnCopySampleProject(UINT nID)
 {
   // Find the parent of the last project directory
@@ -533,7 +518,7 @@ void WelcomeLauncherView::UpdateRecent(void)
 
   int idx = 0;
   m_recentProjects.RemoveAll();
-  while (idx < recent->GetSize())
+  while ((idx < recent->GetSize()) && (idx < RECENT_MAX-1))
   {
     CString display;
     recent->AppendDisplayName(idx,display);
@@ -632,7 +617,7 @@ void WelcomeLauncherView::SetFonts(void)
 
   for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_STATIC_COMMUNITY; id++)
     GetDlgItem(id)->SetFont(&m_titleFont);
-  for (int id = IDC_ADVICE_NEW; id <= IDC_BOOK_CHANGES; id++)
+  for (int id = IDC_ADVICE_NEW; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
   {
     CommandButton& cmd = m_cmds[id - IDC_ADVICE_NEW];
 
@@ -646,11 +631,8 @@ void WelcomeLauncherView::SetFonts(void)
     case IDC_OPEN_5:
     case IDC_OPEN_6:
     case IDC_OPEN_7:
-    case IDC_OPEN_8:
-    case IDC_OPEN_9:
     case IDC_CREATE_PROJECT:
     case IDC_CREATE_EXTENSION:
-    case IDC_BOOK_CHANGES:
     case IDC_LINK_IFDB_SRC:
       cmd.SetFont(&m_bigFont);
       break;
@@ -665,7 +647,7 @@ void WelcomeLauncherView::SetFonts(void)
 
 void WelcomeLauncherView::ShowHtml(bool show)
 {
-  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_BOOK_CHANGES; id++)
+  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
   {
     if ((id >= m_recentProjects.GetSize() + IDC_OPEN_0) && (id < RECENT_MAX + IDC_OPEN_0))
       continue;
