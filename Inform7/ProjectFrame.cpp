@@ -1,9 +1,7 @@
 #include "stdafx.h"
 #include "ProjectFrame.h"
 
-#include "BookFrame.h"
 #include "ExtensionFrame.h"
-
 #include "Messages.h"
 #include "NewDialogs.h"
 #include "ProjectDirDialog.h"
@@ -1738,8 +1736,6 @@ void ProjectFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
       name = ((ProjectFrame*)frames[i])->GetDisplayName(true);
     else if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
       name = ((ExtensionFrame*)frames[i])->GetDisplayName(true);
-    else if (frames[i]->IsKindOf(RUNTIME_CLASS(BookFrame)))
-      name = ((BookFrame*)frames[i])->GetDisplayName();
     else if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
       name = "Welcome Launcher";
 

@@ -319,9 +319,6 @@
     <ClInclude Include="RecentProjectList.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="BookFrame.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="CommandButton.h">
       <Filter>Controls</Filter>
     </ClInclude>
@@ -1426,9 +1423,6 @@
       <Filter>Controls</Filter>
     </ClCompile>
     <ClCompile Include="RecentProjectList.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="BookFrame.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="CommandButton.cpp">
