@@ -671,6 +671,28 @@ WelcomeLauncherFrame::WelcomeLauncherFrame()
 {
 }
 
+void WelcomeLauncherFrame::DownloadNews(void)
+{
+  CRegKey registryKey;
+  if (registryKey.Create(HKEY_CURRENT_USER,REGISTRY_INFORM "\\Welcome") == ERROR_SUCCESS)
+  {
+    SYSTEMTIME sysTime;
+    ::GetLocalTime(&sysTime);
+    DWORD today = (sysTime.wYear * 10000) + (sysTime.wMonth * 100) + sysTime.wDay;
+
+    // Only download once a day
+    DWORD last = 0;
+    if (registryKey.QueryDWORDValue("Last News Download",last) == ERROR_SUCCESS)
+    {
+      if (today <= last)
+        return;
+    }
+    registryKey.SetDWORDValue("Last News Download",today);
+  }
+
+  AfxBeginThread(DownloadThread,0);
+}
+
 // Implementation of IBindStatusCallback used to wait for the downloading of
 // news from the IFTF to complete
 class NewsDownload : public IBindStatusCallback
@@ -758,11 +780,6 @@ public:
 private:
   bool m_done;
 };
-
-void WelcomeLauncherFrame::DownloadNews(void)
-{
-  AfxBeginThread(DownloadThread,0);
-}
 
 UINT WelcomeLauncherFrame::DownloadThread(LPVOID)
 {
