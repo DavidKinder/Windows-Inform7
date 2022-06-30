@@ -150,7 +150,7 @@ void SpellCheck::Finalize(void)
   {
     // Save registry settings
     CRegKey registryKey;
-    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM "\\Spelling",KEY_WRITE) == ERROR_SUCCESS)
+    if (registryKey.Create(HKEY_CURRENT_USER,REGISTRY_INFORM "\\Spelling") == ERROR_SUCCESS)
       registryKey.SetStringValue("Language",currentLanguage->second.c_str());
   }
 
