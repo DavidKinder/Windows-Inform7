@@ -64,7 +64,8 @@ protected:
   DECLARE_DYNAMIC(WelcomeLauncherFrame)
 
 public:
-  static void ShowLauncher();
+  static void DownloadNews(void);
+  static void ShowLauncher(void);
 
   virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
     DWORD dwStyle, const RECT& rect, CWnd* pParentWnd,
@@ -76,6 +77,8 @@ public:
 protected:
   WelcomeLauncherFrame();
   void Resize(bool centre);
+
+  static UINT DownloadThread(LPVOID);
 
   DECLARE_MESSAGE_MAP()
 

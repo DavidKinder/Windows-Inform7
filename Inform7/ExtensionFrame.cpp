@@ -262,7 +262,7 @@ void ExtensionFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
     else if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
       name = ((ExtensionFrame*)frames[i])->GetDisplayName(true);
     else if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
-      name = "Welcome Launcher";
+      name = frames[i]->GetTitle();
 
     menu.Format("&%d %s",i+1,(LPCSTR)name);
 
@@ -503,24 +503,17 @@ void ExtensionFrame::InstallExtensions(CFrameWnd* parent, CStringArray& paths)
   theApp.SendAllFrames(InformApp::Extensions,0);
 }
 
-// Implementation of IBindStatusCallback used to wait for the downloading of
-// extensions to complete
-class WaitForDownload : public IBindStatusCallback
+// Implementation of IBindStatusCallback used for the downloading of extensions
+class ExtensionDownload : public IBindStatusCallback
 {
 public:
-  WaitForDownload() : m_refCount(0)
+  ExtensionDownload() : m_timeout(::GetTickCount() + 10000)
   {
-    m_timeout = ::GetTickCount() + 10000;
   }
 
-  void waitForEnd(void)
+  bool Done(void)
   {
-    theApp.RunMessagePump();
-    while (m_refCount > 0)
-    {
-      theApp.RunMessagePump();
-      ::Sleep(50);
-    }
+    return m_done;
   }
 
   HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj)
@@ -541,12 +534,12 @@ public:
 
   ULONG STDMETHODCALLTYPE AddRef(void)
   {
-    return ::InterlockedIncrement(&m_refCount);
+    return 1;
   }
 
   ULONG STDMETHODCALLTYPE Release(void)
   {
-    return ::InterlockedDecrement(&m_refCount);
+    return 1;
   }
 
   HRESULT STDMETHODCALLTYPE OnStartBinding(DWORD, IBinding*)
@@ -564,14 +557,22 @@ public:
     return E_NOTIMPL;
   }
 
-  HRESULT STDMETHODCALLTYPE OnProgress(ULONG, ULONG, ULONG, LPCWSTR)
+  HRESULT STDMETHODCALLTYPE OnProgress(ULONG, ULONG, ULONG statusCode, LPCWSTR)
   {
+    if (statusCode == BINDSTATUS_ENDDOWNLOADDATA)
+    {
+      m_done = true;
+      return S_OK;
+    }
+
     if (::GetTickCount() > m_timeout)
       return E_ABORT;
+
+    theApp.RunMessagePump();
     return S_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE OnStopBinding(HRESULT hr, LPCWSTR)
+  HRESULT STDMETHODCALLTYPE OnStopBinding(HRESULT, LPCWSTR)
   {
     return E_NOTIMPL;
   }
@@ -584,7 +585,7 @@ public:
       *grfBINDF |= BINDF_GETNEWESTVERSION;
       *grfBINDF &= ~BINDF_GETFROMCACHE_IF_NET_FAIL;
     }
-    return E_NOTIMPL;
+    return S_OK;
   }
 
   HRESULT STDMETHODCALLTYPE OnDataAvailable(DWORD, DWORD, FORMATETC*, STGMEDIUM*)
@@ -598,8 +599,8 @@ public:
   }
 
 private:
-  volatile long m_refCount;
-  volatile DWORD m_timeout;
+  const DWORD m_timeout;
+  bool m_done = false;
 };
 
 void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
@@ -640,14 +641,15 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
       // Determine the URL for the extension
       url.Format("http://www.emshort.com/pl%s",(LPCSTR)url.Mid(8));
 
-      // Make sure there is no matching IE cache entry
+      // Make sure there is no matching cache entry
       ::DeleteUrlCacheEntry(url);
 
       // Download from the public library
-      WaitForDownload wait;
-      if (FAILED(::URLDownloadToFile(NULL,url,(LPCSTR)downPath,0,&wait)))
+      ExtensionDownload download;
+      if (FAILED(::URLDownloadToFile(NULL,url,(LPCSTR)downPath,0,&download)))
         continue;
-      wait.waitForEnd();
+      if (!download.Done())
+        continue;
 
       // Check for a valid extension
       CStringW extLine = ReadExtensionFirstLine(downPath);

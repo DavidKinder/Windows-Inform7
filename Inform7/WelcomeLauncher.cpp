@@ -671,7 +671,120 @@ WelcomeLauncherFrame::WelcomeLauncherFrame()
 {
 }
 
-void WelcomeLauncherFrame::ShowLauncher()
+// Implementation of IBindStatusCallback used to wait for the downloading of
+// news from the IFTF to complete
+class NewsDownload : public IBindStatusCallback
+{
+public:
+  bool Done(void)
+  {
+    return m_done;
+  }
+
+  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj)
+  {
+    if (ppvObj == NULL)
+      return E_INVALIDARG;
+
+    if ((riid == IID_IUnknown) || (riid == IID_IBindStatusCallback))
+    {
+      *ppvObj = (LPVOID)this;
+      AddRef();
+      return S_OK;
+    }
+
+    *ppvObj = NULL;
+    return E_NOINTERFACE;
+  }
+
+  ULONG STDMETHODCALLTYPE AddRef(void)
+  {
+    return 1;
+  }
+
+  ULONG STDMETHODCALLTYPE Release(void)
+  {
+    return 1;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnStartBinding(DWORD, IBinding*)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE GetPriority(LONG*)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnLowResource(DWORD)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnProgress(ULONG, ULONG, ULONG statusCode, LPCWSTR)
+  {
+    if (statusCode == BINDSTATUS_ENDDOWNLOADDATA)
+      m_done = true;
+    return S_OK;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnStopBinding(HRESULT, LPCWSTR)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE GetBindInfo(DWORD* grfBINDF, BINDINFO*)
+  {
+    if (grfBINDF)
+    {
+      // Always download, never use cache
+      *grfBINDF |= BINDF_GETNEWESTVERSION;
+      *grfBINDF &= ~BINDF_GETFROMCACHE_IF_NET_FAIL;
+    }
+    return S_OK;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnDataAvailable(DWORD, DWORD, FORMATETC*, STGMEDIUM*)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnObjectAvailable(REFIID, IUnknown*)
+  {
+    return E_NOTIMPL;
+  }
+
+private:
+  bool m_done;
+};
+
+void WelcomeLauncherFrame::DownloadNews(void)
+{
+  AfxBeginThread(DownloadThread,0);
+}
+
+UINT WelcomeLauncherFrame::DownloadThread(LPVOID)
+{
+  // Discard any cached version of the news file
+  LPCSTR url = "https://iftechfoundation.org/calendar/cal.txt";
+  ::DeleteUrlCacheEntry(url);
+
+  // Download the news file
+  CString downPath;
+  downPath.Format("%s\\Inform\\cal.txt",(LPCSTR)theApp.GetHomeDir());
+  NewsDownload download;
+  if (SUCCEEDED(::URLDownloadToFile(NULL,url,downPath,0,&download)))
+  {
+    if (download.Done())
+    {
+    }
+  }
+
+  return 0;
+}
+
+void WelcomeLauncherFrame::ShowLauncher(void)
 {
   // If the active frame is the launcher, close it
   CFrameWnd* activeFrame = theApp.GetActiveFrame();

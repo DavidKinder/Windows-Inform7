@@ -1737,7 +1737,7 @@ void ProjectFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
     else if (frames[i]->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
       name = ((ExtensionFrame*)frames[i])->GetDisplayName(true);
     else if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
-      name = "Welcome Launcher";
+      name = frames[i]->GetTitle();
 
     menu.Format("&%d %s",i+1,(LPCSTR)name);
 

@@ -119,6 +119,9 @@ BOOL InformApp::InitInstance()
   FindExtensions();
   CreatedProcess i7 = RunCensus();
 
+  // Download the IFTF news file
+  WelcomeLauncherFrame::DownloadNews();
+
   // Initialize finding in files
   FindInFiles::InitInstance();
 
