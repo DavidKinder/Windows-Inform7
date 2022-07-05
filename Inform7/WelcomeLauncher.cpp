@@ -897,7 +897,7 @@ void WelcomeLauncherFrame::DownloadNews(void)
     registryKey.SetDWORDValue("Last News Download",today);
   }
 
-  AfxBeginThread(DownloadThread,0);
+  AfxBeginThread(DownloadThread,AfxGetApp());
 }
 
 // Implementation of IBindStatusCallback used to wait for the downloading of
