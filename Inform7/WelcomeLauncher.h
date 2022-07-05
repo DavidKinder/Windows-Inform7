@@ -5,6 +5,9 @@
 #include "Dib.h"
 #include "Resource.h"
 
+#include <string>
+#include <vector>
+
 class WelcomeLauncherView : public CFormView
 {
   DECLARE_DYNAMIC(WelcomeLauncherView)
@@ -18,6 +21,7 @@ public:
 
   void UpdateDPI(void);
   void UpdateRecent(void);
+  void UpdateNews(void);
   void SetBannerBitmap(void);
 
 protected:
@@ -38,6 +42,7 @@ protected:
   afx_msg void OnCopySampleProject(UINT nID);
   afx_msg void OnClickedAdvice(UINT nID);
   afx_msg void OnClickedLink(UINT nID);
+  afx_msg LRESULT OnCmdListClicked(WPARAM, LPARAM);
 
   enum { IDD = IDD_LAUNCHER };
 
@@ -45,17 +50,22 @@ protected:
 
   void GetRegions(CArray<CRect>& regions);
   void SetFonts(void);
+  void SetLayout(void);
   void ShowHtml(bool show);
 
   CDibSection m_banner;
   CFont m_bigFont;
   CFont m_titleFont;
-  CommandButton m_cmds[25];
+  CommandButton m_cmds[26];
+  CommandListBox m_news;
   ReportHtml m_html;
 
   CStringArray m_recentProjects;
   double m_rightGapPerDpi;
   double m_bottomGapPerDpi;
+  double m_newsTabPerDpi;
+
+  std::vector<std::string> m_newsUrls;
 };
 
 class WelcomeLauncherFrame : public CFrameWnd
@@ -66,6 +76,8 @@ protected:
 public:
   static void DownloadNews(void);
   static void ShowLauncher(void);
+
+  void UpdateNews(void);
 
   virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
     DWORD dwStyle, const RECT& rect, CWnd* pParentWnd,

@@ -51,6 +51,7 @@ BEGIN_MESSAGE_MAP(InformApp, CWinApp)
   ON_COMMAND(ID_APP_WEBPAGE, OnAppWebPage)
   ON_COMMAND(ID_APP_LAUNCHER, OnAppLauncher)
   ON_UPDATE_COMMAND_UI(ID_EDIT_USE_SEL, OnUpdateEditUseSel)
+  ON_THREAD_MESSAGE(WM_NEWSDOWNLOAD, OnNewsDownload)
 END_MESSAGE_MAP()
 
 // The one and only InformApp object
@@ -367,6 +368,17 @@ void InformApp::OnUpdateEditUseSel(CCmdUI *pCmdUI)
 {
   pCmdUI->SetCheck(GetProfileInt("Window","Find Uses Selection",0) != 0);
   pCmdUI->Enable(FALSE);
+}
+
+void InformApp::OnNewsDownload(WPARAM, LPARAM)
+{
+  CArray<CFrameWnd*> frames;
+  theApp.GetWindowFrames(frames);
+  for (int i = 0; i < frames.GetSize(); i++)
+  {
+    if (frames[i]->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
+      ((WelcomeLauncherFrame*)frames[i])->UpdateNews();
+  }
 }
 
 CFont* InformApp::GetFont(CWnd* wnd, Fonts font)

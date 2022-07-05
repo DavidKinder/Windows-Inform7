@@ -55,6 +55,7 @@ protected:
   afx_msg void OnAppWebPage();
   afx_msg void OnAppLauncher();
   afx_msg void OnUpdateEditUseSel(CCmdUI *pCmdUI);
+  afx_msg void OnNewsDownload(WPARAM, LPARAM);
 
 public:
   enum Colours

@@ -200,3 +200,12 @@ enum FindCommand
 // has been shown for this project. If wParam is not zero the number of times
 // is incremented.
 #define WM_TESTINGTABSHOWN WM_APP+42
+
+// Sent to the parent window when an item is clicked on a CommandListBox
+// control. wParam contains the control ID and lParam the index of the clicked
+// item.
+#define WM_CMDLISTCLICKED WM_APP+43
+
+// Sent to the main application thread when the IFTF news file has been
+// downloaded.
+#define WM_NEWSDOWNLOAD   WM_APP+44

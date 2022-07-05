@@ -19,6 +19,7 @@ WelcomeLauncherView::WelcomeLauncherView() : CFormView(WelcomeLauncherView::IDD)
 {
   m_rightGapPerDpi = 0.0;
   m_bottomGapPerDpi = 0.0;
+  m_newsTabPerDpi = 0.0;
 }
 
 BEGIN_MESSAGE_MAP(WelcomeLauncherView, CFormView)
@@ -31,7 +32,8 @@ BEGIN_MESSAGE_MAP(WelcomeLauncherView, CFormView)
   ON_COMMAND(IDC_CREATE_EXTENSION, OnCreateExtProject)
   ON_COMMAND_RANGE(IDC_SAMPLE_ONYX, IDC_SAMPLE_DISENCHANTMENT, OnCopySampleProject)
   ON_COMMAND_RANGE(IDC_ADVICE_NEW, IDC_ADVICE_CREDITS, OnClickedAdvice)
-  ON_COMMAND_RANGE(IDC_LINK_INFORM7, IDC_LINK_IFDB_SRC, OnClickedLink)
+  ON_COMMAND_RANGE(IDC_LINK_IFTF, IDC_LINK_IFDB_SRC, OnClickedLink)
+  ON_MESSAGE(WM_CMDLISTCLICKED, OnCmdListClicked)
 END_MESSAGE_MAP()
 
 BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
@@ -85,37 +87,49 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
     case IDC_OPEN_5:
     case IDC_OPEN_6:
     case IDC_OPEN_7:
-      cmd.SetBackSysColor(COLOR_BTNFACE);
+      cmd.SetBackSysColor(COLOR_WINDOW);
       cmd.ShowWindow(SW_SHOW);
       break;
     case IDC_CREATE_PROJECT:
-      cmd.SetBackSysColor(COLOR_BTNFACE);
-      cmd.SetIcon("Icon-Inform");
+      cmd.SetBackSysColor(COLOR_WINDOW);
+      cmd.SetIcon("Icon-Inform",0);
       break;
     case IDC_CREATE_EXTENSION:
-      cmd.SetBackSysColor(COLOR_BTNFACE);
-      cmd.SetIcon("Icon-I7X");
+      cmd.SetBackSysColor(COLOR_WINDOW);
+      cmd.SetIcon("Icon-I7X",0);
       break;
     case IDC_SAMPLE_ONYX:
     case IDC_SAMPLE_DISENCHANTMENT:
+      cmd.SetBackSysColor(COLOR_WINDOW);
+      cmd.SetIcon("Icon-Inform",0);
+      break;
+    case IDC_LINK_IFTF:
       cmd.SetBackSysColor(COLOR_BTNFACE);
-      cmd.SetIcon("Icon-Inform");
+      cmd.SetIcon("Icon-IFTF",2);
       break;
     case IDC_LINK_IFDB_SRC:
-      cmd.SetBackSysColor(COLOR_BTNFACE);
-      cmd.SetIcon("Icon-New");
+      cmd.SetBackSysColor(COLOR_WINDOW);
+      cmd.SetIcon("Icon-New",0);
       break;
     default:
-      cmd.SetBackSysColor(COLOR_WINDOW);
+      cmd.SetBackSysColor(COLOR_BTNFACE);
       break;
     }
   }
 
+  // Subclass the news list control
+  m_news.SubclassDlgItem(IDC_NEWS,this);
+  m_news.SetBackSysColor(COLOR_BTNFACE);
+
   // Update commands for opening recent projects
   UpdateRecent();
 
-  // Set the fonts for all controls
+  // Update the list of news items
+  UpdateNews();
+
+  // Set the fonts for all controls, and perform any layout required
   SetFonts();
+  SetLayout();
 
   // Get scaling factors for handling a DPI change
   int dpi = DPI::getWindowDPI(this);
@@ -132,7 +146,7 @@ CSize WelcomeLauncherView::GetTotalSize() const
   int w = 0;
   int h = 0;
 
-  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
+  for (int id = IDC_STATIC_NEWS; id <= IDC_NEWS; id++)
   {
     CRect r;
     GetDlgItem(id)->GetWindowRect(r);
@@ -269,12 +283,14 @@ HBRUSH WelcomeLauncherView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
     case IDC_STATIC_OPEN_RECENT:
     case IDC_STATIC_CREATE_NEW:
     case IDC_STATIC_SAMPLE:
-    case IDC_STATIC_SUMMON:
-      pDC->SetBkColor(::GetSysColor(COLOR_BTNFACE));
+      pDC->SetBkColor(::GetSysColor(COLOR_WINDOW));
       break;
+    case IDC_STATIC_NEWS:
     case IDC_STATIC_ADVICE:
     case IDC_STATIC_COMMUNITY:
-      pDC->SetBkColor(::GetSysColor(COLOR_WINDOW));
+    case IDC_STATIC_SUMMON:
+    case IDC_NEWS:
+      pDC->SetBkColor(::GetSysColor(COLOR_BTNFACE));
       break;
     }
   }
@@ -314,20 +330,19 @@ BOOL WelcomeLauncherView::OnEraseBkgnd(CDC* pDC)
   {
     pDC->FillSolidRect(regions.GetAt(1),::GetSysColor(COLOR_BTNFACE));
     pDC->FillSolidRect(regions.GetAt(2),::GetSysColor(COLOR_WINDOW));
-
-    pDC->MoveTo(0,regions.GetAt(2).top);
-    pDC->LineTo(width,regions.GetAt(2).top);
-
-    pDC->MoveTo(width/2,regions.GetAt(1).top+(fs.cy/2));
-    pDC->LineTo(width/2,regions.GetAt(2).top-(fs.cy/2));
+    pDC->FillSolidRect(regions.GetAt(3),::GetSysColor(COLOR_BTNFACE));
 
     pDC->MoveTo(width/2,regions.GetAt(2).top+(fs.cy/2));
     pDC->LineTo(width/2,regions.GetAt(3).top-(fs.cy/2));
+
+    pDC->MoveTo(width/2,regions.GetAt(3).top+(fs.cy/2));
+    pDC->LineTo(width/2,regions.GetAt(4).top-(fs.cy/2));
   }
 
-  pDC->FillSolidRect(regions.GetAt(3),::GetSysColor(COLOR_BTNFACE));
-  pDC->MoveTo(0,regions.GetAt(3).top);
-  pDC->LineTo(regions.GetAt(3).right,regions.GetAt(3).top);
+  pDC->FillSolidRect(regions.GetAt(4),::GetSysColor(COLOR_BTNFACE));
+
+  pDC->MoveTo(0,regions.GetAt(4).top);
+  pDC->LineTo(regions.GetAt(4).right,regions.GetAt(4).top);
 
   oldPen = pDC->SelectObject(oldPen);
   return TRUE;
@@ -470,7 +485,7 @@ void WelcomeLauncherView::OnClickedAdvice(UINT nID)
       CArray<CRect> regions;
       GetRegions(regions);
       CRect htmlRect(regions.GetAt(1));
-      htmlRect.bottom = regions.GetAt(2).bottom;
+      htmlRect.bottom = regions.GetAt(3).bottom;
       m_html.MoveWindow(htmlRect);
 
       ShowHtml(true);
@@ -486,25 +501,37 @@ void WelcomeLauncherView::OnClickedLink(UINT nID)
   {
     static char* urls[] =
     {
+      "https://iftechfoundation.org/",
       "http://www.inform7.com",
-      "http://ifdb.org/search?sortby=ratu&newSortBy.x=0&newSortBy.y=0&searchfor=system%3AInform+7",
-      "http://www.intfiction.org/forum",
-      "http://www.intfiction.org/forum/viewforum.php?f=7",
-      "http://ifwiki.org/index.php/Main_Page",
-      "http://planet-if.com/",
-      "http://ifcomp.org",
-      "http://ifdb.org/search?sortby=new&newSortBy.x=0&newSortBy.y=0&searchfor=tag%3A+i7+source+available"
+      "https://ifdb.org/search?sortby=ratu&newSortBy.x=0&newSortBy.y=0&searchfor=system%3AInform+7",
+      "https://www.intfiction.org/forum",
+      "https://www.intfiction.org/forum/viewforum.php?f=7",
+      "https://ifwiki.org/index.php/Main_Page",
+      "https://planet-if.com/",
+      "https://ifcomp.org",
+      "https://ifdb.org/search?sortby=new&newSortBy.x=0&newSortBy.y=0&searchfor=tag%3A+i7+source+available"
     };
 
-    int i = nID - IDC_LINK_INFORM7;
+    int i = nID - IDC_LINK_IFTF;
     if ((i >= 0) && (i < (sizeof urls / sizeof urls[0])))
       ::ShellExecute(0,NULL,urls[i],NULL,NULL,SW_SHOWNORMAL);
   }
 }
 
+LRESULT WelcomeLauncherView::OnCmdListClicked(WPARAM id, LPARAM index)
+{
+  if (id == IDC_NEWS)
+  {
+    if ((index >= 0) && (index < (int)m_newsUrls.size()))
+      ::ShellExecute(0,NULL,m_newsUrls[index].c_str(),NULL,NULL,SW_SHOWNORMAL);
+  }
+  return 0;
+}
+
 void WelcomeLauncherView::UpdateDPI(void)
 {
   SetFonts();
+  SetLayout();
   for (CommandButton& cmd : m_cmds)
     cmd.UpdateDPI();
 }
@@ -530,7 +557,7 @@ void WelcomeLauncherView::UpdateRecent(void)
     if (show)
       cmd.ShowWindow(SW_SHOW);
     cmd.SetWindowText(display);
-    cmd.SetIcon((ProjectFrame::TypeFromDir((*recent)[idx]) == Project_I7XP) ? "Icon-I7X" : "Icon-Inform");
+    cmd.SetIcon((ProjectFrame::TypeFromDir((*recent)[idx]) == Project_I7XP) ? "Icon-I7X" : "Icon-Inform",0);
     ++idx;
   }
   {
@@ -538,7 +565,7 @@ void WelcomeLauncherView::UpdateRecent(void)
     if (show)
       cmd.ShowWindow(SW_SHOW);
     cmd.SetWindowText("Open...");
-    cmd.SetIcon("Icon-Folder");
+    cmd.SetIcon("Icon-Folder",0);
     idx++;
   }
   if (show)
@@ -546,6 +573,168 @@ void WelcomeLauncherView::UpdateRecent(void)
     for (; idx < RECENT_MAX; ++idx)
       m_cmds[IDC_OPEN_0 + idx - IDC_ADVICE_NEW].ShowWindow(SW_HIDE);
   }
+}
+
+// Structure representing a date in the IFTF news file
+struct NewsDate
+{
+  NewsDate(LPCSTR str)
+  {
+    // Parse a date as yyyy-mm-dd
+    if (str[0] != '\0')
+      sscanf(str,"%4d-%2d-%2d",&year,&month,&day);
+  }
+
+  bool IsEmpty(void) const
+  {
+    return (year == 0) || (month == 0) || (day == 0);
+  }
+
+  // Format the month as a short string in the user's locale, e.g. in English,
+  // January is formatted as "Jan".
+  CString FormatMonth() const
+  {
+    SYSTEMTIME sysTime = { 0 };
+    sysTime.wYear = year;
+    sysTime.wMonth = month;
+    sysTime.wDay = day;
+
+    char output[32] = { 0 };
+    if (::GetDateFormat(LOCALE_USER_DEFAULT,0,&sysTime,"MMM",output,sizeof output) > 0)
+      return output;
+    return "";
+  }
+
+  // Format a date according to the LOCALE_IDATE order
+  CString Format(DWORD order) const
+  {
+    CString output;
+    switch (order)
+    {
+    case 0: // month day year
+    default:
+      output.Format("%s %d %d",FormatMonth(),day,year);
+      break;
+    case 1: // day month year
+      output.Format("%d %s %d",day,FormatMonth(),year);
+      break;
+    case 2: // year month day
+      output.Format("%d %s %d",year,FormatMonth(),day);
+      break;
+    }
+    return output;
+  }
+
+  int year = 0;
+  int month = 0;
+  int day = 0;
+};
+
+// Format a date range according to the LOCALE_IDATE order
+CString FormatDateRange(const NewsDate& start, const NewsDate& end, DWORD order)
+{
+  CString output;
+  if (start.year != end.year)
+  {
+    // If the range spans multiple years, format as "start date - end date".
+    output.Format("%s - %s",(LPCSTR)start.Format(order),(LPCSTR)end.Format(order));
+  }
+  else if (start.month != end.month)
+  {
+    // If the range spans multiple months, format the range with a single year but the
+    // day-month range ordered according to the LOCALE_IDATE order.
+    switch (order)
+    {
+    case 0:
+    default: // range(month day) year
+      output.Format("%s %d - %s %d %d",start.FormatMonth(),start.day,end.FormatMonth(),end.day,start.year);
+      break;
+    case 1: // range(day month) year
+      output.Format("%d %s - %d %s %d",start.day,start.FormatMonth(),end.day,end.FormatMonth(),start.year);
+      break;
+    case 2: // year range(month day)
+      output.Format("%d %s %d - %s %d",start.year,start.FormatMonth(),start.day,end.FormatMonth(),end.day);
+      break;
+    }
+  }
+  else
+  {
+    // If the range is within a month, format the range with a single year and month
+    // and a day range, ordered according to the LOCALE_IDATE order.
+    switch (order)
+    {
+    case 0:
+    default: // month range(day) year
+      output.Format("%s %d-%d %d",start.FormatMonth(),start.day,end.day,start.year);
+      break;
+    case 1: // range(day) month year
+      output.Format("%d-%d %s %d",start.day,end.day,start.FormatMonth(),start.year);
+      break;
+    case 2: // year month range(day)
+      output.Format("%d %s %d-%d",start.year,start.FormatMonth(),start.day,end.day);
+      break;
+    }
+  }
+  return output;
+}
+
+void WelcomeLauncherView::UpdateNews(void)
+{
+  m_news.ResetContent();
+  m_newsUrls.clear();
+
+  // Get the enumeration giving the order for elements of dates, e.g. day-month-year
+  DWORD dateOrder = 0;
+  GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IDATE|LOCALE_RETURN_NUMBER,(LPSTR)&dateOrder,sizeof dateOrder);
+
+  bool empty = true;
+  int widestDate = 0;
+  CStdioFile newsFile;
+  if (newsFile.Open(theApp.GetHomeDir()+"\\Inform\\cal.txt",CFile::modeRead|CFile::typeText))
+  {
+    CString newsLine;
+    while (newsFile.ReadString(newsLine))
+    {
+      // Parse the news file
+      int tab1 = newsLine.Find('\t');
+      if (tab1 < 0)
+        continue;
+      int tab2 = newsLine.Find('\t',tab1+1);
+      if (tab2 < 0)
+        continue;
+      int tab3 = newsLine.Find('\t',tab2+1);
+      if (tab3 < 0)
+        continue;
+      NewsDate newsStart(newsLine.Left(tab1));
+      NewsDate newsEnd(newsLine.Mid(tab1+1,tab2-tab1-1));
+      CString newsTitle = newsLine.Mid(tab2+1,tab3-tab2-1);
+      m_newsUrls.push_back((LPCSTR)newsLine.Mid(tab3+1));
+
+      CString newsItem;
+      if (newsEnd.IsEmpty())
+        newsItem = newsStart.Format(dateOrder);
+      else
+        newsItem = FormatDateRange(newsStart,newsEnd,dateOrder);
+
+      int dw = theApp.MeasureText(&m_news,newsItem).cx;
+      if (dw > widestDate)
+        widestDate = dw;
+
+      newsItem.AppendChar('\t');
+      newsItem.Append(newsTitle);
+      m_news.AddString(newsItem);
+      empty = false;
+    }
+    newsFile.Close();
+  }
+
+  if (empty)
+    m_news.AddString("There is no news available");
+
+  CSize fs = theApp.MeasureFont(&m_news,m_news.GetFont());
+  int ts = widestDate + (fs.cx*4);
+  m_news.SetTabStop(ts);
+  m_newsTabPerDpi = (double)ts / (double)DPI::getWindowDPI(this);
 }
 
 void WelcomeLauncherView::SetBannerBitmap(void)
@@ -575,10 +764,17 @@ void WelcomeLauncherView::GetRegions(CArray<CRect>& regions)
   CSize fs = theApp.MeasureFont(this,GetFont());
 
   CRect labelRect;
-  GetDlgItem(IDC_STATIC_OPEN_RECENT)->GetWindowRect(labelRect);
+  GetDlgItem(IDC_STATIC_NEWS)->GetWindowRect(labelRect);
   ScreenToClient(labelRect);
 
   CRect regionRect(client);
+  regionRect.bottom = labelRect.top - (fs.cy/2);
+  regions.Add(regionRect);
+
+  GetDlgItem(IDC_STATIC_OPEN_RECENT)->GetWindowRect(labelRect);
+  ScreenToClient(labelRect);
+
+  regionRect.top = regionRect.bottom;
   regionRect.bottom = labelRect.top - (fs.cy/2);
   regions.Add(regionRect);
 
@@ -615,7 +811,7 @@ void WelcomeLauncherView::SetFonts(void)
   m_titleFont.DeleteObject();
   m_titleFont.CreateFontIndirect(&lf);
 
-  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_STATIC_COMMUNITY; id++)
+  for (int id = IDC_STATIC_NEWS; id <= IDC_STATIC_COMMUNITY; id++)
     GetDlgItem(id)->SetFont(&m_titleFont);
   for (int id = IDC_ADVICE_NEW; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
   {
@@ -645,9 +841,16 @@ void WelcomeLauncherView::SetFonts(void)
   }
 }
 
+void WelcomeLauncherView::SetLayout(void)
+{
+  m_cmds[IDC_LINK_IFTF - IDC_ADVICE_NEW].ChangeWidthForIcon();
+  m_news.SetTabStop((int)(m_newsTabPerDpi * DPI::getWindowDPI(this)));
+  m_news.SetItemHeight(0,(int)(1.2 * theApp.MeasureFont(this,GetFont()).cy));
+}
+
 void WelcomeLauncherView::ShowHtml(bool show)
 {
-  for (int id = IDC_STATIC_OPEN_RECENT; id <= IDC_SAMPLE_DISENCHANTMENT; id++)
+  for (int id = IDC_STATIC_NEWS; id <= IDC_NEWS; id++)
   {
     if ((id >= m_recentProjects.GetSize() + IDC_OPEN_0) && (id < RECENT_MAX + IDC_OPEN_0))
       continue;
@@ -685,7 +888,11 @@ void WelcomeLauncherFrame::DownloadNews(void)
     if (registryKey.QueryDWORDValue("Last News Download",last) == ERROR_SUCCESS)
     {
       if (today <= last)
-        return;
+      {
+        // Does the file exist?
+        if (::GetFileAttributes(theApp.GetHomeDir()+"\\Inform\\cal.txt") != INVALID_FILE_ATTRIBUTES)
+          return;
+      }
     }
     registryKey.SetDWORDValue("Last News Download",today);
   }
@@ -781,21 +988,19 @@ private:
   bool m_done;
 };
 
-UINT WelcomeLauncherFrame::DownloadThread(LPVOID)
+UINT WelcomeLauncherFrame::DownloadThread(LPVOID app)
 {
   // Discard any cached version of the news file
   LPCSTR url = "https://iftechfoundation.org/calendar/cal.txt";
   ::DeleteUrlCacheEntry(url);
 
   // Download the news file
-  CString downPath;
-  downPath.Format("%s\\Inform\\cal.txt",(LPCSTR)theApp.GetHomeDir());
+  CString downPath = theApp.GetHomeDir()+"\\Inform\\cal.txt";
   NewsDownload download;
   if (SUCCEEDED(::URLDownloadToFile(NULL,url,downPath,0,&download)))
   {
     if (download.Done())
-    {
-    }
+      ((CWinThread*)app)->PostThreadMessage(WM_NEWSDOWNLOAD,0,0);
   }
 
   return 0;
@@ -842,6 +1047,11 @@ void WelcomeLauncherFrame::ShowLauncher(void)
 
   frame->ShowWindow(SW_SHOW);
   frame->UpdateWindow();
+}
+
+void WelcomeLauncherFrame::UpdateNews(void)
+{
+  m_view.UpdateNews();
 }
 
 BOOL WelcomeLauncherFrame::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle,
