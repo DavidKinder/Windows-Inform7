@@ -332,8 +332,14 @@ BOOL WelcomeLauncherView::OnEraseBkgnd(CDC* pDC)
     pDC->FillSolidRect(regions.GetAt(2),::GetSysColor(COLOR_WINDOW));
     pDC->FillSolidRect(regions.GetAt(3),::GetSysColor(COLOR_BTNFACE));
 
+    pDC->MoveTo(0,regions.GetAt(2).top);
+    pDC->LineTo(width,regions.GetAt(2).top);
+
     pDC->MoveTo(width/2,regions.GetAt(2).top+(fs.cy/2));
     pDC->LineTo(width/2,regions.GetAt(3).top-(fs.cy/2));
+
+    pDC->MoveTo(0,regions.GetAt(3).top);
+    pDC->LineTo(width,regions.GetAt(3).top);
 
     pDC->MoveTo(width/2,regions.GetAt(3).top+(fs.cy/2));
     pDC->LineTo(width/2,regions.GetAt(4).top-(fs.cy/2));
