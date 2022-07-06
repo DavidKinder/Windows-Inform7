@@ -844,8 +844,20 @@ void WelcomeLauncherView::SetFonts(void)
 void WelcomeLauncherView::SetLayout(void)
 {
   m_cmds[IDC_LINK_IFTF - IDC_ADVICE_NEW].ChangeWidthForIcon();
+
   m_news.SetTabStop((int)(m_newsTabPerDpi * DPI::getWindowDPI(this)));
   m_news.SetItemHeight(0,(int)(1.2 * theApp.MeasureFont(this,GetFont()).cy));
+
+  // Resize the news list. As this will always be an integral number of elements
+  // high, if we don't resize it here it will keep getting shorter on every DPI
+  // change.
+  CArray<CRect> regions;
+  GetRegions(regions);
+  CRect newsRect;
+  m_news.GetWindowRect(newsRect);
+  ScreenToClient(newsRect);
+  newsRect.bottom = regions[1].bottom-1;
+  m_news.MoveWindow(newsRect,TRUE);
 }
 
 void WelcomeLauncherView::ShowHtml(bool show)
