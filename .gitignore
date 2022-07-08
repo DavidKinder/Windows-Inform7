@@ -25,6 +25,7 @@ GPUCache/
 Distribution/inweb/
 Distribution/intest/
 Distribution/inform/
+Distribution/*Screencast*
 Distribution_*/
 Inform7/Build.h
 Projects/
