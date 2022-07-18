@@ -1080,7 +1080,7 @@ void ReportHtml::RunJavaScript(const char* code)
 // Find the given text in the current page
 void ReportHtml::Find(LPCWSTR findText, bool findNext, bool forward, bool matchCase)
 {
-  m_private->browser->GetHost()->Find(0,findText,forward,matchCase,findNext);
+  m_private->browser->GetHost()->Find(findText,forward,matchCase,findNext);
 }
 
 void ReportHtml::StopFind(void)
@@ -1155,7 +1155,7 @@ void ReportHtml::OnLoadEnd(void)
 
   if (!m_find.IsEmpty())
   {
-    m_private->browser->GetHost()->Find(0,m_find.GetString(),true,false,false);
+    m_private->browser->GetHost()->Find(m_find.GetString(),true,false,false);
     m_find.Empty();
   }
   else

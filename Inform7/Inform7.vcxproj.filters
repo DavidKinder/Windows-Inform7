@@ -1092,12 +1092,6 @@
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\v8interceptor_cpptoc.cc">
       <Filter>Libraries\libcef\cpptoc</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\web_plugin_info_visitor_cpptoc.cc">
-      <Filter>Libraries\libcef\cpptoc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\web_plugin_unstable_callback_cpptoc.cc">
-      <Filter>Libraries\libcef\cpptoc</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\write_handler_cpptoc.cc">
       <Filter>Libraries\libcef\cpptoc</Filter>
     </ClCompile>
@@ -1284,9 +1278,6 @@
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\waitable_event_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\web_plugin_info_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\x509cert_principal_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>
@@ -1442,6 +1433,9 @@
     </ClCompile>
     <ClCompile Include="TranscriptDiff.cpp">
       <Filter>Skein</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\command_handler_cpptoc.cc">
+      <Filter>Libraries\libcef\cpptoc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
