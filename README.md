@@ -85,7 +85,7 @@ Download the latest release of hunspell from https://github.com/hunspell/hunspel
 
 Download version 95.7.14+g9f72f35+chromium-95.0.4638.69 of the minimal distribution for Windows 64-bit from https://cef-builds.spotifycdn.com/index.html.
 Unpack the archive and copy the contents of it to "\<root>/Libraries/libcef".
-The latest stable build of CEF for Windows 64-bit should probably also work as well, but the CEF project tends to change its header files fairly frequently, so you will probably need to adjust the project file to make the latest stable build of CEF work.
+It should also be possible to use the latest stable build of CEF for Windows 64-bit, but the CEF project tends to change its header files fairly frequently, so you will probably need to adjust the project file to make the latest stable build of CEF work.
 
 ### Compiling the projects
 
