@@ -17,8 +17,7 @@ BEGIN_MESSAGE_MAP(TabBase, CWnd)
   ON_WM_PAINT()
   ON_COMMAND(ID_NAVIGATE_BACK, OnBackward)
   ON_COMMAND(ID_NAVIGATE_FORE, OnForward)
-  ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTW, 0, 0xFFFF, OnToolTipText)
-  ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTA, 0, 0xFFFF, OnToolTipText)
+  ON_NOTIFY(TTN_NEEDTEXT, 0, OnToolTipText)
   ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
 END_MESSAGE_MAP()
 
@@ -147,28 +146,20 @@ void TabBase::OnPaint()
   dc.FillSolidRect(client,::GetSysColor(COLOR_BTNFACE));
 }
 
-BOOL TabBase::OnToolTipText(UINT, NMHDR* hdr, LRESULT* result)
+void TabBase::OnToolTipText(NMHDR* hdr, LRESULT* result)
 {
-  TOOLTIPTEXTA* ttta = (TOOLTIPTEXTA*)hdr;
-  TOOLTIPTEXTW* tttw = (TOOLTIPTEXTW*)hdr;
+  TOOLTIPTEXT* ttt = (TOOLTIPTEXT*)hdr;
 
   UINT_PTR id = hdr->idFrom;
-  if (hdr->code == TTN_NEEDTEXTA && (ttta->uFlags & TTF_IDISHWND) ||
-      hdr->code == TTN_NEEDTEXTW && (tttw->uFlags & TTF_IDISHWND))
-  {
+  if (ttt->uFlags & TTF_IDISHWND)
     id = ((UINT)(WORD)::GetDlgCtrlID((HWND)id));
-  }
 
   CString tipText = GetToolTip(id);
-  if (hdr->code == TTN_NEEDTEXTA)
-    lstrcpyn(ttta->szText,tipText,sizeof ttta->szText / sizeof ttta->szText[0]);
-  else
-    _mbstowcsz(tttw->szText,tipText,sizeof tttw->szText / sizeof tttw->szText[0]);
+  lstrcpyn(ttt->szText,tipText,sizeof ttt->szText / sizeof ttt->szText[0]);
 
-  *result = 0;
   ::SetWindowPos(hdr->hwndFrom,HWND_TOP,0,0,0,0,
     SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOMOVE|SWP_NOOWNERZORDER);
-  return TRUE;
+  *result = 0;
 }
 
 LRESULT TabBase::OnIdleUpdateCmdUI(WPARAM, LPARAM)

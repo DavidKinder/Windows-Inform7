@@ -24,6 +24,8 @@ public:
   void UpdateNews(void);
   void SetBannerBitmap(void);
 
+  virtual INT_PTR OnToolHitTest(CPoint point, TOOLINFO* pTI) const;
+
 protected:
   BOOL CreateDlg(LPCTSTR lpszTemplateName, CWnd* pParentWnd);
   BOOL CreateDlgIndirect(LPCDLGTEMPLATE lpDialogTemplate, CWnd* pParentWnd, HINSTANCE hInst);
@@ -34,6 +36,8 @@ protected:
 
   afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+  afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+  afx_msg void OnToolTipText(NMHDR*, LRESULT*);
   afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg void OnOpenProject(UINT nID);
@@ -52,6 +56,8 @@ protected:
   void SetFonts(void);
   void SetLayout(void);
   void ShowHtml(bool show);
+  CString GetToolTip(UINT_PTR id);
+  CString GetUrl(UINT_PTR id, int index);
 
   CDibSection m_banner;
   CFont m_bigFont;

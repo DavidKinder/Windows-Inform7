@@ -37,6 +37,7 @@ class CommandListBox : public CListBox
 
   void SetBackSysColor(int index);
   void SetTabStop(int tab);
+  int GetHotIndex(void);
 
   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
 

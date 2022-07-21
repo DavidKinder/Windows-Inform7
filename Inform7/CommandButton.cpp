@@ -206,6 +206,11 @@ void CommandListBox::SetTabStop(int tab)
   m_tabStop = tab;
 }
 
+int CommandListBox::GetHotIndex(void)
+{
+  return m_hotIndex;
+}
+
 void CommandListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
   RECT& rect = lpDrawItemStruct->rcItem;
@@ -329,6 +334,9 @@ void CommandListBox::OnMouseMove(UINT nFlags, CPoint point)
     {
       m_hotIndex = hot;
       Invalidate();
+
+      // Reset MFC's record of the last control hit by the mouse, so that any tooltip updates
+      AfxGetModuleThreadState()->m_nLastHit = static_cast<INT_PTR>(-1);
     }
   }
   else

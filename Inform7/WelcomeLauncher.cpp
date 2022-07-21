@@ -26,6 +26,7 @@ BEGIN_MESSAGE_MAP(WelcomeLauncherView, CFormView)
   ON_WM_CTLCOLOR()
   ON_WM_ERASEBKGND()
   ON_WM_LBUTTONUP()
+  ON_WM_SETCURSOR()
   ON_WM_SIZE()
   ON_COMMAND_RANGE(IDC_OPEN_0, IDC_OPEN_7, OnOpenProject)
   ON_COMMAND(IDC_CREATE_PROJECT, OnCreateProject)
@@ -33,6 +34,7 @@ BEGIN_MESSAGE_MAP(WelcomeLauncherView, CFormView)
   ON_COMMAND_RANGE(IDC_SAMPLE_ONYX, IDC_SAMPLE_DISENCHANTMENT, OnCopySampleProject)
   ON_COMMAND_RANGE(IDC_ADVICE_NEW, IDC_ADVICE_CREDITS, OnClickedAdvice)
   ON_COMMAND_RANGE(IDC_LINK_IFTF, IDC_LINK_IFDB_SRC, OnClickedLink)
+  ON_NOTIFY(TTN_NEEDTEXT, 0, OnToolTipText)
   ON_MESSAGE(WM_CMDLISTCLICKED, OnCmdListClicked)
 END_MESSAGE_MAP()
 
@@ -138,6 +140,8 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
   GetDlgItem(IDC_STATIC_SUMMON)->GetWindowRect(summonRect);
   m_rightGapPerDpi = (double)(rectTemplate.right - ifdbSrcRect.right) / (double)dpi;
   m_bottomGapPerDpi = (double)(rectTemplate.bottom - summonRect.bottom) / (double)dpi;
+
+  EnableToolTips();
   return TRUE;
 }
 
@@ -354,6 +358,22 @@ BOOL WelcomeLauncherView::OnEraseBkgnd(CDC* pDC)
   return TRUE;
 }
 
+void WelcomeLauncherView::OnToolTipText(NMHDR* hdr, LRESULT* result)
+{
+  TOOLTIPTEXT* ttt = (TOOLTIPTEXT*)hdr;
+
+  UINT_PTR id = hdr->idFrom;
+  if (ttt->uFlags & TTF_IDISHWND)
+    id = (UINT)(WORD)::GetDlgCtrlID((HWND)id);
+
+  CString tipText = GetToolTip(id);
+  lstrcpyn(ttt->szText,tipText,sizeof ttt->szText / sizeof ttt->szText[0]);
+
+  ::SetWindowPos(hdr->hwndFrom,HWND_TOP,0,0,0,0,
+    SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOMOVE|SWP_NOOWNERZORDER);
+  *result = 0;
+}
+
 void WelcomeLauncherView::OnLButtonUp(UINT nFlags, CPoint point)
 {
   CFormView::OnLButtonUp(nFlags,point);
@@ -365,6 +385,22 @@ void WelcomeLauncherView::OnLButtonUp(UINT nFlags, CPoint point)
     if (m_html.IsWindowVisible())
       ShowHtml(false);
   }
+}
+
+BOOL WelcomeLauncherView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+  UINT_PTR id = pWnd->GetDlgCtrlID();
+  CString url = GetUrl(id,(id == IDC_NEWS) ? m_news.GetHotIndex() : -1);
+  if (!url.IsEmpty())
+  {
+    HCURSOR hand = ::LoadCursor(0,IDC_HAND);
+    if (hand != 0)
+    {
+      ::SetCursor(hand);
+      return TRUE;
+    }
+  }
+  return CFormView::OnSetCursor(pWnd,nHitTest,message);
 }
 
 void WelcomeLauncherView::OnSize(UINT nType, int cx, int cy)
@@ -505,32 +541,17 @@ void WelcomeLauncherView::OnClickedLink(UINT nID)
 {
   if (HIWORD(GetCurrentMessage()->wParam) == BN_CLICKED)
   {
-    static char* urls[] =
-    {
-      "https://iftechfoundation.org/",
-      "http://www.inform7.com",
-      "https://ifdb.org/search?sortby=ratu&newSortBy.x=0&newSortBy.y=0&searchfor=system%3AInform+7",
-      "https://www.intfiction.org/forum",
-      "https://www.intfiction.org/forum/viewforum.php?f=7",
-      "https://ifwiki.org/index.php/Main_Page",
-      "https://planet-if.com/",
-      "https://ifcomp.org",
-      "https://ifdb.org/search?sortby=new&newSortBy.x=0&newSortBy.y=0&searchfor=tag%3A+i7+source+available"
-    };
-
-    int i = nID - IDC_LINK_IFTF;
-    if ((i >= 0) && (i < (sizeof urls / sizeof urls[0])))
-      ::ShellExecute(0,NULL,urls[i],NULL,NULL,SW_SHOWNORMAL);
+    CString url = GetUrl(nID,-1);
+    if (!url.IsEmpty())
+      ::ShellExecute(0,NULL,url,NULL,NULL,SW_SHOWNORMAL);
   }
 }
 
 LRESULT WelcomeLauncherView::OnCmdListClicked(WPARAM id, LPARAM index)
 {
-  if (id == IDC_NEWS)
-  {
-    if ((index >= 0) && (index < (int)m_newsUrls.size()))
-      ::ShellExecute(0,NULL,m_newsUrls[index].c_str(),NULL,NULL,SW_SHOWNORMAL);
-  }
+  CString url = GetUrl(id,(int)index);
+  if (!url.IsEmpty())
+    ::ShellExecute(0,NULL,url,NULL,NULL,SW_SHOWNORMAL);
   return 0;
 }
 
@@ -763,6 +784,14 @@ void WelcomeLauncherView::SetBannerBitmap(void)
     m_banner.GetBits(),scaled.Width(),scaled.Height());
 }
 
+INT_PTR WelcomeLauncherView::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+  INT_PTR result = CFormView::OnToolHitTest(point,pTI);
+  if (pTI)
+    pTI->uFlags &= ~TTF_CENTERTIP;
+  return result;
+}
+
 void WelcomeLauncherView::GetRegions(CArray<CRect>& regions)
 {
   CRect client;
@@ -854,9 +883,8 @@ void WelcomeLauncherView::SetLayout(void)
   m_news.SetTabStop((int)(m_newsTabPerDpi * DPI::getWindowDPI(this)));
   m_news.SetItemHeight(0,(int)(1.2 * theApp.MeasureFont(this,GetFont()).cy));
 
-  // Resize the news list. As this will always be an integral number of elements
-  // high, if we don't resize it here it will keep getting shorter on every DPI
-  // change.
+  // Resize the news list. As this will always be an integral number of elements high,
+  // if we don't resize it here it will keep getting shorter on every DPI change.
   CArray<CRect> regions;
   GetRegions(regions);
   CRect newsRect;
@@ -877,6 +905,42 @@ void WelcomeLauncherView::ShowHtml(bool show)
     GetDlgItem(id)->ShowWindow(show ? SW_HIDE : SW_SHOW);
   }
   m_html.ShowWindow(show ? SW_SHOW : SW_HIDE);
+}
+
+CString WelcomeLauncherView::GetToolTip(UINT_PTR id)
+{
+  if (id == IDC_NEWS)
+    return GetUrl(id,m_news.GetHotIndex());
+  return GetUrl(id,-1);
+}
+
+CString WelcomeLauncherView::GetUrl(UINT_PTR id, int index)
+{
+  if (id == IDC_NEWS)
+  {
+    if ((index >= 0) && (index < (int)m_newsUrls.size()))
+      return m_newsUrls[index].c_str();
+    return "";
+  }
+
+  static char* urls[] =
+  {
+    "https://iftechfoundation.org/",
+    "http://www.inform7.com",
+    "https://ifdb.org/search?sortby=ratu&newSortBy.x=0&newSortBy.y=0&searchfor=system%3AInform+7",
+    "https://www.intfiction.org/forum",
+    "https://www.intfiction.org/forum/viewforum.php?f=7",
+    "https://ifwiki.org/index.php/Main_Page",
+    "https://planet-if.com/",
+    "https://ifcomp.org",
+    "https://ifdb.org/search?sortby=new&newSortBy.x=0&newSortBy.y=0&searchfor=tag%3A+i7+source+available"
+  };
+
+  UINT_PTR i = id - IDC_LINK_IFTF;
+  if ((i >= 0) && (i < (sizeof urls / sizeof urls[0])))
+    return urls[i];
+
+  return "";
 }
 
 IMPLEMENT_DYNAMIC(WelcomeLauncherFrame, CFrameWnd)

@@ -29,7 +29,7 @@ protected:
   afx_msg void OnPaint();
   afx_msg void OnBackward();
   afx_msg void OnForward();
-  afx_msg BOOL OnToolTipText(UINT, NMHDR*, LRESULT*);
+  afx_msg void OnToolTipText(NMHDR*, LRESULT*);
   afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM, LPARAM);
 
   void Create(CWnd* parent);
