@@ -17,7 +17,7 @@ BEGIN_MESSAGE_MAP(GameText, RichEdit)
   ON_NOTIFY_REFLECT(EN_LINK, OnEnLink)
 END_MESSAGE_MAP()
 
-GameText::GameText(MainWindow* main)
+GameText::GameText(MainWindow* main) : RichEdit(InformApp::FontDisplay)
 {
   ASSERT(main != NULL);
 

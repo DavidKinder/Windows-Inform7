@@ -304,6 +304,10 @@ BEGIN_MESSAGE_MAP(AboutCreditsEdit, RichEdit)
   ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
 
+AboutCreditsEdit::AboutCreditsEdit() : RichEdit(InformApp::FontSystem)
+{
+}
+
 void AboutCreditsEdit::OnSetFocus(CWnd* pOldWnd)
 {
   RichEdit::OnSetFocus(pOldWnd);

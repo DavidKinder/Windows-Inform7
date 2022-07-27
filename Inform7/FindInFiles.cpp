@@ -145,7 +145,7 @@ void FindInFiles::Show(void)
   if (GetSafeHwnd() == 0)
   {
     if (m_richText == NULL)
-      m_richText = new RichDrawText();
+      m_richText = new RichDrawText(InformApp::FontSystem);
     Create(m_lpszTemplateName,m_project);
     theApp.SetIcon(this);
     m_dpi = DPI::getWindowDPI(this);

@@ -11,6 +11,8 @@ class AboutCreditsEdit : public RichEdit
 {
   DECLARE_DYNAMIC(AboutCreditsEdit)
 
+  AboutCreditsEdit();
+
 protected:
   DECLARE_MESSAGE_MAP()
 

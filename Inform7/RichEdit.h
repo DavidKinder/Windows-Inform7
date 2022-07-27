@@ -1,11 +1,13 @@
 #pragma once
 
+#include "Inform.h"
+
 class RichEdit : public CWnd
 {
   DECLARE_DYNAMIC(RichEdit)
 
 public:
-  RichEdit();
+  RichEdit(InformApp::Fonts font);
   BOOL Create(DWORD style, CWnd* parent, UINT id);
   BOOL SubclassDlgItem(UINT id, CWnd* parent);
   BOOL SubclassWindow(HWND wnd);
@@ -49,6 +51,8 @@ protected:
   bool RejectMsg(MSG* msg);
 
   CComQIPtr<ITextDocument> m_textDoc;
+
+  const InformApp::Fonts m_font;
 };
 
 void AFXAPI DDX_Control(CDataExchange* dx, int idc, RichEdit& control);
@@ -56,7 +60,7 @@ void AFXAPI DDX_Control(CDataExchange* dx, int idc, RichEdit& control);
 class RichDrawText : public CCmdTarget
 {
 public:
-  RichDrawText();
+  RichDrawText(InformApp::Fonts font);
   ~RichDrawText();
 
   void SetText(LPCWSTR text);
@@ -119,4 +123,6 @@ protected:
 
   CHARFORMATW m_charFormat;
   PARAFORMAT m_paraFormat;
+
+  const InformApp::Fonts m_font;
 };

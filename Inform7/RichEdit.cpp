@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Inform.h"
 #include "Messages.h"
 #include "RichEdit.h"
 #include "DpiFunctions.h"
@@ -37,7 +36,7 @@ namespace {
   HMODULE richLib = 0;
 }
 
-RichEdit::RichEdit()
+RichEdit::RichEdit(InformApp::Fonts font) : m_font(font)
 {
   // Attempt to load RichEdit 4.1
   if (richLib == 0)
@@ -276,8 +275,8 @@ void RichEdit::FontChanged(void)
   ::ZeroMemory(&format,sizeof format);
   format.cbSize = sizeof format;
   format.dwMask = CFM_FACE|CFM_SIZE;
-  format.yHeight = 20 * theApp.GetFontSize(InformApp::FontDisplay);
-  strcpy(format.szFaceName,theApp.GetFontName(InformApp::FontDisplay));
+  format.yHeight = 20 * theApp.GetFontSize(m_font);
+  strcpy(format.szFaceName,theApp.GetFontName(m_font));
   SetDefaultCharFormat(format);
 }
 
@@ -368,7 +367,7 @@ STDAPI ShutdownTextServices(IUnknown* pTextServices)
   return E_NOTIMPL;
 }
 
-RichDrawText::RichDrawText()
+RichDrawText::RichDrawText(InformApp::Fonts font) : m_font(font)
 {
   // Attempt to load RichEdit 4.1
   if (richLib == 0)
@@ -378,10 +377,10 @@ RichDrawText::RichDrawText()
   m_charFormat.cbSize = sizeof m_charFormat;
   m_charFormat.dwMask = CFM_BOLD|CFM_CHARSET|CFM_COLOR|CFM_FACE|CFM_ITALIC|CFM_OFFSET|
     CFM_PROTECTED|CFM_SIZE|CFM_STRIKEOUT|CFM_UNDERLINE;
-  m_charFormat.yHeight = 20 * theApp.GetFontSize(InformApp::FontDisplay);
+  m_charFormat.yHeight = 20 * theApp.GetFontSize(m_font);
   m_charFormat.crTextColor = theApp.GetColour(InformApp::ColourText);
   m_charFormat.bPitchAndFamily = DEFAULT_PITCH|FF_DONTCARE;
-  CStringW fontName(theApp.GetFontName(InformApp::FontDisplay));
+  CStringW fontName(theApp.GetFontName(m_font));
   wcscpy(m_charFormat.szFaceName,fontName);
 
   ::ZeroMemory(&m_paraFormat,sizeof m_paraFormat);
@@ -458,8 +457,8 @@ void RichDrawText::DrawText(CDC& dc, const CRect& rect)
 
 void RichDrawText::FontChanged(int dpi)
 {
-  m_charFormat.yHeight = (20 * dpi * theApp.GetFontSize(InformApp::FontDisplay)) / DPI::getSystemDPI();
-  CStringW fontName(theApp.GetFontName(InformApp::FontDisplay));
+  m_charFormat.yHeight = (20 * dpi * theApp.GetFontSize(m_font)) / DPI::getSystemDPI();
+  CStringW fontName(theApp.GetFontName(m_font));
   wcscpy(m_charFormat.szFaceName,fontName);
   HRESULT hr = m_textServ->OnTxPropertyBitsChange(TXTBIT_CHARFORMATCHANGE,TXTBIT_CHARFORMATCHANGE);
   ASSERT(SUCCEEDED(hr));

@@ -93,7 +93,7 @@ void FindReplaceDialog::InitDialog(void)
   if (m_regexHelp.GetSafeHwnd())
   {
     if (m_richText == NULL)
-      m_richText = new RichDrawText();
+      m_richText = new RichDrawText(InformApp::FontSystem);
 
     CSize textSize = theApp.MeasureText(this,"HELP");
     int helpLines = GetDlgItem(IDC_REPLACE) ? 11 : 10;

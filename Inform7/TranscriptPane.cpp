@@ -214,7 +214,7 @@ void TranscriptPane::SetEndNode(Skein::Node* node, CWnd* wnd)
     auto it = m_nodes.emplace(m_nodes.begin(),node);
 
     // Set up a windowless rich edit control for each element
-    it->draw = new RichDrawText();
+    it->draw = new RichDrawText(InformApp::FontDisplay);
     it->draw->FontChanged(DPI::getWindowDPI(wnd));
 
     node = node->GetParent();
