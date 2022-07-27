@@ -243,7 +243,7 @@ void WelcomeLauncherView::SetFont(CDialogTemplate& dlgTemplate)
   ncm.cbSize = sizeof ncm;
   ::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof ncm,&ncm,0);
 
-  dlgTemplate.SetFont(ncm.lfMessageFont.lfFaceName,9);
+  dlgTemplate.SetFont(ncm.lfMessageFont.lfFaceName,DPI::getSystemFontSize());
 }
 
 void WelcomeLauncherView::PostNcDestroy()

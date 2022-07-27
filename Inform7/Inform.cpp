@@ -1642,7 +1642,7 @@ void InformApp::SetFonts(void)
   ncm.cbSize = sizeof ncm;
   ::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof ncm,&ncm,0);
   int fontSize = abs(MulDiv(ncm.lfMessageFont.lfHeight,72,dc->GetDeviceCaps(LOGPIXELSY)));
-  fontSize = max(fontSize,9);
+  fontSize = max(fontSize,DPI::getSystemFontSize());
   for (int i = 0; i < FONT_COUNT; i++)
   {
     if (m_fontNames[i].IsEmpty())
@@ -1651,6 +1651,7 @@ void InformApp::SetFonts(void)
       m_fontSizes[i] = fontSize;
   }
 
+  // Set an appropriate size for the font used for small items
   m_fontSizes[FontSmall] = min(fontSize-1,(fontSize*9)/10);
   int minPointSize = (DPI::getSystemDPI() > 96) ? 8 : 9;
   if (m_fontSizes[FontSmall] < minPointSize)
