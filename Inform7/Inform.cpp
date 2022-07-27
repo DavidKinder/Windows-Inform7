@@ -1636,13 +1636,15 @@ void InformApp::SetFonts(void)
     }
   }
 
+  // Release the desktop device context
+  wnd->ReleaseDC(dc);
+
   // Get desktop settings, and use the message font as a default
   NONCLIENTMETRICS ncm;
   ::ZeroMemory(&ncm,sizeof ncm);
   ncm.cbSize = sizeof ncm;
   ::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof ncm,&ncm,0);
-  int fontSize = abs(MulDiv(ncm.lfMessageFont.lfHeight,72,dc->GetDeviceCaps(LOGPIXELSY)));
-  fontSize = max(fontSize,DPI::getSystemFontSize());
+  int fontSize = DPI::getSystemFontSize();
   for (int i = 0; i < FONT_COUNT; i++)
   {
     if (m_fontNames[i].IsEmpty())
@@ -1656,9 +1658,6 @@ void InformApp::SetFonts(void)
   int minPointSize = (DPI::getSystemDPI() > 96) ? 8 : 9;
   if (m_fontSizes[FontSmall] < minPointSize)
     m_fontSizes[FontSmall] = min(fontSize,minPointSize);
-
-  // Release the desktop device context
-  wnd->ReleaseDC(dc);
 }
 
 void InformApp::HookApiFunction(const char* callingDllName, const char* calledDllName, const char* functionName, PROC newFunction)

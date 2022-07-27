@@ -623,6 +623,7 @@ LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
   UpdateDPI(newDpi);
 
   // Set the text on the toolbar buttons again to force them to resize
+  m_toolBar.SetFont(theApp.GetFont(this,InformApp::FontSystem));
   for (int i = 0; i < m_toolBar.GetToolBarCtrl().GetButtonCount(); i++)
   {
     UINT id = m_toolBar.GetItemID(i);
@@ -2922,6 +2923,8 @@ void ProjectFrame::OnSettingsChange(TabSettings* changed)
 
 bool ProjectFrame::LoadToolBar(void)
 {
+  m_toolBar.SetFont(theApp.GetFont(this,InformApp::FontSystem));
+
   CToolBarCtrl& ctrl = m_toolBar.GetToolBarCtrl();
 
   // Set the button identifiers
