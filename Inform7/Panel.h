@@ -58,6 +58,7 @@ public:
   void UpdateDPI(const std::map<CWnd*,double>& layout);
 
   virtual bool IsTabEnabled(int tab);
+  virtual COLORREF GetSelectedTabColour(int tab);
 
   bool CanTabNavigate(bool forward);
   const char* TabNavigateName(bool forward);

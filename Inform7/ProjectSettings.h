@@ -25,6 +25,7 @@ public:
   Output m_output;
   bool m_blorb;
   bool m_predictable;
+  bool m_basic;
   CString m_compilerVersion;
   int m_testingTabShownCount;
 

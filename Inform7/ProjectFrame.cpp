@@ -2430,9 +2430,10 @@ CString ProjectFrame::Inform7CommandLine(bool release)
     CString i7format = m_settings.GetOutputNewFormat(release);
     executable.Format("%s\\Compilers\\inform7",(LPCSTR)app);
     arguments.Format(
-      "%s%s-internal \"%s\\Internal\" -external \"%s\\Inform\" -project \"%s\" -format=%s",
+      "%s%s%s-internal \"%s\\Internal\" -external \"%s\\Inform\" -project \"%s\" -format=%s",
       (release ? "-release " : ""),
       ((m_settings.m_predictable && !release)) ? "-rng " : "",
+      (m_settings.m_basic) ? "-basic " : "",
       (LPCSTR)app,(LPCSTR)home,(LPCSTR)m_projectDir,(LPCSTR)i7format);
   }
   else if ((version == "6L38") || (version == "6M62"))

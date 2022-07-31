@@ -267,7 +267,10 @@ void PanelTab::OnPaint()
 
         if (i == sel)
         {
-          dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNFACE));
+          COLORREF back = ::GetSysColor(COLOR_BTNFACE);
+          if (m_controller != NULL)
+            back = m_controller->GetSelectedTabColour(i);
+          dc.FillSolidRect(itemRect,back);
 
           dc.MoveTo(itemRect.right,itemRect.bottom-1);
           dc.LineTo(itemRect.right,itemRect.top);

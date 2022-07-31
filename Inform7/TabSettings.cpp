@@ -12,10 +12,12 @@
 IMPLEMENT_DYNAMIC(TabSettings, CFormView)
 
 BEGIN_MESSAGE_MAP(TabSettings, CFormView)
+  ON_WM_CTLCOLOR()
+  ON_WM_ERASEBKGND()
   ON_CBN_SELCHANGE(IDC_VERSION_COMBO, OnChangedVersion)
 END_MESSAGE_MAP()
 
-CString TabSettings::m_labelTexts[4] =
+CString TabSettings::m_labelTexts[5] =
 {
   "Inform translates the source text into a story file which can be in either of two standard "
     "formats. You can change your mind about the format at any time, but some language features "
@@ -27,7 +29,10 @@ CString TabSettings::m_labelTexts[4] =
     "Replay options or with TEST commands, because the same input may produce different results "
     "every time. This option makes testing more predictable. (It has no effect on the final "
     "Release version, which will still be randomised.)",
-  ""
+  "",
+  "This restricts to a minimal version of the Inform programming language which is "
+    "uninteractive, and does not have a command parser. This is available only in version 10.1.0 "
+    "or greater of Inform."
 };
 
 TabSettings::TabSettings() : CFormView(IDD_SETTINGS), m_settings(NULL), m_notify(NULL)
@@ -62,6 +67,7 @@ void TabSettings::UpdateSettings(void)
 {
   // Compiler settings
   m_settings->m_predictable = (m_predictable.GetCheck() == BST_CHECKED);
+  m_settings->m_basic = (m_basic.GetCheck() == BST_CHECKED);
 
   // Output format
   m_settings->m_blorb = (m_blorb.GetCheck() == BST_CHECKED);
@@ -87,6 +93,7 @@ void TabSettings::UpdateFromSettings(void)
 {
   // Compiler settings
   m_predictable.SetCheck(m_settings->m_predictable ? BST_CHECKED : BST_UNCHECKED);
+  m_basic.SetCheck(m_settings->m_basic ? BST_CHECKED : BST_UNCHECKED);
 
   // Output format
   m_blorb.SetCheck(m_settings->m_blorb ? BST_CHECKED : BST_UNCHECKED);
@@ -133,6 +140,7 @@ void TabSettings::CreateTab(CWnd* parent)
 
   // Set up the dialog controls
   m_predictable.SubclassDlgItem(IDC_PREDICTABLE,this);
+  m_basic.SubclassDlgItem(IDC_BASIC,this);
   m_blorb.SubclassDlgItem(IDC_BLORB,this);
   m_outputZ8.SubclassDlgItem(IDC_OUTPUT_Z8,this);
   m_outputGlulx.SubclassDlgItem(IDC_OUTPUT_GLULX,this);
@@ -266,6 +274,7 @@ BOOL TabSettings::OnCommand(WPARAM wParam, LPARAM lParam)
   {
   case IDC_PREDICTABLE:
   case IDC_BLORB:
+  case IDC_BASIC:
   case IDC_OUTPUT_Z8:
   case IDC_OUTPUT_GLULX:
   case IDC_VERSION_COMBO:
@@ -275,6 +284,25 @@ BOOL TabSettings::OnCommand(WPARAM wParam, LPARAM lParam)
   return CFormView::OnCommand(wParam,lParam);
 }
 
+HBRUSH TabSettings::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+  HBRUSH brush = CFormView::OnCtlColor(pDC,pWnd,nCtlColor);
+  if (nCtlColor == CTLCOLOR_STATIC)
+  {
+    brush = (HBRUSH)::GetStockObject(NULL_BRUSH);
+    pDC->SetBkColor(theApp.GetColour(InformApp::ColourBack));
+  }
+  return brush;
+}
+
+BOOL TabSettings::OnEraseBkgnd(CDC* dc)
+{
+  CRect r;
+  GetClientRect(r);
+  dc->FillSolidRect(r,theApp.GetColour(InformApp::ColourBack));
+  return TRUE;
+}
+
 void TabSettings::OnDraw(CDC* pDC)
 {
   CFormView::OnDraw(pDC);
@@ -282,7 +310,7 @@ void TabSettings::OnDraw(CDC* pDC)
   pDC->SetTextColor(::GetSysColor(COLOR_BTNTEXT));
   pDC->SetBkMode(TRANSPARENT);
   CFont* oldFont = pDC->SelectObject(&m_labelFont);
-  for (int i = 0; i < 4; i++)
+  for (int i = 0; i < 5; i++)
     pDC->DrawText(m_labelTexts[i],m_labelRects[i],DT_WORDBREAK);
   pDC->SelectObject(oldFont);
 }
@@ -306,7 +334,7 @@ void TabSettings::Layout(void)
   CRect outputZ8 = getRect(this,IDC_OUTPUT_Z8);
   CRect outputG = getRect(this,IDC_OUTPUT_GLULX);
   CRect check = getRect(this,IDC_BLORB);
-  for (int i = 0; i < 4; i++)
+  for (int i = 0; i < 5; i++)
   {
     m_labelRects[i].left = outputZ8.left;
     m_labelRects[i].top = 0;
@@ -349,8 +377,13 @@ void TabSettings::Layout(void)
     if (descRect.bottom > m_labelRects[3].bottom)
       m_labelRects[3] = descRect;
   }
-  moveWnd(this,IDC_VERSION_BOX,
-    story.left,sb+rh+fh,story.Width(),comboRect.Height()+m_labelRects[3].Height()+(fh*9/2));
+  int vh = comboRect.Height()+m_labelRects[3].Height()+(fh*9/2);
+  moveWnd(this,IDC_VERSION_BOX,story.left,sb+rh+fh,story.Width(),vh);
+
+  sizeText(dc,m_labelTexts[4],m_labelRects[4],sb+rh+vh+(fh*7/2));
+  moveWnd(this,IDC_BASIC,outputZ8.left,m_labelRects[4].bottom+fh);
+  int bh = m_labelRects[4].bottom+check.Height()-sb-rh-vh+(fh/2);
+  moveWnd(this,IDC_BASIC_BOX,story.left,sb+rh+vh+(fh*3/2),story.Width(),bh);
 
   dc->SelectObject(oldFont);
   ReleaseDC(dc);

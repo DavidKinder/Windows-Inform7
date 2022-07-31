@@ -30,6 +30,7 @@ void ProjectSettings::Load(const char* path)
   // Get the settings from the XML
   m_blorb = propList.GetBoolean(L"IFOutputSettings",L"IFSettingCreateBlorb",true);
   m_predictable = propList.GetBoolean(L"IFOutputSettings",L"IFSettingNobbleRng",false);
+  m_basic = propList.GetBoolean(L"IFOutputSettings",L"IFSettingBasicInform",false);
   switch (propList.GetNumber(L"IFOutputSettings",L"IFSettingZCodeVersion"))
   {
   case 5:
@@ -101,6 +102,8 @@ bool ProjectSettings::Save(const char* path)
     "\t\t<%s/>\n"
     "\t\t<key>IFSettingNobbleRng</key>\n"
     "\t\t<%s/>\n"
+    "\t\t<key>IFSettingBasicInform</key>\n"
+    "\t\t<%s/>\n"
     "\t\t<key>IFSettingZCodeVersion</key>\n"
     "\t\t<integer>%d</integer>\n"
     "\t\t<key>IFSettingCompilerVersion</key>\n"
@@ -108,6 +111,7 @@ bool ProjectSettings::Save(const char* path)
     "\t</dict>\n",
     m_blorb ? "true" : "false",
     m_predictable ? "true" : "false",
+    m_basic ? "true" : "false",
     (int)m_output,
     (LPCSTR)m_compilerVersion);
 
@@ -186,6 +190,7 @@ void ProjectSettings::SetDefaults(void)
   m_output = OutputGlulx;
   m_blorb = true;
   m_predictable = false;
+  m_basic = false;
   m_testingTabShownCount = 0;
   m_changed = false;
 }

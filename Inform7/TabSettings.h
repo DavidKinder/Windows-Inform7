@@ -52,6 +52,8 @@ protected:
   virtual void OnInitialUpdate();
   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
   virtual void OnDraw(CDC* pDC);
+  afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+  afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 
   void AddVersions(void);
   void Layout(void);
@@ -62,13 +64,13 @@ protected:
 
 private:
   CButton m_outputZ8, m_outputGlulx;
-  CButton m_blorb, m_predictable;
+  CButton m_blorb, m_predictable, m_basic;
   CComboBox m_version;
   CFont m_labelFont;
 
   ProjectSettings* m_settings;
   SettingsTabNotify* m_notify;
 
-  static CString m_labelTexts[4];
-  CRect m_labelRects[4];
+  static CString m_labelTexts[5];
+  CRect m_labelRects[5];
 };

@@ -251,6 +251,13 @@ bool Panel::IsTabEnabled(int tab)
   return m_tabs[tab]->IsEnabled();
 }
 
+COLORREF Panel::GetSelectedTabColour(int tab)
+{
+  if (tab == Tab_Settings)
+    return theApp.GetColour(InformApp::ColourBack);
+  return ::GetSysColor(COLOR_BTNFACE);
+}
+
 bool Panel::CanTabNavigate(bool forward)
 {
   TabState state = GetTabNavigate(forward);
