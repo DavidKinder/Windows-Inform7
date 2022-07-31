@@ -489,7 +489,7 @@ void ProjectFrame::OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT mi)
       return;
     }
   }
-  CWnd::OnMeasureItem(nIDCtl,mi);
+  MenuBarFrameWnd::OnMeasureItem(nIDCtl,mi);
 }
 
 void ProjectFrame::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
@@ -582,7 +582,7 @@ void ProjectFrame::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
       return;
     }
   }
-  CWnd::OnDrawItem(nIDCtl,di);
+  MenuBarFrameWnd::OnDrawItem(nIDCtl,di);
 }
 
 void ProjectFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
