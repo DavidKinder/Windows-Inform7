@@ -53,7 +53,6 @@ private:
   enum ExtTabs
   {
     ExtTab_Home = 0,
-    ExtTab_Definitions,
     ExtTab_Library,
     Number_ExtTabs,
     No_ExtTab = -1
