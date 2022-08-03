@@ -23,14 +23,8 @@ END_MESSAGE_MAP()
 const char* TabExtensions::m_files[TabExtensions::Number_ExtTabs] =
 {
   "\\Inform\\Documentation\\Extensions.html",
-  "http://www.emshort.com/pl/"
+  PUBLIC_LIBRARY_URL "/index-windows.html"
 };
-
-const char* TabExtensions::GetPublicLibraryURL(void)
-{
-  ASSERT(sizeof m_files / sizeof m_files[0] == 2);
-  return m_files[1];
-}
 
 TabExtensions::TabExtensions() : m_initialised(false), m_notify(NULL)
 {

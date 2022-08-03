@@ -6,7 +6,6 @@
 #include "Inform.h"
 #include "Panel.h"
 #include "Messages.h"
-#include "TabExtensions.h"
 #include "TextFormat.h"
 
 #include "include/cef_app.h"
@@ -623,7 +622,7 @@ public:
     CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request, CefRefPtr<CefResponse> response)
   {
     CString url = request->GetURL().ToString().c_str();
-    if (url == TabExtensions::GetPublicLibraryURL())
+    if (url.Left((int)strlen(PUBLIC_LIBRARY_URL)) == PUBLIC_LIBRARY_URL)
       return this;
 
     int period = url.ReverseFind('.');
@@ -1128,7 +1127,7 @@ bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
   if (strncmp(url,"http",4) == 0)
   {
     // Web links to anything other than the Public Library go to a separate browser
-    if (strncmp(url,"http://www.emshort.com/pl",25) != 0)
+    if (strncmp(url,PUBLIC_LIBRARY_URL,strlen(PUBLIC_LIBRARY_URL)) != 0)
     {
       ::ShellExecute(0,NULL,url,NULL,NULL,SW_SHOWNORMAL);
       return true;

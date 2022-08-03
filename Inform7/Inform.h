@@ -26,6 +26,9 @@
 // Logging file name
 #define LOG_FILE "\\Inform\\i7log.txt"
 
+// The base URL of the Inform Public Library
+#define PUBLIC_LIBRARY_URL "https://ganelson.github.io/inform-public-library"
+
 class RecentProjectList;
 
 enum ProjectType

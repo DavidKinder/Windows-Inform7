@@ -639,7 +639,7 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
       downPath.Append("PubLibDownload.i7x");
 
       // Determine the URL for the extension
-      url.Format("http://www.emshort.com/pl%s",(LPCSTR)url.Mid(8));
+      url.Format(PUBLIC_LIBRARY_URL "%s",(LPCSTR)url.Mid(8));
 
       // Make sure there is no matching cache entry
       ::DeleteUrlCacheEntry(url);
