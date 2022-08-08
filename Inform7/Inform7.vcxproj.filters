@@ -262,9 +262,6 @@
     <ClInclude Include="..\..\..\Libraries\mfc\Dib.h">
       <Filter>Bitmaps</Filter>
     </ClInclude>
-    <ClInclude Include="ArrowButton.h">
-      <Filter>Controls</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Libraries\mfc\ColourButton.h">
       <Filter>Controls</Filter>
     </ClInclude>
@@ -488,9 +485,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\mfc\Dib.cpp">
       <Filter>Bitmaps</Filter>
-    </ClCompile>
-    <ClCompile Include="ArrowButton.cpp">
-      <Filter>Controls</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\mfc\ColourButton.cpp">
       <Filter>Controls</Filter>

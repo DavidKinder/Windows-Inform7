@@ -3,7 +3,6 @@
 #include "TabBase.h"
 #include "Skein.h"
 #include "SkeinWindow.h"
-#include "ArrowButton.h"
 #include "FlatSplitter.h"
 #include "ReportHtml.h"
 
@@ -48,7 +47,6 @@ public:
   CStringW GetStoryName(void);
 
 private:
-  ArrowButton m_label;
   CButton m_play, m_save, m_help;
   FlatSplitter m_splitter;
   SkeinWindow* m_skeinWindow;
@@ -63,7 +61,6 @@ protected:
   afx_msg LRESULT OnUpdateHelp(WPARAM, LPARAM);
   afx_msg LRESULT OnFindReplaceCmd(WPARAM, LPARAM);
 
-  afx_msg void OnSkeinLabel();
   afx_msg void OnSkeinPlay();
   afx_msg void OnSaveTranscript();
   afx_msg void OnToggleHelp();

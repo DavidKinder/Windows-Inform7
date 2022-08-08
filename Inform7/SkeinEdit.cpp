@@ -4,7 +4,7 @@
 
 IMPLEMENT_DYNAMIC(SkeinEdit, UnicodeEdit)
 
-SkeinEdit::SkeinEdit() : m_node(NULL), m_label(false)
+SkeinEdit::SkeinEdit() : m_node(NULL)
 {
 }
 
@@ -27,11 +27,7 @@ void SkeinEdit::OnKillFocus(CWnd* pNewWnd)
   {
     CStringW line;
     GetWindowText(line);
-
-    if (m_label)
-      GetParent()->SendMessage(WM_LABELNODE,(WPARAM)m_node,(LPARAM)(LPCWSTR)line);
-    else
-      GetParent()->SendMessage(WM_RENAMENODE,(WPARAM)m_node,(LPARAM)(LPCWSTR)line);
+    GetParent()->SendMessage(WM_RENAMENODE,(WPARAM)m_node,(LPARAM)(LPCWSTR)line);
   }
   GetParent()->Invalidate();
   m_node = NULL;
@@ -56,24 +52,13 @@ void SkeinEdit::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
   }
 }
 
-void SkeinEdit::StartEdit(Skein::Node* node, const CRect& nodeRect, bool label)
+void SkeinEdit::StartEdit(Skein::Node* node, const CRect& nodeRect)
 {
   m_node = node;
-  m_label = label;
 
-  int len = 0;
-  if (label)
-  {
-    const CStringW& line = node->GetLabel();
-    len = line.GetLength();
-    SetWindowText(line);
-  }
-  else
-  {
-    const CStringW& line = node->GetLine();
-    len = line.GetLength();
-    SetWindowText(line);
-  }
+  const CStringW& line = node->GetLine();
+  int len = line.GetLength();
+  SetWindowText(line);
 
   MoveWindow(nodeRect,FALSE);
   ShowWindow(SW_SHOW);
@@ -84,9 +69,4 @@ void SkeinEdit::StartEdit(Skein::Node* node, const CRect& nodeRect, bool label)
 void SkeinEdit::EndEdit(void)
 {
   ShowWindow(SW_HIDE);
-}
-
-bool SkeinEdit::EditingLabel(Skein::Node* node)
-{
-  return (m_label && (m_node == node));
 }

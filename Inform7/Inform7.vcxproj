@@ -174,7 +174,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="..\..\Glk\GlkDll\GlkSoundMOD.h" />
     <ClInclude Include="..\..\Glk\GlkDll\GlkSoundOGG.h" />
     <ClInclude Include="AboutDialog.h" />
-    <ClInclude Include="ArrowButton.h" />
     <ClInclude Include="BaseDialog.h" />
     <ClInclude Include="Build.h" />
     <ClInclude Include="CommandButton.h" />
@@ -2039,7 +2038,6 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../Glk/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="AboutDialog.cpp" />
-    <ClCompile Include="ArrowButton.cpp" />
     <ClCompile Include="BaseDialog.cpp" />
     <ClCompile Include="CommandButton.cpp" />
     <ClCompile Include="PageTab.cpp" />

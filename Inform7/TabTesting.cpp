@@ -17,7 +17,6 @@ IMPLEMENT_DYNAMIC(TabTesting, TabBase)
 
 BEGIN_MESSAGE_MAP(TabTesting, TabBase)
   ON_WM_SIZE()
-  ON_COMMAND(ID_SKEIN_LABEL, OnSkeinLabel)
   ON_COMMAND(ID_SKEIN_PLAY_ALL, OnSkeinPlay)
   ON_COMMAND(ID_SKEIN_SAVE_TRANSCRIPT, OnSaveTranscript)
   ON_COMMAND(ID_SKEIN_TOGGLE_HELP, OnToggleHelp)
@@ -27,7 +26,7 @@ BEGIN_MESSAGE_MAP(TabTesting, TabBase)
 END_MESSAGE_MAP()
 
 TabTesting::TabTesting() : m_splitter(false),
-  m_skeinWindow(NULL), m_helpWindow(NULL), m_skein(NULL), m_label(ArrowButton::DownLow)
+  m_skeinWindow(NULL), m_helpWindow(NULL), m_skein(NULL)
 {
 }
 
@@ -48,8 +47,6 @@ void TabTesting::CreateTab(CWnd* parent)
 
   // Create the command buttons
   CFont* font = theApp.GetFont(this,InformApp::FontSystem);
-  m_label.Create("Labels",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_LABEL);
-  m_label.SetFont(font);
   m_play.Create("Play All",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_PLAY_ALL);
   m_play.SetFont(font);
   m_save.Create("Save Transcript",WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,ID_SKEIN_SAVE_TRANSCRIPT);
@@ -172,7 +169,6 @@ void TabTesting::UpdateDPI(const std::map<CWnd*,double>& layout)
   TabBase::UpdateDPI(layout);
 
   CFont* font = theApp.GetFont(this,InformApp::FontSystem);
-  m_label.SetFont(font);
   m_play.SetFont(font);
   m_save.SetFont(font);
   m_help.SetFont(font);
@@ -240,7 +236,6 @@ CString TabTesting::GetToolTip(UINT_PTR id)
 {
   switch (id)
   {
-  case ID_SKEIN_LABEL:
   case ID_SKEIN_PLAY_ALL:
   case ID_SKEIN_SAVE_TRANSCRIPT:
     {
@@ -282,13 +277,11 @@ LRESULT TabTesting::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
   {
     if (m_skein->IsActive())
     {
-      m_label.EnableWindow(m_skein->HasLabels() ? TRUE : FALSE);
       m_play.EnableWindow(GetParentFrame()->SendMessage(WM_CANPLAYALL) != 0);
       m_save.EnableWindow(m_skeinWindow->IsTranscriptActive());
     }
     else
     {
-      m_label.EnableWindow(FALSE);
       m_play.EnableWindow(FALSE);
       m_save.EnableWindow(FALSE);
     }
@@ -336,43 +329,6 @@ void TabTesting::SetHelpVisible(const char* node, bool visible)
   CString code;
   code.Format("%s('%s');",visible ? "showBlock" : "hideBlock",node);
   m_helpWindow->RunJavaScript(code);
-}
-
-void TabTesting::OnSkeinLabel()
-{
-  std::map<CStringW,Skein::Node*> labels;
-  m_skein->GetLabels(labels);
-
-  if (labels.empty() == false)
-  {
-    CMenu popup;
-    popup.CreatePopupMenu();
-
-    int i = 1;
-    std::map<CStringW,Skein::Node*>::const_iterator it;
-    for (it = labels.begin(); it != labels.end(); ++it, ++i)
-    {
-      CString labelA(it->first);
-      popup.AppendMenu(MF_STRING,i,labelA);
-    }
-
-    CRect labelRect;
-    m_label.GetWindowRect(labelRect);
-
-    int cmd = popup.TrackPopupMenuEx(
-      TPM_RIGHTALIGN|TPM_TOPALIGN|TPM_NONOTIFY|TPM_RETURNCMD,
-      labelRect.right,labelRect.bottom,this,NULL);
-    if (cmd != 0)
-    {
-      CString labelA;
-      popup.GetMenuString(cmd,labelA,MF_BYCOMMAND);
-
-      CStringW labelW(labelA);
-      it = labels.find(labelW);
-      if (it != labels.end())
-        m_skeinWindow->SkeinShowNode(it->second,false);
-    }
-  }
 }
 
 void TabTesting::OnSkeinPlay()
@@ -425,7 +381,6 @@ void TabTesting::Resize(void)
 
     // Resize the command buttons
     int pw = theApp.MeasureText(&m_play).cx+(fontSize.cx*3);
-    int lw = theApp.MeasureText(&m_label).cx+(fontSize.cx*3)+16;
     int gapx = (fontSize.cx/4);
     int gapy = (fontSize.cx/4);
     int x = client.Width()-pw-gapx;
@@ -436,8 +391,6 @@ void TabTesting::Resize(void)
     int hw = theApp.MeasureText(&m_help,"Show Help").cx+(fontSize.cx*3);
     x -= hw+gapx;
     m_help.MoveWindow(x,gapy,hw,heading-(2*gapy),TRUE);
-    x -= lw+gapx;
-    m_label.MoveWindow(x,gapy,lw,heading-(2*gapy),TRUE);
 
     // Resize the window
     m_splitter.MoveWindow(client,TRUE);

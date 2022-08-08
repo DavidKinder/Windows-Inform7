@@ -49,6 +49,7 @@ public:
     MenuSelected,
     MenuOver,
     DiffersBadge,
+    StarBadge,
     BlessButton,
     BlessButtonOver,
     CurseButton,
@@ -75,7 +76,6 @@ protected:
 
   afx_msg LRESULT HandleMButtonDown(WPARAM wParam, LPARAM lParam);
   afx_msg LRESULT OnRenameNode(WPARAM, LPARAM);
-  afx_msg LRESULT OnLabelNode(WPARAM, LPARAM);
 
   virtual void OnDraw(CDC* pDC);
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
@@ -94,8 +94,6 @@ private:
     const CPoint& centre, bool selected, bool gameRunning);
   void DrawNodeBack(Skein::Node* node, CDibSection& bitmap, const CPoint& centre,
     int width, CDibSection* back);
-  void DrawNodeLabel(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
-    const CPoint& centre);
 
   void DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client,
     const CPoint& from, const CPoint& to, COLORREF fore, bool bold);
@@ -104,18 +102,18 @@ private:
 
   CDibSection* GetImage(const char* name);
   CRect GetMenuButtonRect(const CRect& nodeRect, CDibSection* menu = NULL);
-  CRect GetBadgeRect(const CRect& nodeRect);
   void RemoveExcessSeparators(CMenu* menu);
 
   Skein::Node* NodeAtPoint(const CPoint& point);
   bool NodeFullyVisible(Skein::Node* node);
-  bool ShowLabel(Skein::Node* node);
-  void StartEdit(Skein::Node* node, bool label);
+  void StartEdit(Skein::Node* node);
 
   NodeBitmap GetNodeBack(Skein::Node* node, bool selected, bool gameRunning);
   void SkeinNodesShown(Skein::Node* node, bool gameRunning,
     bool& unselected, bool& selected, bool& active, bool& differs, int& count);
   void UpdateHelp(void);
+
+  void RemoveWinningLabels(Skein::Node* node);
 
   Skein* m_skein;
   int m_skeinIndex;
@@ -144,13 +142,12 @@ private:
   class CommandStartEdit : public Command
   {
   public:
-    CommandStartEdit(SkeinWindow* wnd, Skein::Node* node, bool label);
+    CommandStartEdit(SkeinWindow* wnd, Skein::Node* node);
     void Run(void);
 
   private:
     SkeinWindow* m_wnd;
     Skein::Node* m_node;
-    bool m_label;
   };
 };
 

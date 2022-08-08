@@ -9,6 +9,8 @@
 #define new DEBUG_NEW
 #endif
 
+#define WINNING_LABEL L"***"
+
 IMPLEMENT_DYNCREATE(SkeinWindow, CScrollView)
 
 BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
@@ -26,7 +28,6 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
 
   ON_MESSAGE(WM_MBUTTONDOWN, HandleMButtonDown)
   ON_MESSAGE(WM_RENAMENODE, OnRenameNode)
-  ON_MESSAGE(WM_LABELNODE, OnLabelNode)
 END_MESSAGE_MAP()
 
 SkeinWindow::SkeinWindow() : m_skein(NULL), m_skeinIndex(-1),
@@ -183,15 +184,12 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
     menu->RemoveMenu(ID_SKEIN_INSERT_PREVIOUS,MF_BYCOMMAND);
     menu->RemoveMenu(ID_SKEIN_DELETE,MF_BYCOMMAND);
     menu->RemoveMenu(ID_SKEIN_EDIT,MF_BYCOMMAND);
-    menu->RemoveMenu(ID_SKEIN_ADD_LABEL,MF_BYCOMMAND);
-    menu->RemoveMenu(ID_SKEIN_EDIT_LABEL,MF_BYCOMMAND);
+    menu->RemoveMenu(ID_SKEIN_SET_WINNING,MF_BYCOMMAND);
     menu->RemoveMenu(ID_SKEIN_DELETE_ALL,MF_BYCOMMAND);
     menu->RemoveMenu(ID_SKEIN_LOCK,MF_BYCOMMAND);
   }
-  if (node->GetLabel().IsEmpty())
-    menu->RemoveMenu(ID_SKEIN_EDIT_LABEL,MF_BYCOMMAND);
-  else
-    menu->RemoveMenu(ID_SKEIN_ADD_LABEL,MF_BYCOMMAND);
+  if (node->GetLabel() == WINNING_LABEL)
+    menu->CheckMenuItem(ID_SKEIN_SET_WINNING,MF_BYCOMMAND|MF_CHECKED);
   if (node->GetNumChildren() > 1)
     menu->RemoveMenu(ID_SKEIN_INSERT_NEXT,MF_BYCOMMAND);
   if (node->GetLocked())
@@ -216,18 +214,22 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
     GetParentFrame()->SendMessage(WM_PLAYSKEIN,(WPARAM)node);
     break;
   case ID_SKEIN_EDIT:
-    StartEdit(node,false);
+    StartEdit(node);
     break;
-  case ID_SKEIN_ADD_LABEL:
-  case ID_SKEIN_EDIT_LABEL:
-    Invalidate();
-    StartEdit(node,true);
+  case ID_SKEIN_SET_WINNING:
+    if (node->GetLabel() == WINNING_LABEL)
+      m_skein->SetLabel(node,L"");
+    else
+    {
+      RemoveWinningLabels(m_skein->GetRoot());
+      m_skein->SetLabel(node,WINNING_LABEL);
+    }
     break;
   case ID_SKEIN_INSERT_PREVIOUS:
     {
       AnimatePrepare();
       Skein::Node* newNode = m_skein->AddNewParent(node);
-      Command* cmd = new CommandStartEdit(this,newNode,false);
+      Command* cmd = new CommandStartEdit(this,newNode);
       GetParentFrame()->PostMessage(WM_ANIMATESKEIN,0,(LPARAM)cmd);
     }
     break;
@@ -247,7 +249,7 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
       }
       if (newNode != NULL)
       {
-        Command* cmd = new CommandStartEdit(this,newNode,false);
+        Command* cmd = new CommandStartEdit(this,newNode);
         GetParentFrame()->PostMessage(WM_ANIMATESKEIN,0,(LPARAM)cmd);
       }
     }
@@ -256,7 +258,7 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
     {
       AnimatePrepare();
       Skein::Node* newNode = m_skein->AddNew(node);
-      Command* cmd = new CommandStartEdit(this,newNode,false);
+      Command* cmd = new CommandStartEdit(this,newNode);
       GetParentFrame()->PostMessage(WM_ANIMATESKEIN,0,(LPARAM)cmd);
     }
     break;
@@ -450,18 +452,6 @@ LRESULT SkeinWindow::OnRenameNode(WPARAM node, LPARAM line)
   AnimatePrepare();
   m_skein->SetLine(theNode,(LPWSTR)line);
   m_skein->SortSiblings(theNode);
-  GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
-  return 0;
-}
-
-LRESULT SkeinWindow::OnLabelNode(WPARAM node, LPARAM line)
-{
-  Skein::Node* theNode = (Skein::Node*)node;
-  if (m_skein->IsValidNode(theNode) == false)
-    return 0;
-
-  AnimatePrepare();
-  m_skein->SetLabel(theNode,(LPWSTR)line);
   GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
   return 0;
 }
@@ -703,6 +693,14 @@ void SkeinWindow::UpdateHelp(void)
   }
 }
 
+void SkeinWindow::RemoveWinningLabels(Skein::Node* node)
+{
+  if (node->GetLabel() == WINNING_LABEL)
+    m_skein->SetLabel(node,L"");
+  for (int i = 0; i < node->GetNumChildren(); i++)
+    RemoveWinningLabels(node->GetChild(i));
+}
+
 void SkeinWindow::TranscriptShown(bool& transcript, bool& anyTick, bool& anyCross)
 {
   transcript = m_transcript.IsActive();
@@ -823,6 +821,7 @@ void SkeinWindow::SetFontsBitmaps(void)
   m_bitmaps[MenuSelected] = GetImage("Skein-selected-menu");
   m_bitmaps[MenuOver] = GetImage("Skein-over-menu");
   m_bitmaps[DiffersBadge] = GetImage("SkeinDiffersBadge");
+  m_bitmaps[StarBadge] = GetImage("SkeinStarBadge");
   m_bitmaps[BlessButton] = GetImage("Trans-tick-off");
   m_bitmaps[BlessButtonOver] = GetImage("Trans-tick");
   m_bitmaps[CurseButton] = GetImage("Trans-cross-off");
@@ -847,9 +846,6 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSectio
       DrawNodeLine(dc,bitmap,client,parent,nodeCentre,
         theApp.GetColour(InformApp::ColourSkeinLine),node->GetLocked());
     }
-
-    // Draw the node's label, if any
-    DrawNodeLabel(node,dc,bitmap,client,nodeCentre);
     break;
   case 1:
     // Draw the node
@@ -948,11 +944,18 @@ void SkeinWindow::DrawNodeBack(Skein::Node* node, CDibSection& bitmap, const CPo
     CPoint(centre.x-(width/2)-edgeWidth,y),
     CSize(width+(2*edgeWidth),back->GetSize().cy));
 
-  // Draw the "differs badge", if needed
+  // Draw badges, if needed
   if (node->GetDiffers() && (node->GetExpectedText().IsEmpty() == FALSE))
   {
-    CRect badgeRect = GetBadgeRect(nodeRect);
+    CSize badgeSize = m_bitmaps[DiffersBadge]->GetSize();
+    CRect badgeRect(CPoint(nodeRect.left,nodeRect.top-(badgeSize.cy/8)),badgeSize);
     bitmap.AlphaBlend(m_bitmaps[DiffersBadge],badgeRect.left,badgeRect.top);
+  }
+  if (node->GetLabel() == WINNING_LABEL)
+  {
+    CSize badgeSize = m_bitmaps[StarBadge]->GetSize();
+    CRect badgeRect(CPoint(nodeRect.left,nodeRect.bottom-badgeSize.cy),badgeSize);
+    bitmap.AlphaBlend(m_bitmaps[StarBadge],badgeRect.left,badgeRect.top);
   }
 
   // Draw the context menu button, if needed
@@ -976,48 +979,6 @@ void SkeinWindow::DrawNodeBack(Skein::Node* node, CDibSection& bitmap, const CPo
 
   // Store the node's size and position
   m_nodes[node] = nodeRect;
-}
-
-void SkeinWindow::DrawNodeLabel(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
-  const CPoint& centre)
-{
-  // Store the current device context properties
-  UINT align = dc.GetTextAlign();
-  int mode = dc.GetBkMode();
-
-  // Set the device context properties
-  dc.SetTextAlign(TA_TOP|TA_LEFT);
-  dc.SetBkMode(TRANSPARENT);
-
-  // Get the text associated with the node
-  LPCWSTR label = node->GetLabel();
-  int width = node->CalcLineWidth(dc,m_skeinIndex);
-
-  // Check if this node's label is visible before drawing
-  CSize spacing = GetLayoutSpacing();
-  CRect nodeArea(centre,CSize(width+spacing.cx,spacing.cy));
-  nodeArea.top = centre.y-(int)(1.6*m_fontSize.cy);
-  nodeArea.OffsetRect(nodeArea.Width()/-2,nodeArea.Height()/-2);
-  CRect intersect;
-  if (intersect.IntersectRect(client,nodeArea))
-  {
-    // Write out the node's label, if any
-    if (ShowLabel(node))
-    {
-      SIZE size;
-      ::GetTextExtentPoint32W(dc.GetSafeHdc(),label,(UINT)wcslen(label),&size);
-      CRect labelArea(centre.x-(size.cx/2)-m_fontSize.cx,centre.y-(int)(1.6*m_fontSize.cy),
-        centre.x+(size.cx/2)+m_fontSize.cx,centre.y-(int)(0.6*m_fontSize.cy));
-      bitmap.BlendSolidRect(labelArea,theApp.GetColour(InformApp::ColourBack),255*4/5);
-      dc.SetTextColor(theApp.GetColour(InformApp::ColourText));
-      ::ExtTextOutW(dc.GetSafeHdc(),centre.x-(size.cx/2),labelArea.top,0,
-        labelArea,label,(UINT)wcslen(label),NULL);
-    }
-  }
-
-  // Reset the device context properties
-  dc.SetTextAlign(align);
-  dc.SetBkMode(mode);
 }
 
 void SkeinWindow::DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client,
@@ -1316,12 +1277,6 @@ CRect SkeinWindow::GetMenuButtonRect(const CRect& nodeRect, CDibSection* menu)
   return CRect(CPoint(nodeRect.right-sz.cx+(sz.cx/4),nodeRect.top-(sz.cy/8)),sz);
 }
 
-CRect SkeinWindow::GetBadgeRect(const CRect& nodeRect)
-{
-  CSize sz = m_bitmaps[DiffersBadge]->GetSize();
-  return CRect(CPoint(nodeRect.left,nodeRect.top-(sz.cy/8)),sz);
-}
-
 void SkeinWindow::RemoveExcessSeparators(CMenu* menu)
 {
   bool allow = true;
@@ -1384,43 +1339,22 @@ bool SkeinWindow::NodeFullyVisible(Skein::Node* node)
   return true;
 }
 
-bool SkeinWindow::ShowLabel(Skein::Node* node)
-{
-  if (node->HasLabel())
-    return true;
-  if (m_edit.IsWindowVisible() && m_edit.EditingLabel(node))
-    return true;
-  return false;
-}
-
-void SkeinWindow::StartEdit(Skein::Node* node, bool label)
+void SkeinWindow::StartEdit(Skein::Node* node)
 {
   std::map<Skein::Node*,CRect>::const_iterator it = m_nodes.find(node);
   if (it != m_nodes.end())
   {
     CDibSection* back = m_bitmaps[BackUnselected];
-    CRect nodeRect = it->second;
 
-    if (label)
-    {
-      nodeRect.InflateRect((node->GetLabelTextWidth(m_skeinIndex)-nodeRect.Width())/2,0);
-      nodeRect.InflateRect(m_fontSize.cx,0);
-      nodeRect.top += (back->GetSize().cy/2);
-      nodeRect.top -= (int)(0.12*m_fontSize.cy);
-      nodeRect.top -= (int)(1.6*m_fontSize.cy);
-      nodeRect.bottom = nodeRect.top + m_fontSize.cy+1;
-    }
-    else
-    {
-      nodeRect.DeflateRect(m_fontSize.cx*2,0);
-      nodeRect.top += (back->GetSize().cy/2);
-      nodeRect.top -= (int)(0.12*m_fontSize.cy);
-      nodeRect.top -= (int)(0.5*m_fontSize.cy);
-      nodeRect.bottom = nodeRect.top + m_fontSize.cy+1;
-    }
+    CRect nodeRect = it->second;
+    nodeRect.DeflateRect(m_fontSize.cx*2,0);
+    nodeRect.top += (back->GetSize().cy/2);
+    nodeRect.top -= (int)(0.12*m_fontSize.cy);
+    nodeRect.top -= (int)(0.5*m_fontSize.cy);
+    nodeRect.bottom = nodeRect.top + m_fontSize.cy+1;
 
     m_edit.SetFont(theApp.GetFont(this,InformApp::FontDisplay));
-    m_edit.StartEdit(node,nodeRect,label);
+    m_edit.StartEdit(node,nodeRect);
   }
 }
 
@@ -1469,14 +1403,14 @@ void SkeinWindow::SkeinNodesShown(Skein::Node* node, bool gameRunning,
     SkeinNodesShown(node->GetChild(i),gameRunning,unselected,selected,active,differs,count);
 }
 
-SkeinWindow::CommandStartEdit::CommandStartEdit(SkeinWindow* wnd, Skein::Node* node, bool label)
-  : m_wnd(wnd), m_node(node), m_label(label)
+SkeinWindow::CommandStartEdit::CommandStartEdit(SkeinWindow* wnd, Skein::Node* node)
+  : m_wnd(wnd), m_node(node)
 {
 }
 
 void SkeinWindow::CommandStartEdit::Run(void)
 {
-  m_wnd->StartEdit(m_node,m_label);
+  m_wnd->StartEdit(m_node);
 }
 
 // SkeinMouseAnchorWnd
