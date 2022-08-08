@@ -107,7 +107,7 @@ BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
       break;
     case IDC_LINK_IFTF:
       cmd.SetBackSysColor(COLOR_BTNFACE);
-      cmd.SetIcon("Icon-IFTF",2);
+      cmd.SetIcon("IFTF-Logo",2);
       break;
     case IDC_LINK_IFDB_SRC:
       cmd.SetBackSysColor(COLOR_WINDOW);
