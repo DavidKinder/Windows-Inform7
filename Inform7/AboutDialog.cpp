@@ -140,8 +140,8 @@ BOOL AboutDialog::OnInitDialog()
     "\\tab Neil Hodgson\\par"
     "\\par"
     "\\b Chromium Embedded Framework written by\\b0\\par"
-    "\\tab Marshall A. Greenblatt, Google Inc.,\\par"
-    "\\tab and others\\par"
+    "\\tab Marshall A. Greenblatt\\par"
+    "\\tab Google Inc., and others\\par"
     "\\par"
     "\\b Elastic tabstops invented by\\b0\\par"
     "\\tab Nick Gravgaard";
