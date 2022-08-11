@@ -755,7 +755,7 @@ bool ExtensionFrame::IsValidExtension(const CStringW& firstLine,
     tokens.RemoveAt(0);
   }
   else
-    version = L"Version missing";
+    version = L"Version (none)";
 
   // Remove trailing "begins here", if present
   int size = (int)tokens.GetSize();
