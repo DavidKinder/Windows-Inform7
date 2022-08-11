@@ -6,6 +6,7 @@
 #include "Inform.h"
 #include "Panel.h"
 #include "Messages.h"
+#include "SemanticVersion.h"
 #include "TextFormat.h"
 
 #include "include/cef_app.h"
@@ -318,19 +319,16 @@ private:
         CStringW extName, extAuthor, extVersion;
         if (ExtensionFrame::IsValidExtension(extLine,extName,extAuthor,extVersion))
         {
-          int extNumber, compareNumber;
-          if (swscanf(extVersion,L"Version %d",&extNumber) == 1)
-          {
-            if (swscanf(compare,L"Version %d",&compareNumber) == 1)
-            {
-              if (extNumber < compareNumber)
-                return "<";
-              else if (extNumber > compareNumber)
-                return ">";
-            }
-          }
+          // Strip any leading "Version "
+          if (extVersion.Left(8) == L"Version ")
+            extVersion = extVersion.Mid(8);
+          if (wcsncmp(compare,L"Version ",8) == 0)
+            compare += 8;
 
-          int c = extVersion.Compare(compare);
+          // Convert to semantic version numbers
+          SemanticVersion extSemVersion = SemanticVersion::FromText(extVersion);
+          SemanticVersion compSemVersion = SemanticVersion::FromText(compare);
+          int c = extSemVersion.Compare(compSemVersion);
           if (c == 0)
             return "=";
           else if (c < 0)

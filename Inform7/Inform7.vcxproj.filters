@@ -325,6 +325,9 @@
     <ClInclude Include="TranscriptDiff.h">
       <Filter>Skein</Filter>
     </ClInclude>
+    <ClInclude Include="SemanticVersion.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1430,6 +1433,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\command_handler_cpptoc.cc">
       <Filter>Libraries\libcef\cpptoc</Filter>
+    </ClCompile>
+    <ClCompile Include="SemanticVersion.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

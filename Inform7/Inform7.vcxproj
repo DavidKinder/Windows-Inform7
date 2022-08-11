@@ -214,6 +214,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="RichEdit.h" />
     <ClInclude Include="SearchBar.h" />
     <ClInclude Include="SearchEdit.h" />
+    <ClInclude Include="SemanticVersion.h" />
     <ClInclude Include="Skein.h" />
     <ClInclude Include="SkeinEdit.h" />
     <ClInclude Include="SkeinWindow.h" />
@@ -2308,6 +2309,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     </ClCompile>
     <ClCompile Include="SearchBar.cpp" />
     <ClCompile Include="SearchEdit.cpp" />
+    <ClCompile Include="SemanticVersion.cpp" />
     <ClCompile Include="Skein.cpp" />
     <ClCompile Include="SkeinEdit.cpp" />
     <ClCompile Include="SkeinWindow.cpp" />

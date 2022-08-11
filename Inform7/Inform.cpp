@@ -12,6 +12,7 @@
 #include "RecentProjectList.h"
 #include "ReportHtml.h"
 #include "RecentProjectList.h"
+#include "SemanticVersion.h"
 #include "SpellCheck.h"
 #include "WelcomeLauncher.h"
 
@@ -65,6 +66,10 @@ InformApp::InformApp() : m_job(0), m_doneProjectsOnExit(false)
 
 BOOL InformApp::InitInstance()
 {
+#ifdef _DEBUG
+  SemanticVersion::UnitTest();
+#endif
+
   InitCommonControls();
   CWinApp::InitInstance();
   ::BufferedPaintInit();
