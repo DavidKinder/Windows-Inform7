@@ -788,7 +788,7 @@ CSize SkeinWindow::GetLayoutSize(Skein::LayoutMode mode)
 
 CSize SkeinWindow::GetLayoutSpacing(void)
 {
-  return CSize(m_fontSize.cx*6,(int)(m_fontSize.cy*2.2));
+  return CSize(m_fontSize.cx*6,m_fontSize.cy*2);
 }
 
 CSize SkeinWindow::GetLayoutBorder(void)
