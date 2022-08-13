@@ -464,13 +464,13 @@ BEGIN
     PUSHBUTTON      "• Structure of .materials folder",IDC_ADVICE_MATERIALS,6,287,208,9,BS_LEFT
     PUSHBUTTON      "• Credits",IDC_ADVICE_CREDITS,6,298,208,9,BS_LEFT
     LTEXT           "Community",IDC_STATIC_COMMUNITY,226,239,56,11
-    PUSHBUTTON      "• www.inform7.com",IDC_LINK_INFORM7,226,254,208,9,BS_LEFT
+    PUSHBUTTON      "• Home page at www.inform7.com",IDC_LINK_INFORM7,226,254,208,9,BS_LEFT
     PUSHBUTTON      "• Inform at IFDB, the Interactive Fiction Database",IDC_LINK_IFDB,226,265,208,9,BS_LEFT
-    PUSHBUTTON      "• Interactive Fiction Forum",IDC_LINK_INTFIC,226,276,208,9,BS_LEFT
-    PUSHBUTTON      "• Inform Development Q&&A at the IFF",IDC_LINK_INTFIC_QA,226,287,208,9,BS_LEFT
-    PUSHBUTTON      "• IFWiki",IDC_LINK_IFWIKI,226,298,32,9,BS_LEFT
-    PUSHBUTTON      "• Planet IF Blog Aggregator",IDC_LINK_PLANETIF,260,298,98,9,BS_LEFT
-    PUSHBUTTON      "• IF Competition",IDC_LINK_IFCOMP,360,298,62,9,BS_LEFT
+    PUSHBUTTON      "• Inform Q&&A at the Interactive Fiction Forum",IDC_LINK_INTFIC_QA,226,276,208,9,BS_LEFT
+    PUSHBUTTON      "• IFWiki",IDC_LINK_IFWIKI,226,287,32,9,BS_LEFT
+    PUSHBUTTON      "• Planet IF Blog Aggregator",IDC_LINK_PLANETIF,260,287,98,9,BS_LEFT
+    PUSHBUTTON      "• IF Competition",IDC_LINK_IFCOMP,360,287,62,9,BS_LEFT
+    PUSHBUTTON      "• Open source at GitHub, with links to bug tracker",IDC_LINK_GITHUB,226,298,208,9,BS_LEFT
     CTEXT           "Summon or dismiss this launcher with Shift+F1",IDC_STATIC_SUMMON,6,316,428,8
 END
 

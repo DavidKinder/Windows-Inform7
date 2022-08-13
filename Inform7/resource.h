@@ -219,11 +219,11 @@
 #define IDC_LINK_IFTF                   1122
 #define IDC_LINK_INFORM7                1123
 #define IDC_LINK_IFDB                   1124
-#define IDC_LINK_INTFIC                 1125
-#define IDC_LINK_INTFIC_QA              1126
-#define IDC_LINK_IFWIKI                 1127
-#define IDC_LINK_PLANETIF               1128
-#define IDC_LINK_IFCOMP                 1129
+#define IDC_LINK_INTFIC_QA              1125
+#define IDC_LINK_IFWIKI                 1126
+#define IDC_LINK_PLANETIF               1127
+#define IDC_LINK_IFCOMP                 1128
+#define IDC_LINK_GITHUB                 1129
 #define IDC_LINK_IFDB_SRC               1130
 #define IDC_OPEN_0                      1131
 #define IDC_OPEN_1                      1132

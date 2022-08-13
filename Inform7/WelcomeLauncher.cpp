@@ -928,11 +928,11 @@ CString WelcomeLauncherView::GetUrl(UINT_PTR id, int index)
     "https://iftechfoundation.org/",
     "http://www.inform7.com",
     "https://ifdb.org/search?sortby=ratu&newSortBy.x=0&newSortBy.y=0&searchfor=system%3AInform+7",
-    "https://www.intfiction.org/forum",
     "https://www.intfiction.org/forum/viewforum.php?f=7",
     "https://ifwiki.org/index.php/Main_Page",
     "https://planet-if.com/",
     "https://ifcomp.org",
+    "https://github.com/ganelson/inform",
     "https://ifdb.org/search?sortby=new&newSortBy.x=0&newSortBy.y=0&searchfor=tag%3A+i7+source+available"
   };
 
