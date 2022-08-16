@@ -2,6 +2,7 @@ Build/*.*
 Build/Chrome/
 Build/Compilers/
 Build/Documentation/*.*
+Build/Documentation/advice/*.html
 Build/Documentation/bg_images
 Build/Documentation/doc_images
 Build/Documentation/map_icons

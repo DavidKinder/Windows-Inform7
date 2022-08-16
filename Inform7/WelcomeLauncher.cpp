@@ -532,7 +532,7 @@ void WelcomeLauncherView::OnClickedAdvice(UINT nID)
 
       ShowHtml(true);
       m_html.Navigate(TextFormat::AnsiToUTF8(
-        theApp.GetAppDir()+"\\Documentation\\windows\\"+pages[i]),true);
+        theApp.GetAppDir()+"\\Documentation\\advice\\"+pages[i]),true);
     }
   }
 }

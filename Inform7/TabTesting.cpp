@@ -62,7 +62,7 @@ void TabTesting::CreateTab(CWnd* parent)
   m_helpWindow = (ReportHtml*)m_splitter.GetPane(1,0);
   m_helpWindow->SetLinkConsumer(this);
   m_helpWindow->Navigate(TextFormat::AnsiToUTF8(
-    theApp.GetAppDir()+"\\Documentation\\windows\\TestingTemplate.html"),false);
+    theApp.GetAppDir()+"\\Documentation\\advice\\TestingTemplate.html"),false);
 
   // Set window text for accessibility
   m_splitter.SetWindowText("Testing page");

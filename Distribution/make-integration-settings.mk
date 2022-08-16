@@ -14,6 +14,7 @@ BUILTINCOMPS = ../../Build/Compilers
 INTERNAL = ../../Build/Internal
 BUILTINHTML = ../../Build/Documentation
 BUILTINHTMLINNER = ../../Build/Documentation/sections
+ADVICEHTML = ../../Build/Documentation/advice
 
 # Various executables are copied into the BUILTINCOMPS folder, but their
 # filenames when copied there have sometimes differed between platforms.
@@ -23,10 +24,7 @@ INFORM6NAME = inform6
 INFORM7NAME = inform7
 INTESTNAME = intest
 
-# Indoc options for generating the inside-the-application documentation:
-
 INDOCOPTS = windows_app
-
-# For reasons to do with CSS, the following should be "-no-font" for Windows:
-
 INRTPSOPTS = -no-font
+HTMLPLATFORM = windows
+
