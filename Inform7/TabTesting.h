@@ -39,7 +39,7 @@ public:
   void LinkDone(void);
 
   void SetSkein(Skein* skein, int idx);
-  void SelectNode(Skein::Node* node);
+  void SkeinShowNode(Skein::Node* node, bool select);
   void SkeinChanged(void);
   void Animate(int pct);
 

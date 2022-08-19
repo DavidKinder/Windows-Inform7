@@ -216,9 +216,9 @@ void TabTesting::SetSkein(Skein* skein, int idx)
   m_skeinWindow->SetSkein(skein,idx);
 }
 
-void TabTesting::SelectNode(Skein::Node* node)
+void TabTesting::SkeinShowNode(Skein::Node* node, bool select)
 {
-  m_skeinWindow->SkeinShowNode(node,true);
+  m_skeinWindow->SkeinShowNode(node,select);
 }
 
 void TabTesting::SkeinChanged(void)
