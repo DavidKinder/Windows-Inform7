@@ -10,7 +10,7 @@ Unicode true
 ManifestDPIAware true
 
 SetCompressor /SOLID lzma
-OutFile "Inform_${INFORM_VER}_Windows.exe"
+OutFile "Inform_Windows.exe"
 
 InstallDir "$PROGRAMFILES64\Inform 7"
 InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory"
