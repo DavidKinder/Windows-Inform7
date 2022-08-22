@@ -30,7 +30,6 @@ InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory"
 !insertmacro MUI_PAGE_INSTFILES
 
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW SetFinishBitmap
-!define MUI_FINISHPAGE_RUN $INSTDIR\Inform.exe
 !insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_UNPAGE_CONFIRM
