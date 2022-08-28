@@ -51,7 +51,7 @@ public:
     ASSERT(m_dataLen == 0);
 
     handle_request = true;
-    CString path = ConvertUrlToPath(request->GetURL().ToString().c_str());
+    CString path = ConvertUrlToPath(request->GetURL().ToString().c_str(),NULL);
     if (!path.IsEmpty())
     {
       CFileStatus status;
@@ -117,7 +117,7 @@ public:
   }
 
   // Convert an inform: URL to a file path
-  static CString ConvertUrlToPath(const char* url)
+  static CString ConvertUrlToPath(const char* url, CString* suffix)
   {
     if (strncmp(url,"inform:",7) != 0)
       return false;
@@ -125,6 +125,14 @@ public:
     CString appDir = theApp.GetAppDir();
     CStringW fileName = TextFormat::UTF8ToUnicode(Unescape(url+8));
     fileName.TrimRight(L"/");
+
+    int hash = fileName.Find('#');
+    if (hash > 0)
+    {
+       if (suffix)
+         *suffix = fileName.Mid(hash);
+       fileName = fileName.Left(hash);
+    }
 
     static const char* dirs[] =
     {
@@ -1116,8 +1124,9 @@ bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
     else if (strncmp(url,"inform:",7) == 0)
     {
       // Got an inform: documentation URL
-      CString path = I7SchemeHandler::ConvertUrlToPath(url);
-      if (m_consumer->DocLink(theApp.PathToUrl(path)))
+      CString suffix;
+      CString path = I7SchemeHandler::ConvertUrlToPath(url,&suffix);
+      if (m_consumer->DocLink(theApp.PathToUrl(path)+suffix))
         return true;
     }
   }
