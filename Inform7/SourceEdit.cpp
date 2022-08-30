@@ -812,6 +812,7 @@ void SourceEdit::SetStyles(COLORREF back)
   {
     CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,m_colourMain);
     CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,back);
+    CallEdit(SCI_SETCARETFORE,m_colourMain);
     CallEdit(SCI_STYLECLEARALL);
 
     CallEdit(SCI_STYLESETFORE,STYLE_QUOTE,m_colourQuote);
@@ -830,8 +831,10 @@ void SourceEdit::SetStyles(COLORREF back)
   }
   else
   {
-    CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,theApp.GetColour(InformApp::ColourText));
+    COLORREF text = theApp.GetColour(InformApp::ColourText);
+    CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,text);
     CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,back);
+    CallEdit(SCI_SETCARETFORE,text);
     CallEdit(SCI_STYLECLEARALL);
   }
 }
