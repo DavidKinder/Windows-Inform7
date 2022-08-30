@@ -2425,7 +2425,7 @@ CString ProjectFrame::Inform7CommandLine(bool release)
   CString version = m_settings.GetCompilerVersion();
 
   CString executable, arguments;
-  if (version == INFORM_VER)
+  if ((version == INFORM_VER) || (version == "10.1"))
   {
     CString i7format = m_settings.GetOutputNewFormat(release);
     executable.Format("%s\\Compilers\\inform7",(LPCSTR)app);
