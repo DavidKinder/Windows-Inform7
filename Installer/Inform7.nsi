@@ -12,7 +12,7 @@ ManifestDPIAware true
 SetCompressor /SOLID lzma
 OutFile "Inform_Windows.exe"
 
-InstallDir "$PROGRAMFILES64\Inform 7"
+InstallDir "$PROGRAMFILES64\Inform"
 InstallDirRegKey HKLM "SOFTWARE\David Kinder\Inform\Install64" "Directory"
 
 !define MUI_ICON "..\Inform7\res\Inform7.ico"
