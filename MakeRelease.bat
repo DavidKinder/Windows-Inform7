@@ -3,7 +3,7 @@
 if %1. == . goto NoRelease
 
 pushd Build
-"%ProgramFiles(x86)%\Zip\zip" -r \Temp\Inform_%1_Windows_zipped.zip *.*
+"%ProgramFiles(x86)%\Zip\zip" -r \Temp\Inform_%1_Windows_zipped_files.zip *.*
 popd
 
 pushd Installer
