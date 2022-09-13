@@ -122,7 +122,8 @@ private:
   CDibSection* m_bitmaps[Number_Bitmaps];
 
   CSize m_fontSize;
-  CFont m_boldFont;
+  CFont m_rootFont;
+  CFont m_testMeFont;
   SkeinEdit m_edit;
   int m_pctAnim;
 

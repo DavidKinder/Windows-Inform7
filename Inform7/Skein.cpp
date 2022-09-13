@@ -41,8 +41,11 @@ Skein::Node* Skein::GetPlayTo(void)
 
 void Skein::SetPlayTo(Node* node)
 {
-  m_playTo = node;
-  NotifyChange(PlayedChanged);
+  if (!(node->IsTestSubItem()))
+  {
+    m_playTo = node;
+    NotifyChange(PlayedChanged);
+  }
 }
 
 bool Skein::InPlayThread(Node* node)
@@ -123,9 +126,45 @@ void Skein::Load(const char* path)
     bool changed = BoolFromXML(item,L"changed/text()",false);
     bool temp = BoolFromXML(item,L"temporary/text()",true);
     int score = IntFromXML(item,L"temporary/@score");
-
-    nodes[id] = new Node(command,label,result,commentary,changed);
     item = NULL;
+
+    if (IsTestCommand(command))
+    {
+      std::vector<CStringW> transcripts, expecteds;
+      SeparateByBracketedSequentialNumbers(result,transcripts);
+      SeparateByBracketedSequentialNumbers(commentary,expecteds);
+
+      result.Empty();
+      commentary.Empty();
+      if (transcripts.size() > 0)
+      {
+        result = transcripts[0];
+        if (expecteds.size() > 0)
+          commentary = expecteds[0];
+      }
+
+      Node* node = new Node(command,label,result,commentary,changed);
+      nodes[id] = node;
+
+      if (transcripts.size() > 1)
+      {
+        for (int i = 1; i < transcripts.size(); i++)
+        {
+          CStringW expected;
+          if (i < expecteds.size())
+            expected = expecteds[i];
+          Node* testNode = new Node(CommandForTestingEntry(transcripts[i]),L"",
+            OutputForTestingEntry(transcripts[i]),OutputForTestingEntry(expected),false);
+          testNode->SetTestSubItem();
+          node->Add(testNode);
+          node = testNode;
+        }
+      }
+    }
+    else
+    {
+      nodes[id] = new Node(command,label,result,commentary,changed);
+    }
   }
 
   // Loop through the XML item nodes again, setting up the parent-child links
@@ -133,6 +172,18 @@ void Skein::Load(const char* path)
   while (items->nextNode(&item) == S_OK)
   {
     Node* parentNode = nodes[StringFromXML(item,L"@nodeId").m_str];
+
+    // If there are test sub-items, find the last one
+    if (parentNode->IsTestCommand())
+    {
+      while (parentNode->GetNumChildren() == 1)
+      {
+        Node* childNode = parentNode->GetChild(0);
+        if (!childNode->IsTestSubItem())
+          break;
+        parentNode = childNode;
+      }
+    }
 
     CComPtr<IXMLDOMNodeList> children;
     item->selectNodes(L"children/child",&children);
@@ -499,23 +550,26 @@ CSize Skein::GetTreeExtent(int idx)
   return CSize(valid ? (xmax - xmin) : 0,height);
 }
 
-void Skein::NewLine(const CStringW& line)
+void Skein::NewLine(const CStringW& line, bool test)
 {
   bool nodeAdded = false;
   CStringW nodeLine = EscapeLine(line,UsePrintable);
 
   // Is there a child node with the same line?
-  Node* node = m_playTo->Find(nodeLine);
+  Node* node = m_played->Find(nodeLine);
   if (node == NULL)
   {
     node = new Node(nodeLine,L"",L"",L"",false);
-    m_playTo->Add(node);
-    m_playTo->SortChildren();
+    m_played->Add(node);
+    m_played->SortChildren();
     nodeAdded = true;
   }
 
   // Make this the new node being played
-  m_playTo = node;
+  if (test)
+    node->SetTestSubItem();
+  else
+    m_playTo = node;
   m_played = node;
 
   // Notify any listeners
@@ -548,13 +602,40 @@ bool Skein::NextLine(CStringW& line)
 
 void Skein::UpdateAfterPlaying(const CStringW& transcript)
 {
-  // Update the status of the last played node
-  if (transcript.IsEmpty() == FALSE)
-    m_played->NewTranscriptText(transcript);
+  Change change = NodeTranscriptChanged;
 
-  NotifyChange(NodeTranscriptChanged);
-  if (transcript.IsEmpty() == FALSE)
-    NotifyShowNode(m_played);
+  if (m_played->IsTestCommand())
+  {
+    std::vector<CStringW> transcripts;
+    SeparateByBracketedSequentialNumbers(transcript,transcripts);
+
+    if (transcripts.size() > 0)
+      m_played->NewTranscriptText(transcripts[0]);
+    if (transcripts.size() > 1)
+    {
+      // Go through the remaining entries, inserting test child items as we go
+      for (int i = 1; i < transcripts.size(); i++)
+      {
+        Node* parent = m_played;
+        NewLine(CommandForTestingEntry(transcripts[i]),true);
+        parent->RemoveAllExcept(m_played);
+        m_played->NewTranscriptText(OutputForTestingEntry(transcripts[i]));
+        change = TreeChanged;
+      }
+
+      // The node being played to may have been removed by the above
+      if ((change == TreeChanged) && !IsValidNode(m_playTo))
+        m_playTo = m_played;
+    }
+  }
+  else
+  {
+    // Update the status of the last played node
+    m_played->NewTranscriptText(transcript);
+  }
+
+  NotifyChange(change);
+  NotifyShowNode(m_played);
 }
 
 static const wchar_t* escapes[] =
@@ -904,6 +985,59 @@ void Skein::NotifyShowNode(Node* node)
     (*it)->SkeinShowNode(node,false);
 }
 
+bool Skein::IsTestCommand(const CStringW& line)
+{
+  return (line.Left(5) == L"test ");
+}
+
+void Skein::SeparateByBracketedSequentialNumbers(const CStringW& text, std::vector<CStringW>& results)
+{
+  if (text.IsEmpty())
+    return;
+
+  int commandIndexToFind = 1;
+  int searchFrom = 0;
+  while (searchFrom < text.GetLength())
+  {
+    CStringW stringToFind;
+    stringToFind.Format(L"[%d]",commandIndexToFind);
+
+    int found = text.Find(stringToFind,searchFrom);
+    if (found < 0)
+      break;
+    results.push_back(text.Mid(searchFrom,found-searchFrom));
+
+    // Move beyond the separator to the remainder of the string
+    searchFrom = found + stringToFind.GetLength();
+
+    // Look for the next number
+    commandIndexToFind++;
+  }
+
+  // Add the remainder of the string as the final component of the results
+  if (searchFrom < text.GetLength())
+    results.push_back(text.Mid(searchFrom));
+}
+
+CStringW Skein::CommandForTestingEntry(const CStringW& entry)
+{
+  CStringW command(entry);
+  command.Trim();
+
+  int returnIndex = command.Find(L"\n");
+  if (returnIndex >= 0)
+    return command.Left(returnIndex);
+  return command;
+}
+
+CStringW Skein::OutputForTestingEntry(const CStringW& entry)
+{
+  int returnIndex = entry.Find(L"\n");
+  if (returnIndex >= 0)
+    return entry.Mid(returnIndex+1);
+  return entry;
+}
+
 LPCTSTR Skein::ToXML_UTF8(bool value)
 {
   return value ? "YES" : "NO";
@@ -957,7 +1091,7 @@ Skein::Node::Node(const CStringW& line, const CStringW& label, const CStringW& t
   const CStringW& expected, bool changed)
   : m_parent(NULL), m_line(line), m_label(label), 
     m_textTranscript(transcript), m_textExpected(expected),
-    m_locked(false), m_changed(changed)
+    m_locked(false), m_changed(changed), m_testSubItem(false)
 {
   static unsigned long counter = 0;
   m_id.Format("node-%lu",counter++);
@@ -1043,6 +1177,32 @@ bool Skein::Node::SetLocked(bool locked)
   bool change = (m_locked != locked);
   m_locked = locked;
   return change;
+}
+
+bool Skein::Node::IsTestCommand(void)
+{
+  return Skein::IsTestCommand(m_line);
+}
+
+bool Skein::Node::IsTestSubItem(void)
+{
+  return m_testSubItem;
+}
+
+void Skein::Node::SetTestSubItem(void)
+{
+  m_testSubItem = true;
+}
+
+int Skein::Node::GetNumTestSubChildren(void)
+{
+  int num = 0;
+  for (int i = 0; i < m_children.GetSize(); i++)
+  {
+    if (m_children[i]->IsTestSubItem())
+      num++;
+  }
+  return num;
 }
 
 void Skein::Node::NewTranscriptText(LPCWSTR text)
@@ -1186,6 +1346,22 @@ void Skein::Node::RemoveAll(void)
   m_children.RemoveAll();
 }
 
+
+void Skein::Node::RemoveAllExcept(Node* keep)
+{
+  for (int i = 0; i < m_children.GetSize();)
+  {
+    if (m_children[i] == keep)
+      i++;
+    else
+    {
+      Node* child = m_children[i];
+      m_children.RemoveAt(i);
+      delete child;
+    }
+  }
+}
+
 bool Skein::Node::RemoveSingle(Node* child)
 {
   for (int i = 0; i < m_children.GetSize(); i++)
@@ -1275,6 +1451,33 @@ const char* Skein::Node::GetUniqueId(void)
 
 void Skein::Node::SaveNodes(FILE* skeinFile)
 {
+  CStringW saveTranscript = m_textTranscript;
+  CStringW saveExpected = m_textExpected;
+  Node* leafItem = this;
+
+  // If there are test sub-items, include them in the transcript and expected text
+  if (IsTestCommand())
+  {
+    int commandTotal = 1;
+    while (leafItem->m_children.GetSize() == 1)
+    {
+      Node* child = leafItem->m_children[0];
+      if (!child->IsTestSubItem())
+        break;
+
+      leafItem = child;
+      commandTotal++;
+    }
+
+    Node* loopItem = this;
+    for (int commandIndex = 1; commandIndex < commandTotal; commandIndex++)
+    {
+      loopItem = loopItem->m_children[0];
+      saveTranscript.AppendFormat(L"[%d] %s\n%s",commandIndex,loopItem->m_line,loopItem->m_textTranscript);
+      saveExpected.AppendFormat(L"[%d] %s\n%s",commandIndex,loopItem->m_line,loopItem->m_textExpected);
+    }
+  }
+
   fprintf(skeinFile,
     "  <item nodeId=\"%s\">\n"
     "    <command xml:space=\"preserve\">%s</command>\n"
@@ -1283,8 +1486,8 @@ void Skein::Node::SaveNodes(FILE* skeinFile)
     "    <changed>%s</changed>\n",
     (LPCTSTR)m_id,
     (LPCTSTR)TextFormat::ToXML_UTF8(m_line),
-    (LPCTSTR)TextFormat::ToXML_UTF8(m_textTranscript),
-    (LPCTSTR)TextFormat::ToXML_UTF8(m_textExpected),
+    (LPCTSTR)TextFormat::ToXML_UTF8(saveTranscript),
+    (LPCTSTR)TextFormat::ToXML_UTF8(saveExpected),
     ToXML_UTF8(m_changed));
 
   if (m_label.GetLength() > 0)
@@ -1294,20 +1497,32 @@ void Skein::Node::SaveNodes(FILE* skeinFile)
       (LPCTSTR)TextFormat::ToXML_UTF8(m_label));
   }
 
-  if (m_children.GetSize() > 0)
+  // Write out children, but only if there are non-test children. Note that if this is a test
+  // node, the children written out are the non-test children of the leaf item of the test nodes,
+  // i.e. any command that comes after the testing sequence.
+  if (leafItem->GetNumChildren() > leafItem->GetNumTestSubChildren())
   {
     fprintf(skeinFile,"    <children>\n");
-    for (int i = 0; i < m_children.GetSize(); i++)
+    for (int i = 0; i < leafItem->GetNumChildren(); i++)
     {
-      fprintf(skeinFile,"      <child nodeId=\"%s\"/>\n",
-        (LPCTSTR)m_children[i]->m_id);
+      if (!leafItem->GetChild(i)->IsTestSubItem())
+      {
+        fprintf(skeinFile,"      <child nodeId=\"%s\"/>\n",
+          (LPCTSTR)leafItem->GetChild(i)->m_id);
+      }
     }
     fprintf(skeinFile,"    </children>\n");
   }
+
+  // End the XML description of this node
   fprintf(skeinFile,"  </item>\n");
 
-  for (int i = 0; i < m_children.GetSize(); i++)
-    m_children[i]->SaveNodes(skeinFile);
+  // Save any non-test children of the leaf node
+  for (int i = 0; i < leafItem->GetNumChildren(); i++)
+  {
+    if (!leafItem->GetChild(i)->IsTestSubItem())
+      leafItem->GetChild(i)->SaveNodes(skeinFile);
+  }
 }
 
 void Skein::Node::GetNodesByDepth(int depth, std::vector<std::vector<Node*> >& nodesByDepth)

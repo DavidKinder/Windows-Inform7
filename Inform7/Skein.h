@@ -41,7 +41,7 @@ public:
     const CSize& spacing, TranscriptPane& transcript);
   CSize GetTreeExtent(int idx);
 
-  void NewLine(const CStringW& line);
+  void NewLine(const CStringW& line, bool test);
   bool NextLine(CStringW& line);
   void UpdateAfterPlaying(const CStringW& transcript);
 
@@ -85,6 +85,10 @@ public:
     bool GetLocked(void);
     bool SetLocked(bool locked);
 
+    bool IsTestCommand(void);
+    bool IsTestSubItem(void);
+    void SetTestSubItem(void);
+    int GetNumTestSubChildren(void);
     void NewTranscriptText(LPCWSTR text);
 
     bool Bless(void);
@@ -100,6 +104,7 @@ public:
     void Add(Node* child);
     bool Remove(Node* child);
     void RemoveAll(void);
+    void RemoveAllExcept(Node* keep);
     bool RemoveSingle(Node* child);
     void Replace(Node* oldNode, Node* newNode);
     bool SortChildren(void);
@@ -136,6 +141,7 @@ public:
 
     bool m_locked;
     bool m_changed;
+    bool m_testSubItem;
 
     Node* m_parent;
     CArray<Node*> m_children;
@@ -210,6 +216,11 @@ public:
   void NotifyShowNode(Node* node);
 
 private:
+  static bool IsTestCommand(const CStringW& line);
+  static void SeparateByBracketedSequentialNumbers(const CStringW& text, std::vector<CStringW>& results);
+  static CStringW CommandForTestingEntry(const CStringW& entry);
+  static CStringW OutputForTestingEntry(const CStringW& entry);
+
   static LPCTSTR ToXML_UTF8(bool value);
   static CComBSTR StringFromXML(IXMLDOMNode* node, LPWSTR query);
   static bool BoolFromXML(IXMLDOMNode* node, LPWSTR query, bool ifNon);

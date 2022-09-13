@@ -114,22 +114,26 @@ void SkeinWindow::OnLButtonUp(UINT nFlags, CPoint point)
   if (node != NULL)
   {
     // Is the user clicking on the context menu button?
-    if (GetMenuButtonRect(m_nodes[node]).PtInRect(point))
+    if (!node->IsTestSubItem())
     {
-      if (!dclick)
+      if (GetMenuButtonRect(m_nodes[node]).PtInRect(point))
       {
-        CPoint sp(point);
-        ClientToScreen(&sp);
-        OnContextMenu(this,sp);
+        if (!dclick)
+        {
+          CPoint sp(point);
+          ClientToScreen(&sp);
+          OnContextMenu(this,sp);
+        }
+        CScrollView::OnLButtonUp(nFlags,point);
+        return;
       }
-      CScrollView::OnLButtonUp(nFlags,point);
-      return;
     }
 
     if (dclick)
     {
       // Start the skein playing to this node
-      GetParentFrame()->SendMessage(WM_PLAYSKEIN,(WPARAM)node);
+      if (!node->IsTestSubItem())
+        GetParentFrame()->SendMessage(WM_PLAYSKEIN,(WPARAM)node);
     }
     else
     {
@@ -173,6 +177,10 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
   if (node == NULL)
     return;
 
+  // No menu for items created by a "test me" command
+  if (node->IsTestSubItem())
+    return;
+
   // Get the context menu
   CMenu popup;
   popup.LoadMenu(IDR_SKEIN);
@@ -196,6 +204,12 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
     menu->RemoveMenu(ID_SKEIN_LOCK,MF_BYCOMMAND);
   else
     menu->RemoveMenu(ID_SKEIN_UNLOCK,MF_BYCOMMAND);
+  if (node->IsTestCommand())
+  {
+    menu->RemoveMenu(ID_SKEIN_INSERT_NEXT,MF_BYCOMMAND);    
+    menu->RemoveMenu(ID_SKEIN_SPLIT_THREAD,MF_BYCOMMAND);    
+    menu->RemoveMenu(ID_SKEIN_DELETE,MF_BYCOMMAND);    
+  }
   RemoveExcessSeparators(menu);
   if (gameRunning && m_skein->InPlayThread(node))
   {
@@ -328,7 +342,9 @@ void SkeinWindow::OnMouseMove(UINT nFlags, CPoint point)
   bool mouseOverMenu = false;
   if (mouseOverNode)
   {
-    if (GetMenuButtonRect(m_nodes[mouseOverNode]).PtInRect(point))
+    if (mouseOverNode->IsTestSubItem())
+      mouseOverNode = NULL;
+    else if (GetMenuButtonRect(m_nodes[mouseOverNode]).PtInRect(point))
       mouseOverMenu = true;
   }
 
@@ -560,7 +576,8 @@ void SkeinWindow::Layout(Skein::LayoutMode mode)
 
 void SkeinWindow::PrefsChanged(void)
 {
-  m_boldFont.DeleteObject();
+  m_rootFont.DeleteObject();
+  m_testMeFont.DeleteObject();
   SetFontsBitmaps();
 
   Layout(Skein::LayoutRecalculate);
@@ -802,12 +819,15 @@ void SkeinWindow::SetFontsBitmaps(void)
   CFont* font = theApp.GetFont(this,InformApp::FontDisplay);
   m_edit.SetFont(font);
 
-  // Create a font
+  // Create fonts
   LOGFONT fontInfo;
   ::ZeroMemory(&fontInfo,sizeof fontInfo);
   font->GetLogFont(&fontInfo);
   fontInfo.lfWeight = FW_BOLD;
-  m_boldFont.CreateFontIndirect(&fontInfo);
+  m_rootFont.CreateFontIndirect(&fontInfo);
+  fontInfo.lfWeight = FW_NORMAL;
+  fontInfo.lfItalic = TRUE;
+  m_testMeFont.CreateFontIndirect(&fontInfo);
 
   // Work out the size of the font
   m_fontSize = theApp.MeasureFont(this,font);
@@ -883,19 +903,29 @@ void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, cons
     // Draw the node's background
     DrawNodeBack(node,bitmap,centre,width,m_bitmaps[GetNodeBack(node,selected,gameRunning)]);
 
+    // Set the default text colour
+    dc.SetTextColor(theApp.GetColour(InformApp::ColourBack));
+
     // Change the font, if needed
     CFont* oldFont = NULL;
     int textWidth = node->GetLineTextWidth(m_skeinIndex);
     if (node == m_skein->GetRoot())
     {
-      oldFont = dc.SelectObject(&m_boldFont);
+      oldFont = dc.SelectObject(&m_rootFont);
       CSize textSize;
       if (::GetTextExtentPoint32W(dc.GetSafeHdc(),line,(UINT)wcslen(line),&textSize))
         textWidth = textSize.cx;
     }
+    else if (node->IsTestSubItem())
+    {
+      oldFont = dc.SelectObject(&m_testMeFont);
+      CSize textSize;
+      if (::GetTextExtentPoint32W(dc.GetSafeHdc(),line,(UINT)wcslen(line),&textSize))
+        textWidth = textSize.cx;
+      dc.SetTextColor(theApp.GetColour(InformApp::ColourTestMe));
+    }
 
     // Write out the node's line
-    dc.SetTextColor(theApp.GetColour(InformApp::ColourBack));
     ::ExtTextOutW(dc.GetSafeHdc(),centre.x-(textWidth/2),centre.y-(m_fontSize.cy/2),0,
       NULL,line,(UINT)wcslen(line),NULL);
 

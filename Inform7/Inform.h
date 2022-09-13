@@ -83,7 +83,8 @@ public:
     ColourContents,
     ColourContentsSelect,
     ColourContentsBelow,
-    ColourI7XP
+    ColourI7XP,
+    ColourTestMe
   };
 
   COLORREF GetColour(Colours colour);

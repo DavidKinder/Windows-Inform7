@@ -1387,7 +1387,7 @@ void ProjectFrame::OnPlayTest()
     if (CompileProject(false,true,false))
     {
       m_skein.Reset(true);
-      m_skein.NewLine(L"test me");
+      m_skein.NewLine(L"test me",false);
       m_skein.Reset(false);
       GetPanel(ChoosePanel(Panel::Tab_Story))->SetActiveTab(Panel::Tab_Story);
       RunProject();
@@ -3170,7 +3170,7 @@ void ProjectFrame::TestCurrentExample(bool testAll)
       {
         m_skein.Reset(true);
         for (int i = 0; i < sink.results.GetSize(); i++)
-          m_skein.NewLine(sink.results.GetAt(i));
+          m_skein.NewLine(sink.results.GetAt(i),false);
         m_skein.Reset(false);
         RunProject();
         m_progress.LongTaskAdvance();

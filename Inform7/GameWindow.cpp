@@ -1281,7 +1281,7 @@ LRESULT GameWindow::OnEndLineInput(WPARAM wParam, LPARAM lParam)
 
     // Add the input line to the skein
     if (lParam != 0)
-      m_skein.NewLine(input);
+      m_skein.NewLine(input,false);
   }
   return 0;
 }
@@ -1299,7 +1299,7 @@ LRESULT GameWindow::OnEndCharInput(WPARAM wParam, LPARAM)
     // Add the input key to the skein
     CStringW input;
     input.AppendChar(key);
-    m_skein.NewLine(input);
+    m_skein.NewLine(input,false);
   }
   return 0;
 }

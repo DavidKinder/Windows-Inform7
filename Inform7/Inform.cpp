@@ -533,6 +533,8 @@ COLORREF InformApp::GetColour(Colours colour)
     return RGB(0xf0,0xf7,0xeb);
   case ColourI7XP:
     return RGB(0xff,0xff,0xe0);
+  case ColourTestMe:
+    return RGB(0xcc,0xcc,0xcc);
   default:
     return RGB(0x00,0x00,0x00);
   }
