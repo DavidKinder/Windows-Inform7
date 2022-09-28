@@ -66,12 +66,16 @@ protected:
   afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
   afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+  afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
   afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
   afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
   afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
   afx_msg void OnMouseMove(UINT nFlags, CPoint point);
   afx_msg BOOL OnMouseWheel(UINT fFlags, short zDelta, CPoint point);
   afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
+  afx_msg void OnCancelMode();
+  afx_msg void OnCaptureChanged(CWnd* pWnd);
+  afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
   afx_msg void OnTimer(UINT_PTR nIDEvent);
 
   afx_msg LRESULT HandleMButtonDown(WPARAM wParam, LPARAM lParam);
@@ -115,6 +119,8 @@ private:
 
   void RemoveWinningLabels(Skein::Node* node);
 
+  void PerformDrop(SkeinWindow* fromWnd, Skein::Node* dragNode, Skein::Node* dropNode, bool move);
+
   Skein* m_skein;
   int m_skeinIndex;
 
@@ -130,9 +136,21 @@ private:
   Skein::Node* m_mouseOverNode;
   bool m_mouseOverMenu;
 
-  bool m_lastClick;
-  DWORD m_lastClickTime;
-  CPoint m_lastPoint;
+  enum MouseMode
+  {
+    MouseNormal,
+    MouseClicked,
+    MouseDragMove,
+    MouseDragCopy
+  };
+
+  MouseMode m_mouseMode;
+  DWORD m_clickTime;
+  CPoint m_clickPoint;
+  Skein::Node* m_dragNode;
+
+  HCURSOR m_arrowDragCopy;
+  HCURSOR m_arrowDragMove;
 
   TranscriptPane m_transcript;
   bool m_showTranscriptAfterAnim;

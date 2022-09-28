@@ -62,6 +62,8 @@ public:
       const CStringW& expected, bool changed);
     ~Node();
 
+    Node* Clone(void);
+ 
     Node* GetParent(void);
     void SetParent(Node* parent);
 
@@ -107,6 +109,7 @@ public:
     void RemoveAllExcept(Node* keep);
     bool RemoveSingle(Node* child);
     void Replace(Node* oldNode, Node* newNode);
+    bool ReleaseChild(Node* child);
     bool SortChildren(void);
 
     Node* Find(const CStringW& line);
@@ -192,6 +195,9 @@ public:
   Node* GetFirstDifferent(Node* node = NULL);
   void GetAllNodes(CArray<Skein::Node*,Skein::Node*>& nodes, Node* node = NULL);
   Node* FindNode(const char* id, Node* node = NULL);
+
+  void CopyNode(Node* node, Node* parentNode);
+  bool MoveNode(Node* node, Node* parentNode, Skein* fromSkein);
 
   enum Change
   {

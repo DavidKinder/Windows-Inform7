@@ -958,6 +958,39 @@ Skein::Node* Skein::FindNode(const char* id, Node* node)
   return NULL;
 }
 
+void Skein::CopyNode(Node* node, Node* parentNode)
+{
+  parentNode->Add(node->Clone());
+  parentNode->SortChildren();
+
+  InvalidateLayout();
+  NotifyChange(TreeChanged);
+  NotifyEdit(true);
+}
+
+bool Skein::MoveNode(Node* node, Node* parentNode, Skein* fromSkein)
+{
+  ASSERT(node->GetParent() != NULL);
+  if (node->GetParent()->ReleaseChild(node))
+  {
+    parentNode->Add(node);
+    parentNode->SortChildren();
+
+    InvalidateLayout();
+    NotifyChange(TreeChanged);
+    NotifyEdit(true);
+
+    if (fromSkein != this)
+    {
+      fromSkein->InvalidateLayout();
+      fromSkein->NotifyChange(TreeChanged);
+      fromSkein->NotifyEdit(true);
+    }
+    return true;
+  }
+  return false;
+}
+
 void Skein::AddListener(Listener* listener)
 {
   m_listeners.push_back(listener);
@@ -1102,6 +1135,15 @@ Skein::Node::~Node()
 {
   for (int i = 0; i < m_children.GetSize(); i++)
     delete m_children[i];
+}
+
+Skein::Node* Skein::Node::Clone(void)
+{
+  Node* clone = new Node(m_line,m_label,m_textTranscript,m_textExpected,false);
+  clone->m_testSubItem = m_testSubItem;
+  for (int i = 0; i < m_children.GetSize(); i++)
+    clone->Add(m_children[i]->Clone());
+  return clone;
 }
 
 Skein::Node* Skein::Node::GetParent(void)
@@ -1418,6 +1460,19 @@ bool Skein::Node::SortChildren(void)
         m_children.Copy(sorted);
         return true;
       }
+    }
+  }
+  return false;
+}
+
+bool Skein::Node::ReleaseChild(Node* child)
+{
+  for (int i = 0; i < m_children.GetSize(); i++)
+  {
+    if (m_children[i] == child)
+    {
+      m_children.RemoveAt(i);
+      return true;
     }
   }
   return false;

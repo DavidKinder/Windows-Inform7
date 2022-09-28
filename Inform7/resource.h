@@ -86,6 +86,8 @@
 #define ID_HEAD_PREVIOUS                282
 #define ID_HEAD_NEXT                    283
 #define ID_FILE_CLEAR_RECENT            284
+#define IDC_DRAGCOPY                    285
+#define IDC_DRAGMOVE                    286
 #define ID_WINDOW_LIST                  300
 #define ID_SKEIN_PLAY                   400
 #define ID_SKEIN_EDIT                   401
@@ -245,7 +247,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        285
+#define _APS_NEXT_RESOURCE_VALUE        287
 #define _APS_NEXT_COMMAND_VALUE         285
 #define _APS_NEXT_CONTROL_VALUE         1144
 #define _APS_NEXT_SYMED_VALUE           100

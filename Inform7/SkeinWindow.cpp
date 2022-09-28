@@ -19,11 +19,15 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
   ON_WM_VSCROLL()
   ON_WM_HSCROLL()
   ON_WM_ERASEBKGND()
+  ON_WM_LBUTTONDOWN()
   ON_WM_LBUTTONUP()
   ON_WM_CONTEXTMENU()
   ON_WM_MOUSEACTIVATE()
   ON_WM_MOUSEMOVE()
   ON_WM_MOUSEWHEEL()
+  ON_WM_CANCELMODE()
+  ON_WM_CAPTURECHANGED()
+  ON_WM_CHAR()
   ON_WM_TIMER()
 
   ON_MESSAGE(WM_MBUTTONDOWN, HandleMButtonDown)
@@ -31,9 +35,13 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
 END_MESSAGE_MAP()
 
 SkeinWindow::SkeinWindow() : m_skein(NULL), m_skeinIndex(-1),
-  m_mouseOverNode(NULL), m_mouseOverMenu(false), m_lastClick(false), m_lastClickTime(0),
+  m_mouseOverNode(NULL), m_mouseOverMenu(false), m_mouseMode(MouseNormal), m_clickTime(0), m_dragNode(NULL),
   m_pctAnim(-1), m_showTranscriptAfterAnim(false), m_anchorWindow(NULL)
 {
+  HINSTANCE hInst = AfxFindResourceHandle(MAKEINTRESOURCE(IDC_DRAGCOPY),RT_GROUP_CURSOR);
+  ASSERT(hInst != NULL);
+  m_arrowDragCopy = ::LoadCursor(hInst,MAKEINTRESOURCE(IDC_DRAGCOPY));
+  m_arrowDragMove = ::LoadCursor(hInst,MAKEINTRESOURCE(IDC_DRAGMOVE));
 }
 
 SkeinWindow::~SkeinWindow()
@@ -104,57 +112,152 @@ BOOL SkeinWindow::OnEraseBkgnd(CDC* pDC)
   return TRUE;
 }
 
-void SkeinWindow::OnLButtonUp(UINT nFlags, CPoint point)
+void SkeinWindow::OnLButtonDown(UINT nFlags, CPoint point)
 {
-  // Is this a double click?
-  bool dclick = m_lastClick ? (::GetTickCount() - m_lastClickTime) < ::GetDoubleClickTime() : false;
-  m_lastClick = false;
-
-  Skein::Node* node = NodeAtPoint(point);
-  if (node != NULL)
+  bool canDrag = true;
+  if (m_mouseOverNode == NULL) // Not over a node
+    canDrag = false;
+  else if (m_mouseOverMenu) // Over a node's menu button
+    canDrag = false;
+  else if (m_mouseOverNode->GetParent() == NULL) // Over the root node
+    canDrag = false;
+  else
   {
-    // Is the user clicking on the context menu button?
-    if (!node->IsTestSubItem())
+    bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
+    if (gameRunning && m_skein->InPlayThread(m_mouseOverNode)) // In the playing thread
+      canDrag = false;
+  }
+
+  if (canDrag)
+  {
+    // Is the user starting a drag operation? If not, check the mouse button
+    // has been released during DragDetect() and re-post the message if needed.
+    CPoint scrPoint(point);
+    ClientToScreen(&scrPoint);
+    if (DragDetect(scrPoint))
     {
-      if (GetMenuButtonRect(m_nodes[node]).PtInRect(point))
+      m_dragNode = m_mouseOverNode;
+      SetCapture();
+      if ((::GetKeyState(VK_CONTROL) & 0x8000) != 0)
       {
-        if (!dclick)
-        {
-          CPoint sp(point);
-          ClientToScreen(&sp);
-          OnContextMenu(this,sp);
-        }
-        CScrollView::OnLButtonUp(nFlags,point);
-        return;
+        m_mouseMode = MouseDragCopy;
+        SetCursor(m_arrowDragCopy);
+      }
+      else
+      {
+        m_mouseMode = MouseDragMove;
+        SetCursor(m_arrowDragMove);
       }
     }
-
-    if (dclick)
-    {
-      // Start the skein playing to this node
-      if (!node->IsTestSubItem())
-        GetParentFrame()->SendMessage(WM_PLAYSKEIN,(WPARAM)node);
-    }
-    else
-    {
-      // Start a timer to expire after the double click time
-      SetTimer(1,::GetDoubleClickTime(),NULL);
-    }
+    else if ((::GetKeyState(VK_LBUTTON) & 0x8000) == 0)
+      PostMessage(WM_LBUTTONUP,nFlags,MAKELPARAM(point.x,point.y));
   }
 
-  // Is the user clicking in the transcript?
-  if (m_transcript.IsActive())
+  CScrollView::OnLButtonDown(nFlags,point);
+}
+
+void SkeinWindow::OnLButtonUp(UINT nFlags, CPoint point)
+{
+  switch (m_mouseMode)
   {
-    if (m_transcript.LButtonUp(point,m_skein))
-      return;
+  case MouseNormal:
+  case MouseClicked:
+    // Handle the 'normal', non-drag case of the mouse button being released
+    {
+      // Is this a double click?
+      bool doubleClick = false;
+      if (m_mouseMode == MouseClicked)
+        doubleClick = (::GetTickCount() - m_clickTime) < ::GetDoubleClickTime();
+
+      // Put the mouse mode back to normal here in case we return early from this method
+      m_mouseMode = MouseNormal;
+
+      Skein::Node* node = NodeAtPoint(point);
+      if (node != NULL)
+      {
+        // Is the user clicking on the context menu button?
+        if (!node->IsTestSubItem())
+        {
+          if (GetMenuButtonRect(m_nodes[node]).PtInRect(point))
+          {
+            if (!doubleClick)
+            {
+              CPoint sp(point);
+              ClientToScreen(&sp);
+              OnContextMenu(this,sp);
+            }
+            CScrollView::OnLButtonUp(nFlags,point);
+            return;
+          }
+        }
+
+        if (doubleClick)
+        {
+          // Start the skein playing to this node
+          if (!node->IsTestSubItem())
+            GetParentFrame()->SendMessage(WM_PLAYSKEIN,(WPARAM)node);
+        }
+        else
+        {
+          // Start a timer to expire after the double click time
+          SetTimer(1,::GetDoubleClickTime(),NULL);
+        }
+      }
+
+      // Is the user clicking in the transcript?
+      if (m_transcript.IsActive())
+      {
+        if (m_transcript.LButtonUp(point,m_skein))
+          return;
+      }
+
+      // If this might be the start of a double click, save the click time and position
+      if (!doubleClick)
+      {
+        m_mouseMode = MouseClicked;
+        m_clickTime = ::GetTickCount();
+        m_clickPoint = point;
+      }
+    }
+    break;
+ 
+  case MouseDragMove:
+  case MouseDragCopy:
+    // Handle the case of the mouse being used to drag a skein node
+    {
+      // Store and reset the mouse mode: releasing the cursor capture will clear
+      // the mode by sending a WM_CAPTURECHANGED message.
+      MouseMode mode = m_mouseMode;
+      m_mouseMode = MouseNormal;
+
+      // Release the cursor
+      ::ReleaseCapture();
+
+      CPoint scrPoint(point);
+      ClientToScreen(&scrPoint);
+      CWnd* dropWnd = CWnd::WindowFromPoint(scrPoint);
+      if ((dropWnd != NULL) && dropWnd->IsKindOf(RUNTIME_CLASS(SkeinWindow)))
+      {
+        CPoint dropPoint(scrPoint);
+        dropWnd->ScreenToClient(&dropPoint);
+        Skein::Node* dropNode = ((SkeinWindow*)dropWnd)->NodeAtPoint(dropPoint);
+        if (dropNode != NULL)
+        {
+          if (dropNode == m_dragNode)
+          {
+            // If a node is dropped on itself, treat it as a normal mouse button action
+            // by calling this method again, now that the mouse mode has been reset.
+            OnLButtonUp(nFlags,point);
+            return;
+          }
+          else if (m_skein->IsValidNode(m_dragNode))
+            ((SkeinWindow*)dropWnd)->PerformDrop(this,m_dragNode,dropNode,mode == MouseDragMove);
+        }
+      }
+    }
+    break;
   }
 
-  m_lastClick = !dclick;
-  if (m_lastClick)
-  {
-    m_lastClickTime = ::GetTickCount();
-    m_lastPoint = point;
-  }
   CScrollView::OnLButtonUp(nFlags,point);
 }
 
@@ -430,18 +533,48 @@ LRESULT SkeinWindow::HandleMButtonDown(WPARAM wParam, LPARAM lParam)
   return TRUE;
 }
 
+void SkeinWindow::OnCancelMode()
+{
+  if ((m_mouseMode == MouseDragMove) || (m_mouseMode == MouseDragCopy))
+  {
+    m_mouseMode = MouseNormal;
+    ::ReleaseCapture();
+  }
+  CScrollView::OnCancelMode();
+}
+
+void SkeinWindow::OnCaptureChanged(CWnd* wnd)
+{
+  if ((m_mouseMode == MouseDragMove) || (m_mouseMode == MouseDragCopy))
+    m_mouseMode = MouseNormal;
+  CScrollView::OnCaptureChanged(wnd);
+}
+
+void SkeinWindow::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+  if (nChar == 27) // Esc
+  {
+    if ((m_mouseMode == MouseDragMove) || (m_mouseMode == MouseDragCopy))
+    {
+      m_mouseMode = MouseNormal;
+      ::ReleaseCapture();
+    }
+  }
+  CScrollView::OnChar(nChar,nRepCnt,nFlags);
+}
+
 void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
 {
   if (nIDEvent == 1)
   {
     KillTimer(1);
-    bool last = m_lastClick;
-    m_lastClick = false;
 
-    if (last)
+    if (m_mouseMode == MouseClicked)
     {
-      // If a single click has happened, just select the node
-      Skein::Node* node = NodeAtPoint(m_lastPoint);
+      m_mouseMode = MouseNormal;
+
+      // A single click has happened, so just select the node
+      Skein::Node* node = NodeAtPoint(m_clickPoint);
       if (node != NULL)
       {
         AnimatePrepareOnlyThis();
@@ -716,6 +849,35 @@ void SkeinWindow::RemoveWinningLabels(Skein::Node* node)
     m_skein->SetLabel(node,L"");
   for (int i = 0; i < node->GetNumChildren(); i++)
     RemoveWinningLabels(node->GetChild(i));
+}
+
+void SkeinWindow::PerformDrop(SkeinWindow* fromWnd, Skein::Node* dragNode, Skein::Node* dropNode, bool move)
+{
+  // Don't do anything if a node is dropped on its parent
+  if (dragNode->GetParent() == dropNode)
+    return;
+
+  // Don't do anything if a node is dropped on one of its descendents
+  if (dragNode->FindAncestor(dropNode) != NULL)
+    return;
+
+  // Don't do anything if the target node has test sub-item children
+  if (dropNode->GetNumTestSubChildren() > 0)
+    return;
+
+  // Get ready to animate the skein, if needed
+  AnimatePrepare();
+
+  // Move or copy, as appropriate
+  bool done = true;
+  if (move)
+    done = m_skein->MoveNode(dragNode,dropNode,fromWnd->m_skein);
+  else
+    m_skein->CopyNode(dragNode,dropNode);
+
+  // Animate the skein, if needed
+  if (done)
+    GetParentFrame()->PostMessage(WM_ANIMATESKEIN);
 }
 
 void SkeinWindow::TranscriptShown(bool& transcript, bool& anyTick, bool& anyCross)

@@ -1447,6 +1447,12 @@
     <None Include="res\Inform7.rc2">
       <Filter>Resources</Filter>
     </None>
+    <None Include="res\DragCopy.cur">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="res\DragMove.cur">
+      <Filter>Resources</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Inform7.rc">

@@ -2355,6 +2355,8 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\DragMove.cur" />
+    <None Include="res\DragCopy.cur" />
     <None Include="res\Inform7.rc2" />
   </ItemGroup>
   <ItemGroup>

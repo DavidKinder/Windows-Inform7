@@ -1079,6 +1079,16 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Cursor
+//
+
+IDC_DRAGCOPY            CURSOR                  "res\\DragCopy.cur"
+
+IDC_DRAGMOVE            CURSOR                  "res\\DragMove.cur"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
@@ -1233,14 +1243,10 @@ BEGIN
     ID_SKEIN_SAVE_TRANSCRIPT 
                             "Save the transcript of play for the selected thread"
     ID_SKEIN_PLAY_ALL       "Play all threads in the skein"
-    ID_SKEIN_SET_WINNING    "Set this command as the command that wins the story"
-END
-
-STRINGTABLE
-BEGIN
     ID_SKEIN_LOCK           "Lock this command and all those that lead to it"
     ID_SKEIN_UNLOCK         "Unlock this command and all those that come after it"
     ID_SKEIN_TRIM           "Remove unlocked commands, starting from this command"
+    ID_SKEIN_SET_WINNING    "Set this command as the command that wins the story"
 END
 
 #endif    // English (United Kingdom) resources
