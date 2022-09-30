@@ -207,8 +207,7 @@ void GameWindow::StopInterpreter(bool clear)
       ((GameText*)it.Value())->StopLineInput(false);
 
     // Update the status of the last node in the skein
-    if (!m_transcript.IsEmpty())
-      UpdateTranscript();
+    UpdateTranscript();
   }
   m_interpreter = 0;
 

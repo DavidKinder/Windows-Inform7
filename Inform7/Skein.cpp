@@ -604,34 +604,39 @@ void Skein::UpdateAfterPlaying(const CStringW& transcript)
 {
   Change change = NodeTranscriptChanged;
 
-  if (m_played->IsTestCommand())
+  // If the transcript is empty, just notify any listeners but do not change anything,
+  // as the game has most likely stopped without printing anything else.
+  if (!transcript.IsEmpty())
   {
-    std::vector<CStringW> transcripts;
-    SeparateByBracketedSequentialNumbers(transcript,transcripts);
-
-    if (transcripts.size() > 0)
-      m_played->NewTranscriptText(transcripts[0]);
-    if (transcripts.size() > 1)
+    if (m_played->IsTestCommand())
     {
-      // Go through the remaining entries, inserting test child items as we go
-      for (int i = 1; i < transcripts.size(); i++)
-      {
-        Node* parent = m_played;
-        NewLine(CommandForTestingEntry(transcripts[i]),true);
-        parent->RemoveAllExcept(m_played);
-        m_played->NewTranscriptText(OutputForTestingEntry(transcripts[i]));
-        change = TreeChanged;
-      }
+      std::vector<CStringW> transcripts;
+      SeparateByBracketedSequentialNumbers(transcript,transcripts);
 
-      // The node being played to may have been removed by the above
-      if ((change == TreeChanged) && !IsValidNode(m_playTo))
-        m_playTo = m_played;
+      if (transcripts.size() > 0)
+        m_played->NewTranscriptText(transcripts[0]);
+      if (transcripts.size() > 1)
+      {
+        // Go through the remaining entries, inserting test child items as we go
+        for (int i = 1; i < transcripts.size(); i++)
+        {
+          Node* parent = m_played;
+          NewLine(CommandForTestingEntry(transcripts[i]),true);
+          parent->RemoveAllExcept(m_played);
+          m_played->NewTranscriptText(OutputForTestingEntry(transcripts[i]));
+          change = TreeChanged;
+        }
+
+        // The node being played to may have been removed by the above
+        if ((change == TreeChanged) && !IsValidNode(m_playTo))
+          m_playTo = m_played;
+      }
     }
-  }
-  else
-  {
-    // Update the status of the last played node
-    m_played->NewTranscriptText(transcript);
+    else
+    {
+      // Update the status of the last played node
+      m_played->NewTranscriptText(transcript);
+    }
   }
 
   NotifyChange(change);
