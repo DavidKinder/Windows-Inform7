@@ -914,8 +914,21 @@ void Skein::GetThreadEnds(std::vector<Node*>& nodes, Node* node)
     for (int i = 0; i < num; i++)
       GetThreadEnds(nodes,node->GetChild(i));
   }
+  else if (node->IsTestSubItem())
+  {
+    // Use the first non-test-sub-item parent as the thread end
+    while (node && node->IsTestSubItem())
+      node = node->GetParent();
+    if (node)
+    {
+      if (std::find(nodes.begin(),nodes.end(),node) == nodes.end())
+        nodes.push_back(node);
+    }
+  }
   else
+  {
     nodes.push_back(node);
+  }
 }
 
 Skein::Node* Skein::GetFirstDifferent(Node* node)
