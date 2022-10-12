@@ -1038,7 +1038,7 @@ void Skein::NotifyShowNode(Node* node)
 
 bool Skein::IsTestCommand(const CStringW& line)
 {
-  return (line.Left(5) == L"test ");
+  return (line.Left(5).MakeLower() == L"test ");
 }
 
 void Skein::SeparateByBracketedSequentialNumbers(const CStringW& text, std::vector<CStringW>& results)
