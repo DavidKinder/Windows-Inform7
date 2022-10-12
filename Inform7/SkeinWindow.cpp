@@ -114,6 +114,10 @@ BOOL SkeinWindow::OnEraseBkgnd(CDC* pDC)
 
 void SkeinWindow::OnLButtonDown(UINT nFlags, CPoint point)
 {
+  // If a drag operation starts, will it be for copying or moving?
+  MouseMode dragMode = ((::GetKeyState(VK_CONTROL) & 0x8000) != 0) ? MouseDragCopy : MouseDragMove;
+
+  // Can we allow a drag operation to start?
   bool canDrag = true;
   if (m_mouseOverNode == NULL) // Not over a node
     canDrag = false;
@@ -121,7 +125,7 @@ void SkeinWindow::OnLButtonDown(UINT nFlags, CPoint point)
     canDrag = false;
   else if (m_mouseOverNode->GetParent() == NULL) // Over the root node
     canDrag = false;
-  else
+  else if (dragMode == MouseDragMove)
   {
     bool gameRunning = GetParentFrame()->SendMessage(WM_GAMERUNNING) != 0;
     if (gameRunning && m_skein->InPlayThread(m_mouseOverNode)) // In the playing thread
@@ -137,16 +141,17 @@ void SkeinWindow::OnLButtonDown(UINT nFlags, CPoint point)
     if (DragDetect(scrPoint))
     {
       m_dragNode = m_mouseOverNode;
+      m_mouseMode = dragMode;
+
       SetCapture();
-      if ((::GetKeyState(VK_CONTROL) & 0x8000) != 0)
+      switch (m_mouseMode)
       {
-        m_mouseMode = MouseDragCopy;
+      case MouseDragCopy:
         SetCursor(m_arrowDragCopy);
-      }
-      else
-      {
-        m_mouseMode = MouseDragMove;
+        break;
+      case MouseDragMove:
         SetCursor(m_arrowDragMove);
+        break;
       }
     }
     else if ((::GetKeyState(VK_LBUTTON) & 0x8000) == 0)
