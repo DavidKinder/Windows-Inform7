@@ -316,7 +316,6 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
   {
     menu->RemoveMenu(ID_SKEIN_INSERT_NEXT,MF_BYCOMMAND);    
     menu->RemoveMenu(ID_SKEIN_SPLIT_THREAD,MF_BYCOMMAND);    
-    menu->RemoveMenu(ID_SKEIN_DELETE,MF_BYCOMMAND);    
   }
   RemoveExcessSeparators(menu);
   if (gameRunning && m_skein->InPlayThread(node))

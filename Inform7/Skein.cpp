@@ -1428,12 +1428,36 @@ bool Skein::Node::RemoveSingle(Node* child)
   {
     if (m_children[i] == child)
     {
+      // Remove the node
       m_children.RemoveAt(i);
-      for (int j = 0; j < child->m_children.GetSize(); j++)
-        child->m_children[j]->SetParent(this);
-      m_children.InsertAt(i,&(child->m_children));
+
+      // Move the node's children to a temporary, then delete the node
+      CArray<Node*> grandchildren;
+      grandchildren.Copy(child->m_children);
       child->m_children.RemoveAll();
       delete child;
+
+      // Replace any test sub-items with their children until there
+      // are no test sub-items left
+      int j = 0;
+      while (j < grandchildren.GetSize())
+      {
+        Node* grandchild = grandchildren[j];
+        if (grandchild->IsTestSubItem())
+        {
+          grandchildren.RemoveAt(j);
+          grandchildren.Append(grandchild->m_children);
+          grandchild->m_children.RemoveAll();
+          delete grandchild;
+        }
+        else
+          j++;
+      }
+
+      // Add the remaining children of the deleted node back
+      for (j = 0; j < grandchildren.GetSize(); j++)
+        grandchildren[j]->SetParent(this);
+      m_children.InsertAt(i,&grandchildren);
       return true;
     }
   }
