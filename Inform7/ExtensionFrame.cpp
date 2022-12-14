@@ -983,8 +983,13 @@ bool ExtensionFrame::IsUserExtension(void)
 COLORREF ExtensionFrame::GetBackColour(CRegKey& key)
 {
   // Use the source paper colour for the background
-  DWORD colour;
-  if (key.QueryDWORDValue("Source Paper Colour",colour) == ERROR_SUCCESS)
-    return (COLORREF)colour;
+  DWORD enabled = 1;
+  key.QueryDWORDValue("Syntax Colouring",enabled);
+  if (enabled)
+  {
+    DWORD colour;
+    if (key.QueryDWORDValue("Source Paper Colour",colour) == ERROR_SUCCESS)
+      return (COLORREF)colour;
+  }
   return theApp.GetColour(InformApp::ColourBack);
 }

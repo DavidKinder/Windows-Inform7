@@ -1,6 +1,6 @@
 #pragma once
 
-class SourceSettings
+class SourceSettings : public CObject
 {
 public:
   virtual bool GetDWord(const char* name, DWORD& value) = 0;

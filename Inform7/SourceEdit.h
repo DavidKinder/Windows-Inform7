@@ -126,6 +126,7 @@ private:
   int m_fontSize;
 
   bool m_syntaxHighlight;
+  bool m_syntaxColour;
   COLORREF m_colourHead;
   COLORREF m_colourMain;
   COLORREF m_colourComment;

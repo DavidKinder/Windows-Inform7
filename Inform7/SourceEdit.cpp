@@ -83,6 +83,7 @@ SourceEdit::SourceEdit() : m_fileTime(CTime::GetCurrentTime()), m_spell(this)
   m_fontName = theApp.GetFontName(InformApp::FontDisplay);
   m_fontSize = theApp.GetFontSize(InformApp::FontDisplay);
   m_syntaxHighlight = true;
+  m_syntaxColour = true;
   m_colourHead = theApp.GetColour(InformApp::ColourText);
   m_colourMain = theApp.GetColour(InformApp::ColourText);
   m_colourComment = theApp.GetColour(InformApp::ColourComment);
@@ -808,26 +809,12 @@ void SourceEdit::SetStyles(COLORREF back)
 {
   CallEdit(SCI_STYLESETFONT,STYLE_DEFAULT,(sptr_t)(LPCSTR)m_fontName);
   CallEdit(SCI_STYLESETSIZE,STYLE_DEFAULT,10 * m_fontSize);
-  if (m_syntaxHighlight)
+
+  if (m_syntaxColour)
   {
     CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,m_colourMain);
     CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,back);
     CallEdit(SCI_SETCARETFORE,m_colourMain);
-    CallEdit(SCI_STYLECLEARALL);
-
-    CallEdit(SCI_STYLESETFORE,STYLE_QUOTE,m_colourQuote);
-    CallEdit(SCI_STYLESETFORE,STYLE_SUBSTITUTION,m_colourSubst);
-    CallEdit(SCI_STYLESETFORE,STYLE_INFORM6,theApp.GetColour(InformApp::ColourInform6Code));
-    CallEdit(SCI_STYLESETFORE,STYLE_HEADING,m_colourHead);
-    for (int i = 0; i < NEST_COMMENTS; i++)
-      CallEdit(SCI_STYLESETFORE,STYLE_COMMENT+i,m_colourComment);
-
-    SetSourceStyle(STYLE_TEXT,m_styleMain,m_underMain,m_sizeMain);
-    SetSourceStyle(STYLE_QUOTE,m_styleQuote,m_underQuote,m_sizeQuote);
-    SetSourceStyle(STYLE_SUBSTITUTION,m_styleSubst,m_underSubst,m_sizeSubst);
-    SetSourceStyle(STYLE_HEADING,m_styleHead,m_underHead,m_sizeHead);
-    for (int i = 0; i < NEST_COMMENTS; i++)
-      SetSourceStyle(STYLE_COMMENT+i,m_styleComment,m_underComment,m_sizeComment);
   }
   else
   {
@@ -835,7 +822,27 @@ void SourceEdit::SetStyles(COLORREF back)
     CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,text);
     CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,back);
     CallEdit(SCI_SETCARETFORE,text);
-    CallEdit(SCI_STYLECLEARALL);
+  }
+  CallEdit(SCI_STYLECLEARALL);
+
+  if (m_syntaxColour)
+  {
+    CallEdit(SCI_STYLESETFORE,STYLE_QUOTE,m_colourQuote);
+    CallEdit(SCI_STYLESETFORE,STYLE_SUBSTITUTION,m_colourSubst);
+    CallEdit(SCI_STYLESETFORE,STYLE_INFORM6,theApp.GetColour(InformApp::ColourInform6Code));
+    CallEdit(SCI_STYLESETFORE,STYLE_HEADING,m_colourHead);
+    for (int i = 0; i < NEST_COMMENTS; i++)
+      CallEdit(SCI_STYLESETFORE,STYLE_COMMENT+i,m_colourComment);
+  }
+
+  if (m_syntaxHighlight)
+  {
+    SetSourceStyle(STYLE_TEXT,m_styleMain,m_underMain,m_sizeMain);
+    SetSourceStyle(STYLE_QUOTE,m_styleQuote,m_underQuote,m_sizeQuote);
+    SetSourceStyle(STYLE_SUBSTITUTION,m_styleSubst,m_underSubst,m_sizeSubst);
+    SetSourceStyle(STYLE_HEADING,m_styleHead,m_underHead,m_sizeHead);
+    for (int i = 0; i < NEST_COMMENTS; i++)
+      SetSourceStyle(STYLE_COMMENT+i,m_styleComment,m_underComment,m_sizeComment);
   }
 }
 
@@ -1178,13 +1185,15 @@ void SourceEdit::LoadSettings(SourceSettings& set, COLORREF back)
   DWORD value;
   {
     char fontName[MAX_PATH] = "";
-    if (set.GetString("Source Font Name",fontName,MAX_PATH))
+    if (set.GetString("Font Name",fontName,MAX_PATH))
       m_fontName = fontName;
-    if (set.GetDWord("Source Font Size",value))
+    if (set.GetDWord("Font Size",value))
       m_fontSize = value;
   }
   if (set.GetDWord("Syntax Highlighting",value))
     m_syntaxHighlight = (value != 0);
+  if (set.GetDWord("Syntax Colouring",value))
+    m_syntaxColour = (value != 0);
   if (set.GetDWord("Headings Colour",value))
     m_colourHead = (COLORREF)value;
   if (set.GetDWord("Main Text Colour",value))

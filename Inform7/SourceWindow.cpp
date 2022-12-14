@@ -41,21 +41,9 @@ void SourceWindow::Create(CWnd* parent, ProjectType projectType, WindowType wind
   {
   case Project_I7:
     m_back = theApp.GetColour(InformApp::ColourBack);
-
-    // Get the top and bottom margin images
-    m_imageTop = theApp.GetCachedImage("Torn-top");
-    m_imageBottom = theApp.GetCachedImage("Torn-bottom");
     break;
   case Project_I7XP:
     m_back = theApp.GetColour(InformApp::ColourI7XP);
-
-    // Create the top and bottom margin images, if not already cached
-    m_imageTop = theApp.GetCachedImage("Torn-top-i7xp");
-    if (m_imageTop == NULL)
-      m_imageTop = CreateTornImage("Torn-top","Torn-top-i7xp");
-    m_imageBottom = theApp.GetCachedImage("Torn-bottom-i7xp");
-    if (m_imageBottom == NULL)
-      m_imageBottom = CreateTornImage("Torn-bottom","Torn-bottom-i7xp");
     break;
   default:
     ASSERT(0);
@@ -80,21 +68,33 @@ SourceEdit& SourceWindow::GetEdit(void)
 
 void SourceWindow::LoadSettings(SourceSettings& set)
 {
-  DWORD colour = 0;
+  m_back = theApp.GetColour(InformApp::ColourBack);
   ProjectType projectType = (ProjectType)GetParentFrame()->SendMessage(WM_PROJECTTYPE);
-  switch (projectType)
+
+  DWORD enabled = 1;
+  set.GetDWord("Syntax Colouring",enabled);
+  if (enabled)
   {
-  case Project_I7:
-    if (set.GetDWord("Source Paper Colour",colour))
-      m_back = (COLORREF)colour;
-    break;
-  case Project_I7XP:
-    if (set.GetDWord("Ext Paper Colour",colour))
-      m_back = (COLORREF)colour;
-    break;
+    DWORD colour = 0;
+    switch (projectType)
+    {
+    case Project_I7:
+      if (set.GetDWord("Source Paper Colour",colour))
+        m_back = (COLORREF)colour;
+      else
+        m_back = theApp.GetColour(InformApp::ColourBack);
+      break;
+    case Project_I7XP:
+      if (set.GetDWord("Ext Paper Colour",colour))
+        m_back = (COLORREF)colour;
+      else
+        m_back = theApp.GetColour(InformApp::ColourI7XP);
+      break;
+    }
   }
 
   m_edit.LoadSettings(set,m_back);
+  GetImages(projectType);
 }
 
 void SourceWindow::PrefsChanged(void)
@@ -363,6 +363,21 @@ CRect SourceWindow::PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bo
   btnRect.InflateRect(btnSize.cx/2,btnSize.cy/2);
   btnRect.OffsetRect(0,y);
   return btnRect;
+}
+
+void SourceWindow::GetImages(ProjectType projectType)
+{
+  CString suffix;
+  if (projectType == Project_I7XP)
+    suffix = "-i7xp";
+
+  // Create the top and bottom margin images, if not already cached
+  m_imageTop = theApp.GetCachedImage("Torn-top-blend"+suffix);
+  if (m_imageTop == NULL)
+    m_imageTop = CreateTornImage("Torn-top","Torn-top-blend"+suffix);
+  m_imageBottom = theApp.GetCachedImage("Torn-bottom-blend"+suffix);
+  if (m_imageBottom == NULL)
+    m_imageBottom = CreateTornImage("Torn-bottom","Torn-bottom-blend"+suffix);
 }
 
 CDibSection* SourceWindow::CreateTornImage(const char* inputImage, const char* outputName)

@@ -51,6 +51,7 @@ private:
   void Resize(void);
   void Draw(CDC& dc);
   CRect PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bool top);
+  void GetImages(ProjectType projectType);
   CDibSection* CreateTornImage(const char* inputImage, const char* outputName);
 
   WindowType m_windowType;

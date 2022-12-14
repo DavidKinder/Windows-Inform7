@@ -211,7 +211,7 @@ public:
     const char* initialDir, CWnd* parent);
 
 protected:
-  void ClearScaledImages(void);
+  void ClearGeneratedImages(void);
   void SetMyDocuments(bool showMsgs);
   bool CreateHomeDirs(void);
   void SetFonts(void);

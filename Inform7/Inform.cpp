@@ -710,7 +710,7 @@ void InformApp::SendAllFrames(Changed changed, int value)
   if (changed == Preferences)
   {
     SetFonts();
-    ClearScaledImages();
+    ClearGeneratedImages();
     ReportHtml::UpdateWebBrowserPreferences();
   }
 
@@ -1037,12 +1037,18 @@ CDibSection* InformApp::CreateScaledImage(CDibSection* fromImage, double scaleX,
   return newImage;
 }
 
-void InformApp::ClearScaledImages(void)
+void InformApp::ClearGeneratedImages(void)
 {
   std::map<std::string,CDibSection*>::iterator it = m_bitmaps.begin();
   while (it != m_bitmaps.end())
   {
+    bool remove = false;
     if (it->first.find("-scaled") != std::string::npos)
+      remove = true;
+    else if (it->first.find("-blend") != std::string::npos)
+      remove = true;
+
+    if (remove)
     {
       delete it->second;
       m_bitmaps.erase(it++);

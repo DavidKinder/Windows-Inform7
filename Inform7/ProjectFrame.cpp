@@ -1138,10 +1138,6 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
       CRegKey registryKey;
       if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_READ) == ERROR_SUCCESS)
       {
-        DWORD I6debug = 0;
-        if (registryKey.QueryDWORDValue("Generate I6 Debug",I6debug) == ERROR_SUCCESS)
-          m_I6debug = (I6debug != 0);
-
         GetPanel(0)->PrefsChanged(registryKey);
         GetPanel(1)->PrefsChanged(registryKey);
       }
