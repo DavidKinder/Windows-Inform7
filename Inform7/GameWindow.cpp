@@ -175,7 +175,10 @@ void GameWindow::RunInterpreter(const char* dir, const char* file, bool glulx)
     SetTimer(2,500,NULL);
   }
   else
+  {
+    GetParentFrame()->PostMessage(WM_TERPFAILED,1);
     StopInterpreter(false);
+  }
 }
 
 void GameWindow::StopInterpreter(bool clear)
@@ -1193,7 +1196,7 @@ void GameWindow::OnTimer(UINT_PTR nIDEvent)
       if (code != STILL_ACTIVE)
       {
         if (code >= 10)
-          GetParentFrame()->PostMessage(WM_TERPFAILED);
+          GetParentFrame()->PostMessage(WM_TERPFAILED,0);
 
         // Is there any final output remaining?
         theApp.WaitForProcessEnd(m_interpreter);

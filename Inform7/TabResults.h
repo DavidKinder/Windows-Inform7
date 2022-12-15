@@ -37,7 +37,7 @@ public:
 
   void SetLinkNotify(LinkNotify* notify);
   void ShowRuntimeProblem(int problem);
-  void ShowTerpFailed(void);
+  void ShowTerpFailed(int failure);
 
 private:
   void Resize(void);

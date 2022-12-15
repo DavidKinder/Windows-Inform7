@@ -878,7 +878,7 @@ LRESULT ProjectFrame::OnAnimateSkein(WPARAM wparam, LPARAM lparam)
 
 LRESULT ProjectFrame::OnTerpFailed(WPARAM wparam, LPARAM lparam)
 {
-  ((TabResults*)GetPanel(1)->GetTab(Panel::Tab_Results))->ShowTerpFailed();
+  ((TabResults*)GetPanel(1)->GetTab(Panel::Tab_Results))->ShowTerpFailed((int)wparam);
   GetPanel(1)->SetActiveTab(Panel::Tab_Results);
   return 0;
 }

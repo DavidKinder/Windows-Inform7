@@ -291,10 +291,18 @@ void TabResults::ShowRuntimeProblem(int problem)
   SetActiveTab(ResTab_Report,false);
 }
 
-void TabResults::ShowTerpFailed(void)
+void TabResults::ShowTerpFailed(int failure)
 {
   CString failed;
-  failed.Format("%s\\Documentation\\windows\\ErrorTerp.html",theApp.GetAppDir());
+  switch (failure)
+  {
+  case 1: // Interpreter did not start
+    failed.Format("%s\\Documentation\\windows\\NoTerp.html",theApp.GetAppDir());
+    break;
+  default:
+    failed.Format("%s\\Documentation\\windows\\ErrorTerp.html",theApp.GetAppDir());
+    break;
+  }
   m_report.Navigate(TextFormat::AnsiToUTF8(failed),false);
   SetActiveTab(ResTab_Report,false);
 }
