@@ -272,15 +272,25 @@ void PrefsEditPage::OnOK()
 
 void PrefsEditPage::OnClickedRestore()
 {
-  SetDefaults();
+  LPCWSTR head = L"Reset the editing preferences?";
+  LPCWSTR msg = L"This action cannot be undone.";
+  int btn = 0;
+  if (SUCCEEDED(::TaskDialog(GetSafeHwnd(),0,L_INFORM_TITLE,head,msg,
+    TDCBF_YES_BUTTON|TDCBF_NO_BUTTON,TD_WARNING_ICON,&btn)))
+  {
+    if (btn == IDYES)
+    {
+      SetDefaults();
 
-  // Update the controls to match the defaults
-  UpdateData(FALSE);
-  m_font.SelectString(-1,m_fontName);
-  UpdateControlStates();
-  m_dialog->UpdatePreviews();
-  m_tabPreview.GetEdit().SetCustomTabStops(NUM_PREVIEW_TABS,
-    m_preview.GetEdit().GetTabWidthPixels());
+      // Update the controls to match the defaults
+      UpdateData(FALSE);
+      m_font.SelectString(-1,m_fontName);
+      UpdateControlStates();
+      m_dialog->UpdatePreviews();
+      m_tabPreview.GetEdit().SetCustomTabStops(NUM_PREVIEW_TABS,
+        m_preview.GetEdit().GetTabWidthPixels());
+    }
+  }
 }
 
 void PrefsEditPage::OnChangeFont()
@@ -642,19 +652,29 @@ BOOL PrefsColourPage::OnInitDialog()
 
 void PrefsColourPage::OnClickedRestore()
 {
-  SetDefaults();
+  LPCWSTR head = L"Reset the current colours back to their original values?";
+  LPCWSTR msg = L"This action cannot be undone.";
+  int btn = 0;
+  if (SUCCEEDED(::TaskDialog(GetSafeHwnd(),0,L_INFORM_TITLE,head,msg,
+    TDCBF_YES_BUTTON|TDCBF_NO_BUTTON,TD_WARNING_ICON,&btn)))
+  {
+    if (btn == IDYES)
+    {
+      SetDefaults();
 
-  // Update the controls to match the defaults
-  UpdateData(FALSE);
-  UpdateControlStates();
-  m_colourSource.Invalidate();
-  m_colourExt.Invalidate();
-  m_colourHead.Invalidate();
-  m_colourMain.Invalidate();
-  m_colourComment.Invalidate();
-  m_colourQuote.Invalidate();
-  m_colourSubst.Invalidate();
-  m_dialog->UpdatePreviews();
+      // Update the controls to match the defaults
+      UpdateData(FALSE);
+      UpdateControlStates();
+      m_colourSource.Invalidate();
+      m_colourExt.Invalidate();
+      m_colourHead.Invalidate();
+      m_colourMain.Invalidate();
+      m_colourComment.Invalidate();
+      m_colourQuote.Invalidate();
+      m_colourSubst.Invalidate();
+      m_dialog->UpdatePreviews();
+    }
+  }
 }
 
 void PrefsColourPage::OnClickedEnableColours()

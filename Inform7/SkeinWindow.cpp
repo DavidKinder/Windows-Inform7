@@ -410,7 +410,7 @@ void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
       LPCWSTR head = L"Trim the skein?";
       LPCWSTR msg =
         L"This will remove commands from the skein that have not been locked. "
-        L"This operation cannot be undone.";
+        L"This action cannot be undone.";
       int btn = 0;
       if (SUCCEEDED(::TaskDialog(GetSafeHwnd(),0,L_INFORM_TITLE,head,msg,TDCBF_YES_BUTTON|TDCBF_NO_BUTTON,TD_WARNING_ICON,&btn)))
       {
