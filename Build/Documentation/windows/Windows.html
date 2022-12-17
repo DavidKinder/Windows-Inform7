@@ -1,30 +1,38 @@
 ﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<style type="text/css">
+<!--
+body, p {
+	font-size: 0.8rem; /* 100/125 */
+}
+--></style>
 <title>Notes on the Windows version of Inform</title>
 </head>
 <body><font size=2><h3>Inform for Windows</h3>
 <p>
-<p>This Windows version of Inform was created by David Kinder, based on a design by Graham Nelson, Andrew Hunter and
+This Windows version of Inform was created by David Kinder, based on a design by Graham Nelson, Andrew Hunter and
 Toby Nelson.
-<p>
+</p>
 <h4>Windows Defender</h4>
+<p>
 If you are running Windows Defender then you will find that Inform can be very slow to compile and to search
 documentation. The problem is that Windows Defender insists on scanning every HTML file that applications open or create.
 The only solution to this is to exclude from scanning the Inform installation directory, the "My Documents\Inform"
 directory, and any directories containing Inform projects. This can be done from the "Windows Security" app: go to
 "Virus and Threat Protection", then "Manage Settings", then "Add or Remove Exclusions".
-<p>
+</p>
 <h4>Dictionaries</h4>
 <p>
 To install a new dictionary language for spell-checking, download the appropriate dictionary from 
 <a href="https://cgit.freedesktop.org/libreoffice/dictionaries/tree/">LibreOffice</a>.
 Copy the ".aff" and ".dic" files into the "Dictionaries" sub-directory of your Inform installation. Re-start
 Inform and open the spell-checker: your new dictionary should be included in the drop-down list of languages.
-<p>
+</p>
 <h4>Home Directory</h4>
 <p>
 The directory that Inform uses to store extensions, documentation, etc. (which defaults to the user's "My Documents"
 folder) can be changed by creating a text file "home.txt" in the same directory as the Inform executable,
 containing the path to the required home directory.
+</p>
 </font></body></html>
