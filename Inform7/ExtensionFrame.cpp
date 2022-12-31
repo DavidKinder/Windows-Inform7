@@ -5,7 +5,6 @@
 #include "Messages.h"
 #include "NewDialogs.h"
 #include "ProjectFrame.h"
-#include "SourceSettings.h"
 #include "TextFormat.h"
 #include "WelcomeLauncher.h"
 
@@ -921,7 +920,7 @@ void ExtensionFrame::SendChanged(InformApp::Changed changed, int value)
       if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_READ) == ERROR_SUCCESS)
       {
         SourceSettingsRegistry set(registryKey);
-        m_edit.LoadSettings(set,GetBackColour(registryKey));
+        m_edit.LoadSettings(set,GetBackColour(set));
         m_edit.PrefsChanged();
       }
     }
@@ -964,7 +963,7 @@ void ExtensionFrame::SetFromRegistryPath(const char* path)
 
     // Allow the source editor to load settings
     SourceSettingsRegistry set(registryKey);
-    m_edit.LoadSettings(set,GetBackColour(registryKey));
+    m_edit.LoadSettings(set,GetBackColour(set));
   }
 }
 
@@ -980,15 +979,15 @@ bool ExtensionFrame::IsUserExtension(void)
   return (strncmp(m_extension,appDir,appDir.GetLength()) != 0);
 }
 
-COLORREF ExtensionFrame::GetBackColour(CRegKey& key)
+COLORREF ExtensionFrame::GetBackColour(SourceSettings& set)
 {
   // Use the source paper colour for the background
   DWORD enabled = 1;
-  key.QueryDWORDValue("Syntax Colouring",enabled);
+  set.GetDWord("Syntax Colouring",enabled);
   if (enabled)
   {
     DWORD colour;
-    if (key.QueryDWORDValue("Source Paper Colour",colour) == ERROR_SUCCESS)
+    if (set.GetDWord("Source Paper Colour",colour) == ERROR_SUCCESS)
       return (COLORREF)colour;
   }
   return theApp.GetColour(InformApp::ColourBack);

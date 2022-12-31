@@ -84,7 +84,7 @@ SourceEdit::SourceEdit() : m_fileTime(CTime::GetCurrentTime()), m_spell(this)
   m_fontSize = theApp.GetFontSize(InformApp::FontDisplay);
   m_syntaxHighlight = true;
   m_syntaxColour = true;
-  m_colourHead = theApp.GetColour(InformApp::ColourText);
+  m_colourHead = theApp.GetColour(InformApp::ColourHeading);
   m_colourMain = theApp.GetColour(InformApp::ColourText);
   m_colourComment = theApp.GetColour(InformApp::ColourComment);
   m_colourQuote = theApp.GetColour(InformApp::ColourQuote);

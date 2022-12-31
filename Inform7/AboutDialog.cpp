@@ -8,7 +8,7 @@
 #define new DEBUG_NEW
 #endif
 
-AboutDialog::AboutDialog() : I7BaseDialog(AboutDialog::IDD,FALSE),
+AboutDialog::AboutDialog() : I7BaseDialog(AboutDialog::IDD),
   m_dpi(96), m_creditHeight(0), m_initialSize(0,0), m_bitmap(NULL)
 {
 }

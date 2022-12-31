@@ -547,13 +547,20 @@ int CALLBACK PrefsEditPage::ListFonts(ENUMLOGFONTEX *font, NEWTEXTMETRICEX *metr
   return 1;
 }
 
+#define DEFAULT_SCHEME "Traditional"
+#define CUSTOM_SORT_INDEX 1000
+
 IMPLEMENT_DYNAMIC(PrefsColourPage, CPropertyPage)
 
 BEGIN_MESSAGE_MAP(PrefsColourPage, CPropertyPage)
+  ON_BN_CLICKED(IDC_NEW_SCHEME, OnClickedNewScheme)
+  ON_BN_CLICKED(IDC_DELETE_SCHEME, OnClickedDeleteScheme)
   ON_BN_CLICKED(IDC_RESTORE, OnClickedRestore)
   ON_BN_CLICKED(IDC_ENABLE_COLOURS, OnClickedEnableColours)
+  ON_CBN_SELCHANGE(IDC_COLOUR_SCHEME, OnChangeColourScheme)
   ON_WM_HSCROLL()
   ON_MESSAGE(WM_UPDATEPREVIEW, OnUpdatePreview)
+  ON_MESSAGE(WM_COLOURCHANGED, OnColourChanged)
 END_MESSAGE_MAP()
 
 PrefsColourPage::PrefsColourPage(PrefsDialog* dlg)
@@ -570,20 +577,45 @@ void PrefsColourPage::ReadSettings(void)
     DWORD value = 0;
     if (registryKey.QueryDWORDValue("Syntax Colouring",value) == ERROR_SUCCESS)
       m_colours = (value != 0);
-    if (registryKey.QueryDWORDValue("Source Paper Colour",value) == ERROR_SUCCESS)
-      m_colourSource.SetCurrentColour((COLORREF)value);
-    if (registryKey.QueryDWORDValue("Ext Paper Colour",value) == ERROR_SUCCESS)
-      m_colourExt.SetCurrentColour((COLORREF)value);
-    if (registryKey.QueryDWORDValue("Headings Colour",value) == ERROR_SUCCESS)
-      m_colourHead.SetCurrentColour((COLORREF)value);
-    if (registryKey.QueryDWORDValue("Main Text Colour",value) == ERROR_SUCCESS)
-      m_colourMain.SetCurrentColour((COLORREF)value);
-    if (registryKey.QueryDWORDValue("Comments Colour",value) == ERROR_SUCCESS)
-      m_colourComment.SetCurrentColour((COLORREF)value);
-    if (registryKey.QueryDWORDValue("Quoted Text Colour",value) == ERROR_SUCCESS)
-      m_colourQuote.SetCurrentColour((COLORREF)value);
-    if (registryKey.QueryDWORDValue("Substitutions Colour",value) == ERROR_SUCCESS)
-      m_colourSubst.SetCurrentColour((COLORREF)value);
+
+    char schemeName[MAX_PATH];
+    value = sizeof schemeName;
+    if (registryKey.QueryStringValue("Colour Scheme",schemeName,&value) == ERROR_SUCCESS)
+      m_colourScheme = schemeName;
+  }
+  registryKey.Close();
+
+  if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM "\\Colour Schemes",KEY_READ) == ERROR_SUCCESS)
+  {
+    int i = 0;
+    char schemeName[MAX_PATH];
+    DWORD schemeNameLen = sizeof schemeName;
+    while (registryKey.EnumKey(i,schemeName,&schemeNameLen) == ERROR_SUCCESS)
+    {
+      i++;
+      schemeNameLen = sizeof schemeName;
+
+      CRegKey schemeKey;
+      if (schemeKey.Open(registryKey,schemeName) == ERROR_SUCCESS)
+      {
+        DWORD value = 0;
+        ColourScheme& scheme = m_schemes[schemeName];
+        if (schemeKey.QueryDWORDValue("Source Paper Colour",value) == ERROR_SUCCESS)
+          scheme.source = (COLORREF)value;
+        if (schemeKey.QueryDWORDValue("Ext Paper Colour",value) == ERROR_SUCCESS)
+          scheme.ext = (COLORREF)value;
+        if (schemeKey.QueryDWORDValue("Headings Colour",value) == ERROR_SUCCESS)
+          scheme.head = (COLORREF)value;
+        if (schemeKey.QueryDWORDValue("Main Text Colour",value) == ERROR_SUCCESS)
+          scheme.main = (COLORREF)value;
+        if (schemeKey.QueryDWORDValue("Comments Colour",value) == ERROR_SUCCESS)
+          scheme.comment = (COLORREF)value;
+        if (schemeKey.QueryDWORDValue("Quoted Text Colour",value) == ERROR_SUCCESS)
+          scheme.quote = (COLORREF)value;
+        if (schemeKey.QueryDWORDValue("Substitutions Colour",value) == ERROR_SUCCESS)
+          scheme.subst = (COLORREF)value;
+      }
+    }
   }
  }
 
@@ -593,13 +625,42 @@ void PrefsColourPage::WriteSettings(void)
   if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
   {
     registryKey.SetDWORDValue("Syntax Colouring",m_colours);
-    registryKey.SetDWORDValue("Source Paper Colour",m_colourSource.GetCurrentColour());
-    registryKey.SetDWORDValue("Ext Paper Colour",m_colourExt.GetCurrentColour());
-    registryKey.SetDWORDValue("Headings Colour",m_colourHead.GetCurrentColour());
-    registryKey.SetDWORDValue("Main Text Colour",m_colourMain.GetCurrentColour());
-    registryKey.SetDWORDValue("Comments Colour",m_colourComment.GetCurrentColour());
-    registryKey.SetDWORDValue("Quoted Text Colour",m_colourQuote.GetCurrentColour());
-    registryKey.SetDWORDValue("Substitutions Colour",m_colourSubst.GetCurrentColour());
+    registryKey.SetStringValue("Colour Scheme",m_colourScheme);
+  }
+  registryKey.Close();
+
+  if (registryKey.Create(HKEY_CURRENT_USER,REGISTRY_INFORM "\\Colour Schemes") == ERROR_SUCCESS)
+  {
+    for (auto schemeIt = m_schemes.begin(); schemeIt != m_schemes.end(); ++schemeIt)
+    {
+      CRegKey schemeKey;
+      if (schemeKey.Create(registryKey,schemeIt->first.c_str()) == ERROR_SUCCESS)
+      {
+        schemeKey.SetDWORDValue("Source Paper Colour",schemeIt->second.source);
+        schemeKey.SetDWORDValue("Ext Paper Colour",schemeIt->second.ext);
+        schemeKey.SetDWORDValue("Headings Colour",schemeIt->second.head);
+        schemeKey.SetDWORDValue("Main Text Colour",schemeIt->second.main);
+        schemeKey.SetDWORDValue("Comments Colour",schemeIt->second.comment);
+        schemeKey.SetDWORDValue("Quoted Text Colour",schemeIt->second.quote);
+        schemeKey.SetDWORDValue("Substitutions Colour",schemeIt->second.subst);
+      }
+    }
+
+    // Remove any deleted colour schemes
+    std::set<std::string> schemesToRemove;
+    int i = 0;
+    char schemeName[MAX_PATH];
+    DWORD schemeNameLen = sizeof schemeName;
+    while (registryKey.EnumKey(i,schemeName,&schemeNameLen) == ERROR_SUCCESS)
+    {
+      i++;
+      schemeNameLen = sizeof schemeName;
+
+      if (m_schemes.count(schemeName) == 0)
+        schemesToRemove.insert(schemeName);
+    }
+    for (auto schemeToRemove : schemesToRemove)
+      registryKey.DeleteSubKey(schemeToRemove.c_str());
   }
 }
 
@@ -608,6 +669,8 @@ void PrefsColourPage::DoDataExchange(CDataExchange* pDX)
   CPropertyPage::DoDataExchange(pDX);
   DDX_Check(pDX, IDC_ENABLE_COLOURS, m_colours);
   DDX_Control(pDX,IDC_ENABLE_COLOURS, m_coloursCheck);
+  DDX_CBString(pDX, IDC_COLOUR_SCHEME, m_colourScheme);
+  DDX_Control(pDX, IDC_COLOUR_SCHEME, m_colourSchemeCombo);
 }
 
 BOOL PrefsColourPage::OnInitDialog()
@@ -615,13 +678,13 @@ BOOL PrefsColourPage::OnInitDialog()
   CPropertyPage::OnInitDialog();
 
   // Subclass dialog controls
-  m_colourSource.SubclassDlgItem(IDC_COLOUR_SOURCE,this,WM_UPDATEPREVIEW);
-  m_colourExt.SubclassDlgItem(IDC_COLOUR_EXT,this,WM_UPDATEPREVIEW);
-  m_colourHead.SubclassDlgItem(IDC_HEAD_COLOUR,this,WM_UPDATEPREVIEW);
-  m_colourMain.SubclassDlgItem(IDC_MAIN_COLOUR,this,WM_UPDATEPREVIEW);
-  m_colourComment.SubclassDlgItem(IDC_COMMENT_COLOUR,this,WM_UPDATEPREVIEW);
-  m_colourQuote.SubclassDlgItem(IDC_QUOTE_COLOUR,this,WM_UPDATEPREVIEW);
-  m_colourSubst.SubclassDlgItem(IDC_SUBST_COLOUR,this,WM_UPDATEPREVIEW);
+  m_colourSource.SubclassDlgItem(IDC_COLOUR_SOURCE,this,WM_COLOURCHANGED);
+  m_colourExt.SubclassDlgItem(IDC_COLOUR_EXT,this,WM_COLOURCHANGED);
+  m_colourHead.SubclassDlgItem(IDC_HEAD_COLOUR,this,WM_COLOURCHANGED);
+  m_colourMain.SubclassDlgItem(IDC_MAIN_COLOUR,this,WM_COLOURCHANGED);
+  m_colourComment.SubclassDlgItem(IDC_COMMENT_COLOUR,this,WM_COLOURCHANGED);
+  m_colourQuote.SubclassDlgItem(IDC_QUOTE_COLOUR,this,WM_COLOURCHANGED);
+  m_colourSubst.SubclassDlgItem(IDC_SUBST_COLOUR,this,WM_COLOURCHANGED);
 
   m_colourSource.SetShowDisabled(false);
   m_colourExt.SetShowDisabled(false);
@@ -646,8 +709,83 @@ BOOL PrefsColourPage::OnInitDialog()
   previewEdit.SetSelect(startRange);
   m_preview.ShowWindow(SW_SHOW);
 
+  // Set the list of colour scheme names
+  UpdateSchemeChoices();
+
+  // Update controls after adding the colour schemes
+  UpdateData(FALSE);
+  UpdateColourButtons();
   UpdateControlStates();
+  UpdatePreview();
   return TRUE;
+}
+
+void PrefsColourPage::OnClickedNewScheme()
+{
+  NewColourSchemeDialog dialog;
+  if (dialog.DoModal() != IDOK)
+    return;
+
+  CString name = dialog.GetName();
+  if (name.IsEmpty())
+  {
+    ASSERT(FALSE);
+    return;
+  }
+
+  // Is the name already used?
+  bool used = false;
+  for (auto schemeIt = m_schemes.begin(); schemeIt != m_schemes.end(); ++schemeIt)
+  {
+    if (name.CompareNoCase(schemeIt->first.c_str()) == 0)
+      used = true;
+  }
+  if (used)
+  {
+    LPCWSTR head = L"Name already used";
+    LPCWSTR msg = L"The name you have chosen is already used. Try another name.";
+    int btn = 0;
+    ::TaskDialog(GetSafeHwnd(),0,L_INFORM_TITLE,head,msg,TDCBF_OK_BUTTON,TD_ERROR_ICON,NULL);
+    return;
+  }
+
+  // Add a new scheme, based on the current scheme
+  UpdateData(TRUE);
+  auto schemeIt = m_schemes.find((LPCSTR)m_colourScheme);
+  ASSERT(schemeIt != m_schemes.end());
+  if (schemeIt != m_schemes.end())
+  {
+    ColourScheme newScheme(schemeIt->second);
+    newScheme.sortIndex = CUSTOM_SORT_INDEX;
+    m_schemes[(LPCSTR)name] = newScheme;
+    m_colourScheme = name;
+  }
+  UpdateSchemeChoices();
+  UpdateData(FALSE);
+  UpdateColourButtons();
+  UpdateControlStates();
+  UpdatePreview();
+}
+
+void PrefsColourPage::OnClickedDeleteScheme()
+{
+  UpdateData(TRUE);
+  auto schemeIt = m_schemes.find((LPCSTR)m_colourScheme);
+  ASSERT(schemeIt != m_schemes.end());
+  if (schemeIt != m_schemes.end())
+  {
+    if (schemeIt->second.sortIndex >= CUSTOM_SORT_INDEX)
+    {
+      m_schemes.erase((LPCSTR)m_colourScheme);
+      m_colourScheme = DEFAULT_SCHEME;
+    }
+  }
+
+  UpdateSchemeChoices();
+  UpdateData(FALSE);
+  UpdateColourButtons();
+  UpdateControlStates();
+  UpdatePreview();
 }
 
 void PrefsColourPage::OnClickedRestore()
@@ -664,14 +802,8 @@ void PrefsColourPage::OnClickedRestore()
 
       // Update the controls to match the defaults
       UpdateData(FALSE);
+      UpdateColourButtons();
       UpdateControlStates();
-      m_colourSource.Invalidate();
-      m_colourExt.Invalidate();
-      m_colourHead.Invalidate();
-      m_colourMain.Invalidate();
-      m_colourComment.Invalidate();
-      m_colourQuote.Invalidate();
-      m_colourSubst.Invalidate();
       m_dialog->UpdatePreviews();
     }
   }
@@ -679,6 +811,14 @@ void PrefsColourPage::OnClickedRestore()
 
 void PrefsColourPage::OnClickedEnableColours()
 {
+  UpdateControlStates();
+  UpdatePreview();
+}
+
+void PrefsColourPage::OnChangeColourScheme()
+{
+  UpdateData(TRUE);
+  UpdateColourButtons();
   UpdateControlStates();
   UpdatePreview();
 }
@@ -694,11 +834,82 @@ LRESULT PrefsColourPage::OnUpdatePreview(WPARAM, LPARAM)
   return 0;
 }
 
+LRESULT PrefsColourPage::OnColourChanged(WPARAM, LPARAM)
+{
+  UpdateData(TRUE);
+  auto schemeIt = m_schemes.find((LPCSTR)m_colourScheme);
+  ASSERT(schemeIt != m_schemes.end());
+  if (schemeIt != m_schemes.end())
+  {
+    schemeIt->second.source = m_colourSource.GetCurrentColour();
+    schemeIt->second.ext = m_colourExt.GetCurrentColour();
+    schemeIt->second.head = m_colourHead.GetCurrentColour();
+    schemeIt->second.main = m_colourMain.GetCurrentColour();
+    schemeIt->second.comment = m_colourComment.GetCurrentColour();
+    schemeIt->second.quote = m_colourQuote.GetCurrentColour();
+    schemeIt->second.subst = m_colourSubst.GetCurrentColour();
+  }
+
+  UpdatePreview();
+  return 0;
+}
+
+void PrefsColourPage::UpdateSchemeChoices(void)
+{
+  m_colourSchemeCombo.ResetContent();
+
+  std::vector<std::string> schemeNames;
+  for (auto schemeIt = m_schemes.begin(); schemeIt != m_schemes.end(); ++schemeIt)
+    schemeNames.push_back(schemeIt->first);
+  std::sort(schemeNames.begin(),schemeNames.end(),[&](auto& name1, auto& name2)
+  {
+    ColourScheme& scheme1 = m_schemes[name1];
+    ColourScheme& scheme2 = m_schemes[name2];
+
+    if (scheme1.sortIndex != scheme2.sortIndex)
+      return scheme1.sortIndex < scheme2.sortIndex;
+    return name1 < name2;
+  });
+  for (auto nameIt = schemeNames.begin(); nameIt != schemeNames.end(); ++nameIt)
+    m_colourSchemeCombo.AddString(nameIt->c_str());
+}
+
+void PrefsColourPage::UpdateColourButtons(void)
+{
+  auto schemeIt = m_schemes.find((LPCSTR)m_colourScheme);
+  ASSERT(schemeIt != m_schemes.end());
+  if (schemeIt != m_schemes.end())
+  {
+    m_colourSource.SetCurrentColour(schemeIt->second.source);
+    m_colourExt.SetCurrentColour(schemeIt->second.ext);
+    m_colourHead.SetCurrentColour(schemeIt->second.head);
+    m_colourMain.SetCurrentColour(schemeIt->second.main);
+    m_colourComment.SetCurrentColour(schemeIt->second.comment);
+    m_colourQuote.SetCurrentColour(schemeIt->second.quote);
+    m_colourSubst.SetCurrentColour(schemeIt->second.subst);
+
+    if (GetSafeHwnd() != 0)
+    {
+      m_colourSource.Invalidate();
+      m_colourExt.Invalidate();
+      m_colourHead.Invalidate();
+      m_colourMain.Invalidate();
+      m_colourComment.Invalidate();
+      m_colourQuote.Invalidate();
+      m_colourSubst.Invalidate();
+    }
+  }
+}
+
 void PrefsColourPage::UpdateControlStates(void)
 {
   bool coloursEnabled = (m_coloursCheck.GetCheck() == BST_CHECKED);
   const int ids[] =
   {
+    IDC_SCHEME_LABEL,
+    IDC_COLOUR_SCHEME,
+    IDC_NEW_SCHEME,
+    IDC_DELETE_SCHEME,
     IDC_HEAD_LABEL,
     IDC_MAIN_LABEL,
     IDC_COMMENT_LABEL,
@@ -716,6 +927,14 @@ void PrefsColourPage::UpdateControlStates(void)
   };
   for (int i = 0; i < sizeof ids / sizeof ids[0]; i++)
     GetDlgItem(ids[i])->EnableWindow(coloursEnabled);
+
+  auto schemeIt = m_schemes.find((LPCSTR)m_colourScheme);
+  ASSERT(schemeIt != m_schemes.end());
+  if (schemeIt != m_schemes.end())
+  {
+    if (schemeIt->second.sortIndex < CUSTOM_SORT_INDEX)
+      GetDlgItem(IDC_DELETE_SCHEME)->EnableWindow(FALSE);
+  }
 }
 
 void PrefsColourPage::UpdatePreview(void)
@@ -734,13 +953,46 @@ void PrefsColourPage::PreviewChanged(void)
 void PrefsColourPage::SetDefaults(void)
 {
   m_colours = TRUE;
-  m_colourSource.SetCurrentColour(theApp.GetColour(InformApp::ColourBack));
-  m_colourExt.SetCurrentColour(theApp.GetColour(InformApp::ColourI7XP));
-  m_colourHead.SetCurrentColour(theApp.GetColour(InformApp::ColourText));
-  m_colourMain.SetCurrentColour(theApp.GetColour(InformApp::ColourText));
-  m_colourComment.SetCurrentColour(theApp.GetColour(InformApp::ColourComment));
-  m_colourQuote.SetCurrentColour(theApp.GetColour(InformApp::ColourQuote));
-  m_colourSubst.SetCurrentColour(theApp.GetColour(InformApp::ColourSubstitution));
+  m_colourScheme = DEFAULT_SCHEME;
+
+  m_schemes["Light Mode"] = ColourScheme(1,
+    RGB(0xe6,0x3d,0x42), // Headings
+    RGB(0x00,0x00,0x00), // Main text
+    RGB(0x46,0xaa,0x25), // Comments
+    RGB(0x41,0x83,0xfa), // Quoted text
+    RGB(0xe8,0x3c,0xf9), // Substitutions
+    RGB(0xff,0xff,0xff), // Source background
+    RGB(0xff,0xff,0xe4)  // Extension project background
+  );
+  m_schemes["Dark Mode"] = ColourScheme(2,
+    RGB(0xea,0x6c,0x69), // Headings
+    RGB(0xff,0xff,0xff), // Main text
+    RGB(0x95,0xf9,0x9c), // Comments
+    RGB(0x5d,0xd5,0xfd), // Quoted text
+    RGB(0xee,0x8b,0xe7), // Substitutions
+    RGB(0x00,0x00,0x00), // Source background
+    RGB(0x42,0x0d,0x00)  // Extension project background
+  );
+  m_schemes["Seven Seas"] = ColourScheme(3,
+    RGB(0x34,0x00,0xff), // Headings
+    RGB(0x00,0x00,0x64), // Main text
+    RGB(0x6d,0xa7,0xe9), // Comments
+    RGB(0x00,0x6a,0xff), // Quoted text
+    RGB(0x2d,0x6c,0xd0), // Substitutions
+    RGB(0xe9,0xe9,0xff), // Source background
+    RGB(0xe9,0xff,0xe9)  // Extension project background
+  );
+  m_schemes["Traditional"] = ColourScheme(4,
+    RGB(0x00,0x00,0x00), // Headings
+    RGB(0x00,0x00,0x00), // Main text
+    RGB(0x24,0x6e,0x24), // Comments
+    RGB(0x00,0x4d,0x99), // Quoted text
+    RGB(0x4d,0x4d,0xff), // Substitutions
+    RGB(0xff,0xff,0xff), // Source background
+    RGB(0xff,0xff,0xe4)  // Extension project background
+  );
+
+  UpdateColourButtons();
 }
 
 bool PrefsColourPage::GetDWord(const char* name, DWORD& value)
@@ -792,6 +1044,31 @@ bool PrefsColourPage::GetDWord(const char* name, DWORD& value)
 bool PrefsColourPage::GetString(const char* name, char* value, ULONG len)
 {
   return false;
+}
+
+PrefsColourPage::ColourScheme::ColourScheme()
+{
+  sortIndex = CUSTOM_SORT_INDEX;
+  head = theApp.GetColour(InformApp::ColourHeading);
+  main = theApp.GetColour(InformApp::ColourText);
+  comment = theApp.GetColour(InformApp::ColourComment);
+  quote = theApp.GetColour(InformApp::ColourQuote);
+  subst = theApp.GetColour(InformApp::ColourSubstitution);
+  source = theApp.GetColour(InformApp::ColourBack);
+  ext = theApp.GetColour(InformApp::ColourI7XP);
+}
+
+PrefsColourPage::ColourScheme::ColourScheme(int srtIdx,
+  COLORREF hd, COLORREF mn, COLORREF cmt, COLORREF qt, COLORREF sbst, COLORREF src, COLORREF xt)
+{
+  sortIndex = srtIdx;
+  head = hd;
+  main = mn;
+  comment = cmt;
+  quote = qt;
+  subst = sbst;
+  source = src;
+  ext = xt;
 }
 
 BEGIN_MESSAGE_MAP(PrefsAdvancedPage, CPropertyPage)
@@ -1153,4 +1430,38 @@ void PrefsDialog::UpdatePreviews(void)
     m_editPage.PreviewChanged();
   if (m_colourPage.GetSafeHwnd() != 0)
     m_colourPage.PreviewChanged();
+}
+
+BEGIN_MESSAGE_MAP(NewColourSchemeDialog, I7BaseDialog)
+  ON_EN_CHANGE(IDC_NAME, OnChangedEdit)
+END_MESSAGE_MAP()
+
+NewColourSchemeDialog::NewColourSchemeDialog() : I7BaseDialog(NewColourSchemeDialog::IDD)
+{
+}
+
+CString NewColourSchemeDialog::GetName(void)
+{
+  return m_name;
+}
+
+BOOL NewColourSchemeDialog::OnInitDialog()
+{
+  if (!I7BaseDialog::OnInitDialog())
+    return FALSE;
+
+  GetDlgItem(IDOK)->EnableWindow(FALSE);
+  return TRUE;
+}
+
+void NewColourSchemeDialog::OnOK()
+{
+  GetDlgItem(IDC_NAME)->GetWindowText(m_name);
+  I7BaseDialog::OnOK();
+}
+
+void NewColourSchemeDialog::OnChangedEdit()
+{
+  GetDlgItem(IDC_NAME)->GetWindowText(m_name);
+  GetDlgItem(IDOK)->EnableWindow(!m_name.IsEmpty());
 }

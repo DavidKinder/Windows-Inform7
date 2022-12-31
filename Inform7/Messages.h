@@ -173,8 +173,12 @@ public:
 // is to be updated.
 #define WM_UPDATEPREVIEW  WM_APP+37
 
+// Sent to a preferences dialog sheet to indicate that a colour button
+// has selected a new colour.
+#define WM_COLOURCHANGED  WM_APP+38
+
 // Sent to the Find in Files dialog to resize the results column.
-#define WM_RESIZERESULTS  WM_APP+38
+#define WM_RESIZERESULTS  WM_APP+39
 
 enum FindCommand
 {

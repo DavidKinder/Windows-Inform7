@@ -495,12 +495,14 @@ COLORREF InformApp::GetColour(Colours colour)
     return RGB(0xff,0xff,0xff);
   case ColourText:
     return RGB(0x00,0x00,0x00);
+  case ColourHeading:
+    return RGB(0x00,0x00,0x00);
   case ColourQuote:
-    return RGB(0x0f,0x61,0xaa);
+    return RGB(0x00,0x4d,0x99);
   case ColourSubstitution:
-    return RGB(0x5f,0x66,0xaf);
+    return RGB(0x4d,0x4d,0xff);
   case ColourComment:
-    return RGB(0x1b,0x7f,0x3f);
+    return RGB(0x24,0x6e,0x24);
   case ColourError:
     return RGB(0xff,0x00,0x00);
   case ColourHighlight:
@@ -532,7 +534,7 @@ COLORREF InformApp::GetColour(Colours colour)
   case ColourContentsBelow:
     return RGB(0xf0,0xf7,0xeb);
   case ColourI7XP:
-    return RGB(0xff,0xff,0xe0);
+    return RGB(0xff,0xff,0xe4);
   case ColourTestMe:
     return RGB(0xcc,0xcc,0xcc);
   default:

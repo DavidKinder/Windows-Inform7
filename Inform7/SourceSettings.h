@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+#include <string>
+
 class SourceSettings : public CObject
 {
 public:
@@ -16,4 +19,5 @@ public:
 
 private:
   CRegKey& m_key;
+  std::map<std::string,DWORD> m_colours;
 };

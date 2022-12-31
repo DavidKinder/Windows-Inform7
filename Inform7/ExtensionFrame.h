@@ -4,8 +4,7 @@
 #include "SourceEdit.h"
 #include "MenuBar.h"
 #include "ProjectSettings.h"
-
-#include <deque>
+#include "SourceSettings.h"
 
 class ExtensionFrame : public MenuBarFrameWnd
 {
@@ -64,7 +63,7 @@ protected:
   void SetFromRegistryPath(const char* path);
   bool IsProjectEdited(void);
   bool IsUserExtension(void);
-  COLORREF GetBackColour(CRegKey& key);
+  COLORREF GetBackColour(SourceSettings& set);
 
   SourceEdit m_edit;
   CString m_extension;

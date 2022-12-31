@@ -22,6 +22,7 @@
 #define IDD_FIND                        160
 #define IDD_FIND_BASIC                  161
 #define IDD_REPLACE                     162
+#define IDD_NEW_COLOUR_SCHEME           163
 #define ID_FILE_INSTALL_EXT             200
 #define ID_FILE_INSTALL_FOLDER          201
 #define ID_FILE_INSTALL_XP              202
@@ -196,6 +197,10 @@
 #define IDC_COLOUR_SOURCE               1098
 #define IDC_COLOUR_EXT_LABEL            1099
 #define IDC_COLOUR_EXT                  1100
+#define IDC_SCHEME_LABEL                1101
+#define IDC_COLOUR_SCHEME               1102
+#define IDC_NEW_SCHEME                  1103
+#define IDC_DELETE_SCHEME               1104
 #define IDC_FIND                        1200
 #define IDC_FIND_ALL                    1201
 #define IDC_LOOK_SOURCE                 1202
@@ -255,7 +260,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        287
-#define _APS_NEXT_COMMAND_VALUE         285
+#define _APS_NEXT_COMMAND_VALUE         287
 #define _APS_NEXT_CONTROL_VALUE         1400
 #define _APS_NEXT_SYMED_VALUE           100
 #endif

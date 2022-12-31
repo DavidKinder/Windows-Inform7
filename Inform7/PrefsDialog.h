@@ -8,6 +8,9 @@
 #include "Resource.h"
 #include "afxcmn.h"
 
+#include <map>
+#include <string>
+
 class PrefsDialog;
 
 class PrefsEditPage : public CPropertyPage
@@ -111,12 +114,17 @@ protected:
   virtual void DoDataExchange(CDataExchange* pDX);
   virtual BOOL OnInitDialog();
 
+  afx_msg void OnClickedNewScheme();
+  afx_msg void OnClickedDeleteScheme();
   afx_msg void OnClickedRestore();
   afx_msg void OnClickedEnableColours();
-  afx_msg void OnChangeColour();
+  afx_msg void OnChangeColourScheme();
   afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
   afx_msg LRESULT OnUpdatePreview(WPARAM, LPARAM);
+  afx_msg LRESULT OnColourChanged(WPARAM, LPARAM);
 
+  void UpdateSchemeChoices(void);
+  void UpdateColourButtons(void);
   void UpdateControlStates(void);
   void UpdatePreview(void);
   void SetDefaults(void);
@@ -128,6 +136,10 @@ private:
 
   BOOL m_colours;
   CButton m_coloursCheck;
+
+  CString m_colourScheme;
+  CComboBox m_colourSchemeCombo;
+
   ColourButton m_colourHead;
   ColourButton m_colourMain;
   ColourButton m_colourComment;
@@ -135,6 +147,23 @@ private:
   ColourButton m_colourSubst;
   ColourButton m_colourSource;
   ColourButton m_colourExt;
+
+  struct ColourScheme
+  {
+    ColourScheme();
+    ColourScheme(int srtIdx,
+      COLORREF hd, COLORREF mn, COLORREF cmt, COLORREF qt, COLORREF sbst, COLORREF src, COLORREF xt);
+
+    int sortIndex;
+    COLORREF head;
+    COLORREF main;
+    COLORREF comment;
+    COLORREF quote;
+    COLORREF subst;
+    COLORREF source;
+    COLORREF ext;
+  };
+  std::map<std::string,ColourScheme> m_schemes;
 
   SourceWindow m_preview;
 };
@@ -209,4 +238,22 @@ private:
 
   CRect m_page;
   CFont m_font;
+};
+
+class NewColourSchemeDialog : public I7BaseDialog
+{
+public:
+  NewColourSchemeDialog();
+  CString GetName(void);
+
+  enum { IDD = IDD_NEW_COLOUR_SCHEME };
+
+protected:
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
+  afx_msg void OnChangedEdit();
+
+  DECLARE_MESSAGE_MAP()
+
+  CString m_name;
 };

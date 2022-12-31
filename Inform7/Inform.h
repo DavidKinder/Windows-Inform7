@@ -65,6 +65,7 @@ public:
   {
     ColourBack,
     ColourText,
+    ColourHeading,
     ColourQuote,
     ColourSubstitution,
     ColourComment,
