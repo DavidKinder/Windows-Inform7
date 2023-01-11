@@ -987,7 +987,7 @@ COLORREF ExtensionFrame::GetBackColour(SourceSettings& set)
   if (enabled)
   {
     DWORD colour;
-    if (set.GetDWord("Source Paper Colour",colour) == ERROR_SUCCESS)
+    if (set.GetDWord("Source Paper Colour",colour))
       return (COLORREF)colour;
   }
   return theApp.GetColour(InformApp::ColourBack);
