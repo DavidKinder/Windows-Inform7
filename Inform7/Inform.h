@@ -44,8 +44,8 @@ public:
   virtual BOOL InitInstance();
   virtual int ExitInstance();
   virtual BOOL PreTranslateMessage(MSG* pMsg);
-	virtual void DoWaitCursor(int nCode);
-	virtual BOOL OnIdle(LONG lCount);
+  virtual void DoWaitCursor(int nCode);
+  virtual BOOL OnIdle(LONG lCount);
 
 protected:
   DECLARE_MESSAGE_MAP()
