@@ -2,6 +2,8 @@
 #include "FlatSplitter.h"
 #include "Inform.h"
 
+#include "DarkMode.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -73,14 +75,27 @@ BOOL FlatSplitter::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 void FlatSplitter::OnDrawSplitter(CDC* pDC, ESplitType nType, const CRect& rect)
 {
-  if ((pDC != NULL) && (nType == splitBorder))
+  if (pDC != NULL)
   {
-    if (m_cxBorder > 0)
+    DarkMode* dark = DarkMode::GetActive(this);
+    switch (nType)
     {
-      COLORREF face = ::GetSysColor(COLOR_BTNFACE);
-      pDC->Draw3dRect(rect,face,face);
+    case splitBorder:
+      if (m_cxBorder > 0)
+      {
+        COLORREF face = dark ? dark->GetColour(DarkMode::Dark3) : ::GetSysColor(COLOR_BTNFACE);
+        pDC->Draw3dRect(rect,face,face);
+      }
+      break;
+    case splitBar:
+      if (dark)
+        pDC->FillSolidRect(rect,dark->GetColour(DarkMode::Dark3));
+      else
+        CSplitterWnd::OnDrawSplitter(pDC,nType,rect);
+      break;
+    default:
+      CSplitterWnd::OnDrawSplitter(pDC,nType,rect);
+      break;
     }
   }
-  else
-    CSplitterWnd::OnDrawSplitter(pDC,nType,rect);
 }

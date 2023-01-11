@@ -22,6 +22,7 @@ public:
   void PrefsChanged(CRegKey& key);
   void BeforeUpdateDPI(std::map<CWnd*,double>& layout);
   void UpdateDPI(const std::map<CWnd*,double>& layout);
+  void SetDarkMode(DarkMode* dark);
 
 protected:
   DECLARE_MESSAGE_MAP()

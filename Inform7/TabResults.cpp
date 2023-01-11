@@ -3,8 +3,8 @@
 #include "stdafx.h"
 #include "TabResults.h"
 #include "Inform.h"
-#include "Panel.h"
 #include "Messages.h"
+#include "Panel.h"
 #include "TextFormat.h"
 
 #ifdef _DEBUG
@@ -276,6 +276,12 @@ void TabResults::UpdateDPI(const std::map<CWnd*,double>& layout)
   TabBase::UpdateDPI(layout);
   m_console.PrefsChanged();
   Resize();
+}
+
+void TabResults::SetDarkMode(DarkMode* dark)
+{
+  TabBase::SetDarkMode(dark);
+  m_console.SetDarkMode(dark);
 }
 
 void TabResults::SetLinkNotify(LinkNotify* notify)

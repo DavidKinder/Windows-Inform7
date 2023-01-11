@@ -1,5 +1,7 @@
 #pragma once
 
+#include "DarkMode.h"
+
 class ReportEdit : public CWnd
 {
   DECLARE_DYNAMIC(ReportEdit)
@@ -10,6 +12,7 @@ public:
   void SetAccName(LPCSTR name);
   void FontChanged(void);
   void PrefsChanged(void);
+  void SetDarkMode(DarkMode* dark);
 
   void AppendText(const char* text);
   void ClearText(void);

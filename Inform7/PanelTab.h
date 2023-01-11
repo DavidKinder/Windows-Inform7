@@ -1,5 +1,7 @@
 #pragma once
 
+#include "DarkMode.h"
+
 #include <string>
 #include <vector>
 
@@ -34,7 +36,7 @@ public:
   {
   public:
     virtual bool IsTabEnabled(int tab) = 0;
-    virtual COLORREF GetSelectedTabColour(int tab) = 0;
+    virtual COLORREF GetSelectedTabColour(int tab, DarkMode* dark) = 0;
   };
 
   void SetTabController(TabController* controller);

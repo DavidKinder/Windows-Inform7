@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "ContentsWindow.h"
-#include "TabSource.h"
 #include "Inform.h"
+#include "TabSource.h"
+
 #include "DpiFunctions.h"
 #include "ScaleGfx.h"
 
@@ -173,6 +174,8 @@ void ContentsPane::PostNcDestroy()
 
 void ContentsPane::Draw(CDC* dc, int origin_y)
 {
+  DarkMode* dark = DarkMode::GetActive(this);
+
   // Get the dimensions of the window
   CRect client;
   GetClientRect(client);
@@ -180,15 +183,18 @@ void ContentsPane::Draw(CDC* dc, int origin_y)
   // Select the default font
   CFont* oldFont = dc->SelectObject(&m_font);
   CSize fs = theApp.MeasureFont(this,&m_font);
-  dc->SetTextColor(theApp.GetColour(InformApp::ColourText));
+  dc->SetTextColor(dark ?
+    dark->GetColour(DarkMode::Fore) : theApp.GetColour(InformApp::ColourText));
   dc->SetBkMode(TRANSPARENT);
 
   // Select a pen for line drawing
-  CPen pen(PS_SOLID,0,theApp.GetColour(InformApp::ColourBorder));
+  CPen pen(PS_SOLID,0,dark ?
+    dark->GetColour(DarkMode::Dark2) : theApp.GetColour(InformApp::ColourBorder));
   CPen* oldPen = dc->SelectObject(&pen);
 
   // Clear the background
-  dc->FillSolidRect(client,theApp.GetColour(InformApp::ColourContents));
+  dc->FillSolidRect(client,dark ?
+    dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourContents));
 
   // Clear out any previous selection rectanges
   m_tree->ZeroRects();
@@ -217,7 +223,7 @@ void ContentsPane::Draw(CDC* dc, int origin_y)
   {
     bool title = false;
     int h = 0;
-    DrawNode(dc,m_tree.get(),title,h,origin_y);
+    DrawNode(dc,m_tree.get(),dark,title,h,origin_y);
   }
 
   // Restore the original device context settings
@@ -225,7 +231,7 @@ void ContentsPane::Draw(CDC* dc, int origin_y)
   dc->SelectObject(oldFont);
 }
 
-void ContentsPane::DrawNode(CDC* dc, Node* node, bool& title, int& h, int origin_y)
+void ContentsPane::DrawNode(CDC* dc, Node* node, DarkMode* dark, bool& title, int& h, int origin_y)
 {
   // Choose a font for the item, or use the default
   if ((node->GetLevel() == SourceLexer::Title) || (node->selected == Node::NodeSelected))
@@ -252,7 +258,7 @@ void ContentsPane::DrawNode(CDC* dc, Node* node, bool& title, int& h, int origin
 
       // If selected, draw the highlighting
       if (node->selected == Node::NodeSelected)
-        DrawSelectBack(dc,node,textRect);
+        DrawSelectBack(dc,node,dark,textRect);
 
       // Is the text rectangle visible?
       CRect intersect;
@@ -262,23 +268,23 @@ void ContentsPane::DrawNode(CDC* dc, Node* node, bool& title, int& h, int origin
         ::DrawTextW(dc->GetSafeHdc(),name,name.GetLength(),textRect,DT_WORD_ELLIPSIS);
         if (node->GetLevel() != SourceLexer::Title)
         {
-          COLORREF back = theApp.GetColour(InformApp::ColourContents);
+          COLORREF back = dark ? dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourContents);
           int backIndex = 0;
           if (node->selected == Node::NodeSelected)
           {
-            back = theApp.GetColour(InformApp::ColourContentsSelect);
+            back = dark ? dark->GetColour(DarkMode::Dark3) : theApp.GetColour(InformApp::ColourContentsSelect);
             backIndex = 1;
           }
           else if (node->selected == Node::NodeBelowSelection)
           {
-            back = theApp.GetColour(InformApp::ColourContentsBelow);
+            back = dark ? dark->GetColour(DarkMode::Dark2) : theApp.GetColour(InformApp::ColourContentsBelow);
             backIndex = 2;
           }
 
           // Draw a circle to the left of the heading
           CDC dcFrom;
           dcFrom.CreateCompatibleDC(dc);
-          CBitmap* fromBitmap = CDibSection::SelectDibSection(dcFrom,GetCircle(back,backIndex));
+          CBitmap* fromBitmap = CDibSection::SelectDibSection(dcFrom,GetCircle(back,backIndex,dark));
           dc->BitBlt(x-fs.cy,y,fs.cy,fs.cy,&dcFrom,0,0,SRCCOPY);
           dcFrom.SelectObject(fromBitmap);
         }
@@ -312,23 +318,25 @@ void ContentsPane::DrawNode(CDC* dc, Node* node, bool& title, int& h, int origin
 
   // Draw child nodes
   for (int i = 0; i < node->children.GetSize(); i++)
-    DrawNode(dc,node->children.GetAt(i),title,h,origin_y);
+    DrawNode(dc,node->children.GetAt(i),dark,title,h,origin_y);
 }
 
-void ContentsPane::DrawSelectBack(CDC* dc, Node* node, const CRect& textRect)
+void ContentsPane::DrawSelectBack(CDC* dc, Node* node, DarkMode* dark, const CRect& textRect)
 {
   CSize fs = theApp.MeasureFont(this,&m_font);
   CRect backRect(textRect);
   backRect.left -= fs.cy;
   backRect.InflateRect(fs.cx/3,fs.cy/6);
 
-  CPen pen(PS_SOLID,0,theApp.GetColour(InformApp::ColourContentsSelect));
+  CPen pen(PS_SOLID,0,dark ?
+    dark->GetColour(DarkMode::Dark3) : theApp.GetColour(InformApp::ColourContentsSelect));
   CPen* oldPen = dc->SelectObject(&pen);
 
   int count = node->GetCount(m_smallest,true);
   if (count > 1)
   {
-    CBrush brush1(theApp.GetColour(InformApp::ColourContentsBelow));
+    CBrush brush1(dark ?
+      dark->GetColour(DarkMode::Dark2) : theApp.GetColour(InformApp::ColourContentsBelow));
     CBrush* oldBrush = dc->SelectObject(&brush1);
 
     int y = backRect.bottom;
@@ -338,18 +346,21 @@ void ContentsPane::DrawSelectBack(CDC* dc, Node* node, const CRect& textRect)
     dc->MoveTo(backRect.left,y);
     dc->LineTo(backRect.right,y);
 
-    CBrush brush2(theApp.GetColour(InformApp::ColourContentsSelect));
+    CBrush brush2(dark ?
+      dark->GetColour(DarkMode::Dark3) : theApp.GetColour(InformApp::ColourContentsSelect));
     dc->SelectObject(&brush2);
     CPoint fillPoint((backRect.left+backRect.right)/2,y-1);
     if (!dc->PtVisible(fillPoint))
       fillPoint.y = backRect.top+1;
-    dc->FloodFill(fillPoint.x,fillPoint.y,theApp.GetColour(InformApp::ColourContentsSelect));
+    dc->FloodFill(fillPoint.x,fillPoint.y,dark ?
+      dark->GetColour(DarkMode::Dark3) : theApp.GetColour(InformApp::ColourContentsSelect));
 
     dc->SelectObject(oldBrush);
   }
   else
   {
-    CBrush brush(theApp.GetColour(InformApp::ColourContentsSelect));
+    CBrush brush(dark ?
+      dark->GetColour(DarkMode::Dark3) : theApp.GetColour(InformApp::ColourContentsSelect));
     CBrush* oldBrush = dc->SelectObject(&brush);
 
     dc->RoundRect(backRect,CPoint(fs.cx,fs.cx));
@@ -442,7 +453,7 @@ void ContentsPane::SetScrollSize(void)
   }
 }
 
-CDibSection* ContentsPane::GetCircle(COLORREF back, int index)
+CDibSection* ContentsPane::GetCircle(COLORREF back, int index, bool dark)
 {
   // Is the image in the cache?
   CString circleName;
@@ -470,7 +481,10 @@ CDibSection* ContentsPane::GetCircle(COLORREF back, int index)
     circleDib->GetBits(),circleDibSize.cx,circleDibSize.cy);
 
   // Alpha blend with the background colour
-  circleDib->AlphaBlend(back);
+  if (dark)
+    circleDib->AlphaBlendDark(back);
+  else
+    circleDib->AlphaBlend(back);
 
   theApp.CacheImage(circleName,circleDib);
   return circleDib;
@@ -722,6 +736,12 @@ void ContentsWindow::PrefsChanged(void)
   m_contents.PrefsChanged();
 }
 
+void ContentsWindow::SetDarkMode(DarkMode* dark)
+{
+  LPCWSTR theme = dark ? L"" : NULL;
+  ::SetWindowTheme(m_depth.GetSafeHwnd(),theme,theme);
+}
+
 int ContentsWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
   if (CWnd::OnCreate(lpCreateStruct) == -1)
@@ -805,15 +825,17 @@ void ContentsWindow::Draw(CDC* dc)
   GetClientRect(client);
   m_contents.GetClientRect(contents);
   CSize fs = theApp.MeasureFont(this,theApp.GetFont(this,InformApp::FontSystem));
+  DarkMode* dark = DarkMode::GetActive(this);
 
   // Only draw the space under the contents pane
   client.top = contents.Height();
-  dc->FillSolidRect(client,::GetSysColor(COLOR_BTNFACE));
-  dc->DrawEdge(client,EDGE_ETCHED,BF_TOP);
+  dc->FillSolidRect(client,dark ? dark->GetColour(DarkMode::Darkest) : ::GetSysColor(COLOR_BTNFACE));
+  if (!dark)
+    dc->DrawEdge(client,EDGE_ETCHED,BF_TOP);
 
   // Draw the label for the control
   CFont* oldFont = dc->SelectObject(theApp.GetFont(this,InformApp::FontSystem));
-  dc->SetTextColor(theApp.GetColour(InformApp::ColourText));
+  dc->SetTextColor(dark ? dark->GetColour(DarkMode::Fore) : theApp.GetColour(InformApp::ColourText));
   dc->SetBkMode(TRANSPARENT);
   CRect labelRect(0,client.top+4,(client.Width()/3)-fs.cx,client.top+(fs.cy*3/2));
   dc->DrawText("Heading depth",13,labelRect,DT_RIGHT|DT_VCENTER|DT_SINGLELINE);
@@ -864,8 +886,11 @@ void ContentsWindow::AnimateSlide(Animation anim, CWnd* source)
     return;
 
   // Prepare for animation
-  PrintWindow(m_contentsImage,this,theApp.GetColour(InformApp::ColourContents));
-  PrintWindow(m_sourceImage,source,theApp.GetColour(InformApp::ColourBack));
+  DarkMode* dark = DarkMode::GetActive(this);
+  PrintWindow(m_contentsImage,this,dark ?
+    dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourContents));
+  PrintWindow(m_sourceImage,source,dark ?
+    dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack));
   m_contents.ShowWindow(SW_HIDE);
   m_depth.ShowWindow(SW_HIDE);
   m_animation = anim;

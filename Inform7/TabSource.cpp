@@ -2,9 +2,9 @@
 
 #include "stdafx.h"
 #include "TabSource.h"
-#include "Panel.h"
 #include "Inform.h"
 #include "Messages.h"
+#include "Panel.h"
 #include "SourceSettings.h"
 
 #ifdef _DEBUG
@@ -519,6 +519,12 @@ void TabSource::UpdateDPI(const std::map<CWnd*,double>& layout)
   m_source.PrefsChanged();
   m_contents.PrefsChanged();
   Resize();
+}
+
+void TabSource::SetDarkMode(DarkMode* dark)
+{
+  TabBase::SetDarkMode(dark);
+  m_contents.SetDarkMode(dark);
 }
 
 void TabSource::SetDocument(TabSource* master)

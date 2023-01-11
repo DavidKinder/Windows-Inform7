@@ -1,8 +1,7 @@
 #include "stdafx.h"
-#include "Inform.h"
 #include "Panel.h"
+#include "Inform.h"
 #include "Messages.h"
-#include "DpiFunctions.h"
 
 #include "TabDoc.h"
 #include "TabExtensions.h"
@@ -12,6 +11,8 @@
 #include "TabSource.h"
 #include "TabStory.h"
 #include "TabTesting.h"
+
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -246,16 +247,31 @@ void Panel::UpdateDPI(const std::map<CWnd*,double>& layout)
     m_tabs[i]->UpdateDPI(layout);
 }
 
+void Panel::SetDarkMode(DarkMode* dark)
+{
+  for (int i = 0; i < Number_Tabs; i++)
+    m_tabs[i]->SetDarkMode(dark);
+}
+
 bool Panel::IsTabEnabled(int tab)
 {
   return m_tabs[tab]->IsEnabled();
 }
 
-COLORREF Panel::GetSelectedTabColour(int tab)
+COLORREF Panel::GetSelectedTabColour(int tab, DarkMode* dark)
 {
-  if (tab == Tab_Settings)
-    return theApp.GetColour(InformApp::ColourBack);
-  return ::GetSysColor(COLOR_BTNFACE);
+  if (dark)
+  {
+    if (tab == Tab_Settings)
+      return dark->GetColour(DarkMode::Back);
+    return dark->GetColour(DarkMode::Darkest);
+  }
+  else
+  {
+    if (tab == Tab_Settings)
+      return theApp.GetColour(InformApp::ColourBack);
+    return ::GetSysColor(COLOR_BTNFACE);
+  }
 }
 
 bool Panel::CanTabNavigate(bool forward)

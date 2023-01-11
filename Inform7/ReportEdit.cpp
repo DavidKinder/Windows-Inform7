@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "Inform.h"
 #include "ReportEdit.h"
+#include "Inform.h"
 
 #include "Platform.h"
 #include "Scintilla.h"
@@ -71,6 +71,26 @@ void ReportEdit::FontChanged(void)
 void ReportEdit::PrefsChanged(void)
 {
   CallEdit(WM_SETTINGCHANGE);
+}
+
+void ReportEdit::SetDarkMode(DarkMode* dark)
+{
+  if (dark)
+  {
+    for (int i : { STYLE_DEFAULT,0,1 })
+    {
+      CallEdit(SCI_STYLESETFORE,i,dark->GetColour(DarkMode::Fore));
+      CallEdit(SCI_STYLESETBACK,i,dark->GetColour(DarkMode::Back));
+    }
+  }
+  else
+  {
+    for (int i : { STYLE_DEFAULT,0,1 })
+    {
+      CallEdit(SCI_STYLESETFORE,i,theApp.GetColour(InformApp::ColourText));
+      CallEdit(SCI_STYLESETBACK,i,theApp.GetColour(InformApp::ColourBack));
+    }
+  }
 }
 
 void ReportEdit::OnUpdateNeedSel(CCmdUI* pCmdUI)

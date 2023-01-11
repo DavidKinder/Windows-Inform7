@@ -623,25 +623,7 @@ LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
   UpdateDPI(newDpi);
 
   // Set the text on the toolbar buttons again to force them to resize
-  m_toolBar.SetFont(theApp.GetFont(this,InformApp::FontSystem));
-  for (int i = 0; i < m_toolBar.GetToolBarCtrl().GetButtonCount(); i++)
-  {
-    UINT id = m_toolBar.GetItemID(i);
-    if (id != ID_SEPARATOR)
-    {
-      CString btnText, tipText;
-      btnText.LoadString(id);
-      AfxExtractSubString(tipText,btnText,1,'\n');
-      m_toolBar.SetButtonText(i,tipText);
-    }
-  }
-
-  // If showing, update the list of examples
-  if (m_exampleList.GetSafeHwnd() != 0)
-  {
-    m_exampleList.SetFont(m_toolBar.GetFont());
-    SetExampleListLocation();
-  }
+  UpdateToolBarFont();
 
   // Update the search bar in the toolbar
   m_searchBar.UpdateDPI();
@@ -723,6 +705,21 @@ void ProjectFrame::OnUpdateFrameTitle(BOOL)
   CString title;
   title.Format("%s - %s",(LPCSTR)GetDisplayName(true),m_strTitle);
   AfxSetWindowText(GetSafeHwnd(),title);
+}
+
+void ProjectFrame::SetDarkMode(DarkMode* dark)
+{
+  MenuBarFrameWnd::SetDarkMode(dark);
+  DarkMode::Set(&m_toolBar,&m_coolBar,1,dark);
+
+  // Changing dark mode will reset the toolbar font
+  UpdateToolBarFont();
+
+  DarkMode::Set(&m_searchBar,&m_coolBar,2,dark);
+  m_searchBar.SetDarkMode(dark);
+  m_progress.SetDarkMode(dark);
+  for (int i = 0; i < 2; i++)
+    GetPanel(i)->SetDarkMode(dark);
 }
 
 LRESULT ProjectFrame::OnPlaySkein(WPARAM wparam, LPARAM)
@@ -2998,6 +2995,29 @@ bool ProjectFrame::LoadToolBar(void)
     break;
   }
   return true;
+}
+
+void ProjectFrame::UpdateToolBarFont(void)
+{
+  m_toolBar.SetFont(theApp.GetFont(this,InformApp::FontSystem));
+  for (int i = 0; i < m_toolBar.GetToolBarCtrl().GetButtonCount(); i++)
+  {
+    UINT id = m_toolBar.GetItemID(i);
+    if (id != ID_SEPARATOR)
+    {
+      CString btnText, tipText;
+      btnText.LoadString(id);
+      AfxExtractSubString(tipText,btnText,1,'\n');
+      m_toolBar.SetButtonText(i,tipText);
+    }
+  }
+
+  // If showing, update the list of examples
+  if (m_exampleList.GetSafeHwnd() != 0)
+  {
+    m_exampleList.SetFont(m_toolBar.GetFont());
+    SetExampleListLocation();
+  }
 }
 
 bool ProjectFrame::UpdateExampleList(void)

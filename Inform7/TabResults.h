@@ -1,9 +1,9 @@
 #pragma once
 
-#include "TabBase.h"
-#include "ReportHtml.h"
 #include "PageTab.h"
 #include "ReportEdit.h"
+#include "ReportHtml.h"
+#include "TabBase.h"
 
 class TabResults : public TabBase, public ReportHtml::LinkConsumer
 {
@@ -26,6 +26,7 @@ public:
   void Progress(const char* msg);
   void PrefsChanged(CRegKey& key);
   void UpdateDPI(const std::map<CWnd*,double>& layout);
+  void SetDarkMode(DarkMode* dark);
 
   // Implementation of ReportHtml::LinkConsumer
   void SourceLink(const char* url);

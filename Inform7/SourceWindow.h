@@ -1,10 +1,12 @@
 #pragma once
 
 #include "SourceEdit.h"
-#include "SourceSettings.h"
-#include "Dib.h"
 #include "Inform.h"
 #include "Messages.h"
+#include "SourceSettings.h"
+
+#include "Dib.h"
+#include "DarkMode.h"
 
 class SourceWindow : public CWnd
 {
@@ -50,7 +52,7 @@ protected:
 private:
   void Resize(void);
   void Draw(CDC& dc);
-  CRect PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bool top);
+  CRect PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, DarkMode* dark, bool top);
   void GetImages(ProjectType projectType);
   CDibSection* CreateTornImage(const char* inputImage, const char* outputName);
 

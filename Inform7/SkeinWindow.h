@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Dib.h"
 #include "Skein.h"
 #include "SkeinEdit.h"
-#include "TranscriptPane.h"
 #include "Messages.h"
+#include "TranscriptPane.h"
+
+#include "DarkMode.h"
+#include "Dib.h"
 
 #include <map>
 #include <vector>
@@ -92,7 +94,8 @@ private:
   void SetFontsBitmaps(void);
 
   void DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSection& bitmap,
-    const CRect& client, const CPoint& origin, const CPoint& parent, bool gameRunning);
+    const CRect& client, const CPoint& origin, const CPoint& parent,
+    DarkMode* dark, bool gameRunning);
 
   void DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
     const CPoint& centre, bool selected, bool gameRunning);
@@ -100,7 +103,7 @@ private:
     int width, CDibSection* back);
 
   void DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client,
-    const CPoint& from, const CPoint& to, COLORREF fore, bool bold);
+    const CPoint& from, const CPoint& to, COLORREF fore, COLORREF back, bool bold);
   void DrawLinePixel(CDC& dc, CDibSection& bitmap, int x, int y, double i, COLORREF fore);
   COLORREF LinePixelColour(double i, COLORREF fore, COLORREF back);
 

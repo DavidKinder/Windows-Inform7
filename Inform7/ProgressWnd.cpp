@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ProgressWnd.h"
 #include "Inform.h"
+
+#include "DarkMode.h"
 #include "DpiFunctions.h"
 
 #ifdef _DEBUG
@@ -10,6 +12,7 @@
 IMPLEMENT_DYNAMIC(ProgressWnd, CWnd)
 
 BEGIN_MESSAGE_MAP(ProgressWnd, CWnd)
+  ON_WM_CTLCOLOR()
   ON_WM_ERASEBKGND()
   ON_BN_CLICKED(IDC_STOP, OnStopClicked)
 END_MESSAGE_MAP()
@@ -20,7 +23,7 @@ ProgressWnd::ProgressWnd() : m_longStep(0), m_longStepTotal(0), m_wantStop(false
 
 BOOL ProgressWnd::Create(CWnd* parentWnd, DWORD style)
 {
-  if (!CWnd::Create(NULL,"",WS_CHILD|WS_CLIPCHILDREN|WS_BORDER|style,CRect(0,0,0,0),parentWnd,0))
+  if (!CWnd::Create(NULL,"",WS_CHILD|WS_CLIPCHILDREN|style,CRect(0,0,0,0),parentWnd,0))
     return FALSE;
   if (!m_text.Create("",WS_CHILD|WS_VISIBLE|SS_CENTER,CRect(0,0,0,0),this))
     return FALSE;
@@ -42,11 +45,40 @@ void ProgressWnd::UpdateDPI(void)
   }
 }
 
+void ProgressWnd::SetDarkMode(DarkMode* dark)
+{
+  LPCWSTR theme = dark ? L"" : NULL;
+  ::SetWindowTheme(m_progress.GetSafeHwnd(),theme,theme);
+}
+
+HBRUSH ProgressWnd::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+  HBRUSH brush = CWnd::OnCtlColor(pDC,pWnd,nCtlColor);
+  if (nCtlColor == CTLCOLOR_STATIC)
+  {
+    DarkMode* dark = DarkMode::GetActive(this);
+    if (dark)
+    {
+      brush = dark->GetBrush(DarkMode::Darkest);
+      pDC->SetBkColor(dark->GetColour(DarkMode::Darkest));
+      pDC->SetTextColor(dark->GetColour(DarkMode::Fore));
+    }
+  }
+  return brush;
+}
+
 BOOL ProgressWnd::OnEraseBkgnd(CDC* dc)
 {
   CRect r;
   GetClientRect(r);
-  dc->FillSolidRect(r,::GetSysColor(COLOR_BTNFACE));
+  DarkMode* dark = DarkMode::GetActive(this);
+  dc->FillSolidRect(r,dark ?
+    dark->GetColour(DarkMode::Darkest) : ::GetSysColor(COLOR_BTNFACE));
+
+  CBrush border;
+  border.CreateSolidBrush(dark ?
+    dark->GetColour(DarkMode::Dark2) : ::GetSysColor(COLOR_BTNSHADOW));
+  dc->FrameRect(r,&border);
   return TRUE;
 }
 

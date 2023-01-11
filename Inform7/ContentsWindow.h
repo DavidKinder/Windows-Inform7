@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Dib.h"
 #include "Messages.h"
 #include "SourceLexer.h"
+
+#include "DarkMode.h"
+#include "Dib.h"
 
 #include <memory>
 
@@ -62,12 +64,12 @@ private:
 
   void BuildTree(Node* parent);
   void Draw(CDC* dc, int origin_y);
-  void DrawNode(CDC* dc, Node* node, bool& title, int& h, int origin_y);
-  void DrawSelectBack(CDC* dc, Node* node, const CRect& textRect);
+  void DrawNode(CDC* dc, Node* node, DarkMode* dark, bool& title, int& h, int origin_y);
+  void DrawSelectBack(CDC* dc, Node* node, DarkMode* dark, const CRect& textRect);
   Node* NodeAtPoint(const CPoint& point, Node* node = NULL);
   CWnd* GetParentTab(void);
   void SetScrollSize(void);
-  CDibSection* GetCircle(COLORREF back, int index);
+  CDibSection* GetCircle(COLORREF back, int index, bool dark);
   Node* SetSelectedNode(const SourceHeading& selected);
   void CreateFonts(void);
 
@@ -95,6 +97,7 @@ public:
   void LoadSettings(CRegKey& key);
   void SaveSettings(CRegKey& key);
   void PrefsChanged(void);
+  void SetDarkMode(DarkMode* dark);
 
 protected:
   DECLARE_MESSAGE_MAP()

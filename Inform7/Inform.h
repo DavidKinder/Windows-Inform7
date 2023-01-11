@@ -91,7 +91,7 @@ public:
   COLORREF GetColour(Colours colour);
   COLORREF BlendedColour(COLORREF col1, int rel1, COLORREF col2, int rel2);
 
-  void DrawSelectRect(CDC& dc, CRect& rect, bool hot);
+  void DrawSelectRect(CWnd* wnd, CDC& dc, CRect& rect, bool hot);
   void SetIcon(CWnd* wnd);
 
   enum Fonts

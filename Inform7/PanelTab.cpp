@@ -199,7 +199,8 @@ void PanelTab::OnPaint()
   CFont* oldFont = dc.SelectObject(GetFont());
 
   // Fill the background colour
-  dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourTabBack));
+  DarkMode* dark = DarkMode::GetActive(this);
+  dc.FillSolidRect(client,dark ? dark->GetColour(DarkMode::Darkest) : theApp.GetColour(InformApp::ColourTabBack));
 
   if (m_vertical)
   {
@@ -216,13 +217,13 @@ void PanelTab::OnPaint()
         itemRect.OffsetRect(CPoint(-bitmapX,0));
 
         if (i == sel)
-          theApp.DrawSelectRect(dc,itemRect,false);
+          theApp.DrawSelectRect(this,dc,itemRect,false);
         else if (i == m_mouseOverItem)
-          theApp.DrawSelectRect(dc,itemRect,true);
+          theApp.DrawSelectRect(this,dc,itemRect,true);
         else
-          dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNFACE));
+          dc.FillSolidRect(itemRect,dark ? dark->GetColour(DarkMode::Dark3) : ::GetSysColor(COLOR_BTNFACE));
+        dc.SetTextColor(dark ? dark->GetColour(DarkMode::Fore) : ::GetSysColor(COLOR_BTNTEXT));
 
-        dc.SetTextColor(COLOR_BTNTEXT);
         CSize size = dc.GetTextExtent(text);
         dc.TextOut((itemRect.left+itemRect.right-size.cy)/2,(itemRect.top+itemRect.bottom-size.cx)/2,text);
       }
@@ -234,7 +235,9 @@ void PanelTab::OnPaint()
 
     // Get the colour for the lines around tabs: use the theme, if possible
     COLORREF lineColour = ::GetSysColor(COLOR_BTNSHADOW);
-    if (::IsAppThemed())
+    if (dark)
+      lineColour = dark->GetColour(DarkMode::Dark2);
+    else if (::IsAppThemed())
     {
       HTHEME theme = ::OpenThemeData(GetSafeHwnd(),L"TAB");
       if (theme != 0)
@@ -267,9 +270,9 @@ void PanelTab::OnPaint()
 
         if (i == sel)
         {
-          COLORREF back = ::GetSysColor(COLOR_BTNFACE);
+          COLORREF back = dark ? dark->GetColour(DarkMode::Dark2) : ::GetSysColor(COLOR_BTNFACE);
           if (m_controller != NULL)
-            back = m_controller->GetSelectedTabColour(i);
+            back = m_controller->GetSelectedTabColour(i,dark);
           dc.FillSolidRect(itemRect,back);
 
           dc.MoveTo(itemRect.right,itemRect.bottom-1);
@@ -280,7 +283,8 @@ void PanelTab::OnPaint()
         else if (i == m_mouseOverItem)
         {
           itemRect.bottom--;
-          dc.FillSolidRect(itemRect,::GetSysColor(COLOR_BTNHIGHLIGHT));
+          dc.FillSolidRect(itemRect,dark ?
+            dark->GetColour(DarkMode::Dark2) : ::GetSysColor(COLOR_BTNHIGHLIGHT));
 
           dc.MoveTo(itemRect.right,itemRect.bottom-1);
           dc.LineTo(itemRect.right,itemRect.top);
@@ -289,7 +293,8 @@ void PanelTab::OnPaint()
           itemRect.bottom++;
         }
 
-        dc.SetTextColor(COLOR_BTNTEXT);
+        dc.SetTextColor(dark ?
+          dark->GetColour(DarkMode::Fore) : ::GetSysColor(COLOR_BTNTEXT));
         dc.DrawText(text,itemRect,DT_SINGLELINE|DT_CENTER|DT_VCENTER);
       }
     }

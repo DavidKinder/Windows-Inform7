@@ -2,6 +2,8 @@
 
 #include "StopButton.h"
 
+#include "DarkMode.h"
+
 class ProgressWnd : public CWnd
 {
   DECLARE_DYNAMIC(ProgressWnd)
@@ -9,6 +11,7 @@ class ProgressWnd : public CWnd
 protected:
   DECLARE_MESSAGE_MAP()
 
+  afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
   afx_msg void OnStopClicked();
 
@@ -16,6 +19,7 @@ public:
   ProgressWnd();
   BOOL Create(CWnd* parentWnd, DWORD style);
   void UpdateDPI(void);
+  void SetDarkMode(DarkMode* dark);
 
   void ToFront();
   int GetProgress();

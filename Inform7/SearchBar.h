@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SearchEdit.h"
+#include "DarkMode.h"
 
 class SearchBar : public CDialogBar
 {
@@ -14,6 +15,7 @@ public:
 
   BOOL Create(CWnd* parent, UINT style, UINT id);
   void UpdateDPI(void);
+  void SetDarkMode(DarkMode* dark);
 
   INT_PTR OnToolHitTest(CPoint point, TOOLINFO* ti) const;
   BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);

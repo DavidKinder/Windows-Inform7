@@ -38,8 +38,10 @@ public:
   virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
   virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
 
+  virtual void SetDarkMode(DarkMode* dark);
+
 protected:
-  CToolBar m_toolBar;
+  DarkModeToolBar m_toolBar;
   SearchBar m_searchBar;
   ExampleComboBox m_exampleList;
   ProgressWnd m_progress;
@@ -219,6 +221,7 @@ protected:
   int ChoosePanel(Panel::Tabs newTab);
 
   bool LoadToolBar(void);
+  void UpdateToolBarFont(void);
 
   enum SkeinAction
   {

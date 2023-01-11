@@ -3,6 +3,8 @@
 #include "TabInterface.h"
 #include "PanelTab.h"
 
+#include "DarkMode.h"
+
 class Panel : public CWnd, public PanelTab::TabController
 {
 protected: 
@@ -56,9 +58,10 @@ public:
   void PrefsChanged(CRegKey& key);
   void BeforeUpdateDPI(std::map<CWnd*,double>& layout);
   void UpdateDPI(const std::map<CWnd*,double>& layout);
+  void SetDarkMode(DarkMode* dark);
 
   virtual bool IsTabEnabled(int tab);
-  virtual COLORREF GetSelectedTabColour(int tab);
+  virtual COLORREF GetSelectedTabColour(int tab, DarkMode* dark);
 
   bool CanTabNavigate(bool forward);
   const char* TabNavigateName(bool forward);

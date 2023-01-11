@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "TranscriptPane.h"
-#include "SkeinWindow.h"
 #include "Inform.h"
-#include "DpiFunctions.h"
+#include "SkeinWindow.h"
 #include "TextFormat.h"
+
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -109,15 +110,17 @@ void TranscriptPane::Layout(CDC& dc)
   }
 }
 
-void TranscriptPane::DrawArrows(CDC& dc, CPoint origin, int skeinIndex)
+void TranscriptPane::DrawArrows(CDC& dc, CPoint origin, DarkMode* dark, int skeinIndex)
 {
-  CPen linePen(PS_DOT,1,theApp.GetColour(InformApp::ColourSkeinLine));
+  CPen linePen(PS_DOT,1,dark ?
+    dark->GetColour(DarkMode::Dark1) : theApp.GetColour(InformApp::ColourSkeinLine));
   for (auto& nl : m_nodes)
   {
     // Draw a background
     int x = nl.node->GetX(skeinIndex);
     int y = nl.node->GetY(skeinIndex);
-    dc.FillSolidRect(origin.x+x,origin.y+y,m_origin.x-x,3,theApp.GetColour(InformApp::ColourBack));
+    dc.FillSolidRect(origin.x+x,origin.y+y,m_origin.x-x,3,dark ?
+      dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack));
 
     // Draw a dotted line
     CPen* oldPen = dc.SelectObject(&linePen);
@@ -126,7 +129,10 @@ void TranscriptPane::DrawArrows(CDC& dc, CPoint origin, int skeinIndex)
 
     // Draw the arrow head
     for (int i = 0; i < 4; i++)
-      dc.FillSolidRect(origin.x+m_origin.x-2-(i*2),origin.y+y-i,2,(i*2)+1,theApp.GetColour(InformApp::ColourSkeinLine));
+    {
+      dc.FillSolidRect(origin.x+m_origin.x-2-(i*2),origin.y+y-i,2,(i*2)+1,dark ?
+        dark->GetColour(DarkMode::Dark1) : theApp.GetColour(InformApp::ColourSkeinLine));
+    }
   }
 }
 

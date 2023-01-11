@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "FlatButton.h"
 #include "Inform.h"
+
+#include "DarkMode.h"
 #include "DpiFunctions.h"
 
 #ifdef _DEBUG
@@ -30,6 +32,7 @@ void FlatButton::DrawItem(LPDRAWITEMSTRUCT dis)
   CDC* dcPaint = CDC::FromHandle(dis->hDC);
   CRect rectPaint(dis->rcItem);
   bool disabled = (dis->itemState & ODS_DISABLED) != 0;
+  DarkMode* dark = DarkMode::GetActive(this);
 
   // Create a bitmap to paint into
   CDC dc;
@@ -42,11 +45,11 @@ void FlatButton::DrawItem(LPDRAWITEMSTRUCT dis)
 
   // Draw the background
   if (dis->itemState & ODS_SELECTED)
-    theApp.DrawSelectRect(dc,rect,false);
+    theApp.DrawSelectRect(this,dc,rect,false);
   else if (m_mouseOver && !disabled)
-    theApp.DrawSelectRect(dc,rect,true);
+    theApp.DrawSelectRect(this,dc,rect,true);
   else
-    dc.FillSolidRect(rect,::GetSysColor(COLOR_BTNFACE));
+    dc.FillSolidRect(rect,dark ? dark->GetColour(DarkMode::Darkest) : ::GetSysColor(COLOR_BTNFACE));
 
   // Get the button's text
   CString text;
@@ -61,7 +64,10 @@ void FlatButton::DrawItem(LPDRAWITEMSTRUCT dis)
     int gap = imageRect.Height()/6;
     imageRect.DeflateRect(gap,gap);
     CDibSection* dib = GetImage("Arrow-left",imageRect.Size(),disabled);
-    bitmap.AlphaBlend(dib,gap,gap,FALSE);
+    if (dark)
+      bitmap.AlphaBlendDark(dib,gap,gap,FALSE);
+    else
+      bitmap.AlphaBlend(dib,gap,gap,FALSE);
   }
   else if (text == "?>")
   {
@@ -71,7 +77,10 @@ void FlatButton::DrawItem(LPDRAWITEMSTRUCT dis)
     int gap = imageRect.Height()/6;
     imageRect.DeflateRect(gap,gap);
     CDibSection* dib = GetImage("Arrow-right",imageRect.Size(),disabled);
-    bitmap.AlphaBlend(dib,gap,gap,FALSE);
+    if (dark)
+      bitmap.AlphaBlendDark(dib,gap,gap,FALSE);
+    else
+      bitmap.AlphaBlend(dib,gap,gap,FALSE);
   }
 
   // Draw the control from the bitmap

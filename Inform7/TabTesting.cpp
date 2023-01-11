@@ -3,11 +3,12 @@
 #include "stdafx.h"
 #include "TabTesting.h"
 #include "Inform.h"
-#include "Panel.h"
-#include "TextFormat.h"
-#include "Dialogs.h"
 #include "Messages.h"
+#include "Panel.h"
 #include "Resource.h"
+#include "TextFormat.h"
+
+#include "Dialogs.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -182,6 +183,14 @@ void TabTesting::UpdateDPI(const std::map<CWnd*,double>& layout)
   }
 
   m_skeinWindow->PrefsChanged();
+}
+
+void TabTesting::SetDarkMode(DarkMode* dark)
+{
+  LPCWSTR theme = dark ? L"" : NULL;
+  ::SetWindowTheme(m_play.GetSafeHwnd(),theme,theme);
+  ::SetWindowTheme(m_save.GetSafeHwnd(),theme,theme);
+  ::SetWindowTheme(m_help.GetSafeHwnd(),theme,theme);
 }
 
 void TabTesting::SourceLink(const char* url)

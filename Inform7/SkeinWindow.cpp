@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "SkeinWindow.h"
-#include "TabTesting.h"
 #include "Inform.h"
+#include "TabTesting.h"
+
 #include "Dialogs.h"
 #include "DpiFunctions.h"
 
@@ -631,7 +632,9 @@ void SkeinWindow::OnDraw(CDC* pDC)
   CPoint viewOrigin = pDC->GetViewportOrg();
 
   // Clear the background
-  dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourBack));
+  DarkMode* dark = DarkMode::GetActive(this);
+  dc.FillSolidRect(client,dark ?
+    dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack));
 
   if (m_skein->IsActive())
   {
@@ -661,9 +664,9 @@ void SkeinWindow::OnDraw(CDC* pDC)
     for (int i = 0; i < 2; i++)
     {
       DrawNodeTree(i,rootNode,dc,bitmap,
-        client,drawOrigin,CPoint(0,0),gameRunning);
+        client,drawOrigin,CPoint(0,0),dark,gameRunning);
       if ((i == 0) && drawTranscript)
-        m_transcript.DrawArrows(dc,drawOrigin,m_skeinIndex);
+        m_transcript.DrawArrows(dc,drawOrigin,dark,m_skeinIndex);
     }
 
     // Draw the transcript, if visible
@@ -1018,7 +1021,7 @@ void SkeinWindow::SetFontsBitmaps(void)
 }
 
 void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSection& bitmap,
-  const CRect& client, const CPoint& origin, const CPoint& parent, bool gameRunning)
+  const CRect& client, const CPoint& origin, const CPoint& parent, DarkMode* dark, bool gameRunning)
 {
   CSize nodePos = node->GetAnimatePos(m_skeinIndex,m_pctAnim);
   CPoint nodeCentre(origin.x + nodePos.cx,origin.y + nodePos.cy);
@@ -1030,7 +1033,9 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSectio
     if (node->GetParent() != NULL)
     {
       DrawNodeLine(dc,bitmap,client,parent,nodeCentre,
-        theApp.GetColour(InformApp::ColourSkeinLine),node->GetLocked());
+        dark ? dark->GetColour(DarkMode::Fore) : theApp.GetColour(InformApp::ColourSkeinLine),
+        dark ? dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack),
+        node->GetLocked());
     }
     break;
   case 1:
@@ -1041,7 +1046,7 @@ void SkeinWindow::DrawNodeTree(int phase, Skein::Node* node, CDC& dc, CDibSectio
 
   // Draw all the node's children
   for (int i = 0; i < node->GetNumChildren(); i++)
-    DrawNodeTree(phase,node->GetChild(i),dc,bitmap,client,origin,nodeCentre,gameRunning);
+    DrawNodeTree(phase,node->GetChild(i),dc,bitmap,client,origin,nodeCentre,dark,gameRunning);
 }
 
 void SkeinWindow::DrawNode(Skein::Node* node, CDC& dc, CDibSection& bitmap, const CRect& client,
@@ -1178,7 +1183,7 @@ void SkeinWindow::DrawNodeBack(Skein::Node* node, CDibSection& bitmap, const CPo
 }
 
 void SkeinWindow::DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client,
-  const CPoint& from, const CPoint& to, COLORREF fore, bool bold)
+  const CPoint& from, const CPoint& to, COLORREF fore, COLORREF back, bool bold)
 {
   int p1x = from.x;
   int p1y = from.y;
@@ -1199,7 +1204,6 @@ void SkeinWindow::DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client
   // Special case for a vertical line
   if (p1x == p2x)
   {
-    COLORREF back = theApp.GetColour(InformApp::ColourBack);
     dc.SetBkColor(back);
 
     CPen pen1;
@@ -1418,9 +1422,9 @@ void SkeinWindow::DrawNodeLine(CDC& dc, CDibSection& bitmap, const CRect& client
 
   if (bold)
   {
-    DrawNodeLine(dc,bitmap,client,from+CSize(1,0),to+CSize(1,0),fore,false);
-    DrawNodeLine(dc,bitmap,client,from+CSize(0,1),to+CSize(0,1),fore,false);
-    DrawNodeLine(dc,bitmap,client,from+CSize(1,1),to+CSize(1,1),fore,false);
+    DrawNodeLine(dc,bitmap,client,from+CSize(1,0),to+CSize(1,0),fore,back,false);
+    DrawNodeLine(dc,bitmap,client,from+CSize(0,1),to+CSize(0,1),fore,back,false);
+    DrawNodeLine(dc,bitmap,client,from+CSize(1,1),to+CSize(1,1),fore,back,false);
   }
 }
 

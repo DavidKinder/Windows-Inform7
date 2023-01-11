@@ -1,10 +1,10 @@
 #pragma once
 
-#include "TabBase.h"
-#include "Skein.h"
-#include "SkeinWindow.h"
 #include "FlatSplitter.h"
 #include "ReportHtml.h"
+#include "Skein.h"
+#include "SkeinWindow.h"
+#include "TabBase.h"
 
 class TabTesting : public TabBase, public ReportHtml::LinkConsumer
 {
@@ -29,6 +29,7 @@ public:
   void PrefsChanged(CRegKey& key);
   void BeforeUpdateDPI(std::map<CWnd*,double>& layout);
   void UpdateDPI(const std::map<CWnd*,double>& layout);
+  void SetDarkMode(DarkMode* dark);
 
   // Implementation of ReportHtml::LinkConsumer
   void SourceLink(const char* url);

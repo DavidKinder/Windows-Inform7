@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "PageTab.h"
 #include "Inform.h"
+
+#include "DarkMode.h"
 #include "DpiFunctions.h"
 
 #ifdef _DEBUG
@@ -111,7 +113,9 @@ void PageTab::OnPaint()
   if (bitmap.CreateBitmap(dc.GetSafeHdc(),client.Width(),client.Height()) == FALSE)
     return;
   CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&bitmap);
-  dc.FillSolidRect(client,::GetSysColor(COLOR_BTNFACE));
+
+  DarkMode* dark = DarkMode::GetActive(this);
+  dc.FillSolidRect(client,dark ? dark->GetColour(DarkMode::Darkest) : ::GetSysColor(COLOR_BTNFACE));
 
   CFont* oldFont = dc.SelectObject(GetFont());
   dc.SetBkMode(TRANSPARENT);
@@ -125,9 +129,9 @@ void PageTab::OnPaint()
     itemRect.bottom = client.bottom;
 
     if (i == sel)
-      theApp.DrawSelectRect(dc,itemRect,false);
+      theApp.DrawSelectRect(this,dc,itemRect,false);
     else if (i == m_mouseOverItem)
-      theApp.DrawSelectRect(dc,itemRect,true);
+      theApp.DrawSelectRect(this,dc,itemRect,true);
 
     if (text == "?H")
     {
@@ -135,11 +139,14 @@ void PageTab::OnPaint()
         itemRect.DeflateRect((itemRect.Width() - itemRect.Height())/2,0);
       itemRect.DeflateRect(itemRect.Height()/6,itemRect.Height()/6);
       CDibSection* dib = GetImage("Home",itemRect.Size());
-      bitmap.AlphaBlend(dib,itemRect.left,itemRect.top,FALSE);
+      if (dark)
+        bitmap.AlphaBlendDark(dib,itemRect.left,itemRect.top,FALSE);
+      else
+        bitmap.AlphaBlend(dib,itemRect.left,itemRect.top,FALSE);
     }
     else
     {
-      dc.SetTextColor(::GetSysColor(COLOR_BTNTEXT));
+      dc.SetTextColor(dark ? dark->GetColour(DarkMode::Fore) : ::GetSysColor(COLOR_BTNTEXT));
       dc.DrawText(text,itemRect,DT_SINGLELINE|DT_CENTER|DT_VCENTER);
     }
   }

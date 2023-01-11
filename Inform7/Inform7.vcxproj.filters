@@ -328,6 +328,9 @@
     <ClInclude Include="SemanticVersion.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Libraries\mfc\DarkMode.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1436,6 +1439,9 @@
     </ClCompile>
     <ClCompile Include="SemanticVersion.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\mfc\DarkMode.cpp">
+      <Filter>Controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

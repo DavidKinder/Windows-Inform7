@@ -1,9 +1,9 @@
 #pragma once
 
-#include "TabBase.h"
-#include "PageTab.h"
 #include "ContentsWindow.h"
+#include "PageTab.h"
 #include "SourceWindow.h"
+#include "TabBase.h"
 
 class TabSource : public TabBase
 {
@@ -26,6 +26,7 @@ public:
   void SaveSettings(CRegKey& key, bool primary);
   void PrefsChanged(CRegKey& key);
   void UpdateDPI(const std::map<CWnd*,double>& layout);
+  void SetDarkMode(DarkMode* dark);
 
   void SetDocument(TabSource* master);
   bool Highlight(const char* url, COLORREF colour);

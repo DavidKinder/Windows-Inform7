@@ -5,6 +5,8 @@
 #include "Inform.h"
 #include "Panel.h"
 
+#include "DarkMode.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -232,6 +234,26 @@ void TabSettings::UpdateDPI(const std::map<CWnd*,double>& layout)
   Layout();
 }
 
+void TabSettings::SetDarkMode(DarkMode* dark)
+{
+  const int ids[] =
+  {
+    IDC_STORY_BOX,
+    IDC_OUTPUT_Z8,
+    IDC_OUTPUT_GLULX,
+    IDC_BLORB,
+    IDC_RANDOM_BOX,
+    IDC_PREDICTABLE,
+    IDC_VERSION_BOX,
+    IDC_VERSION_COMBO,
+    IDC_BASIC_BOX,
+    IDC_BASIC
+  };
+  LPCWSTR theme = dark ? L"" : NULL;
+  for (int id : ids)
+    ::SetWindowTheme(GetDlgItem(id)->GetSafeHwnd(),theme,theme);
+}
+
 namespace
 {
   CRect getRect(CWnd* parent, UINT id)
@@ -289,8 +311,18 @@ HBRUSH TabSettings::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
   HBRUSH brush = CFormView::OnCtlColor(pDC,pWnd,nCtlColor);
   if (nCtlColor == CTLCOLOR_STATIC)
   {
-    brush = (HBRUSH)::GetStockObject(NULL_BRUSH);
-    pDC->SetBkColor(theApp.GetColour(InformApp::ColourBack));
+    DarkMode* dark = DarkMode::GetActive(this);
+    if (dark)
+    {
+      brush = dark->GetBrush(DarkMode::Back);
+      pDC->SetBkColor(dark->GetColour(DarkMode::Back));
+      pDC->SetTextColor(dark->GetColour(DarkMode::Fore));
+    }
+    else
+    {
+      brush = (HBRUSH)::GetStockObject(NULL_BRUSH);
+      pDC->SetBkColor(theApp.GetColour(InformApp::ColourBack));
+    }
   }
   return brush;
 }
@@ -299,7 +331,10 @@ BOOL TabSettings::OnEraseBkgnd(CDC* dc)
 {
   CRect r;
   GetClientRect(r);
-  dc->FillSolidRect(r,theApp.GetColour(InformApp::ColourBack));
+
+  DarkMode* dark = DarkMode::GetActive(this);
+  dc->FillSolidRect(r,dark ?
+    dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack));
   return TRUE;
 }
 
@@ -307,7 +342,10 @@ void TabSettings::OnDraw(CDC* pDC)
 {
   CFormView::OnDraw(pDC);
 
-  pDC->SetTextColor(::GetSysColor(COLOR_BTNTEXT));
+  DarkMode* dark = DarkMode::GetActive(this);
+  pDC->SetTextColor(dark ?
+    dark->GetColour(DarkMode::Fore) : ::GetSysColor(COLOR_BTNTEXT));
+
   pDC->SetBkMode(TRANSPARENT);
   CFont* oldFont = pDC->SelectObject(&m_labelFont);
   for (int i = 0; i < 5; i++)

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "DarkMode.h"
+
 #include <map>
 
 // Structure describing the tab state for the history
@@ -82,6 +84,8 @@ public:
   virtual void BeforeUpdateDPI(std::map<CWnd*,double>& layout) = 0;
   // Update the tab after the DPI has changed
   virtual void UpdateDPI(const std::map<CWnd*,double>& layout) = 0;
+  // Update the tab after dark mode is changed
+  virtual void SetDarkMode(DarkMode* dark) = 0;
 
   class LinkNotify
   {

@@ -272,12 +272,13 @@ void SourceWindow::Draw(CDC& dc)
   GetClientRect(client);
   CSize fontSize = theApp.MeasureFont(this,theApp.GetFont(this,InformApp::FontDisplay));
   int fh = fontSize.cy/4;
+  DarkMode* dark = DarkMode::GetActive(this);
 
   m_arrowTop.SetRectEmpty();
   m_arrowBottom.SetRectEmpty();
 
   if (m_tearTop)
-    m_arrowTop = PaintEdge(dc,0,client.Width(),m_imageTop,true);
+    m_arrowTop = PaintEdge(dc,0,client.Width(),m_imageTop,dark,true);
   else
     dc.FillSolidRect(0,0,client.Width(),fh,m_back);
 
@@ -285,7 +286,7 @@ void SourceWindow::Draw(CDC& dc)
   if (m_tearBottom)
   {
     y = client.Height()-m_imageBottom->GetSize().cy;
-    m_arrowBottom = PaintEdge(dc,y,client.Width(),m_imageBottom,false);
+    m_arrowBottom = PaintEdge(dc,y,client.Width(),m_imageBottom,dark,false);
   }
   else
   {
@@ -328,7 +329,7 @@ void SourceWindow::Draw(CDC& dc)
   }
 }
 
-CRect SourceWindow::PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bool top)
+CRect SourceWindow::PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, DarkMode* dark, bool top)
 {
   // Create a bitmap to draw into
   CDC dc;
@@ -337,7 +338,8 @@ CRect SourceWindow::PaintEdge(CDC& dcPaint, int y, int w, CDibSection* image, bo
   CSize sz = image->GetSize();
   if (bitmap.CreateBitmap(dc.GetSafeHdc(),w,sz.cy) == FALSE)
     return CRect(0,0,0,0);
-  bitmap.FillSolid(::GetSysColor(COLOR_BTNFACE));
+  bitmap.FillSolid(dark ?
+    dark->GetColour(DarkMode::Darkest) : ::GetSysColor(COLOR_BTNFACE));
 
   // Draw the torn edge
   int x = 0;

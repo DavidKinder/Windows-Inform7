@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Skein.h"
 #include "RichEdit.h"
+#include "Skein.h"
+
+#include "DarkMode.h"
 #include "Dib.h"
 
 #include <vector>
@@ -18,7 +20,7 @@ public:
   CPoint GetOrigin(void);
 
   void Layout(CDC& dc);
-  void DrawArrows(CDC& dc, CPoint origin, int skeinIndex);
+  void DrawArrows(CDC& dc, CPoint origin, DarkMode* dark, int skeinIndex);
   void Draw(CDC& dc, CPoint origin, CDibSection& bitmap);
   bool MouseMove(CPoint point);
   bool LButtonUp(CPoint point, Skein* skein);

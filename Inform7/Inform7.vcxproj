@@ -162,6 +162,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Libraries\mfc\ColourButton.h" />
+    <ClInclude Include="..\..\..\Libraries\mfc\DarkMode.h" />
     <ClInclude Include="..\..\..\Libraries\mfc\Dialogs.h" />
     <ClInclude Include="..\..\..\Libraries\mfc\Dib.h" />
     <ClInclude Include="..\..\..\Libraries\mfc\DpiFunctions.h" />
@@ -1967,6 +1968,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Level1</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\mfc\ColourButton.cpp" />
+    <ClCompile Include="..\..\..\Libraries\mfc\DarkMode.cpp" />
     <ClCompile Include="..\..\..\Libraries\mfc\Dialogs.cpp" />
     <ClCompile Include="..\..\..\Libraries\mfc\Dib.cpp" />
     <ClCompile Include="..\..\..\Libraries\mfc\DpiFunctions.cpp" />

@@ -3,9 +3,11 @@
 #include "stdafx.h"
 #include "TabBase.h"
 #include "Inform.h"
-#include "Panel.h"
 #include "Messages.h"
+#include "Panel.h"
 #include "Resource.h"
+
+#include "DarkMode.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -133,6 +135,10 @@ void TabBase::UpdateDPI(const std::map<CWnd*,double>& layout)
   m_navigate[1].SetFont(font);
 }
 
+void TabBase::SetDarkMode(DarkMode* dark)
+{
+}
+
 void TabBase::OnPaint()
 {
   CPaintDC dc(this);
@@ -143,7 +149,8 @@ void TabBase::OnPaint()
   // Only paint the area containing the buttons
   int heading = (int)GetParentFrame()->SendMessage(WM_PANEHEADING);
   client.bottom = client.top + heading;
-  dc.FillSolidRect(client,::GetSysColor(COLOR_BTNFACE));
+  DarkMode* dark = DarkMode::GetActive(this);
+  dc.FillSolidRect(client,dark ? dark->GetColour(DarkMode::Darkest) : ::GetSysColor(COLOR_BTNFACE));
 }
 
 void TabBase::OnToolTipText(NMHDR* hdr, LRESULT* result)

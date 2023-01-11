@@ -1,20 +1,20 @@
 #include "stdafx.h"
 #include "Inform.h"
-#include "DpiFunctions.h"
-#include "ScaleGfx.h"
-
-#include "ProjectFrame.h"
-#include "ExtensionFrame.h"
-#include "TabDoc.h"
 
 #include "AboutDialog.h"
+#include "ExtensionFrame.h"
 #include "PrefsDialog.h"
+#include "ProjectFrame.h"
 #include "RecentProjectList.h"
 #include "ReportHtml.h"
 #include "RecentProjectList.h"
 #include "SemanticVersion.h"
 #include "SpellCheck.h"
 #include "WelcomeLauncher.h"
+
+#include "DarkMode.h"
+#include "DpiFunctions.h"
+#include "ScaleGfx.h"
 
 #include "Platform.h"
 #include "Scintilla.h"
@@ -550,11 +550,17 @@ COLORREF InformApp::BlendedColour(COLORREF col1, int rel1, COLORREF col2, int re
   return RGB(min(r,255),min(g,255),min(b,255));
 }
 
-void InformApp::DrawSelectRect(CDC& dc, CRect& rect, bool hot)
+void InformApp::DrawSelectRect(CWnd* wnd, CDC& dc, CRect& rect, bool hot)
 {
-  if (::IsAppThemed())
+  DarkMode* dark = DarkMode::GetActive(wnd);
+  if (dark)
   {
-    HTHEME theme = ::OpenThemeData(AfxGetMainWnd()->GetSafeHwnd(),L"Menu");
+    dc.FillSolidRect(rect,dark->GetColour(hot ? DarkMode::Dark2 : DarkMode::Dark1));
+    return;
+  }
+  else if (::IsAppThemed())
+  {
+    HTHEME theme = ::OpenThemeData(wnd->GetSafeHwnd(),L"Menu");
     if (theme)
     {
       // Start with a white rectangle, then use the menu theme to draw a selection rectangle
