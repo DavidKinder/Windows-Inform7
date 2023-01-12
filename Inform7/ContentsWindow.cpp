@@ -631,6 +631,7 @@ IMPLEMENT_DYNAMIC(ContentsWindow, CWnd)
 
 BEGIN_MESSAGE_MAP(ContentsWindow, CWnd)
   ON_WM_CREATE()
+  ON_WM_CTLCOLOR()
   ON_WM_ERASEBKGND()
   ON_WM_PAINT()
   ON_WM_SIZE()
@@ -736,12 +737,6 @@ void ContentsWindow::PrefsChanged(void)
   m_contents.PrefsChanged();
 }
 
-void ContentsWindow::SetDarkMode(DarkMode* dark)
-{
-  LPCWSTR theme = dark ? L"" : NULL;
-  ::SetWindowTheme(m_depth.GetSafeHwnd(),theme,theme);
-}
-
 int ContentsWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
   if (CWnd::OnCreate(lpCreateStruct) == -1)
@@ -756,6 +751,18 @@ int ContentsWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
   m_depth.SetRange(0,4);
   m_depth.SetPos(2);
   return 0;
+}
+
+HBRUSH ContentsWindow::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+  HBRUSH brush = CWnd::OnCtlColor(pDC,pWnd,nCtlColor);
+  if (nCtlColor == CTLCOLOR_STATIC)
+  {
+    DarkMode* dark = DarkMode::GetActive(this);
+    if (dark)
+      brush = *(dark->GetBrush(DarkMode::Darkest));
+  }
+  return brush;
 }
 
 BOOL ContentsWindow::OnEraseBkgnd(CDC* pDC)

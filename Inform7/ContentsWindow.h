@@ -97,12 +97,12 @@ public:
   void LoadSettings(CRegKey& key);
   void SaveSettings(CRegKey& key);
   void PrefsChanged(void);
-  void SetDarkMode(DarkMode* dark);
 
 protected:
   DECLARE_MESSAGE_MAP()
 
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+  afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
   afx_msg void OnPaint();
   afx_msg void OnSize(UINT nType, int cx, int cy);
@@ -124,7 +124,7 @@ private:
   void PrintWindow(CDibSection& dib, CWnd* wnd, COLORREF back);
 
   ContentsPane m_contents;
-  CSliderCtrl m_depth;
+  DarkModeSliderCtrl m_depth;
 
   Animation m_animation;
   int m_animateStep;

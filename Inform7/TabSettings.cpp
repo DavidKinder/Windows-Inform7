@@ -314,7 +314,7 @@ HBRUSH TabSettings::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
     DarkMode* dark = DarkMode::GetActive(this);
     if (dark)
     {
-      brush = dark->GetBrush(DarkMode::Back);
+      brush = *(dark->GetBrush(DarkMode::Back));
       pDC->SetBkColor(dark->GetColour(DarkMode::Back));
       pDC->SetTextColor(dark->GetColour(DarkMode::Fore));
     }

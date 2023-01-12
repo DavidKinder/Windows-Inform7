@@ -26,7 +26,6 @@ public:
   void SaveSettings(CRegKey& key, bool primary);
   void PrefsChanged(CRegKey& key);
   void UpdateDPI(const std::map<CWnd*,double>& layout);
-  void SetDarkMode(DarkMode* dark);
 
   void SetDocument(TabSource* master);
   bool Highlight(const char* url, COLORREF colour);

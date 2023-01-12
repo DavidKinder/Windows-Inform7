@@ -59,7 +59,7 @@ HBRUSH ProgressWnd::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
     DarkMode* dark = DarkMode::GetActive(this);
     if (dark)
     {
-      brush = dark->GetBrush(DarkMode::Darkest);
+      brush = *(dark->GetBrush(DarkMode::Darkest));
       pDC->SetBkColor(dark->GetColour(DarkMode::Darkest));
       pDC->SetTextColor(dark->GetColour(DarkMode::Fore));
     }

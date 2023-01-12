@@ -81,7 +81,7 @@ HBRUSH SearchEdit::CtlColor(CDC* dc, UINT color)
   {
     dc->SetTextColor(dark->GetColour(m_editing ? DarkMode::Fore : DarkMode::Dark2));
     dc->SetBkColor(dark->GetColour(DarkMode::Darkest));
-    return dark->GetBrush(DarkMode::Darkest);
+    return *(dark->GetBrush(DarkMode::Darkest));
   }
   else
   {
