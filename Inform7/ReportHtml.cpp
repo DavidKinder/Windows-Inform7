@@ -9,6 +9,8 @@
 #include "SemanticVersion.h"
 #include "TextFormat.h"
 
+#include "DarkMode.h"
+
 #include "include/cef_app.h"
 #include "include/cef_browser.h"
 #include "include/cef_client.h"
@@ -912,6 +914,16 @@ bool ReportHtml::InitWebBrowser(void)
   dir = theApp.GetHomeDir() + "\\Inform\\ceflog.txt";
   ::DeleteFile(dir);
   CefString(&cefSettings.log_file).FromString(GetUTF8Path(dir,""));
+
+/*
+  // Implement when all HTML pages specify light and dark colour schemes
+  DarkMode* dark =  DarkMode::GetEnabled();
+  if (dark)
+  {
+    COLORREF back = dark->GetColour(DarkMode::Back);
+    cefSettings.background_color = CefColorSetARGB(0xFF,GetRValue(back),GetGValue(back),GetBValue(back));
+  }
+*/
 
   // Initialize CEF
   if (!CefInitialize(cefArgs,cefSettings,cefApp,NULL))
