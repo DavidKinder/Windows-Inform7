@@ -55,19 +55,6 @@ void SearchBar::UpdateDPI(void)
   m_sizeDefault = docRect.BottomRight() + srcRect.TopLeft();
 }
 
-void SearchBar::SetDarkMode(DarkMode* dark)
-{
-  // Switch theming for this dialog bar and the search edit controls
-  LPCWSTR theme = dark ? L"" : NULL;
-  ::SetWindowTheme(GetSafeHwnd(),theme,theme);
-  ::SetWindowTheme(m_source.GetSafeHwnd(),theme,theme);
-  ::SetWindowTheme(m_docs.GetSafeHwnd(),theme,theme);
-
-  // Changing theming resets the edit rectangles, so put back space for the icon
-  m_source.SetEditRect();
-  m_docs.SetEditRect();
-}
-
 INT_PTR SearchBar::OnToolHitTest(CPoint point, TOOLINFO* ti) const
 {
   const CWnd* wnd = ChildWindowFromPoint(point);

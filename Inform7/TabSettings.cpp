@@ -245,7 +245,6 @@ void TabSettings::SetDarkMode(DarkMode* dark)
     IDC_RANDOM_BOX,
     IDC_PREDICTABLE,
     IDC_VERSION_BOX,
-    IDC_VERSION_COMBO,
     IDC_BASIC_BOX,
     IDC_BASIC
   };

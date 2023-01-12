@@ -185,14 +185,6 @@ void TabTesting::UpdateDPI(const std::map<CWnd*,double>& layout)
   m_skeinWindow->PrefsChanged();
 }
 
-void TabTesting::SetDarkMode(DarkMode* dark)
-{
-  LPCWSTR theme = dark ? L"" : NULL;
-  ::SetWindowTheme(m_play.GetSafeHwnd(),theme,theme);
-  ::SetWindowTheme(m_save.GetSafeHwnd(),theme,theme);
-  ::SetWindowTheme(m_help.GetSafeHwnd(),theme,theme);
-}
-
 void TabTesting::SourceLink(const char* url)
 {
 }

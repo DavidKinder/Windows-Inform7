@@ -45,12 +45,6 @@ void ProgressWnd::UpdateDPI(void)
   }
 }
 
-void ProgressWnd::SetDarkMode(DarkMode* dark)
-{
-  LPCWSTR theme = dark ? L"" : NULL;
-  ::SetWindowTheme(m_progress.GetSafeHwnd(),theme,theme);
-}
-
 HBRUSH ProgressWnd::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
   HBRUSH brush = CWnd::OnCtlColor(pDC,pWnd,nCtlColor);

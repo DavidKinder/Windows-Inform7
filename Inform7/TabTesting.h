@@ -29,7 +29,6 @@ public:
   void PrefsChanged(CRegKey& key);
   void BeforeUpdateDPI(std::map<CWnd*,double>& layout);
   void UpdateDPI(const std::map<CWnd*,double>& layout);
-  void SetDarkMode(DarkMode* dark);
 
   // Implementation of ReportHtml::LinkConsumer
   void SourceLink(const char* url);
