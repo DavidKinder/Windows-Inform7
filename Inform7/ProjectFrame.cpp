@@ -309,6 +309,9 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     GetMenu()->RemoveMenu(ID_PLAY_LOAD,MF_BYCOMMAND);
   }
 
+  // Turn on dark mode, if needed
+  SetDarkMode(DarkMode::GetEnabled());
+
   // Set window text for accessibility
   m_coolBar.SetWindowText("Toolbar area");
   m_menuBar.SetWindowText("Menus");

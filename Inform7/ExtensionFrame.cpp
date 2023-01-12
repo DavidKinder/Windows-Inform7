@@ -57,6 +57,9 @@ int ExtensionFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   // Set the application icon
   theApp.SetIcon(this);
 
+  // Turn on dark mode, if needed
+  SetDarkMode(DarkMode::GetEnabled());
+
   // Set window text for accessibility
   m_coolBar.SetWindowText("Toolbar area");
   m_menuBar.SetWindowText("Menus");
