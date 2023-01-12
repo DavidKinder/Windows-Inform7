@@ -2,6 +2,8 @@
 
 #include "StopButton.h"
 
+#include "DarkMode.h"
+
 class ProgressWnd : public CWnd
 {
   DECLARE_DYNAMIC(ProgressWnd)
@@ -17,6 +19,7 @@ public:
   ProgressWnd();
   BOOL Create(CWnd* parentWnd, DWORD style);
   void UpdateDPI(void);
+  void SetDarkMode(DarkMode* dark);
 
   void ToFront();
   int GetProgress();
@@ -35,7 +38,7 @@ private:
 
   CStatic m_text;
   StopButton m_stop;
-  CProgressCtrl m_progress;
+  DarkModeProgressCtrl m_progress;
   CString m_long;
   int m_longStep;
   int m_longStepTotal;

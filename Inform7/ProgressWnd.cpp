@@ -2,7 +2,6 @@
 #include "ProgressWnd.h"
 #include "Inform.h"
 
-#include "DarkMode.h"
 #include "DpiFunctions.h"
 
 #ifdef _DEBUG
@@ -43,6 +42,11 @@ void ProgressWnd::UpdateDPI(void)
     Resize();
     Invalidate();
   }
+}
+
+void ProgressWnd::SetDarkMode(DarkMode* dark)
+{
+  m_progress.SetDarkMode(dark);
 }
 
 HBRUSH ProgressWnd::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
