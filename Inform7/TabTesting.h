@@ -6,6 +6,8 @@
 #include "SkeinWindow.h"
 #include "TabBase.h"
 
+#include "DarkMode.h"
+
 class TabTesting : public TabBase, public ReportHtml::LinkConsumer
 {
   DECLARE_DYNAMIC(TabTesting)
@@ -47,7 +49,7 @@ public:
   CStringW GetStoryName(void);
 
 private:
-  CButton m_play, m_save, m_help;
+  DarkModeButton m_play, m_save, m_help;
   FlatSplitter m_splitter;
   SkeinWindow* m_skeinWindow;
   ReportHtml* m_helpWindow;

@@ -97,7 +97,8 @@ void SearchEdit::OnNcPaint()
 {
   DarkMode* dark = DarkMode::GetActive(this);
   if (dark)
-    dark->DrawSolidBorder(this,m_editing ? DarkMode::Dark2 : DarkMode::Dark3);
+    dark->DrawNonClientBorder(this,
+      m_editing ? DarkMode::Dark2 : DarkMode::Dark3,DarkMode::Darkest);
   else
     Default();
 }
