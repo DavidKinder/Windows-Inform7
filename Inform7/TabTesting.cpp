@@ -292,19 +292,18 @@ LRESULT TabTesting::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
 
 LRESULT TabTesting::OnUpdateHelp(WPARAM, LPARAM)
 {
-  bool active = m_skein->IsActive();
   bool showWelcome = GetParentFrame()->SendMessage(WM_TESTINGTABSHOWN,0) < 10;
   bool anyPurple = false, anyGrey = false, anyBlue = false, anyBadge = false;
   bool transcript = false, anyTick = false, anyCross = false;
   int count = 0;
-  if (active)
+  if (m_skein->IsActive())
   {
     m_skeinWindow->SkeinNodesShown(anyGrey,anyBlue,anyPurple,anyBadge,count);
     m_skeinWindow->TranscriptShown(transcript,anyTick,anyCross);
   }
 
-  SetHelpVisible("welcome",active && showWelcome);
-  SetHelpVisible("title",active);
+  SetHelpVisible("welcome",showWelcome);
+  SetHelpVisible("title",true);
   SetHelpVisible("purple",anyPurple);
   SetHelpVisible("grey",anyGrey || anyBlue);
   SetHelpVisible("blue",anyGrey || anyBlue);
@@ -316,7 +315,7 @@ LRESULT TabTesting::OnUpdateHelp(WPARAM, LPARAM)
   SetHelpVisible("knots",count == 1);
   SetHelpVisible("moreknots",(count >= 2) && (count <= 10));
   SetHelpVisible("menu",count >= 5);
-  SetHelpVisible("welcomead",active && !showWelcome);
+  SetHelpVisible("welcomead",!showWelcome);
   return 0;
 }
 
