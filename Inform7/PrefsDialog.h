@@ -6,7 +6,6 @@
 #include "SourceSettings.h"
 #include "SourceWindow.h"
 #include "Resource.h"
-#include "afxcmn.h"
 
 #include <map>
 #include <string>

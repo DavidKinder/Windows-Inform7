@@ -5,8 +5,6 @@
 #include "Inform.h"
 #include "Panel.h"
 
-#include "DarkMode.h"
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -239,14 +237,9 @@ void TabSettings::SetDarkMode(DarkMode* dark)
   const int ids[] =
   {
     IDC_STORY_BOX,
-    IDC_OUTPUT_Z8,
-    IDC_OUTPUT_GLULX,
-    IDC_BLORB,
     IDC_RANDOM_BOX,
-    IDC_PREDICTABLE,
     IDC_VERSION_BOX,
-    IDC_BASIC_BOX,
-    IDC_BASIC
+    IDC_BASIC_BOX
   };
   LPCWSTR theme = dark ? L"" : NULL;
   for (int id : ids)

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "TabInterface.h"
 #include "ProjectSettings.h"
+#include "TabInterface.h"
+
+#include "DarkMode.h"
 
 class TabSettings : public CFormView, public TabInterface
 {
@@ -64,7 +66,7 @@ protected:
   BOOL CreateDlgIndirect(LPCDLGTEMPLATE, CWnd*, HINSTANCE);
 
 private:
-  CButton m_outputZ8, m_outputGlulx;
+  DarkModeRadioButton m_outputZ8, m_outputGlulx;
   CButton m_blorb, m_predictable, m_basic;
   CComboBox m_version;
   CFont m_labelFont;
