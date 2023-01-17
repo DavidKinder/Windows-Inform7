@@ -14,6 +14,7 @@
 
 #ifdef RC2_INCLUDES_MANIFEST
 IDR_MANIFEST            RT_MANIFEST             "res\\Inform7.manifest"
+IDR_CHECKMARK           PNG                     "res\\Check.png"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

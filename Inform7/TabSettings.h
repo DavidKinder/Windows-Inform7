@@ -67,7 +67,7 @@ protected:
 
 private:
   DarkModeRadioButton m_outputZ8, m_outputGlulx;
-  CButton m_blorb, m_predictable, m_basic;
+  DarkModeCheckButton m_blorb, m_predictable, m_basic;
   CComboBox m_version;
   CFont m_labelFont;
 

@@ -389,13 +389,6 @@ BEGIN
     VK_ESCAPE,      ID_APP_LAUNCHER,        VIRTKEY, NOINVERT
 END
 
-IDR_BOOKFRAME ACCELERATORS
-BEGIN
-    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
-    VK_F1,          ID_APP_LAUNCHER,        VIRTKEY, SHIFT, NOINVERT
-    VK_F6,          ID_WINDOW_SWITCH,       VIRTKEY, NOINVERT
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -423,15 +416,15 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,15,45,240,10
     CONTROL         "Glulx (large and multimedia projects: most capable)",IDC_OUTPUT_GLULX,
                     "Button",BS_AUTORADIOBUTTON,15,55,240,10
-    CONTROL         "Bind up into a Blorb file on release",IDC_BLORB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,101,131,8
+    CONTROL         "Bind up into a Blorb file on release",IDC_BLORB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,101,140,8
     GROUPBOX        "Randomness",IDC_RANDOM_BOX,7,123,286,78
     CONTROL         "Make random outcomes predictable when testing",IDC_PREDICTABLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,185,184,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,185,190,8
     GROUPBOX        "Language Version",IDC_VERSION_BOX,7,206,286,58
     COMBOBOX        IDC_VERSION_COMBO,51,223,200,12,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Version:",IDC_VERSION_LABEL,15,225,32,8
     GROUPBOX        "Basic Inform",IDC_BASIC_BOX,7,269,286,62
-    CONTROL         "Use Basic Inform only",IDC_BASIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,315,118,8
+    CONTROL         "Use Basic Inform only",IDC_BASIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,315,120,8
 END
 
 IDD_LAUNCHER DIALOGEX 0, 0, 440, 325
@@ -1074,7 +1067,6 @@ BEGIN
     IDR_MAINFRAME           "Inform"
     IDR_EXTFRAME            "Inform"
     IDR_LAUNCHFRAME         "Welcome to Inform"
-    IDR_BOOKFRAME           "Inform"
 END
 
 STRINGTABLE

@@ -2342,6 +2342,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="UnicodeEdit.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\Check.png" />
     <Image Include="res\Inform7.ico" />
   </ItemGroup>
   <ItemGroup>

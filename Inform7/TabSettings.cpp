@@ -139,9 +139,9 @@ void TabSettings::CreateTab(CWnd* parent)
   Create(WS_CHILD|WS_CLIPCHILDREN,CRect(0,0,0,0),parent,0);
 
   // Set up the dialog controls
-  m_predictable.SubclassDlgItem(IDC_PREDICTABLE,this);
-  m_basic.SubclassDlgItem(IDC_BASIC,this);
-  m_blorb.SubclassDlgItem(IDC_BLORB,this);
+  m_predictable.SubclassDlgItem(IDC_PREDICTABLE,this,IDR_CHECKMARK);
+  m_basic.SubclassDlgItem(IDC_BASIC,this,IDR_CHECKMARK);
+  m_blorb.SubclassDlgItem(IDC_BLORB,this,IDR_CHECKMARK);
   m_outputZ8.SubclassDlgItem(IDC_OUTPUT_Z8,this);
   m_outputGlulx.SubclassDlgItem(IDC_OUTPUT_GLULX,this);
   m_version.SubclassDlgItem(IDC_VERSION_COMBO,this);
