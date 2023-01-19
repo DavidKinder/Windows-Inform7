@@ -8,7 +8,8 @@
 #define IDR_EXTFRAME                    102
 #define IDR_ICON                        103
 #define IDR_LAUNCHFRAME                 104
-#define IDR_CHECKMARK                   105
+#define IDR_DARK_CHECK                  105
+#define IDR_DARK_RADIO                  106
 #define IDD_ABOUTBOX                    150
 #define IDD_SETTINGS                    151
 #define IDD_LAUNCHER                    152

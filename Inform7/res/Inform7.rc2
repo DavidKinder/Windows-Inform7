@@ -14,7 +14,8 @@
 
 #ifdef RC2_INCLUDES_MANIFEST
 IDR_MANIFEST            RT_MANIFEST             "res\\Inform7.manifest"
-IDR_CHECKMARK           PNG                     "res\\DarkCheck.png"
+IDR_DARK_CHECK          PNG                     "res\\DarkCheck.png"
+IDR_DARK_RADIO          PNG                     "res\\DarkRadio.png"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

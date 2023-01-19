@@ -1448,7 +1448,10 @@
     <Image Include="res\Inform7.ico">
       <Filter>Resources</Filter>
     </Image>
-    <Image Include="res\Check.png">
+    <Image Include="res\DarkCheck.png">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="res\DarkRadio.png">
       <Filter>Resources</Filter>
     </Image>
   </ItemGroup>
