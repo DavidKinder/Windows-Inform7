@@ -29,6 +29,7 @@ protected:
 
   UINT m_msg;
 
+  CBrush m_back;
   bool m_editing;
   CStringW m_editText;
   const CStringW m_displayText;

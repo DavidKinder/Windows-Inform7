@@ -139,6 +139,10 @@ void TabSettings::CreateTab(CWnd* parent)
   Create(WS_CHILD|WS_CLIPCHILDREN,CRect(0,0,0,0),parent,0);
 
   // Set up the dialog controls
+  m_boxStory.SubclassDlgItem(IDC_STORY_BOX,this);
+  m_boxRandom.SubclassDlgItem(IDC_RANDOM_BOX,this);
+  m_boxVersion.SubclassDlgItem(IDC_VERSION_BOX,this);
+  m_boxBasic.SubclassDlgItem(IDC_BASIC_BOX,this);
   m_predictable.SubclassDlgItem(IDC_PREDICTABLE,this,IDR_CHECKMARK);
   m_basic.SubclassDlgItem(IDC_BASIC,this,IDR_CHECKMARK);
   m_blorb.SubclassDlgItem(IDC_BLORB,this,IDR_CHECKMARK);
@@ -234,16 +238,6 @@ void TabSettings::UpdateDPI(const std::map<CWnd*,double>& layout)
 
 void TabSettings::SetDarkMode(DarkMode* dark)
 {
-  const int ids[] =
-  {
-    IDC_STORY_BOX,
-    IDC_RANDOM_BOX,
-    IDC_VERSION_BOX,
-    IDC_BASIC_BOX
-  };
-  LPCWSTR theme = dark ? L"" : NULL;
-  for (int id : ids)
-    ::SetWindowTheme(GetDlgItem(id)->GetSafeHwnd(),theme,theme);
 }
 
 namespace
@@ -301,9 +295,11 @@ BOOL TabSettings::OnCommand(WPARAM wParam, LPARAM lParam)
 HBRUSH TabSettings::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
   HBRUSH brush = CFormView::OnCtlColor(pDC,pWnd,nCtlColor);
-  if (nCtlColor == CTLCOLOR_STATIC)
+  DarkMode* dark = DarkMode::GetActive(this);
+
+  switch (nCtlColor)
   {
-    DarkMode* dark = DarkMode::GetActive(this);
+  case CTLCOLOR_STATIC:
     if (dark)
     {
       brush = *(dark->GetBrush(DarkMode::Back));
@@ -315,7 +311,16 @@ HBRUSH TabSettings::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
       brush = (HBRUSH)::GetStockObject(NULL_BRUSH);
       pDC->SetBkColor(theApp.GetColour(InformApp::ColourBack));
     }
+    break;
+  case CTLCOLOR_LISTBOX:
+    if (dark)
+    {
+      brush = *(dark->GetBrush(DarkMode::Darkest));
+      pDC->SetTextColor(dark->GetColour(DarkMode::Fore));
+    }
+    break;
   }
+
   return brush;
 }
 

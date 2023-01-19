@@ -74,8 +74,6 @@ BOOL SearchEdit::OnEraseBkgnd(CDC* pDC)
 
 HBRUSH SearchEdit::CtlColor(CDC* dc, UINT color)
 {
-  HBRUSH brush = (HBRUSH)Default();
-
   DarkMode* dark = DarkMode::GetActive(this);
   if (dark)
   {
@@ -88,9 +86,13 @@ HBRUSH SearchEdit::CtlColor(CDC* dc, UINT color)
     dc->SetTextColor(
       theApp.GetColour(m_editing ? InformApp::ColourText : InformApp::ColourFaint));
     dc->SetBkColor(theApp.GetColour(InformApp::ColourBack));
+
+    if (m_back.GetSafeHandle() == 0)
+      m_back.CreateSolidBrush(theApp.GetColour(InformApp::ColourBack));
+    return m_back;
   }
 
-  return brush;
+  return 0;
 }
 
 void SearchEdit::OnNcPaint()

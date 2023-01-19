@@ -2984,6 +2984,7 @@ bool ProjectFrame::LoadToolBar(void)
       // Create the examples list control
       m_exampleList.Create(CBS_DROPDOWNLIST|WS_CHILD|WS_VISIBLE,
         CRect(0,0,100,100),&m_toolBar,IDC_EXAMPLE_LIST);
+      m_exampleList.SetDarkBorder(DarkMode::Dark2,DarkMode::Dark1);
       m_exampleList.SetFont(m_toolBar.GetFont());
       SetExampleListLocation();
 

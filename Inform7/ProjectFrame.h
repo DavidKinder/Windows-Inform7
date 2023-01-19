@@ -1,21 +1,22 @@
 #pragma once
 
+#include "FindInFiles.h"
+#include "FlatSplitter.h"
 #include "GameWindow.h"
+#include "Inform.h"
 #include "Panel.h"
+#include "ProjectSettings.h"
+#include "ProgressWnd.h"
+#include "SearchBar.h"
 #include "Skein.h"
 #include "TabSettings.h"
 #include "TabSource.h"
-#include "Inform.h"
-#include "ProjectSettings.h"
-#include "FlatSplitter.h"
-#include "SearchBar.h"
-#include "FindInFiles.h"
+
 #include "MenuBar.h"
-#include "ProgressWnd.h"
 
 #include <queue>
 
-class ExampleComboBox : public CComboBox
+class ExampleComboBox : public DarkModeComboBox
 {
 public:
   ExampleComboBox();

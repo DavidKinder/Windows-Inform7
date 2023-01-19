@@ -66,9 +66,10 @@ protected:
   BOOL CreateDlgIndirect(LPCDLGTEMPLATE, CWnd*, HINSTANCE);
 
 private:
+  DarkModeGroupBox m_boxStory, m_boxRandom, m_boxVersion, m_boxBasic;
   DarkModeRadioButton m_outputZ8, m_outputGlulx;
   DarkModeCheckButton m_blorb, m_predictable, m_basic;
-  CComboBox m_version;
+  DarkModeComboBox m_version;
   CFont m_labelFont;
 
   ProjectSettings* m_settings;
