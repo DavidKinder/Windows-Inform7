@@ -2,6 +2,8 @@
 
 #include "TabBase.h"
 
+#include "DarkMode.h"
+
 class GameWindow;
 
 class TabStory : public TabBase
@@ -33,7 +35,7 @@ private:
 
   CWnd* m_parent;
   GameWindow* m_game;
-  CButton m_stop;
+  DarkModeButton m_stop;
 
   CRect m_rect;
   bool m_active;

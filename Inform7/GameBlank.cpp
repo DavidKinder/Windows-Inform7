@@ -2,6 +2,8 @@
 #include "Inform.h"
 #include "GameBlank.h"
 
+#include "DarkMode.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -101,5 +103,8 @@ void GameBlank::OnPaint()
 
   CRect client;
   GetClientRect(client);
-  dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourBack));
+
+  DarkMode* dark = DarkMode::GetActive(this);
+  dc.FillSolidRect(client,
+    dark ? dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack));
 }

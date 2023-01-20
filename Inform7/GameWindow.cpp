@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Dialogs.h"
 #include "GameWindow.h"
 #include "GameBlank.h"
 #include "GameGraphics.h"
@@ -8,8 +7,12 @@
 #include "GameText.h"
 #include "Inform.h"
 #include "Messages.h"
-#include "DSoundEngine.h"
+
 #include "GlkSound.h"
+
+#include "DarkMode.h"
+#include "Dialogs.h"
+#include "DSoundEngine.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -1157,7 +1160,10 @@ void GameWindow::OnPaint()
 
   CRect client;
   GetClientRect(client);
-  dc.FillSolidRect(client,theApp.GetColour(InformApp::ColourBack));
+
+  DarkMode* dark = DarkMode::GetActive(this);
+  dc.FillSolidRect(client,
+    dark ? dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack));
 }
 
 void GameWindow::OnSize(UINT nType, int cx, int cy)
