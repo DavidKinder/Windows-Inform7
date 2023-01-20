@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "StopButton.h"
 #include "Inform.h"
+
+#include "DarkMode.h"
 #include "Dib.h"
 #include "DpiFunctions.h"
 #include "ScaleGfx.h"
@@ -53,11 +55,11 @@ BOOL StopButton::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
   return TRUE;
 }
 
-CDibSection* StopButton::GetImage(bool dark)
+CDibSection* StopButton::GetImage(bool hot)
 {
   // Is the image in the cache?
   CString imageName;
-  imageName.Format(dark ? "Stop-scaled-%ddpi-dark" : "Stop-scaled-%ddpi",DPI::getWindowDPI(this));
+  imageName.Format(hot ? "Stop-scaled-%ddpi-hot" : "Stop-scaled-%ddpi",DPI::getWindowDPI(this));
   CDibSection* imageDib = theApp.GetCachedImage(imageName);
   if (imageDib != NULL)
     return imageDib;
@@ -78,10 +80,41 @@ CDibSection* StopButton::GetImage(bool dark)
     imageDib->GetBits(),imageDibSize.cx,imageDibSize.cy);
 
   // Adjust and alpha blend with the background colour
+  DarkMode* dark = DarkMode::GetActive(this);
   if (dark)
+    ReverseImage(imageDib);
+  if (hot)
     imageDib->Darken(0.7);
-  imageDib->AlphaBlend(::GetSysColor(COLOR_BTNFACE));
+  imageDib->AlphaBlend(dark ? dark->GetColour(DarkMode::Darkest) : ::GetSysColor(COLOR_BTNFACE));
 
   theApp.CacheImage(imageName,imageDib);
   return imageDib;
+}
+
+void StopButton::ReverseImage(CDibSection* image)
+{
+  int sr, sg, sb, a;
+  DWORD src;
+
+  CSize size = image->GetSize();
+  for (int y = 0; y < size.cy; y++)
+  {
+    for (int x = 0; x < size.cx; x++)
+    {
+      src = image->GetPixel(x,y);
+      sb = src & 0xFF;
+      src >>= 8;
+      sg = src & 0xFF;
+      src >>= 8;
+      sr = src & 0xFF;
+      src >>= 8;
+      a = src & 0xFF;
+
+      sr = 0xFF-sr;
+      sg = 0xFF-sg;
+      sb = 0xFF-sb;
+
+      image->SetPixel(x,y,(a<<24)|(sr<<16)|(sg<<8)|sb);
+    }
+  }
 }

@@ -18,5 +18,6 @@ protected:
 
   afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 
-  CDibSection* GetImage(bool dark);
+  CDibSection* GetImage(bool hot);
+  void ReverseImage(CDibSection* image);
 };
