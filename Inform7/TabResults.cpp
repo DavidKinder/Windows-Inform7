@@ -105,7 +105,8 @@ void TabResults::OpenProject(const char* path, bool primary)
   m_projectDir = path;
 
   // Clear previous compile information
-  m_report.Navigate("about:blank",false);
+  CString blankPath = theApp.GetAppDir()+"\\Documentation\\windows\\Blank.html";
+  m_report.Navigate(blankPath,false);
   m_console.ClearText();
 }
 
@@ -120,10 +121,13 @@ void TabResults::CompileProject(CompileStage stage, int code)
   switch (stage)
   {
   case CompileStart:
-    // Clear previous compile information
-    m_report.Navigate("about:blank",false);
-    m_console.ClearText();
-    m_inform6 = NoError;
+    {
+      // Clear previous compile information
+      CString blankPath = theApp.GetAppDir()+"\\Documentation\\windows\\Blank.html";
+      m_report.Navigate(blankPath,false);
+      m_console.ClearText();
+      m_inform6 = NoError;
+    }
     break;
 
   case RanInform7:

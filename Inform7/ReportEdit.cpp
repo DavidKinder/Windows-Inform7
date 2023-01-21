@@ -80,7 +80,9 @@ void ReportEdit::SetDarkMode(DarkMode* dark)
     for (int i : { STYLE_DEFAULT,0,1 })
     {
       CallEdit(SCI_STYLESETFORE,i,dark->GetColour(DarkMode::Fore));
-      CallEdit(SCI_STYLESETBACK,i,dark->GetColour(DarkMode::Back));
+
+      // This matches the background of CEF HTML pages in dark mode
+      CallEdit(SCI_STYLESETBACK,i,RGB(0x12,0x12,0x12));
     }
   }
   else

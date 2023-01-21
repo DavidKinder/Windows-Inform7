@@ -274,7 +274,10 @@ void TabIndex::SetActiveTab(IndexTabs tab, bool focus)
     if (::GetFileAttributes(htmlFile) != INVALID_FILE_ATTRIBUTES)
       m_index.Navigate(TextFormat::AnsiToUTF8(htmlFile),focus);
     else
-      m_index.Navigate("about:blank",false);
+    {
+      CString blankPath = theApp.GetAppDir()+"\\Documentation\\windows\\Blank.html";
+      m_index.Navigate(blankPath,false);
+    }
 
     if (focus)
       m_index.SetFocus();
