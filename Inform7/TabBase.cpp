@@ -166,6 +166,11 @@ void TabBase::OnToolTipText(NMHDR* hdr, LRESULT* result)
 
   ::SetWindowPos(hdr->hwndFrom,HWND_TOP,0,0,0,0,
     SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOMOVE|SWP_NOOWNERZORDER);
+
+  CWnd* wnd = CWnd::FromHandle(hdr->hwndFrom);
+  if (wnd && wnd->IsKindOf(RUNTIME_CLASS(CToolTipCtrl)))
+    DarkMode::Set((CToolTipCtrl*)wnd,DarkMode::GetActive(this));
+
   *result = 0;
 }
 
