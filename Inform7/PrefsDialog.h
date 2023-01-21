@@ -2,13 +2,11 @@
 
 #include "BaseDialog.h"
 #include "ColourButton.h"
+#include "ColourScheme.h"
 #include "NoFocusCheck.h"
 #include "SourceSettings.h"
 #include "SourceWindow.h"
 #include "Resource.h"
-
-#include <map>
-#include <string>
 
 class PrefsDialog;
 
@@ -147,21 +145,6 @@ private:
   ColourButton m_colourSource;
   ColourButton m_colourExt;
 
-  struct ColourScheme
-  {
-    ColourScheme();
-    ColourScheme(int srtIdx,
-      COLORREF hd, COLORREF mn, COLORREF cmt, COLORREF qt, COLORREF sbst, COLORREF src, COLORREF xt);
-
-    int sortIndex;
-    COLORREF head;
-    COLORREF main;
-    COLORREF comment;
-    COLORREF quote;
-    COLORREF subst;
-    COLORREF source;
-    COLORREF ext;
-  };
   std::map<std::string,ColourScheme> m_schemes;
 
   SourceWindow m_preview;

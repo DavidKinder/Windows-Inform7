@@ -494,7 +494,7 @@ bool TabSource::IsProjectEdited(void)
 
 void TabSource::LoadSettings(CRegKey& key, bool primary)
 {
-  SourceSettingsRegistry set(key);
+  SourceSettingsRegistry set(key,this);
   m_source.LoadSettings(set);
   m_contents.LoadSettings(key);
 }
@@ -507,7 +507,7 @@ void TabSource::SaveSettings(CRegKey& key, bool primary)
 
 void TabSource::PrefsChanged(CRegKey& key)
 {
-  SourceSettingsRegistry set(key);
+  SourceSettingsRegistry set(key,this);
   m_source.LoadSettings(set);
   m_source.PrefsChanged();
   m_contents.PrefsChanged();

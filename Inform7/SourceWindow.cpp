@@ -68,7 +68,8 @@ SourceEdit& SourceWindow::GetEdit(void)
 
 void SourceWindow::LoadSettings(SourceSettings& set)
 {
-  m_back = theApp.GetColour(InformApp::ColourBack);
+  DarkMode* dark = DarkMode::GetActive(this);
+  m_back = dark ? dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack);
   ProjectType projectType = (ProjectType)GetParentFrame()->SendMessage(WM_PROJECTTYPE);
 
   DWORD enabled = 1;

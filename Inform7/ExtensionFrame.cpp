@@ -922,7 +922,7 @@ void ExtensionFrame::SendChanged(InformApp::Changed changed, int value)
       CRegKey registryKey;
       if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_READ) == ERROR_SUCCESS)
       {
-        SourceSettingsRegistry set(registryKey);
+        SourceSettingsRegistry set(registryKey,this);
         m_edit.LoadSettings(set,GetBackColour(set));
         m_edit.PrefsChanged();
       }
@@ -965,7 +965,7 @@ void ExtensionFrame::SetFromRegistryPath(const char* path)
       SetWindowPlacement(&place);
 
     // Allow the source editor to load settings
-    SourceSettingsRegistry set(registryKey);
+    SourceSettingsRegistry set(registryKey,this);
     m_edit.LoadSettings(set,GetBackColour(set));
   }
 }
@@ -993,5 +993,7 @@ COLORREF ExtensionFrame::GetBackColour(SourceSettings& set)
     if (set.GetDWord("Source Paper Colour",colour))
       return (COLORREF)colour;
   }
-  return theApp.GetColour(InformApp::ColourBack);
+
+  DarkMode* dark = DarkMode::GetActive(this);
+  return dark ? dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack);
 }

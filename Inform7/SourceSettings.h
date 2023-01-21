@@ -13,7 +13,7 @@ public:
 class SourceSettingsRegistry : public SourceSettings
 {
 public:
-  SourceSettingsRegistry(CRegKey& key);
+  SourceSettingsRegistry(CRegKey& key, CWnd* wnd);
   virtual bool GetDWord(const char* name, DWORD& value);
   virtual bool GetString(const char* name, char* value, ULONG len);
 

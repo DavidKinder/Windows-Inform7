@@ -2,6 +2,7 @@
 #include "PrefsDialog.h"
 #include "Inform.h"
 #include "Messages.h"
+
 #include "DpiFunctions.h"
 
 #ifdef _DEBUG
@@ -547,9 +548,6 @@ int CALLBACK PrefsEditPage::ListFonts(ENUMLOGFONTEX *font, NEWTEXTMETRICEX *metr
   return 1;
 }
 
-#define DEFAULT_SCHEME "Traditional"
-#define CUSTOM_SORT_INDEX 1000
-
 IMPLEMENT_DYNAMIC(PrefsColourPage, CPropertyPage)
 
 BEGIN_MESSAGE_MAP(PrefsColourPage, CPropertyPage)
@@ -777,7 +775,7 @@ void PrefsColourPage::OnClickedDeleteScheme()
     if (schemeIt->second.sortIndex >= CUSTOM_SORT_INDEX)
     {
       m_schemes.erase((LPCSTR)m_colourScheme);
-      m_colourScheme = DEFAULT_SCHEME;
+      m_colourScheme = ColourScheme::GetDefaultSchemeName(this);
     }
   }
 
@@ -953,45 +951,9 @@ void PrefsColourPage::PreviewChanged(void)
 void PrefsColourPage::SetDefaults(void)
 {
   m_colours = TRUE;
-  m_colourScheme = DEFAULT_SCHEME;
-
-  m_schemes["Light Mode"] = ColourScheme(1,
-    RGB(0xe6,0x3d,0x42), // Headings
-    RGB(0x00,0x00,0x00), // Main text
-    RGB(0x46,0xaa,0x25), // Comments
-    RGB(0x41,0x83,0xfa), // Quoted text
-    RGB(0xe8,0x3c,0xf9), // Substitutions
-    RGB(0xff,0xff,0xff), // Source background
-    RGB(0xff,0xff,0xe4)  // Extension project background
-  );
-  m_schemes["Dark Mode"] = ColourScheme(2,
-    RGB(0xea,0x6c,0x69), // Headings
-    RGB(0xff,0xff,0xff), // Main text
-    RGB(0x95,0xf9,0x9c), // Comments
-    RGB(0x5d,0xd5,0xfd), // Quoted text
-    RGB(0xee,0x8b,0xe7), // Substitutions
-    RGB(0x00,0x00,0x00), // Source background
-    RGB(0x42,0x0d,0x00)  // Extension project background
-  );
-  m_schemes["Seven Seas"] = ColourScheme(3,
-    RGB(0x34,0x00,0xff), // Headings
-    RGB(0x00,0x00,0x64), // Main text
-    RGB(0x6d,0xa7,0xe9), // Comments
-    RGB(0x00,0x6a,0xff), // Quoted text
-    RGB(0x2d,0x6c,0xd0), // Substitutions
-    RGB(0xe9,0xe9,0xff), // Source background
-    RGB(0xe9,0xff,0xe9)  // Extension project background
-  );
-  m_schemes["Traditional"] = ColourScheme(4,
-    RGB(0x00,0x00,0x00), // Headings
-    RGB(0x00,0x00,0x00), // Main text
-    RGB(0x24,0x6e,0x24), // Comments
-    RGB(0x00,0x4d,0x99), // Quoted text
-    RGB(0x4d,0x4d,0xff), // Substitutions
-    RGB(0xff,0xff,0xff), // Source background
-    RGB(0xff,0xff,0xe4)  // Extension project background
-  );
-
+  m_colourScheme = ColourScheme::GetDefaultSchemeName(
+    GetSafeHwnd() != 0 ? this : AfxGetMainWnd());
+  m_schemes = ColourScheme::DefaultSchemes;
   UpdateColourButtons();
 }
 
@@ -1044,31 +1006,6 @@ bool PrefsColourPage::GetDWord(const char* name, DWORD& value)
 bool PrefsColourPage::GetString(const char* name, char* value, ULONG len)
 {
   return false;
-}
-
-PrefsColourPage::ColourScheme::ColourScheme()
-{
-  sortIndex = CUSTOM_SORT_INDEX;
-  head = theApp.GetColour(InformApp::ColourHeading);
-  main = theApp.GetColour(InformApp::ColourText);
-  comment = theApp.GetColour(InformApp::ColourComment);
-  quote = theApp.GetColour(InformApp::ColourQuote);
-  subst = theApp.GetColour(InformApp::ColourSubstitution);
-  source = theApp.GetColour(InformApp::ColourBack);
-  ext = theApp.GetColour(InformApp::ColourI7XP);
-}
-
-PrefsColourPage::ColourScheme::ColourScheme(int srtIdx,
-  COLORREF hd, COLORREF mn, COLORREF cmt, COLORREF qt, COLORREF sbst, COLORREF src, COLORREF xt)
-{
-  sortIndex = srtIdx;
-  head = hd;
-  main = mn;
-  comment = cmt;
-  quote = qt;
-  subst = sbst;
-  source = src;
-  ext = xt;
 }
 
 BEGIN_MESSAGE_MAP(PrefsAdvancedPage, CPropertyPage)

@@ -120,6 +120,9 @@ BOOL InformApp::InitInstance()
 
   // Find compiler versions
   FindCompilerVersions();
+ 
+  // Adjust the colour scheme, if necessary
+  ColourScheme::AdjustForDarkMode();
 
   // Find and create documentation for extensions
   FindExtensions();

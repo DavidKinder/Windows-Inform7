@@ -331,6 +331,9 @@
     <ClInclude Include="..\..\..\Libraries\mfc\DarkMode.h">
       <Filter>Controls</Filter>
     </ClInclude>
+    <ClInclude Include="ColourScheme.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1442,6 +1445,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\mfc\DarkMode.cpp">
       <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ColourScheme.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

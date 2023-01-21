@@ -1,14 +1,16 @@
 #include "stdafx.h"
 #include "SourceEdit.h"
+#include "EditFind.h"
 #include "Inform.h"
 #include "Messages.h"
-#include "EditFind.h"
 #include "TextFormat.h"
-#include "DpiFunctions.h"
 
 #include "Platform.h"
 #include "Scintilla.h"
 #include "SciLexer.h"
+
+#include "DarkMode.h"
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -818,7 +820,9 @@ void SourceEdit::SetStyles(COLORREF back)
   }
   else
   {
-    COLORREF text = theApp.GetColour(InformApp::ColourText);
+    DarkMode* dark = DarkMode::GetActive(this);
+    COLORREF text = dark ?
+      dark->GetColour(DarkMode::Fore) : theApp.GetColour(InformApp::ColourText);
     CallEdit(SCI_STYLESETFORE,STYLE_DEFAULT,text);
     CallEdit(SCI_STYLESETBACK,STYLE_DEFAULT,back);
     CallEdit(SCI_SETCARETFORE,text);
