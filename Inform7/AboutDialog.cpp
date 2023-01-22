@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "AboutDialog.h"
-#include "Inform.h"
 #include "Build.h"
+#include "Inform.h"
+
+#include "DarkMode.h"
 #include "DpiFunctions.h"
 
 #ifdef _DEBUG
@@ -14,6 +16,7 @@ AboutDialog::AboutDialog() : I7BaseDialog(AboutDialog::IDD),
 }
 
 BEGIN_MESSAGE_MAP(AboutDialog, I7BaseDialog)
+  ON_WM_CTLCOLOR()
   ON_WM_ERASEBKGND()
   ON_WM_GETMINMAXINFO()
   ON_WM_SIZE()
@@ -41,8 +44,11 @@ static DWORD CALLBACK FileReadCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG c
 BOOL AboutDialog::OnInitDialog()
 {
   I7BaseDialog::OnInitDialog();
-  theApp.SetIcon(this);
   m_dpi = DPI::getWindowDPI(this);
+  DarkMode* dark = DarkMode::GetActive(this);
+
+  theApp.SetIcon(this);
+  SetTitleFont();
 
   CDibSection* bitmap = theApp.GetCachedImage("Inform");
   CSize bitmapSize = bitmap->GetSize();
@@ -53,10 +59,30 @@ BOOL AboutDialog::OnInitDialog()
   ReleaseDC(dc);
   ::CopyMemory(m_bitmap->GetBits(),bitmap->GetBits(),
     (SIZE_T)bitmapSize.cx*(SIZE_T)bitmapSize.cy*sizeof(DWORD));
-  m_bitmap->AlphaBlend(::GetSysColor(COLOR_BTNFACE));
+  m_bitmap->AlphaBlend(dark ?
+    dark->GetColour(DarkMode::Darkest) : ::GetSysColor(COLOR_BTNFACE));
   m_logo.SetBitmap(m_bitmap->GetSafeHandle());
 
-  SetTitleFont();
+  // Set colours for the credits control
+  {
+    CHARFORMAT format;
+    format.cbSize = sizeof format;
+    format.dwMask = CFM_COLOR;
+    format.dwEffects = 0;
+
+    if (dark)
+    {
+      format.crTextColor = dark->GetColour(DarkMode::Fore);
+      m_credits.SetDefaultCharFormat(format);
+      m_credits.SetBackgroundColor(FALSE,dark->GetColour(DarkMode::Back));
+    }
+    else
+    {
+      format.crTextColor = ::GetSysColor(COLOR_BTNTEXT);
+      m_credits.SetDefaultCharFormat(format);
+      m_credits.SetBackgroundColor(TRUE,0);
+    }
+  }
 
   CString version1, version2;
   m_version.GetWindowText(version1);
@@ -172,6 +198,22 @@ BOOL AboutDialog::OnInitDialog()
 
   m_initialSize = dlgRect.Size();
   return TRUE;
+}
+
+HBRUSH AboutDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+  HBRUSH brush = CDialog::OnCtlColor(pDC,pWnd,nCtlColor);
+  if (nCtlColor == CTLCOLOR_STATIC)
+  {
+    DarkMode* dark = DarkMode::GetActive(this);
+    if (dark)
+    {
+      brush = *(dark->GetBrush(DarkMode::Darkest));
+      pDC->SetBkColor(dark->GetColour(DarkMode::Darkest));
+      pDC->SetTextColor(dark->GetColour(DarkMode::Fore));
+    }
+  }
+  return brush;
 }
 
 BOOL AboutDialog::OnEraseBkgnd(CDC* dc)

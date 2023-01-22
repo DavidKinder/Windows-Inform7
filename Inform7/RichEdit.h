@@ -25,6 +25,7 @@ public:
   BOOL SetDefaultCharFormat(CHARFORMAT& cf);
   void SetMargins(int margin);
   void SetRect(LPCRECT rect);
+  COLORREF SetBackgroundColor(BOOL sys, COLORREF cr);
 
   long GetTextLength(void) const;
   int GetTextRange(int first, int last, CStringW& str) const;

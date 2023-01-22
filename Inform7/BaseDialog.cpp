@@ -1,7 +1,9 @@
 #include "stdafx.h"
-#include "BaseDialog.h"
-#include "DpiFunctions.h"
 #include "Inform.h"
+
+#include "BaseDialog.h"
+#include "DarkMode.h"
+#include "DpiFunctions.h"
 
 IMPLEMENT_DYNAMIC(I7BaseDialog, BaseDialog)
 
@@ -17,9 +19,12 @@ void I7BaseDialog::SetFont(CDialogTemplate& dlgTemplate)
 
 void I7BaseDialog::EraseWithGripper(CDC* dc)
 {
+  DarkMode* dark = DarkMode::GetActive(this);
+
   CRect dlgRect;
   GetClientRect(dlgRect);
-  dc->FillSolidRect(dlgRect,::GetSysColor(COLOR_BTNFACE));
+  dc->FillSolidRect(dlgRect,dark ?
+    dark->GetColour(DarkMode::Darkest) : ::GetSysColor(COLOR_BTNFACE));
 
   CRect gripRect = dlgRect;
   int dpi = DPI::getWindowDPI(this);

@@ -590,6 +590,7 @@ void ProjectFrame::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
 
 void ProjectFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
+  MenuBarFrameWnd::OnSettingChange(uFlags,lpszSection);
   UpdateMenuParams();
 }
 

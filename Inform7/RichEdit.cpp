@@ -187,6 +187,11 @@ void RichEdit::SetRect(LPCRECT rect)
   SendMessage(EM_SETRECT,0,(LPARAM)rect);
 }
 
+COLORREF RichEdit::SetBackgroundColor(BOOL sys, COLORREF cr)
+{
+  return (COLORREF)SendMessage(EM_SETBKGNDCOLOR,sys,cr);
+}
+
 long RichEdit::GetTextLength(void) const
 {
   GETTEXTLENGTHEX textLenEx;
