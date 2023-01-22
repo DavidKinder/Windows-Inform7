@@ -34,7 +34,6 @@ protected:
 
   DECLARE_MESSAGE_MAP()
 
-  afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
   afx_msg void OnGetMinMaxInfo(MINMAXINFO* mmi);
   afx_msg void OnSize(UINT nType, int cx, int cy);

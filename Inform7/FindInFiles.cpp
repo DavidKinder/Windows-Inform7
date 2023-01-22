@@ -1,11 +1,12 @@
 #include "stdafx.h"
 #include "FindInFiles.h"
-#include "DpiFunctions.h"
 #include "ExtensionFrame.h"
 #include "ProjectFrame.h"
+#include "Resource.h"
 #include "RichEdit.h"
 #include "TextFormat.h"
-#include "Resource.h"
+
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -178,7 +179,7 @@ void FindInFiles::Show(void)
     UpdateData(TRUE);
 
     ShowWindow(SW_SHOW);
-    GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
+    m_findAllBtn.EnableWindow(!m_findText.IsEmpty());
     GetDlgItem(IDC_FIND)->SetFocus();
   }
 }
@@ -201,7 +202,7 @@ void FindInFiles::FindInSource(LPCWSTR text)
   m_findRule = FindRule_Contains;
   m_findText = text;
   UpdateData(FALSE);
-  GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
+  m_findAllBtn.EnableWindow(!m_findText.IsEmpty());
   PostMessage(WM_COMMAND,IDC_FIND_ALL);
 }
 
@@ -217,7 +218,7 @@ void FindInFiles::FindInDocs(LPCWSTR text)
   m_findRule = FindRule_Contains;
   m_findText = text;
   UpdateData(FALSE);
-  GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
+  m_findAllBtn.EnableWindow(!m_findText.IsEmpty());
   PostMessage(WM_COMMAND,IDC_FIND_ALL);
 }
 
@@ -347,12 +348,16 @@ void FindInFiles::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX, IDC_PROGRESS, m_progress);
   DDX_Control(pDX, IDC_REGEX_HELP, m_regexHelp);
   DDX_TextW(pDX, IDC_FIND, m_findText);
+  DDX_Control(pDX, IDC_FIND_ALL, m_findAllBtn);
+  DDX_Control(pDX, IDC_LOOK_GROUP, m_lookGroup);
   DDX_Check(pDX,IDC_LOOK_SOURCE,m_lookSource);
   DDX_Check(pDX,IDC_LOOK_EXTENSIONS,m_lookExts);
   DDX_Check(pDX,IDC_LOOK_DOC_PHRASES,m_lookDocPhrases);
   DDX_Check(pDX,IDC_LOOK_DOC_MAIN,m_lookDocMain);
   DDX_Check(pDX,IDC_LOOK_DOC_CODE,m_lookDocCode);
+  DDX_Control(pDX, IDC_HOW_GROUP, m_howGroup);
   DDX_Check(pDX,IDC_IGNORE_CASE,m_ignoreCase);
+  DDX_Control(pDX,IDC_FIND_RULE,m_findRuleCtrl);
   DDX_CBIndex(pDX,IDC_FIND_RULE,(int&)m_findRule);
   DDX_Control(pDX, IDC_RESULTS, m_resultsList);
 }
@@ -361,6 +366,13 @@ BOOL FindInFiles::OnInitDialog()
 {
   if (I7BaseDialog::OnInitDialog())
   {
+    m_lookSourceCtrl.SubclassDlgItem(IDC_LOOK_SOURCE,this,IDR_DARK_CHECK,DarkMode::Darkest);
+    m_lookExtsCtrl.SubclassDlgItem(IDC_LOOK_EXTENSIONS,this,IDR_DARK_CHECK,DarkMode::Darkest);
+    m_lookDocPhrasesCtrl.SubclassDlgItem(IDC_LOOK_DOC_PHRASES,this,IDR_DARK_CHECK,DarkMode::Darkest);
+    m_lookDocMainCtrl.SubclassDlgItem(IDC_LOOK_DOC_MAIN,this,IDR_DARK_CHECK,DarkMode::Darkest);
+    m_lookDocCodeCtrl.SubclassDlgItem(IDC_LOOK_DOC_CODE,this,IDR_DARK_CHECK,DarkMode::Darkest);
+    m_ignoreCaseCtrl.SubclassDlgItem(IDC_IGNORE_CASE,this,IDR_DARK_CHECK,DarkMode::Darkest);
+
     // Initialize auto-completion for the find string
     if (FAILED(m_findAutoComplete.CoCreateInstance(CLSID_AutoComplete)))
       return FALSE;
@@ -380,6 +392,7 @@ BOOL FindInFiles::OnInitDialog()
 
     m_found.ModifyStyle(0,WS_VISIBLE);
     m_progress.ModifyStyle(WS_VISIBLE,0);
+    m_progress.SetDarkMode(DarkMode::GetActive(this));
 
     ScreenToClient(resultsRect);
     m_regexHelp.MoveWindow(resultsRect);
@@ -432,13 +445,25 @@ void FindInFiles::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
 {
   if (nIDCtl == IDC_REGEX_HELP)
   {
+    DarkMode* dark = DarkMode::GetActive(this);
+
     CRect helpRect(di->rcItem);
     HDC hdc = 0;
     HANDLE pb = ::BeginBufferedPaint(di->hDC,helpRect,BPBF_COMPATIBLEBITMAP,NULL,&hdc);
     if (pb == 0)
       return;
     CDC* dc = CDC::FromHandle(hdc);
-    dc->FillSolidRect(helpRect,::GetSysColor(COLOR_BTNFACE));
+
+    if (dark)
+    {
+      dc->FillSolidRect(helpRect,dark->GetColour(DarkMode::Darkest));
+      m_richText->TextColourChanged(dark->GetColour(DarkMode::Fore));
+    }
+    else
+    {
+      dc->FillSolidRect(helpRect,::GetSysColor(COLOR_BTNFACE));
+      m_richText->TextColourChanged(theApp.GetColour(InformApp::ColourText));
+    }
 
     const char* text1 =
       "\\b Characters\\b0\\par\\par"
@@ -692,7 +717,7 @@ void FindInFiles::OnChangeFindRule()
 void FindInFiles::OnChangeFindText()
 {
   UpdateData(TRUE);
-  GetDlgItem(IDC_FIND_ALL)->EnableWindow(!m_findText.IsEmpty());
+  m_findAllBtn.EnableWindow(!m_findText.IsEmpty());
 }
 
 void FindInFiles::OnResultsDraw(NMHDR* pNotifyStruct, LRESULT* result)

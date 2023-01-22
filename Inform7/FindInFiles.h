@@ -3,6 +3,8 @@
 #include "BaseDialog.h"
 #include "FindAllHelper.h"
 
+#include "DarkMode.h"
+
 #include <vector>
 
 class ProjectFrame;
@@ -63,15 +65,25 @@ private:
   UINT m_dpi;
 
   CStringW m_findText;
+  DarkModeButton m_findAllBtn;
 
+  DarkModeGroupBox m_lookGroup;
+  DarkModeCheckButton m_lookSourceCtrl;
+  DarkModeCheckButton m_lookExtsCtrl;
+  DarkModeCheckButton m_lookDocPhrasesCtrl;
+  DarkModeCheckButton m_lookDocMainCtrl;
+  DarkModeCheckButton m_lookDocCodeCtrl;
   int m_lookSource;
   int m_lookExts;
   int m_lookDocPhrases;
   int m_lookDocMain;
   int m_lookDocCode;
 
+  DarkModeGroupBox m_howGroup;
+  DarkModeCheckButton m_ignoreCaseCtrl;
   int m_ignoreCase;
   FindRule m_findRule;
+  DarkModeComboBox m_findRuleCtrl;
 
   CComPtr<IAutoComplete2> m_findAutoComplete;
   static CList<CStringW> m_findHistory;
@@ -84,7 +96,7 @@ private:
   CSize m_gapBottomRight;
 
   CStatic m_found;
-  CProgressCtrl m_progress;
+  DarkModeProgressCtrl m_progress;
   CStatic m_regexHelp;
   RichDrawText* m_richText;
 

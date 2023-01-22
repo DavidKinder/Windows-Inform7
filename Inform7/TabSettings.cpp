@@ -143,11 +143,11 @@ void TabSettings::CreateTab(CWnd* parent)
   m_boxRandom.SubclassDlgItem(IDC_RANDOM_BOX,this);
   m_boxVersion.SubclassDlgItem(IDC_VERSION_BOX,this);
   m_boxBasic.SubclassDlgItem(IDC_BASIC_BOX,this);
-  m_predictable.SubclassDlgItem(IDC_PREDICTABLE,this,IDR_DARK_CHECK);
-  m_basic.SubclassDlgItem(IDC_BASIC,this,IDR_DARK_CHECK);
-  m_blorb.SubclassDlgItem(IDC_BLORB,this,IDR_DARK_CHECK);
-  m_outputZ8.SubclassDlgItem(IDC_OUTPUT_Z8,this,IDR_DARK_RADIO);
-  m_outputGlulx.SubclassDlgItem(IDC_OUTPUT_GLULX,this,IDR_DARK_RADIO);
+  m_predictable.SubclassDlgItem(IDC_PREDICTABLE,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_basic.SubclassDlgItem(IDC_BASIC,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_blorb.SubclassDlgItem(IDC_BLORB,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_outputZ8.SubclassDlgItem(IDC_OUTPUT_Z8,this,IDR_DARK_RADIO,DarkMode::Back);
+  m_outputGlulx.SubclassDlgItem(IDC_OUTPUT_GLULX,this,IDR_DARK_RADIO,DarkMode::Back);
   m_version.SubclassDlgItem(IDC_VERSION_COMBO,this);
 
   // Set window text for accessibility

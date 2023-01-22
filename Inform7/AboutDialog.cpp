@@ -16,7 +16,6 @@ AboutDialog::AboutDialog() : I7BaseDialog(AboutDialog::IDD),
 }
 
 BEGIN_MESSAGE_MAP(AboutDialog, I7BaseDialog)
-  ON_WM_CTLCOLOR()
   ON_WM_ERASEBKGND()
   ON_WM_GETMINMAXINFO()
   ON_WM_SIZE()
@@ -198,22 +197,6 @@ BOOL AboutDialog::OnInitDialog()
 
   m_initialSize = dlgRect.Size();
   return TRUE;
-}
-
-HBRUSH AboutDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
-{
-  HBRUSH brush = CDialog::OnCtlColor(pDC,pWnd,nCtlColor);
-  if (nCtlColor == CTLCOLOR_STATIC)
-  {
-    DarkMode* dark = DarkMode::GetActive(this);
-    if (dark)
-    {
-      brush = *(dark->GetBrush(DarkMode::Darkest));
-      pDC->SetBkColor(dark->GetColour(DarkMode::Darkest));
-      pDC->SetTextColor(dark->GetColour(DarkMode::Fore));
-    }
-  }
-  return brush;
 }
 
 BOOL AboutDialog::OnEraseBkgnd(CDC* dc)

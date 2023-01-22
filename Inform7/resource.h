@@ -219,6 +219,8 @@
 #define IDC_REPLACE_WITH                1214
 #define IDC_REPLACE_ALL                 1215
 #define IDC_REPLACE_FIND                1216
+#define IDC_LOOK_GROUP                  1217
+#define IDC_HOW_GROUP                   1218
 #define IDC_STATIC_NEWS                 1300
 #define IDC_STATIC_OPEN_RECENT          1301
 #define IDC_STATIC_ADVICE               1302

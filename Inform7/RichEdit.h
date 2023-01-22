@@ -72,6 +72,7 @@ public:
   void DrawText(CDC& dc, const CRect& rect);
 
   void FontChanged(int dpi);
+  void TextColourChanged(COLORREF colour);
 
   DECLARE_INTERFACE_MAP()
 

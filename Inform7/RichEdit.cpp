@@ -469,6 +469,13 @@ void RichDrawText::FontChanged(int dpi)
   ASSERT(SUCCEEDED(hr));
 }
 
+void RichDrawText::TextColourChanged(COLORREF colour)
+{
+  m_charFormat.crTextColor = colour;
+  HRESULT hr = m_textServ->OnTxPropertyBitsChange(TXTBIT_CHARFORMATCHANGE,TXTBIT_CHARFORMATCHANGE);
+  ASSERT(SUCCEEDED(hr));
+}
+
 BEGIN_INTERFACE_MAP(RichDrawText, CCmdTarget)
   INTERFACE_PART(RichDrawText, IID_ITextHost, TextHost)
 END_INTERFACE_MAP()
