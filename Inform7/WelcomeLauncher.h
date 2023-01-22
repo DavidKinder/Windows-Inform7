@@ -2,8 +2,10 @@
 
 #include "CommandButton.h"
 #include "ReportHtml.h"
-#include "Dib.h"
 #include "Resource.h"
+
+#include "DarkMode.h"
+#include "Dib.h"
 
 #include <string>
 #include <vector>
@@ -84,6 +86,7 @@ public:
   static void ShowLauncher(void);
 
   void UpdateNews(void);
+  void SetDarkMode(DarkMode* dark);
 
   virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
     DWORD dwStyle, const RECT& rect, CWnd* pParentWnd,
@@ -94,6 +97,8 @@ public:
 
 protected:
   WelcomeLauncherFrame();
+  ~WelcomeLauncherFrame();
+
   void Resize(bool centre);
 
   static UINT DownloadThread(LPVOID);
@@ -104,6 +109,8 @@ protected:
   afx_msg void OnDestroy();
   afx_msg void OnClose();
   afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
+  afx_msg LRESULT OnDarkModeActive(WPARAM, LPARAM);
 
   WelcomeLauncherView m_view;
+  DarkMode* m_dark;
 };

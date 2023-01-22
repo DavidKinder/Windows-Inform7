@@ -1,11 +1,12 @@
 #include "stdafx.h"
 #include "WelcomeLauncher.h"
-#include "DpiFunctions.h"
 #include "Inform.h"
 #include "ProjectFrame.h"
 #include "RecentProjectList.h"
-#include "ScaleGfx.h"
 #include "TextFormat.h"
+
+#include "DpiFunctions.h"
+#include "ScaleGfx.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -282,19 +283,27 @@ HBRUSH WelcomeLauncherView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
   if (nCtlColor == CTLCOLOR_STATIC)
   {
     brush = (HBRUSH)::GetStockObject(NULL_BRUSH);
+    DarkMode* dark = DarkMode::GetActive(this);
+    
     switch (pWnd->GetDlgCtrlID())
     {
     case IDC_STATIC_OPEN_RECENT:
     case IDC_STATIC_CREATE_NEW:
     case IDC_STATIC_SAMPLE:
-      pDC->SetBkColor(::GetSysColor(COLOR_WINDOW));
+      pDC->SetBkColor(dark ?
+        dark->GetColour(DarkMode::Back) : ::GetSysColor(COLOR_WINDOW));
+      pDC->SetTextColor(dark ?
+        dark->GetColour(DarkMode::Fore) : ::GetSysColor(COLOR_BTNTEXT));
       break;
     case IDC_STATIC_NEWS:
     case IDC_STATIC_ADVICE:
     case IDC_STATIC_COMMUNITY:
     case IDC_STATIC_SUMMON:
     case IDC_NEWS:
-      pDC->SetBkColor(::GetSysColor(COLOR_BTNFACE));
+      pDC->SetBkColor(dark ?
+        dark->GetColour(DarkMode::Dark3) : ::GetSysColor(COLOR_BTNFACE));
+      pDC->SetTextColor(dark ?
+        dark->GetColour(DarkMode::Fore) : ::GetSysColor(COLOR_BTNTEXT));
       break;
     }
   }
@@ -306,7 +315,10 @@ BOOL WelcomeLauncherView::OnEraseBkgnd(CDC* pDC)
   CArray<CRect> regions;
   GetRegions(regions);
 
-  CPen pen(PS_SOLID,0,::GetSysColor(COLOR_BTNSHADOW));
+  DarkMode* dark = DarkMode::GetActive(this);
+
+  CPen pen(PS_SOLID,0,dark ?
+    dark->GetColour(DarkMode::Dark1) : ::GetSysColor(COLOR_BTNSHADOW));
   CPen* oldPen = pDC->SelectObject(&pen);
 
   int width = regions.GetAt(0).right;
@@ -332,9 +344,12 @@ BOOL WelcomeLauncherView::OnEraseBkgnd(CDC* pDC)
 
   if (m_html.IsWindowVisible() == FALSE)
   {
-    pDC->FillSolidRect(regions.GetAt(1),::GetSysColor(COLOR_BTNFACE));
-    pDC->FillSolidRect(regions.GetAt(2),::GetSysColor(COLOR_WINDOW));
-    pDC->FillSolidRect(regions.GetAt(3),::GetSysColor(COLOR_BTNFACE));
+    pDC->FillSolidRect(regions.GetAt(1),dark ?
+    dark->GetColour(DarkMode::Dark3) : ::GetSysColor(COLOR_BTNFACE));
+    pDC->FillSolidRect(regions.GetAt(2),dark ?
+    dark->GetColour(DarkMode::Back) : ::GetSysColor(COLOR_WINDOW));
+    pDC->FillSolidRect(regions.GetAt(3),dark ?
+    dark->GetColour(DarkMode::Dark3) : ::GetSysColor(COLOR_BTNFACE));
 
     pDC->MoveTo(0,regions.GetAt(2).top);
     pDC->LineTo(width,regions.GetAt(2).top);
@@ -349,7 +364,8 @@ BOOL WelcomeLauncherView::OnEraseBkgnd(CDC* pDC)
     pDC->LineTo(width/2,regions.GetAt(4).top-(fs.cy/2));
   }
 
-  pDC->FillSolidRect(regions.GetAt(4),::GetSysColor(COLOR_BTNFACE));
+  pDC->FillSolidRect(regions.GetAt(4),dark ?
+    dark->GetColour(DarkMode::Dark3) : ::GetSysColor(COLOR_BTNFACE));
 
   pDC->MoveTo(0,regions.GetAt(4).top);
   pDC->LineTo(regions.GetAt(4).right,regions.GetAt(4).top);
@@ -371,6 +387,11 @@ void WelcomeLauncherView::OnToolTipText(NMHDR* hdr, LRESULT* result)
 
   ::SetWindowPos(hdr->hwndFrom,HWND_TOP,0,0,0,0,
     SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOMOVE|SWP_NOOWNERZORDER);
+
+  CWnd* wnd = CWnd::FromHandle(hdr->hwndFrom);
+  if (wnd && wnd->IsKindOf(RUNTIME_CLASS(CToolTipCtrl)))
+    DarkMode::Set((CToolTipCtrl*)wnd,DarkMode::GetActive(this));
+
   *result = 0;
 }
 
@@ -950,10 +971,21 @@ BEGIN_MESSAGE_MAP(WelcomeLauncherFrame, CFrameWnd)
   ON_WM_DESTROY()
   ON_WM_CLOSE()
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
+  ON_MESSAGE(WM_DARKMODE_ACTIVE, OnDarkModeActive)
 END_MESSAGE_MAP()
 
 WelcomeLauncherFrame::WelcomeLauncherFrame()
 {
+  m_dark = NULL;
+}
+
+WelcomeLauncherFrame::~WelcomeLauncherFrame()
+{
+  if (m_dark)
+  {
+    delete m_dark;
+    m_dark = NULL;
+  }
 }
 
 void WelcomeLauncherFrame::DownloadNews(void)
@@ -1136,6 +1168,15 @@ void WelcomeLauncherFrame::UpdateNews(void)
   m_view.UpdateNews();
 }
 
+void WelcomeLauncherFrame::SetDarkMode(DarkMode* dark)
+{
+  if (m_dark)
+    delete m_dark;
+  m_dark = dark;
+
+  DarkMode::Set(this,dark);
+}
+
 BOOL WelcomeLauncherFrame::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle,
   const RECT& rect, CWnd* pParentWnd, LPCTSTR lpszMenuName, DWORD dwExStyle, CCreateContext* pContext)
 {
@@ -1191,6 +1232,10 @@ int WelcomeLauncherFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
   // Set the application icon
   theApp.SetIcon(this);
+
+  // Turn on dark mode, if needed
+  SetDarkMode(DarkMode::GetEnabled());
+
   return 0;
 }
 
@@ -1219,6 +1264,11 @@ LRESULT WelcomeLauncherFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
   Resize(false);
   Invalidate();
   return 0;
+}
+
+LRESULT WelcomeLauncherFrame::OnDarkModeActive(WPARAM, LPARAM)
+{
+  return (LRESULT)m_dark;
 }
 
 void WelcomeLauncherFrame::Resize(bool centre)

@@ -1,13 +1,40 @@
 #include "stdafx.h"
 #include "CommandButton.h"
-#include "Dib.h"
 #include "Inform.h"
 #include "Messages.h"
+
+#include "DarkMode.h"
+#include "Dib.h"
 #include "ScaleGfx.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+static COLORREF Darken(COLORREF colour, double factor)
+{
+  BYTE r = GetRValue(colour);
+  BYTE g = GetGValue(colour);
+  BYTE b = GetBValue(colour);
+  r = (BYTE)(r * factor);
+  g = (BYTE)(g * factor);
+  b = (BYTE)(b * factor);
+  return RGB(r,g,b);
+}
+
+static COLORREF DarkColourFromSysColour(int index, DarkMode *dark)
+{
+  switch (index)
+  {
+  case COLOR_WINDOW:
+    return dark->GetColour(DarkMode::Back);
+  case COLOR_BTNFACE:
+    return dark->GetColour(DarkMode::Dark3);
+  }
+
+  ASSERT(FALSE);
+  return ::GetSysColor(index);
+}
 
 IMPLEMENT_DYNAMIC(CommandButton, CButton)
 
@@ -80,17 +107,6 @@ LRESULT CommandButton::OnMouseLeave(WPARAM, LPARAM)
   return Default();
 }
 
-static COLORREF Darken(COLORREF colour, double factor)
-{
-  BYTE r = GetRValue(colour);
-  BYTE g = GetGValue(colour);
-  BYTE b = GetBValue(colour);
-  r = (BYTE)(r * factor);
-  g = (BYTE)(g * factor);
-  b = (BYTE)(b * factor);
-  return RGB(r,g,b);
-}
-
 void CommandButton::OnPaint()
 {
   CRect client;
@@ -107,15 +123,28 @@ void CommandButton::OnPaint()
   CBitmap* oldBitmap = CDibSection::SelectDibSection(dc,&bitmap);
   CFont* oldFont = dc.SelectObject(GetFont());
 
-  COLORREF backColour = ::GetSysColor(m_backIndex);
+  DarkMode* dark = DarkMode::GetActive(this);
+  COLORREF backColour = dark ?
+    DarkColourFromSysColour(m_backIndex,dark) : ::GetSysColor(m_backIndex);
   if (GetState() & BST_PUSHED)
-    backColour = Darken(backColour,0.9);
+  {
+    if (dark)
+      backColour = dark->GetColour(DarkMode::Dark2);
+    else
+      backColour = Darken(backColour,0.9);
+  }
   dc.FillSolidRect(client,backColour);
 
   if (m_mouseOver)
   {
     CPen border;
-    border.CreatePen(PS_SOLID,1,Darken(backColour,0.8));
+    if (dark)
+    {
+      border.CreatePen(PS_SOLID,1,
+        dark->GetColour((GetState() & BST_PUSHED) ? DarkMode::Fore : DarkMode::Dark1));
+    }
+    else
+      border.CreatePen(PS_SOLID,1,Darken(backColour,0.8));
     CPen* oldPen = dc.SelectObject(&border);
     dc.MoveTo(0,0);
     dc.LineTo(client.right-1,0);
@@ -135,7 +164,7 @@ void CommandButton::OnPaint()
     bitmap.AlphaBlend(&m_icon,m_iconLeft,2,false);
   }
 
-  dc.SetTextColor(::GetSysColor(COLOR_BTNTEXT));
+  dc.SetTextColor(dark ? dark->GetColour(DarkMode::Fore) : ::GetSysColor(COLOR_BTNTEXT));
   CString caption;
   GetWindowText(caption);
   int tab = caption.Find('\t');
@@ -213,8 +242,9 @@ int CommandListBox::GetHotIndex(void)
 
 void CommandListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
-  RECT& rect = lpDrawItemStruct->rcItem;
-  COLORREF backColour = ::GetSysColor(m_backIndex);
+  DarkMode* dark = DarkMode::GetActive(this);
+  COLORREF backColour = dark ?
+    DarkColourFromSysColour(m_backIndex,dark) : ::GetSysColor(m_backIndex);
 
   if (lpDrawItemStruct->itemID == -1)
   {
@@ -226,6 +256,7 @@ void CommandListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
   }
 
   HDC hdc = 0;
+  RECT& rect = lpDrawItemStruct->rcItem;
   HANDLE pb = ::BeginBufferedPaint(lpDrawItemStruct->hDC,&rect,BPBF_COMPATIBLEBITMAP,NULL,&hdc);
   if (pb == 0)
     return;
@@ -233,9 +264,14 @@ void CommandListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
   CFont* oldFont = dc->SelectObject(GetFont());
 
   if (m_hotSelect && (m_hotIndex >= 0) && (lpDrawItemStruct->itemID == m_hotIndex))
-    backColour = Darken(backColour,0.9);
+  {
+    if (dark)
+      backColour = dark->GetColour(DarkMode::Dark2);
+    else
+      backColour = Darken(backColour,0.9);
+  }
   dc->FillSolidRect(&rect,backColour);
-  dc->SetTextColor(::GetSysColor(COLOR_BTNTEXT));
+  dc->SetTextColor(dark ? dark->GetColour(DarkMode::Fore) : ::GetSysColor(COLOR_BTNTEXT));
 
   CString text;
   GetText(lpDrawItemStruct->itemID,text);
@@ -256,7 +292,13 @@ void CommandListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
   if ((m_hotIndex >= 0) && (lpDrawItemStruct->itemID == m_hotIndex))
   {
     CPen border;
-    border.CreatePen(PS_SOLID,1,Darken(backColour,0.8));
+    if (dark)
+    {
+      border.CreatePen(PS_SOLID,1,
+        dark->GetColour(m_hotSelect ? DarkMode::Fore : DarkMode::Dark1));
+    }
+    else
+      border.CreatePen(PS_SOLID,1,Darken(backColour,0.8));
     CPen* oldPen = dc->SelectObject(&border);
     dc->MoveTo(rect.left,rect.top);
     dc->LineTo(rect.right-1,rect.top);
@@ -283,7 +325,9 @@ BOOL CommandListBox::OnEraseBkgnd(CDC* pDC)
 {
   CRect r;
   GetClientRect(r);
-  pDC->FillSolidRect(r,::GetSysColor(m_backIndex));
+  DarkMode* dark = DarkMode::GetActive(this);
+  pDC->FillSolidRect(r,dark ?
+    DarkColourFromSysColour(m_backIndex,dark) : ::GetSysColor(m_backIndex));
   return TRUE;
 }
 
