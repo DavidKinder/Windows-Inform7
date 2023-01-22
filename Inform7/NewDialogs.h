@@ -3,6 +3,8 @@
 #include "BaseDialog.h"
 #include "Inform.h"
 
+#include "DarkMode.h"
+
 class AbstractNewDialog : public I7BaseDialog
 {
   DECLARE_DYNAMIC(AbstractNewDialog)
@@ -34,6 +36,9 @@ protected:
   CString m_dir;
   CString m_name;
   CStringW m_author;
+
+  DarkModeButton m_start, m_cancel;
+  DarkModeButton m_dirPopup;
 };
 
 class NewProjectDialog : public AbstractNewDialog

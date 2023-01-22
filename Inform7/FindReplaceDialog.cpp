@@ -1,14 +1,15 @@
 #include "stdafx.h"
 #include "FindReplaceDialog.h"
-#include "DpiFunctions.h"
 #include "ExtensionFrame.h"
 #include "Inform.h"
 #include "Messages.h"
 #include "ProjectFrame.h"
+#include "Resource.h"
 #include "RichEdit.h"
 #include "SourceEdit.h"
 #include "UnicodeEdit.h"
-#include "Resource.h"
+
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -112,7 +113,7 @@ void FindReplaceDialog::InitDialog(void)
     if (m_resultsList.GetSafeHwnd() != 0)
     {
       CRect resultsRect(helpRect), findNextRect;
-      GetDlgItem(IDC_FIND_NEXT)->GetWindowRect(findNextRect);
+      m_findNext.GetWindowRect(findNextRect);
       ScreenToClient(findNextRect);
       resultsRect.right = findNextRect.right;
       m_resultsList.MoveWindow(resultsRect);
@@ -124,15 +125,37 @@ void FindReplaceDialog::DoDataExchange(CDataExchange* pDX)
 {
   I7BaseDialog::DoDataExchange(pDX);
   DDX_TextW(pDX, IDC_FIND, m_findText);
+  DDX_Control(pDX, IDC_FIND_NEXT, m_findNext);
+  DDX_Control(pDX, IDC_FIND_PREVIOUS, m_findPrev);
+  if (GetDlgItem(IDC_FIND_ALL))
+    DDX_Control(pDX, IDC_FIND_ALL, m_findAll);
+  if (GetDlgItem(IDC_REPLACE))
+    DDX_Control(pDX, IDC_REPLACE, m_replace);
+  if (GetDlgItem(IDC_REPLACE_ALL))
+    DDX_Control(pDX, IDC_REPLACE_ALL, m_replaceAll);
+  DDX_Control(pDX, IDC_HOW_GROUP, m_howGroup);
   DDX_Check(pDX,IDC_IGNORE_CASE,m_ignoreCase);
   if (GetDlgItem(IDC_FIND_RULE))
+  {
+    DDX_Control(pDX,IDC_FIND_RULE,m_findRuleCtrl);
     DDX_CBIndex(pDX,IDC_FIND_RULE,(int&)m_findRule);
+  }
   if (GetDlgItem(IDC_REPLACE_WITH))
     DDX_TextW(pDX, IDC_REPLACE_WITH, m_replaceWith);
   if (GetDlgItem(IDC_RESULTS))
     DDX_Control(pDX, IDC_RESULTS, m_resultsList);
   if (GetDlgItem(IDC_REGEX_HELP))
     DDX_Control(pDX, IDC_REGEX_HELP, m_regexHelp);
+}
+
+BOOL FindReplaceDialog::OnInitDialog()
+{
+  if (I7BaseDialog::OnInitDialog())
+  {
+    m_ignoreCaseCtrl.SubclassDlgItem(IDC_IGNORE_CASE,this,IDR_DARK_CHECK,DarkMode::Darkest);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 void FindReplaceDialog::OnCancel()
@@ -179,13 +202,25 @@ void FindReplaceDialog::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
 {
   if (nIDCtl == IDC_REGEX_HELP)
   {
+    DarkMode* dark = DarkMode::GetActive(this);
+
     CRect helpRect(di->rcItem);
     HDC hdc = 0;
     HANDLE pb = ::BeginBufferedPaint(di->hDC,helpRect,BPBF_COMPATIBLEBITMAP,NULL,&hdc);
     if (pb == 0)
       return;
     CDC* dc = CDC::FromHandle(hdc);
-    dc->FillSolidRect(helpRect,::GetSysColor(COLOR_BTNFACE));
+
+    if (dark)
+    {
+      dc->FillSolidRect(helpRect,dark->GetColour(DarkMode::Darkest));
+      m_richText->TextColourChanged(dark->GetColour(DarkMode::Fore));
+    }
+    else
+    {
+      dc->FillSolidRect(helpRect,::GetSysColor(COLOR_BTNFACE));
+      m_richText->TextColourChanged(theApp.GetColour(InformApp::ColourText));
+    }
 
     const char* text1 =
       "\\b Characters\\b0\\par\\par"
@@ -267,7 +302,7 @@ LRESULT FindReplaceDialog::OnDpiChanged(WPARAM wparam, LPARAM lparam)
     if (m_resultsList.GetSafeHwnd() != 0)
     {
       CRect resultsRectAfter, findNextRect;
-      GetDlgItem(IDC_FIND_NEXT)->GetWindowRect(findNextRect);
+      m_findNext.GetWindowRect(findNextRect);
       ScreenToClient(findNextRect);
       m_resultsList.GetWindowRect(resultsRectAfter);
       ScreenToClient(resultsRectAfter);
@@ -424,19 +459,16 @@ LRESULT FindReplaceDialog::OnResultsResize(WPARAM, LPARAM)
 void FindReplaceDialog::EnableActions(void)
 {
   BOOL canFind = !m_findText.IsEmpty();
-  GetDlgItem(IDC_FIND_NEXT)->EnableWindow(canFind);
-  GetDlgItem(IDC_FIND_PREVIOUS)->EnableWindow(canFind);
-  CWnd* button = GetDlgItem(IDC_FIND_ALL);
-  if (button)
-    button->EnableWindow(canFind);
+  m_findNext.EnableWindow(canFind);
+  m_findPrev.EnableWindow(canFind);
+  if (m_findAll.GetSafeHwnd() != 0)
+    m_findAll.EnableWindow(canFind);
 
   BOOL canReplace = !m_findText.IsEmpty() && !m_replaceWith.IsEmpty();
-  button = GetDlgItem(IDC_REPLACE);
-  if (button)
-    button->EnableWindow(canReplace);
-  button = GetDlgItem(IDC_REPLACE_ALL);
-  if (button)
-    button->EnableWindow(canReplace);
+  if (m_replace.GetSafeHwnd() != 0)
+    m_replace.EnableWindow(canReplace);
+  if (m_replaceAll.GetSafeHwnd() != 0)
+    m_replaceAll.EnableWindow(canReplace);
 }
 
 void FindReplaceDialog::SetRichTextRTF(const char* fragment)

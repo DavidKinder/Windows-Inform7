@@ -1387,7 +1387,10 @@ BOOL NewColourSchemeDialog::OnInitDialog()
   if (!I7BaseDialog::OnInitDialog())
     return FALSE;
 
-  GetDlgItem(IDOK)->EnableWindow(FALSE);
+  m_ok.SubclassDlgItem(IDOK,this);
+  m_cancel.SubclassDlgItem(IDCANCEL,this);
+
+  m_ok.EnableWindow(FALSE);
   return TRUE;
 }
 
@@ -1400,5 +1403,5 @@ void NewColourSchemeDialog::OnOK()
 void NewColourSchemeDialog::OnChangedEdit()
 {
   GetDlgItem(IDC_NAME)->GetWindowText(m_name);
-  GetDlgItem(IDOK)->EnableWindow(!m_name.IsEmpty());
+  m_ok.EnableWindow(!m_name.IsEmpty());
 }

@@ -4,6 +4,8 @@
 #include "Resource.h"
 #include "UnicodeEdit.h"
 
+#include "DarkMode.h"
+
 #include <set>
 
 class SourceEdit;
@@ -50,7 +52,10 @@ private:
 
   UnicodeEdit m_badWord;
   CListBox m_suggestions;
-  CComboBox m_language;
+  DarkModeComboBox m_language;
+
+  DarkModeButton m_ignore, m_replace, m_add;
+  DarkModeButton m_cancel;
 
   bool m_settingBadWord;
   CStringW m_currentBadWord;

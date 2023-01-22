@@ -1,11 +1,12 @@
 #include "stdafx.h"
+#include "SpellCheck.h"
 #include "Inform.h"
 #include "Panel.h"
 #include "SourceEdit.h"
-#include "SpellCheck.h"
 #include "TextFormat.h"
 
 #include "hunspell.hxx"
+
 #include <sstream>
 
 #ifdef _DEBUG
@@ -356,6 +357,10 @@ void SpellCheck::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX, IDC_BADWORD, m_badWord);
   DDX_Control(pDX, IDC_SUGGESTIONS, m_suggestions);
   DDX_Control(pDX, IDC_LANGUAGE, m_language);
+  DDX_Control(pDX, IDC_IGNORE, m_ignore);
+  DDX_Control(pDX, IDC_REPLACE, m_replace);
+  DDX_Control(pDX, IDC_ADD_DICTIONARY, m_add);
+  DDX_Control(pDX, IDCANCEL, m_cancel);
 }
 
 BOOL SpellCheck::OnInitDialog()

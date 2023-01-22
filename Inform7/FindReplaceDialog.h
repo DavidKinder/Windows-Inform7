@@ -3,6 +3,8 @@
 #include "BaseDialog.h"
 #include "FindAllHelper.h"
 
+#include "DarkMode.h"
+
 class RichDrawText;
 
 class FindReplaceDialog : public I7BaseDialog
@@ -23,6 +25,7 @@ protected:
   void InitDialog(void);
 
   virtual void DoDataExchange(CDataExchange* pDX);
+  virtual BOOL OnInitDialog();
   virtual void OnCancel();
 
   DECLARE_MESSAGE_MAP()
@@ -51,13 +54,20 @@ private:
   void ShowResult(const FindResult& result);
 
   CStringW m_findText, m_replaceWith;
+  DarkModeButton m_findNext, m_findPrev, m_findAll;
+  DarkModeButton m_replace, m_replaceAll;
+
+  DarkModeGroupBox m_howGroup;
+  DarkModeCheckButton m_ignoreCaseCtrl;
   BOOL m_ignoreCase;
+  DarkModeComboBox m_findRuleCtrl;
   FindRule m_findRule;
-  FindAllHelper m_findHelper;
 
   FindResultsCtrl m_resultsList;
   CStatic m_regexHelp;
   RichDrawText* m_richText;
+
+  FindAllHelper m_findHelper;
   int m_heightNormal, m_heightLong;
   UINT m_dpi;
 };

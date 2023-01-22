@@ -1,12 +1,14 @@
 #pragma once
 
 #include "BaseDialog.h"
-#include "ColourButton.h"
 #include "ColourScheme.h"
 #include "NoFocusCheck.h"
+#include "Resource.h"
 #include "SourceSettings.h"
 #include "SourceWindow.h"
-#include "Resource.h"
+
+#include "ColourButton.h"
+#include "DarkMode.h"
 
 class PrefsDialog;
 
@@ -238,4 +240,5 @@ protected:
   DECLARE_MESSAGE_MAP()
 
   CString m_name;
+  DarkModeButton m_ok, m_cancel;
 };

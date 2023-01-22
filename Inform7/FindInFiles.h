@@ -82,8 +82,8 @@ private:
   DarkModeGroupBox m_howGroup;
   DarkModeCheckButton m_ignoreCaseCtrl;
   int m_ignoreCase;
-  FindRule m_findRule;
   DarkModeComboBox m_findRuleCtrl;
+  FindRule m_findRule;
 
   CComPtr<IAutoComplete2> m_findAutoComplete;
   static CList<CStringW> m_findHistory;
