@@ -47,3 +47,11 @@ void I7BaseDialog::EraseWithGripper(CDC* dc)
   if (!drawn)
     dc->DrawFrameControl(gripRect,DFC_SCROLL,DFCS_SCROLLSIZEGRIP);
 }
+
+void I7BaseDialog::UpdateUIState(void)
+{
+  BOOL always = FALSE;
+  ::SystemParametersInfo(SPI_GETKEYBOARDCUES,0,&always,0);
+  if (!always)
+    SendMessage(WM_UPDATEUISTATE,MAKEWPARAM(UIS_INITIALIZE,UISF_HIDEACCEL),0);
+}

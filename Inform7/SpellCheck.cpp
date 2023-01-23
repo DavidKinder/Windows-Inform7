@@ -216,6 +216,7 @@ void SpellCheck::ShowWordFromSelection(void)
   // If not visible, show the dialog
   if (IsWindowVisible() == FALSE)
   {
+    UpdateUIState();
     UpdateDialogControls();
     ShowWindow(SW_SHOW);
     m_badWord.SetFocus();

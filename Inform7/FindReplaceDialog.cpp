@@ -51,6 +51,7 @@ FindReplaceDialog* FindReplaceDialog::Create(UINT id, CWnd* parentWnd)
 
 void FindReplaceDialog::Show(LPCWSTR findText)
 {
+  UpdateUIState();
   SetActiveWindow();
   ShowWindow(SW_SHOW);
   

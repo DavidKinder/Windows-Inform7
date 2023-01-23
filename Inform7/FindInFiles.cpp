@@ -178,6 +178,7 @@ void FindInFiles::Show(void)
   {
     UpdateData(TRUE);
 
+    UpdateUIState();
     ShowWindow(SW_SHOW);
     m_findAllBtn.EnableWindow(!m_findText.IsEmpty());
     GetDlgItem(IDC_FIND)->SetFocus();
