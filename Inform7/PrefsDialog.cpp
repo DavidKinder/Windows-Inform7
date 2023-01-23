@@ -1387,6 +1387,7 @@ BOOL NewColourSchemeDialog::OnInitDialog()
   if (!I7BaseDialog::OnInitDialog())
     return FALSE;
 
+  m_nameEdit.SubclassDlgItem(IDC_NAME,this);
   m_ok.SubclassDlgItem(IDOK,this);
   m_cancel.SubclassDlgItem(IDCANCEL,this);
 
@@ -1396,12 +1397,12 @@ BOOL NewColourSchemeDialog::OnInitDialog()
 
 void NewColourSchemeDialog::OnOK()
 {
-  GetDlgItem(IDC_NAME)->GetWindowText(m_name);
+  m_nameEdit.GetWindowText(m_name);
   I7BaseDialog::OnOK();
 }
 
 void NewColourSchemeDialog::OnChangedEdit()
 {
-  GetDlgItem(IDC_NAME)->GetWindowText(m_name);
+  m_nameEdit.GetWindowText(m_name);
   m_ok.EnableWindow(!m_name.IsEmpty());
 }

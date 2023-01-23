@@ -124,6 +124,7 @@ void FindReplaceDialog::InitDialog(void)
 void FindReplaceDialog::DoDataExchange(CDataExchange* pDX)
 {
   I7BaseDialog::DoDataExchange(pDX);
+  DDX_Control(pDX, IDC_FIND, m_findEdit);
   DDX_TextW(pDX, IDC_FIND, m_findText);
   DDX_Control(pDX, IDC_FIND_NEXT, m_findNext);
   DDX_Control(pDX, IDC_FIND_PREVIOUS, m_findPrev);
@@ -141,7 +142,10 @@ void FindReplaceDialog::DoDataExchange(CDataExchange* pDX)
     DDX_CBIndex(pDX,IDC_FIND_RULE,(int&)m_findRule);
   }
   if (GetDlgItem(IDC_REPLACE_WITH))
+  {
+    DDX_Control(pDX, IDC_REPLACE_WITH, m_replaceEdit);
     DDX_TextW(pDX, IDC_REPLACE_WITH, m_replaceWith);
+  }
   if (GetDlgItem(IDC_RESULTS))
     DDX_Control(pDX, IDC_RESULTS, m_resultsList);
   if (GetDlgItem(IDC_REGEX_HELP))

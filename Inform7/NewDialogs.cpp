@@ -25,12 +25,15 @@ AbstractNewDialog::AbstractNewDialog(CWnd* parent)
 void AbstractNewDialog::DoDataExchange(CDataExchange* pDX)
 {
   I7BaseDialog::DoDataExchange(pDX);
+  DDX_Control(pDX, IDC_DIR, m_dirEdit);
+  DDX_Control(pDX, IDC_DIRPOPUP, m_dirPopup);
   DDX_Text(pDX, IDC_DIR, m_dir);
+  DDX_Control(pDX, IDC_NAME, m_nameEdit);
   DDX_Text(pDX, IDC_NAME, m_name);
+  DDX_Control(pDX, IDC_AUTHOR, m_authorEdit);
   DDX_TextW(pDX, IDC_AUTHOR, m_author);
   DDX_Control(pDX, IDOK, m_start);
   DDX_Control(pDX, IDCANCEL, m_cancel);
-  DDX_Control(pDX, IDC_DIRPOPUP, m_dirPopup);
 }
 
 void AbstractNewDialog::OnOK()

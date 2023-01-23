@@ -347,6 +347,7 @@ void FindInFiles::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX, IDC_FOUND, m_found);
   DDX_Control(pDX, IDC_PROGRESS, m_progress);
   DDX_Control(pDX, IDC_REGEX_HELP, m_regexHelp);
+  DDX_Control(pDX, IDC_FIND, m_findEdit);
   DDX_TextW(pDX, IDC_FIND, m_findText);
   DDX_Control(pDX, IDC_FIND_ALL, m_findAllBtn);
   DDX_Control(pDX, IDC_LOOK_GROUP, m_lookGroup);

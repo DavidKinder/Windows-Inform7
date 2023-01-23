@@ -51,7 +51,7 @@ private:
   SourceEdit* m_edit;
 
   UnicodeEdit m_badWord;
-  CListBox m_suggestions;
+  DarkModeListBox m_suggestions;
   DarkModeComboBox m_language;
 
   DarkModeButton m_ignore, m_replace, m_add;

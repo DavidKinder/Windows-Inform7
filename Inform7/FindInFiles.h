@@ -2,6 +2,7 @@
 
 #include "BaseDialog.h"
 #include "FindAllHelper.h"
+#include "UnicodeEdit.h"
 
 #include "DarkMode.h"
 
@@ -65,6 +66,7 @@ private:
   UINT m_dpi;
 
   CStringW m_findText;
+  UnicodeEdit m_findEdit;
   DarkModeButton m_findAllBtn;
 
   DarkModeGroupBox m_lookGroup;

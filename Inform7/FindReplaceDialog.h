@@ -2,6 +2,7 @@
 
 #include "BaseDialog.h"
 #include "FindAllHelper.h"
+#include "UnicodeEdit.h"
 
 #include "DarkMode.h"
 
@@ -54,6 +55,7 @@ private:
   void ShowResult(const FindResult& result);
 
   CStringW m_findText, m_replaceWith;
+  UnicodeEdit m_findEdit, m_replaceEdit;
   DarkModeButton m_findNext, m_findPrev, m_findAll;
   DarkModeButton m_replace, m_replaceAll;
 

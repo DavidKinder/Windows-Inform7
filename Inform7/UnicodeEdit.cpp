@@ -5,7 +5,7 @@
 #define new DEBUG_NEW
 #endif
 
-IMPLEMENT_DYNAMIC(UnicodeEdit, CEdit)
+IMPLEMENT_DYNAMIC(UnicodeEdit, DarkModeEdit)
 
 UnicodeEdit::UnicodeEdit()
 {
@@ -46,14 +46,14 @@ BOOL UnicodeEdit::SubclassDlgItem(UINT id, CWnd* parent)
 {
   // Check whether the current window procedure is Unicode or ANSI
   m_isUnicode = ::IsWindowUnicode(parent->GetDlgItem(id)->GetSafeHwnd());
-  return CEdit::SubclassDlgItem(id,parent);
+  return DarkModeEdit::SubclassDlgItem(id,parent);
 }
 
 BOOL UnicodeEdit::SubclassWindow(HWND wnd)
 {
   // Check whether the current window procedure is Unicode or ANSI
   m_isUnicode = ::IsWindowUnicode(wnd);
-  return CEdit::SubclassWindow(wnd);
+  return DarkModeEdit::SubclassWindow(wnd);
 }
 
 void UnicodeEdit::SetWindowText(LPCWSTR string)
@@ -68,7 +68,7 @@ void UnicodeEdit::SetWindowText(LPCWSTR string)
   {
     // Call the ANSI MFC method
     CString stringA(string);
-    CEdit::SetWindowText(stringA);
+    DarkModeEdit::SetWindowText(stringA);
   }
 }
 
@@ -84,15 +84,33 @@ void UnicodeEdit::GetWindowText(CStringW& string) const
   else
   {
     CString stringA;
-    CEdit::GetWindowText(stringA);
+    DarkModeEdit::GetWindowText(stringA);
     string = stringA;
   }
+}
+
+UnicodeEdit* UnicodeEdit::FromHandle(HWND hwnd)
+{
+  CWnd* wnd = CWnd::FromHandle(hwnd);
+  if (wnd)
+  {
+    if (wnd->IsKindOf(RUNTIME_CLASS(UnicodeEdit)))
+      return (UnicodeEdit*)wnd;
+  }
+  return NULL;
 }
 
 void AFXAPI DDX_TextW(CDataExchange* dx, int idc, CStringW& value)
 {
   HWND wndCtrl = dx->PrepareEditCtrl(idc);
-  if (::IsWindowUnicode(wndCtrl))
+  if (UnicodeEdit* edit = UnicodeEdit::FromHandle(wndCtrl))
+  {
+    if (dx->m_bSaveAndValidate)
+      edit->GetWindowText(value);
+    else
+      edit->SetWindowText(value);
+  }
+  else if (::IsWindowUnicode(wndCtrl))
   {
     if (dx->m_bSaveAndValidate)
     {

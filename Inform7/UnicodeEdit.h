@@ -1,6 +1,8 @@
 #pragma once
 
-class UnicodeEdit : public CEdit
+#include "DarkMode.h"
+
+class UnicodeEdit : public DarkModeEdit
 {
   DECLARE_DYNAMIC(UnicodeEdit)
 
@@ -13,6 +15,8 @@ public:
 
   void SetWindowText(LPCWSTR string);
   void GetWindowText(CStringW& string) const;
+
+  static UnicodeEdit* FromHandle(HWND hwnd);
 
 protected:
   BOOL m_isUnicode;

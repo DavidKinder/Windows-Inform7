@@ -2,6 +2,7 @@
 
 #include "BaseDialog.h"
 #include "Inform.h"
+#include "UnicodeEdit.h"
 
 #include "DarkMode.h"
 
@@ -37,8 +38,9 @@ protected:
   CString m_name;
   CStringW m_author;
 
-  DarkModeButton m_start, m_cancel;
-  DarkModeButton m_dirPopup;
+  DarkModeEdit m_dirEdit, m_nameEdit;
+  UnicodeEdit m_authorEdit;
+  DarkModeButton m_start, m_cancel, m_dirPopup;
 };
 
 class NewProjectDialog : public AbstractNewDialog

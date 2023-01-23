@@ -240,5 +240,6 @@ protected:
   DECLARE_MESSAGE_MAP()
 
   CString m_name;
+  DarkModeEdit m_nameEdit;
   DarkModeButton m_ok, m_cancel;
 };
