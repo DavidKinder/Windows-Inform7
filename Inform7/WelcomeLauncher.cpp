@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "WelcomeLauncher.h"
-#include "Inform.h"
 #include "ProjectFrame.h"
 #include "RecentProjectList.h"
 #include "TextFormat.h"
@@ -970,6 +969,7 @@ BEGIN_MESSAGE_MAP(WelcomeLauncherFrame, CFrameWnd)
   ON_WM_CREATE()
   ON_WM_DESTROY()
   ON_WM_CLOSE()
+  ON_WM_SETTINGCHANGE()
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
   ON_MESSAGE(WM_DARKMODE_ACTIVE, OnDarkModeActive)
 END_MESSAGE_MAP()
@@ -1177,6 +1177,12 @@ void WelcomeLauncherFrame::SetDarkMode(DarkMode* dark)
   DarkMode::Set(this,dark);
 }
 
+void WelcomeLauncherFrame::SendChanged(InformApp::Changed changed, int value)
+{
+  if (changed == InformApp::LightDarkMode)
+    SetDarkMode(DarkMode::GetEnabled());
+}
+
 BOOL WelcomeLauncherFrame::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle,
   const RECT& rect, CWnd* pParentWnd, LPCTSTR lpszMenuName, DWORD dwExStyle, CCreateContext* pContext)
 {
@@ -1254,6 +1260,14 @@ void WelcomeLauncherFrame::OnClose()
 
   theApp.FrameClosing(this);
   CFrameWnd::OnClose();
+}
+
+void WelcomeLauncherFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
+{
+  CFrameWnd::OnSettingChange(uFlags,lpszSection);
+
+  if ((m_dark != NULL) != DarkMode::IsEnabled())
+    theApp.SendAllFrames(InformApp::LightDarkMode,0);
 }
 
 LRESULT WelcomeLauncherFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)

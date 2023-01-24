@@ -129,7 +129,8 @@ public:
     Extensions,
     Preferences,
     Spelling,
-    DownloadedExt
+    DownloadedExt,
+    LightDarkMode
   };
   void SendAllFrames(Changed changed, int value);
 

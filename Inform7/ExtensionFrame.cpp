@@ -22,6 +22,7 @@ BEGIN_MESSAGE_MAP(ExtensionFrame, MenuBarFrameWnd)
   ON_WM_CREATE()
   ON_WM_ACTIVATE()
   ON_WM_CLOSE()
+  ON_WM_SETTINGCHANGE()
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 
   ON_MESSAGE(WM_PROJECTEDITED, OnProjectEdited)
@@ -156,6 +157,14 @@ void ExtensionFrame::OnUpdateFrameTitle(BOOL)
   CString title;
   title.Format("%s - %s",(LPCSTR)GetDisplayName(true),m_strTitle);
   AfxSetWindowText(GetSafeHwnd(),title);
+}
+
+void ExtensionFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
+{
+  MenuBarFrameWnd::OnSettingChange(uFlags,lpszSection);
+
+  if ((m_dark != NULL) != DarkMode::IsEnabled())
+    theApp.SendAllFrames(InformApp::LightDarkMode,0);
 }
 
 LRESULT ExtensionFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
@@ -930,6 +939,10 @@ void ExtensionFrame::SendChanged(InformApp::Changed changed, int value)
     break;
   case InformApp::Spelling:
     m_edit.UpdateSpellCheck();
+    break;
+  case InformApp::LightDarkMode:
+    SetDarkMode(DarkMode::GetEnabled());
+    SendChanged(InformApp::Preferences,0);
     break;
   }
 }

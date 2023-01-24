@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommandButton.h"
+#include "Inform.h"
 #include "ReportHtml.h"
 #include "Resource.h"
 
@@ -87,6 +88,7 @@ public:
 
   void UpdateNews(void);
   void SetDarkMode(DarkMode* dark);
+  void SendChanged(InformApp::Changed changed, int value);
 
   virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
     DWORD dwStyle, const RECT& rect, CWnd* pParentWnd,
@@ -108,6 +110,7 @@ protected:
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
   afx_msg void OnDestroy();
   afx_msg void OnClose();
+  afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
   afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
   afx_msg LRESULT OnDarkModeActive(WPARAM, LPARAM);
 

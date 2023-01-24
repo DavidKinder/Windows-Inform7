@@ -718,11 +718,16 @@ void InformApp::GetWindowFrames(CArray<CFrameWnd*>& frames)
 
 void InformApp::SendAllFrames(Changed changed, int value)
 {
-  if (changed == Preferences)
+  switch (changed)
   {
+  case Preferences:
     SetFonts();
     ClearGeneratedImages();
     ReportHtml::UpdateWebBrowserPreferences();
+    break;
+  case LightDarkMode:
+    ClearGeneratedImages();
+    break;
   }
 
   CArray<CFrameWnd*> frames;
@@ -735,6 +740,8 @@ void InformApp::SendAllFrames(Changed changed, int value)
       ((ProjectFrame*)frame)->SendChanged(changed,value);
     else if (frame->IsKindOf(RUNTIME_CLASS(ExtensionFrame)))
       ((ExtensionFrame*)frame)->SendChanged(changed,value);
+    else if (frame->IsKindOf(RUNTIME_CLASS(WelcomeLauncherFrame)))
+      ((WelcomeLauncherFrame*)frame)->SendChanged(changed,value);
   }
 }
 

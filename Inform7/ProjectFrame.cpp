@@ -591,7 +591,10 @@ void ProjectFrame::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
 void ProjectFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
   MenuBarFrameWnd::OnSettingChange(uFlags,lpszSection);
+
   UpdateMenuParams();
+  if ((m_dark != NULL) != DarkMode::IsEnabled())
+    theApp.SendAllFrames(InformApp::LightDarkMode,0);
 }
 
 void ProjectFrame::OnChangedExample()
@@ -1151,6 +1154,10 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
   case InformApp::DownloadedExt:
     for (int i = 0; i < 2; i++)
       ((TabExtensions*)GetPanel(i)->GetTab(Panel::Tab_Extensions))->DownloadedExt(value);
+    break;
+  case InformApp::LightDarkMode:
+    SetDarkMode(DarkMode::GetEnabled());
+    SendChanged(InformApp::Preferences,0);
     break;
   }
 }
