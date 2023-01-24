@@ -724,6 +724,9 @@ void ProjectFrame::SetDarkMode(DarkMode* dark)
   UpdateToolBarFont();
 
   m_progress.SetDarkMode(dark);
+  if (m_finder.GetSafeHwnd() != 0)
+    DarkMode::Set(&m_finder,dark);
+
   for (int i = 0; i < 2; i++)
     GetPanel(i)->SetDarkMode(dark);
 }
