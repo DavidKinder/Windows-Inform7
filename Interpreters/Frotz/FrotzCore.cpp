@@ -22,6 +22,7 @@ int display_width = 0;
 int display_height = 0;
 int char_width = 0;
 int char_height = 0;
+int dark_mode = 0;
 
 void sendCommand(int command, int dataLength, const void* data)
 {
@@ -527,8 +528,8 @@ extern "C" void os_init_screen(void)
 
   h_interpreter_version = 'F';
   h_interpreter_number = INTERP_MSDOS;
-  h_default_foreground = BLACK_COLOUR;
-  h_default_background = WHITE_COLOUR;
+  h_default_foreground = dark_mode ? WHITE_COLOUR : BLACK_COLOUR;
+  h_default_background = dark_mode ? BLACK_COLOUR : WHITE_COLOUR;
   h_font_width = char_width;
   h_font_height = char_height;
   h_screen_width = display_width;
@@ -593,6 +594,7 @@ extern "C" void os_process_arguments(int argc, char *argv[])
     display_height = atoi(argv[3]);
     char_width = atoi(argv[4]);
     char_height = atoi(argv[5]);
+    dark_mode = atoi(argv[6]);
   }
 }
 
@@ -813,9 +815,9 @@ extern "C" void os_set_colour(int new_foreground, int new_background)
   flushOutput();
 
   if (new_foreground == 1)
-    new_foreground = BLACK_COLOUR;
+    new_foreground = dark_mode ? WHITE_COLOUR : BLACK_COLOUR;
   if (new_background == 1)
-    new_background = WHITE_COLOUR;
+    new_background = dark_mode ? BLACK_COLOUR : WHITE_COLOUR;
 
   int data[7];
   data[0] = get_current_window();

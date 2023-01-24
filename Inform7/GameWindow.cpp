@@ -156,10 +156,10 @@ void GameWindow::RunInterpreter(const char* dir, const char* file, bool glulx)
 
   // Generate the command line for the interpreter
   CString command;
-  command.Format("\"%s\\Interpreters\\%s\" \"%s\\%s\" %d %d %d %d \"%s\"",
+  command.Format("\"%s\\Interpreters\\%s\" \"%s\\%s\" %d %d %d %d %d \"%s\"",
     (LPCSTR)theApp.GetAppDir(),(LPCSTR)terp,
     dir,file,screen.Width(),screen.Height(),m_fontSize.cx,m_fontSize.cy,
-    (LPCSTR)GetFileDir());
+    DarkMode::GetActive(this) ? 1 : 0,(LPCSTR)GetFileDir());
 
   // Create the process. If the application is being debugged we don't make ourselves
   // a debugger of the interpreter, as that stops the real debugger being attached to

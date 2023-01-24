@@ -18,6 +18,8 @@ extern int charHeight;
 extern std::map<int,std::pair<int,int> > imageSizes;
 extern char* fileDir;
 
+void setDarkMode(int mode);
+
 void sendCommand(int command, int dataLength, const void* data)
 {
   DWORD written = 0;
@@ -86,14 +88,15 @@ extern "C" void fatalError(const char* s)
 
 int main(int argc, char** argv)
 {
-  if (argc < 7)
+  if (argc < 8)
     exit(1);
 
   displayWidth = atoi(argv[2]);
   displayHeight = atoi(argv[3]);
   charWidth = atoi(argv[4]);
   charHeight = atoi(argv[5]);
-  fileDir = argv[6];
+  setDarkMode(atoi(argv[6]));
+  fileDir = argv[7];
   readImageSizes(argv[1]);
 
   size_t size = 0;

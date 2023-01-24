@@ -1,6 +1,8 @@
 #include "stdafx.h"
-#include "Inform.h"
 #include "GameGrid.h"
+#include "Inform.h"
+
+#include "DarkMode.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -184,9 +186,20 @@ int GameGrid::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
 
   FontChanged();
-  ClearText(false,false,
-    theApp.GetColour(InformApp::ColourText),
-    theApp.GetColour(InformApp::ColourBack));
+
+  DarkMode* dark = DarkMode::GetActive(this);
+  if (dark)
+  {
+    m_current.fore = dark->GetColour(DarkMode::Fore);
+    m_current.back = dark->GetColour(DarkMode::Back);
+  }
+  else
+  {
+    m_current.fore = theApp.GetColour(InformApp::ColourText);
+    m_current.back = theApp.GetColour(InformApp::ColourBack);
+  }
+  ClearText(false,false,m_current.fore,m_current.back);
+
   return 0;
 }
 
@@ -209,7 +222,9 @@ void GameGrid::OnPaint()
   CFont* oldFont = dcMem.GetCurrentFont();
 
   // Clear the background
-  dcMem.FillSolidRect(client,theApp.GetColour(InformApp::ColourBack));
+  DarkMode* dark = DarkMode::GetActive(this);
+  dcMem.FillSolidRect(client,dark ?
+    dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack));
 
   if (m_columns > 0)
   {

@@ -2,9 +2,11 @@
 #include "I7GlkGfxWindow.h"
 #include "../../Inform7/InterpreterCommands.h"
 
+extern int darkMode;
+
 I7GlkGfxWindow::I7GlkGfxWindow(glui32 rock) : I7GlkWindow(rock)
 {
-  m_backColour = 0x00FFFFFF;
+  m_backColour = darkMode ? 0x00000000 : 0x00FFFFFF;
 }
 
 void I7GlkGfxWindow::requestMouse(void)

@@ -1,6 +1,8 @@
 #include "stdafx.h"
-#include "Inform.h"
 #include "GameText.h"
+#include "Inform.h"
+
+#include "DarkMode.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -27,8 +29,17 @@ GameText::GameText(MainWindow* main) : RichEdit(InformApp::FontDisplay)
   m_link = 0;
   m_echo = true;
 
-  m_fore = theApp.GetColour(InformApp::ColourText);
-  m_back = theApp.GetColour(InformApp::ColourBack);
+  DarkMode* dark = DarkMode::GetActive(main->GetWnd());
+  if (dark)
+  {
+    m_fore = dark->GetColour(DarkMode::Fore);
+    m_back = dark->GetColour(DarkMode::Back);
+  }
+  else
+  {
+    m_fore = theApp.GetColour(InformApp::ColourText);
+    m_back = theApp.GetColour(InformApp::ColourBack);
+  }
   m_reversed = false;
 
   m_main = main;
@@ -36,7 +47,8 @@ GameText::GameText(MainWindow* main) : RichEdit(InformApp::FontDisplay)
 
   Create(WS_CHILD|WS_VISIBLE,main->GetWnd(),0);
 
-  m_background = theApp.GetColour(InformApp::ColourBack);
+  m_background = dark ?
+    dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack);
   SendMessage(EM_SETBKGNDCOLOR,FALSE,m_background);
 
   // Allow full justification
@@ -143,8 +155,17 @@ void GameText::ClearText(bool styles, bool reverse, COLORREF fore, COLORREF back
   // Reset the current font
   if (styles)
   {
-    m_fore = theApp.GetColour(InformApp::ColourText);
-    m_back = theApp.GetColour(InformApp::ColourBack);
+    DarkMode* dark = DarkMode::GetActive(this);
+    if (dark)
+    {
+      m_fore = dark->GetColour(DarkMode::Fore);
+      m_back = dark->GetColour(DarkMode::Back);
+    }
+    else
+    {
+      m_fore = theApp.GetColour(InformApp::ColourText);
+      m_back = theApp.GetColour(InformApp::ColourBack);
+    }
     SetStyle(false,false,false,false,0);
   }
 

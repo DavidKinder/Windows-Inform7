@@ -41,6 +41,7 @@ int displayWidth = 0;
 int displayHeight = 0;
 int charWidth = 0;
 int charHeight = 0;
+int darkMode = 0;
 std::map<int,std::pair<int,int> > imageSizes;
 
 DWORD timerTick = 0;
@@ -86,6 +87,22 @@ bool readCommand(void)
   command.read();
   commands.push_back(command);
   return true;
+}
+
+void setDarkMode(int mode)
+{
+  darkMode = mode;
+
+  for (int i = 0; i < 2; i++)
+  {
+    for (int styl = 0; styl < style_NUMSTYLES; styl++)
+    {
+      I7GlkTextWindow::defaultStyles[i][styl].m_textColour = darkMode ? 0x00FFFFFF : 0x00000000;
+      I7GlkTextWindow::defaultStyles[i][styl].m_backColour = darkMode ? 0x00000000 : 0x00FFFFFF;
+      I7GlkGridWindow::defaultStyles[i][styl].m_textColour = darkMode ? 0x00FFFFFF : 0x00000000;
+      I7GlkGridWindow::defaultStyles[i][styl].m_backColour = darkMode ? 0x00000000 : 0x00FFFFFF;
+    }
+  }
 }
 
 extern "C" void glk_exit(void)
