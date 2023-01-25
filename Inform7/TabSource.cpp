@@ -521,6 +521,11 @@ void TabSource::UpdateDPI(const std::map<CWnd*,double>& layout)
   Resize();
 }
 
+void TabSource::SetDarkMode(DarkMode* dark)
+{
+  m_source.SetDarkMode(dark);
+}
+
 void TabSource::SetDocument(TabSource* master)
 {
   m_source.GetEdit().SetDocument(&(master->m_source.GetEdit()));

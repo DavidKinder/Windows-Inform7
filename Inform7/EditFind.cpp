@@ -6,6 +6,8 @@
 #include "SourceEdit.h"
 #include "TextFormat.h"
 
+#include "DarkMode.h"
+
 #include <regex>
 
 #ifdef _DEBUG
@@ -148,6 +150,14 @@ void EditFind::SourceChanged(void)
 {
   // Discard the cached source code text, if any
   m_lastSource.Empty();
+}
+
+void EditFind::SetDarkMode(DarkMode* dark)
+{
+  if (m_dialogFind->GetSafeHwnd() != 0)
+    DarkMode::Set(m_dialogFind,dark);
+  if (m_dialogReplace->GetSafeHwnd() != 0)
+    DarkMode::Set(m_dialogReplace,dark);
 }
 
 bool EditFind::FindNext(FindReplaceDialog* current, bool fromSelect, bool forward)

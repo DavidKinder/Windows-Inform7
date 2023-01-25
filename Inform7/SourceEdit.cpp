@@ -1265,6 +1265,13 @@ void SourceEdit::PrefsChanged(void)
   CallEdit(WM_SETTINGCHANGE);
 }
 
+void SourceEdit::SetDarkMode(DarkMode* dark)
+{
+  m_find.SetDarkMode(dark);
+  if (m_spell.GetSafeHwnd() != 0)
+    DarkMode::Set(&m_spell,dark);
+}
+
 bool SourceEdit::GetElasticTabStops(void)
 {
   return m_elasticTabStops;

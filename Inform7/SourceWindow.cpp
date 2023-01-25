@@ -105,6 +105,11 @@ void SourceWindow::PrefsChanged(void)
   Invalidate();
 }
 
+void SourceWindow::SetDarkMode(DarkMode* dark)
+{
+  m_edit.SetDarkMode(dark);
+}
+
 const SourceHeading& SourceWindow::GetHeading(void)
 {
   return m_heading;

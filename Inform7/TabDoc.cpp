@@ -111,6 +111,11 @@ void TabDoc::UpdateDPI(const std::map<CWnd*,double>& layout)
   Resize();
 }
 
+void TabDoc::SetDarkMode(DarkMode* dark)
+{
+  m_html.SetDarkMode(dark);
+}
+
 void TabDoc::Show(const char* url, LPCWSTR find)
 {
   m_html.Navigate(url,true,find);

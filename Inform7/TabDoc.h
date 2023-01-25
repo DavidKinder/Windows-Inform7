@@ -21,6 +21,7 @@ public:
   void CompileProject(CompileStage stage, int code);
   void PrefsChanged(CRegKey& key);
   void UpdateDPI(const std::map<CWnd*,double>& layout);
+  void SetDarkMode(DarkMode* dark);
 
   void Show(const char* url, LPCWSTR find = NULL);
   void SetFocusFlag(bool set);

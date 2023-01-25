@@ -191,6 +191,15 @@ void FindInFiles::Hide(void)
     ShowWindow(SW_HIDE);
 }
 
+void FindInFiles::SetDarkMode(DarkMode* dark)
+{
+  if (GetSafeHwnd() != 0)
+  {
+    DarkMode::Set(this,dark);
+    m_progress.SetDarkMode(DarkMode::GetActive(this));
+  }
+}
+
 void FindInFiles::FindInSource(LPCWSTR text)
 {
   UpdateData(TRUE);

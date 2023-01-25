@@ -40,6 +40,12 @@ ExtensionFrame::ExtensionFrame()
 {
 }
 
+void ExtensionFrame::SetDarkMode(DarkMode* dark)
+{
+  MenuBarFrameWnd::SetDarkMode(dark);
+  m_edit.SetDarkMode(dark);
+}
+
 int ExtensionFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
   if (MenuBarFrameWnd::OnCreate(lpCreateStruct) == -1)

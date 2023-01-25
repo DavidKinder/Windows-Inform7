@@ -1,5 +1,7 @@
 #pragma once
 
+class DarkMode;
+
 class ReportHtml : public CWnd
 {
   DECLARE_DYNCREATE(ReportHtml)
@@ -29,6 +31,8 @@ public:
 
   void SetFocusFlag(bool focus);
   bool OnSetFocus(void);
+
+  void SetDarkMode(DarkMode* dark);
 
   void Find(LPCWSTR findText, bool findNext, bool forward, bool matchCase);
   void StopFind(void);

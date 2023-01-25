@@ -18,6 +18,7 @@ public:
 
   void Show(void);
   void Hide(void);
+  void SetDarkMode(DarkMode* dark);
 
   void FindInSource(LPCWSTR text);
   void FindInDocs(LPCWSTR text);

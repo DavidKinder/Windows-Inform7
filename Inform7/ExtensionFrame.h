@@ -1,10 +1,13 @@
 #pragma once
 
 #include "Inform.h"
-#include "SourceEdit.h"
-#include "MenuBar.h"
 #include "ProjectSettings.h"
+#include "SourceEdit.h"
 #include "SourceSettings.h"
+
+#include "MenuBar.h"
+
+class DarkMode;
 
 class ExtensionFrame : public MenuBarFrameWnd
 {
@@ -13,6 +16,8 @@ protected:
 
 public:
   ExtensionFrame();
+
+  virtual void SetDarkMode(DarkMode* dark);
 
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
   virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);

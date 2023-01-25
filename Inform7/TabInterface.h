@@ -1,8 +1,8 @@
 #pragma once
 
-#include "DarkMode.h"
-
 #include <map>
+
+class DarkMode;
 
 // Structure describing the tab state for the history
 struct TabState

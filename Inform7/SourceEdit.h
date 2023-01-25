@@ -1,9 +1,11 @@
 #pragma once
 
 #include "EditFind.h"
-#include "SpellCheck.h"
 #include "SourceLexer.h"
 #include "SourceSettings.h"
+#include "SpellCheck.h"
+
+class DarkMode;
 
 class SourceEdit : public CWnd
 {
@@ -93,6 +95,7 @@ public:
 
   void LoadSettings(SourceSettings& set, COLORREF back);
   void PrefsChanged(void);
+  void SetDarkMode(DarkMode* dark);
   bool GetElasticTabStops(void);
   void SetElasticTabStops(bool enable);
   void SetCustomTabStops(int num, int tabPixels);

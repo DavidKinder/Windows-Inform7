@@ -5,8 +5,8 @@
 #include "Messages.h"
 #include "SourceSettings.h"
 
-#include "Dib.h"
-#include "DarkMode.h"
+class DarkMode;
+class DibSection;
 
 class SourceWindow : public CWnd
 {
@@ -26,6 +26,7 @@ public:
   SourceEdit& GetEdit(void);
   void LoadSettings(SourceSettings& set);
   void PrefsChanged(void);
+  void SetDarkMode(DarkMode* dark);
 
   const SourceHeading& GetHeading(void);
   void GetAllHeadings(CArray<SourceLexer::Heading>& headings);

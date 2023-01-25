@@ -2,8 +2,9 @@
 
 #include "FindAllHelper.h"
 
-class SourceEdit;
+class DarkMode;
 class FindReplaceDialog;
+class SourceEdit;
 
 class EditFind
 {
@@ -19,6 +20,7 @@ public:
   const CStringW& GetLastFind(void);
   void RepeatFind(bool forward);
   void SourceChanged(void);
+  void SetDarkMode(DarkMode* dark);
 
 private:
   bool FindNext(FindReplaceDialog* current, bool fromSelect, bool forward);

@@ -842,6 +842,12 @@ public:
     return 0;
   }
 
+  void SetDarkMode(DarkMode* dark)
+  {
+    if (m_dialog->GetSafeHwnd() != 0)
+      DarkMode::Set(m_dialog,dark);
+  }
+
 private:
   void FindNext(bool forward)
   {
@@ -1082,6 +1088,11 @@ void ReportHtml::Refresh(void)
 void ReportHtml::RunJavaScript(const char* code)
 {
   m_private->browser->GetMainFrame()->ExecuteJavaScript(code,"",0);
+}
+
+void ReportHtml::SetDarkMode(DarkMode* dark)
+{
+  m_private->find.SetDarkMode(dark);
 }
 
 // Find the given text in the current page
