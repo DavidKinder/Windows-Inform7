@@ -1,6 +1,8 @@
 #include "stdafx.h"
-#include "Inform.h"
 #include "GameGraphics.h"
+#include "Inform.h"
+
+#include "Dib.h"
 #include "ScaleGfx.h"
 
 #ifdef _DEBUG

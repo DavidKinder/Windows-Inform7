@@ -3,6 +3,7 @@
 #include "Inform.h"
 
 #include "DarkMode.h"
+#include "Dib.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

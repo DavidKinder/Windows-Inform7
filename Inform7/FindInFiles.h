@@ -4,8 +4,6 @@
 #include "FindAllHelper.h"
 #include "UnicodeEdit.h"
 
-#include "DarkMode.h"
-
 #include <vector>
 
 class ProjectFrame;

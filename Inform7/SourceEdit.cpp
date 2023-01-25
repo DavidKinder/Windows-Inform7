@@ -1268,8 +1268,7 @@ void SourceEdit::PrefsChanged(void)
 void SourceEdit::SetDarkMode(DarkMode* dark)
 {
   m_find.SetDarkMode(dark);
-  if (m_spell.GetSafeHwnd() != 0)
-    DarkMode::Set(&m_spell,dark);
+  m_spell.SetDarkMode(dark);
 }
 
 bool SourceEdit::GetElasticTabStops(void)

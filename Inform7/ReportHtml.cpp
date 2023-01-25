@@ -844,8 +844,8 @@ public:
 
   void SetDarkMode(DarkMode* dark)
   {
-    if (m_dialog->GetSafeHwnd() != 0)
-      DarkMode::Set(m_dialog,dark);
+    if (m_dialog)
+      m_dialog->SetDarkMode(dark);
   }
 
 private:

@@ -12,6 +12,7 @@
 
 #include "DarkMode.h"
 #include "Dialogs.h"
+#include "Dib.h"
 #include "DSoundEngine.h"
 
 #ifdef _DEBUG

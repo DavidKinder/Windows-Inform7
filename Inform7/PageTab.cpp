@@ -2,6 +2,7 @@
 #include "PageTab.h"
 #include "Inform.h"
 
+#include "Dib.h"
 #include "DarkMode.h"
 #include "DpiFunctions.h"
 

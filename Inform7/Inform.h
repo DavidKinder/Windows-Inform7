@@ -4,13 +4,13 @@
   #error include 'stdafx.h' before including this file for PCH
 #endif
 
-#include "Dib.h"
+#include "BaseDialog.h"
+#include "Resource.h"
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
-
-#include "Resource.h"
 
 // Title
 #define INFORM_TITLE "Inform"
@@ -29,6 +29,7 @@
 // The base URL of the Inform Public Library
 #define PUBLIC_LIBRARY_URL "https://ganelson.github.io/inform-public-library"
 
+class CDibSection;
 class RecentProjectList;
 
 enum ProjectType
@@ -133,6 +134,8 @@ public:
     LightDarkMode
   };
   void SendAllFrames(Changed changed, int value);
+  void AddModalDialog(I7BaseDialog* dialog);
+  void RemoveModalDialog(I7BaseDialog* dialog);
 
   CDibSection* GetImage(const char* path, bool adjustGamma);
   CSize GetImageSize(const char* path);
@@ -223,6 +226,7 @@ protected:
   std::map<std::pair<Fonts,int>,CFont*> m_fonts;
 
   CArray<CFrameWnd*> m_frames;
+  std::set<I7BaseDialog*> m_modalDialogs;
   std::map<std::string,CDibSection*> m_bitmaps;
   std::vector<ExtLocation> m_extensions;
 

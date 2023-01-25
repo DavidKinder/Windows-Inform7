@@ -1,11 +1,14 @@
 #pragma once
 
 #include "BaseDialog.h"
-#include "RichEdit.h"
-#include "Dib.h"
 #include "Resource.h"
+#include "RichEdit.h"
+
+#include "Dib.h"
 
 #include <memory>
+
+class DarkMode;
 
 class AboutCreditsEdit : public RichEdit
 {
@@ -28,6 +31,8 @@ public:
 
   enum { IDD = IDD_ABOUTBOX };
 
+  void SetDarkMode(DarkMode* dark);
+
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);
   virtual BOOL OnInitDialog();
@@ -42,7 +47,7 @@ protected:
 
   void LayoutControls(void);
   void SetTitleFont(void);
-  void SetCredits(void);
+  void SetLogoBitmap(void);
 
 private:
   UINT m_dpi;

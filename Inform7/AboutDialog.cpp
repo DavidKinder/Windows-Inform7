@@ -44,44 +44,10 @@ BOOL AboutDialog::OnInitDialog()
 {
   I7BaseDialog::OnInitDialog();
   m_dpi = DPI::getWindowDPI(this);
-  DarkMode* dark = DarkMode::GetActive(this);
 
   theApp.SetIcon(this);
   SetTitleFont();
-
-  CDibSection* bitmap = theApp.GetCachedImage("Inform");
-  CSize bitmapSize = bitmap->GetSize();
-
-  m_bitmap.reset(new CDibSection());
-  CDC* dc = GetDC();
-  m_bitmap->CreateBitmap(dc->GetSafeHdc(),bitmapSize.cx,bitmapSize.cy);
-  ReleaseDC(dc);
-  ::CopyMemory(m_bitmap->GetBits(),bitmap->GetBits(),
-    (SIZE_T)bitmapSize.cx*(SIZE_T)bitmapSize.cy*sizeof(DWORD));
-  m_bitmap->AlphaBlend(dark ?
-    dark->GetColour(DarkMode::Darkest) : ::GetSysColor(COLOR_BTNFACE));
-  m_logo.SetBitmap(m_bitmap->GetSafeHandle());
-
-  // Set colours for the credits control
-  {
-    CHARFORMAT format;
-    format.cbSize = sizeof format;
-    format.dwMask = CFM_COLOR;
-    format.dwEffects = 0;
-
-    if (dark)
-    {
-      format.crTextColor = dark->GetColour(DarkMode::Fore);
-      m_credits.SetDefaultCharFormat(format);
-      m_credits.SetBackgroundColor(FALSE,dark->GetColour(DarkMode::Back));
-    }
-    else
-    {
-      format.crTextColor = ::GetSysColor(COLOR_BTNTEXT);
-      m_credits.SetDefaultCharFormat(format);
-      m_credits.SetBackgroundColor(TRUE,0);
-    }
-  }
+  SetLogoBitmap();
 
   CString version1, version2;
   m_version.GetWindowText(version1);
@@ -243,6 +209,35 @@ LRESULT AboutDialog::OnDpiChanged(WPARAM wparam, LPARAM lparam)
   return 0;
 }
 
+void AboutDialog::SetDarkMode(DarkMode* dark)
+{
+  I7BaseDialog::SetDarkMode(dark);
+
+  if (GetSafeHwnd() != 0)
+  {
+    SetLogoBitmap();
+
+    // Set colours for the credits control
+    CHARFORMAT format;
+    format.cbSize = sizeof format;
+    format.dwMask = CFM_COLOR;
+    format.dwEffects = 0;
+    if (dark)
+    {
+      format.crTextColor = dark->GetColour(DarkMode::Fore);
+      m_credits.SetDefaultCharFormat(format);
+      m_credits.SetBackgroundColor(FALSE,dark->GetColour(DarkMode::Back));
+    }
+    else
+    {
+      format.crTextColor = ::GetSysColor(COLOR_BTNTEXT);
+      m_credits.SetDefaultCharFormat(format);
+      m_credits.SetBackgroundColor(TRUE,0);
+    }
+    m_credits.SetTextRTF(m_creditsRTF);
+  }
+}
+
 void AboutDialog::LayoutControls(void)
 {
   if (m_logo.GetSafeHwnd() == 0)
@@ -319,6 +314,23 @@ void AboutDialog::SetTitleFont(void)
     m_titleFont.CreateFontIndirect(&titleFont);
     m_title.SetFont(&m_titleFont);
   }
+}
+
+void AboutDialog::SetLogoBitmap(void)
+{
+  CDibSection* bitmap = theApp.GetCachedImage("Inform");
+  CSize bitmapSize = bitmap->GetSize();
+  DarkMode* dark = DarkMode::GetActive(this);
+
+  m_bitmap.reset(new CDibSection());
+  CDC* dc = GetDC();
+  m_bitmap->CreateBitmap(dc->GetSafeHdc(),bitmapSize.cx,bitmapSize.cy);
+  ReleaseDC(dc);
+  ::CopyMemory(m_bitmap->GetBits(),bitmap->GetBits(),
+    (SIZE_T)bitmapSize.cx*(SIZE_T)bitmapSize.cy*sizeof(DWORD));
+  m_bitmap->AlphaBlend(dark ?
+    dark->GetColour(DarkMode::Darkest) : ::GetSysColor(COLOR_BTNFACE));
+  m_logo.SetBitmap(m_bitmap->GetSafeHandle());
 }
 
 IMPLEMENT_DYNAMIC(AboutCreditsEdit, RichEdit)

@@ -2,6 +2,8 @@
 #include "SourceWindow.h"
 #include "Inform.h"
 
+#include "Dib.h"
+
 #include "Platform.h"
 #include "Scintilla.h"
 

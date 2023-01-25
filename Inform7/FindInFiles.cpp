@@ -193,11 +193,9 @@ void FindInFiles::Hide(void)
 
 void FindInFiles::SetDarkMode(DarkMode* dark)
 {
-  if (GetSafeHwnd() != 0)
-  {
-    DarkMode::Set(this,dark);
-    m_progress.SetDarkMode(DarkMode::GetActive(this));
-  }
+  I7BaseDialog::SetDarkMode(dark);
+  if (m_progress.GetSafeHwnd() != 0)
+    m_progress.SetDarkMode(dark);
 }
 
 void FindInFiles::FindInSource(LPCWSTR text)
@@ -403,7 +401,6 @@ BOOL FindInFiles::OnInitDialog()
 
     m_found.ModifyStyle(0,WS_VISIBLE);
     m_progress.ModifyStyle(WS_VISIBLE,0);
-    m_progress.SetDarkMode(DarkMode::GetActive(this));
 
     ScreenToClient(resultsRect);
     m_regexHelp.MoveWindow(resultsRect);

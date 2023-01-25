@@ -154,10 +154,10 @@ void EditFind::SourceChanged(void)
 
 void EditFind::SetDarkMode(DarkMode* dark)
 {
-  if (m_dialogFind->GetSafeHwnd() != 0)
-    DarkMode::Set(m_dialogFind,dark);
-  if (m_dialogReplace->GetSafeHwnd() != 0)
-    DarkMode::Set(m_dialogReplace,dark);
+  if (m_dialogFind)
+    m_dialogFind->SetDarkMode(dark);
+  if (m_dialogReplace)
+    m_dialogReplace->SetDarkMode(dark);
 }
 
 bool EditFind::FindNext(FindReplaceDialog* current, bool fromSelect, bool forward)

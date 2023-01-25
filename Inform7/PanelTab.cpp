@@ -3,6 +3,8 @@
 #include "Inform.h"
 #include "Panel.h"
 
+#include "Dib.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif

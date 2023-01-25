@@ -11,6 +11,14 @@ I7BaseDialog::I7BaseDialog(UINT templateId, CWnd* parent) : BaseDialog(templateI
 {
 }
 
+INT_PTR I7BaseDialog::DoModal()
+{
+  theApp.AddModalDialog(this);
+  INT_PTR result = BaseDialog::DoModal();
+  theApp.RemoveModalDialog(this);
+  return result;
+}
+
 void I7BaseDialog::SetFont(CDialogTemplate& dlgTemplate)
 {
   dlgTemplate.SetFont(
