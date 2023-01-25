@@ -3,9 +3,22 @@
 #include "Messages.h"
 #include "TextFormat.h"
 
+#include "DarkMode.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+static COLORREF Darken(COLORREF colour)
+{
+  BYTE r = GetRValue(colour);
+  BYTE g = GetGValue(colour);
+  BYTE b = GetBValue(colour);
+  r = (BYTE)(r * 0.9333);
+  g = (BYTE)(g * 0.9333);
+  b = (BYTE)(b * 0.9333);
+  return RGB(r,g,b);
+}
 
 FindResult::FindResult()
 {
@@ -45,14 +58,36 @@ CString FindResult::TypeName(void)
   return "";
 }
 
-COLORREF FindResult::Colour(void)
+COLORREF FindResult::Colour(DarkMode* dark, bool darker)
 {
-  return theApp.GetColour(
-    (type == FoundIn_RecipeBook) ? InformApp::ColourContents : InformApp::ColourBack);
+  if (dark)
+  {
+    COLORREF colour = dark->GetColour(darker ? DarkMode::Back : DarkMode::Dark3);
+    if (type == FoundIn_RecipeBook)
+      colour &= 0xFF00FFFF; // Make yellow-ish by setting blue component to zero
+    return colour;
+  }
+  else
+  {
+    COLORREF colour = theApp.GetColour(
+      (type == FoundIn_RecipeBook) ? InformApp::ColourContents : InformApp::ColourBack);
+    return darker ? Darken(colour) : colour;
+  }
 }
 
 FindResultsCtrl::FindResultsCtrl()
 {
+}
+
+void FindResultsCtrl::SetDarkMode(DarkMode* dark)
+{
+  if (GetSafeHwnd() != 0)
+  {
+    if (dark)
+      SetBkColor(dark->GetColour(DarkMode::Back));
+    else
+      SetBkColor(theApp.GetColour(InformApp::ColourBack));
+  }
 }
 
 BEGIN_MESSAGE_MAP(FindResultsCtrl, CListCtrl)
@@ -153,9 +188,8 @@ void FindAllHelper::OnResultsDraw(FindResultsCtrl* ctrl, NMLVCUSTOMDRAW* custom,
         return;
 
       // Work out the background colour
-      COLORREF backColour = results[item].Colour();
-      if ((item % 2) != 0)
-        backColour = Darken(backColour);
+      DarkMode* dark = DarkMode::GetActive(ctrl);
+      COLORREF backColour = results[item].Colour(dark,(item % 2) != 0);
 
       // Get if the item is selected
       bool selected = false;
@@ -177,12 +211,18 @@ void FindAllHelper::OnResultsDraw(FindResultsCtrl* ctrl, NMLVCUSTOMDRAW* custom,
       if (pb == 0)
         return;
       CDC* dc = CDC::FromHandle(hdc);
-      dc->SetTextColor(::GetSysColor(selected ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
+      if (dark)
+        dc->SetTextColor(dark->GetColour(selected ? DarkMode::Back : DarkMode::Fore));
+      else
+        dc->SetTextColor(::GetSysColor(selected ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
       dc->SetBkMode(TRANSPARENT);
       CFont* oldFont = dc->SelectObject(ctrl->GetFont());
 
       // Draw the background
-      dc->FillSolidRect(rect,selected ? ::GetSysColor(COLOR_HIGHLIGHT) : backColour);
+      if (dark)
+        dc->FillSolidRect(rect,selected ? dark->GetColour(DarkMode::Dark1) : backColour);
+      else
+        dc->FillSolidRect(rect,selected ? ::GetSysColor(COLOR_HIGHLIGHT) : backColour);
 
       // Special case painting of the first column
       if (custom->iSubItem == 0)
@@ -430,17 +470,6 @@ int FindAllHelper::FindLineEnd(const CString& text, int pos)
 CStringW FindAllHelper::GetMatchRange(const CString& text, int start, int end)
 {
   return TextFormat::UTF8ToUnicode(text.Mid(start,end-start));
-}
-
-COLORREF FindAllHelper::Darken(COLORREF colour)
-{
-  BYTE r = GetRValue(colour);
-  BYTE g = GetGValue(colour);
-  BYTE b = GetBValue(colour);
-  r = (BYTE)(r * 0.9333);
-  g = (BYTE)(g * 0.9333);
-  b = (BYTE)(b * 0.9333);
-  return RGB(r,g,b);
 }
 
 void FindAllHelper::DrawText(CDC* dc, LPCWSTR text, int length, CRect& rect, UINT format)

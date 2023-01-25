@@ -15,6 +15,7 @@ class FindReplaceDialog : public I7BaseDialog
 public:
   static FindReplaceDialog* Create(UINT id, CWnd* parentWnd);
   void Show(LPCWSTR findText);
+  void SetDarkMode(DarkMode* dark);
 
   CStringW GetFindString(void) const;
   CStringW GetReplaceString(void) const;

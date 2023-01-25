@@ -21,13 +21,15 @@ enum FoundIn
   FoundIn_Unknown
 };
 
+class DarkMode;
+
 struct FindResult
 {
   FindResult();
   bool operator<(const FindResult& fr) const;
 
   CString TypeName(void);
-  COLORREF Colour(void);
+  COLORREF Colour(DarkMode* dark, bool darker);
 
   CStringW prefix;
   CStringW context;
@@ -44,6 +46,8 @@ class FindResultsCtrl : public CListCtrl
 {
 public:
   FindResultsCtrl();
+
+  void SetDarkMode(DarkMode* dark);
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -75,7 +79,6 @@ private:
   int FindLineEnd(const CString& text, int pos);
   CStringW GetMatchRange(const CString& text, int start, int end);
 
-  COLORREF Darken(COLORREF colour);
   void DrawText(CDC* dc, LPCWSTR text, int length, CRect& rect, UINT format);
   int MeasureText(CDC* dc, LPCWSTR text, int length);
 };

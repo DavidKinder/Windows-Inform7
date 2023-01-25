@@ -194,8 +194,8 @@ void FindInFiles::Hide(void)
 void FindInFiles::SetDarkMode(DarkMode* dark)
 {
   I7BaseDialog::SetDarkMode(dark);
-  if (m_progress.GetSafeHwnd() != 0)
-    m_progress.SetDarkMode(dark);
+  m_progress.SetDarkMode(dark);
+  m_resultsList.SetDarkMode(dark);
 }
 
 void FindInFiles::FindInSource(LPCWSTR text)

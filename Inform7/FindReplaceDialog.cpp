@@ -69,6 +69,12 @@ void FindReplaceDialog::Show(LPCWSTR findText)
   find->SetFocus();
 }
 
+void FindReplaceDialog::SetDarkMode(DarkMode* dark)
+{
+  I7BaseDialog::SetDarkMode(dark);
+  m_resultsList.SetDarkMode(dark);
+}
+
 FindReplaceDialog::FindReplaceDialog(UINT id, CWnd* parentWnd) : I7BaseDialog(id,parentWnd)
 {
   m_dpi = 96;
