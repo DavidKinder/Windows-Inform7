@@ -93,7 +93,8 @@ private:
   size_t m_current;
 
   FindAllHelper m_findHelper;
-  FindResultsCtrl m_resultsList;
+  FindResultsListCtrl m_resultsList;
+  FindResultsHeaderCtrl m_resultsHeader;
   CSize m_gapBottomRight;
 
   CStatic m_found;

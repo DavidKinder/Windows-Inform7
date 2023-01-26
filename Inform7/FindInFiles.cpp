@@ -381,6 +381,7 @@ BOOL FindInFiles::OnInitDialog()
     m_lookDocMainCtrl.SubclassDlgItem(IDC_LOOK_DOC_MAIN,this,IDR_DARK_CHECK,DarkMode::Darkest);
     m_lookDocCodeCtrl.SubclassDlgItem(IDC_LOOK_DOC_CODE,this,IDR_DARK_CHECK,DarkMode::Darkest);
     m_ignoreCaseCtrl.SubclassDlgItem(IDC_IGNORE_CASE,this,IDR_DARK_CHECK,DarkMode::Darkest);
+    m_resultsList.SubclassHeader(&m_resultsHeader);
 
     // Initialize auto-completion for the find string
     if (FAILED(m_findAutoComplete.CoCreateInstance(CLSID_AutoComplete)))

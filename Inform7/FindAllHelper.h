@@ -42,11 +42,17 @@ struct FindResult
   CHARRANGE loc;
 };
 
-class FindResultsCtrl : public CListCtrl
+class FindResultsHeaderCtrl : public CHeaderCtrl
+{
+protected:
+  DECLARE_MESSAGE_MAP()
+  afx_msg void OnPaint();
+};
+
+class FindResultsListCtrl : public CListCtrl
 {
 public:
-  FindResultsCtrl();
-
+  void SubclassHeader(FindResultsHeaderCtrl* header);
   void SetDarkMode(DarkMode* dark);
 
 protected:
@@ -60,11 +66,11 @@ protected:
 class FindAllHelper
 {
 public:
-  void InitResultsCtrl(FindResultsCtrl* ctrl, bool details);
-  void UpdateResultsCtrl(FindResultsCtrl* ctrl, bool details);
+  void InitResultsCtrl(FindResultsListCtrl* ctrl, bool details);
+  void UpdateResultsCtrl(FindResultsListCtrl* ctrl, bool details);
 
-  void OnResultsDraw(FindResultsCtrl* ctrl, NMLVCUSTOMDRAW* custom, LRESULT* result);
-  void OnResultsResize(FindResultsCtrl* ctrl);
+  void OnResultsDraw(FindResultsListCtrl* ctrl, NMLVCUSTOMDRAW* custom, LRESULT* result);
+  void OnResultsResize(FindResultsListCtrl* ctrl);
 
   // Find results in the given text
   void Find(const CString& textUtf8, const CStringW& findText, bool ignoreCase, FindRule findRule,

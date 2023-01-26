@@ -75,11 +75,67 @@ COLORREF FindResult::Colour(DarkMode* dark, bool darker)
   }
 }
 
-FindResultsCtrl::FindResultsCtrl()
+BEGIN_MESSAGE_MAP(FindResultsHeaderCtrl, CHeaderCtrl)
+  ON_WM_PAINT()
+END_MESSAGE_MAP()
+
+void FindResultsHeaderCtrl::OnPaint()
 {
+  DarkMode* dark = DarkMode::GetActive(this);
+  if (dark)
+  {
+    CRect r;
+    GetClientRect(r);
+    CPaintDC dc(this);
+
+    dc.FillSolidRect(r,dark->GetColour(DarkMode::Back));
+
+    CFont* oldFont = dc.SelectObject(GetFont());
+    dc.SetTextColor(dark->GetColour(DarkMode::Dark1));
+    dc.SetBkMode(TRANSPARENT);
+    TEXTMETRIC metrics;
+    dc.GetTextMetrics(&metrics);
+
+    CPen separatorPen;
+    separatorPen.CreatePen(PS_SOLID,1,dark->GetColour(DarkMode::Dark3));
+    CPen* oldPen = dc.SelectObject(&separatorPen);
+
+    CRect colR(r);
+    r.left = 0;
+    for (int i = 0; i < GetItemCount(); i++)
+    {
+      HDITEM item = { HDI_TEXT|HDI_WIDTH, 0 };
+      char name[256];
+      item.pszText = name;
+      item.cchTextMax = sizeof name;
+      if (GetItem(i,&item))
+      {
+        r.right = r.left + item.cxy;
+        r.left += metrics.tmAveCharWidth;
+
+        dc.DrawText(item.pszText,r,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        dc.MoveTo(r.right-1,r.top);
+        dc.LineTo(r.right-1,r.bottom);
+
+        r.left = r.right;
+      }
+    }
+
+    dc.SelectObject(oldPen);
+    dc.SelectObject(oldFont);
+  }
+  else
+    Default();
 }
 
-void FindResultsCtrl::SetDarkMode(DarkMode* dark)
+void FindResultsListCtrl::SubclassHeader(FindResultsHeaderCtrl* header)
+{
+  HWND hwnd = (HWND)SendMessage(LVM_GETHEADER);
+  if (hwnd != 0)
+    header->SubclassWindow(hwnd);
+}
+
+void FindResultsListCtrl::SetDarkMode(DarkMode* dark)
 {
   if (GetSafeHwnd() != 0)
   {
@@ -90,12 +146,12 @@ void FindResultsCtrl::SetDarkMode(DarkMode* dark)
   }
 }
 
-BEGIN_MESSAGE_MAP(FindResultsCtrl, CListCtrl)
+BEGIN_MESSAGE_MAP(FindResultsListCtrl, CListCtrl)
   ON_NOTIFY(HDN_DIVIDERDBLCLICKA, 0, OnHeaderDividerDblClick)
   ON_NOTIFY(HDN_DIVIDERDBLCLICKW, 0, OnHeaderDividerDblClick)
 END_MESSAGE_MAP()
 
-BOOL FindResultsCtrl::PreTranslateMessage(MSG* pMsg)
+BOOL FindResultsListCtrl::PreTranslateMessage(MSG* pMsg)
 {
   if ((pMsg->hwnd == GetSafeHwnd()) || IsChild(CWnd::FromHandle(pMsg->hwnd)))
   {
@@ -106,7 +162,7 @@ BOOL FindResultsCtrl::PreTranslateMessage(MSG* pMsg)
   return CListCtrl::PreTranslateMessage(pMsg);
 }
 
-void FindResultsCtrl::OnHeaderDividerDblClick(NMHDR* pNotifyStruct, LRESULT* result)
+void FindResultsListCtrl::OnHeaderDividerDblClick(NMHDR* pNotifyStruct, LRESULT* result)
 {
   NMHEADER* hdr = (NMHEADER*)pNotifyStruct;
   if (hdr->iItem == 0)
@@ -115,7 +171,7 @@ void FindResultsCtrl::OnHeaderDividerDblClick(NMHDR* pNotifyStruct, LRESULT* res
     Default();
 }
 
-void FindAllHelper::InitResultsCtrl(FindResultsCtrl* ctrl, bool details)
+void FindAllHelper::InitResultsCtrl(FindResultsListCtrl* ctrl, bool details)
 {
   ctrl->SetFont(theApp.GetFont(ctrl,InformApp::FontSmall));
   ctrl->SetExtendedStyle(LVS_EX_FULLROWSELECT);
@@ -127,7 +183,7 @@ void FindAllHelper::InitResultsCtrl(FindResultsCtrl* ctrl, bool details)
   }
 }
 
-void FindAllHelper::UpdateResultsCtrl(FindResultsCtrl* ctrl, bool details)
+void FindAllHelper::UpdateResultsCtrl(FindResultsListCtrl* ctrl, bool details)
 {
   ctrl->DeleteAllItems();
   ctrl->SetRedraw(FALSE);
@@ -164,7 +220,7 @@ void FindAllHelper::UpdateResultsCtrl(FindResultsCtrl* ctrl, bool details)
   ctrl->SetColumnWidth(0,remain);
 }
 
-void FindAllHelper::OnResultsDraw(FindResultsCtrl* ctrl, NMLVCUSTOMDRAW* custom, LRESULT* result)
+void FindAllHelper::OnResultsDraw(FindResultsListCtrl* ctrl, NMLVCUSTOMDRAW* custom, LRESULT* result)
 {
   // Default to letting Windows draw the control
   *result = CDRF_DODEFAULT;
@@ -277,7 +333,7 @@ void FindAllHelper::OnResultsDraw(FindResultsCtrl* ctrl, NMLVCUSTOMDRAW* custom,
   }
 }
 
-void FindAllHelper::OnResultsResize(FindResultsCtrl* ctrl)
+void FindAllHelper::OnResultsResize(FindResultsListCtrl* ctrl)
 {
   // Set up a device context
   CDC* dc = ctrl->GetDC();

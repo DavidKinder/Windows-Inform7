@@ -66,7 +66,8 @@ private:
   DarkModeComboBox m_findRuleCtrl;
   FindRule m_findRule;
 
-  FindResultsCtrl m_resultsList;
+  FindResultsListCtrl m_resultsList;
+  FindResultsHeaderCtrl m_resultsHeader;
   CStatic m_regexHelp;
   RichDrawText* m_richText;
 
