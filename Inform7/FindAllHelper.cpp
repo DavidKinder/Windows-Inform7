@@ -118,7 +118,7 @@ void FindResultsCtrl::OnHeaderDividerDblClick(NMHDR* pNotifyStruct, LRESULT* res
 void FindAllHelper::InitResultsCtrl(FindResultsCtrl* ctrl, bool details)
 {
   ctrl->SetFont(theApp.GetFont(ctrl,InformApp::FontSmall));
-  ctrl->SetExtendedStyle(LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
+  ctrl->SetExtendedStyle(LVS_EX_FULLROWSELECT);
   ctrl->InsertColumn(0,"Result");
   if (details)
   {
