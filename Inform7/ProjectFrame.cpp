@@ -310,7 +310,7 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   }
 
   // Turn on dark mode, if needed
-  SetDarkMode(DarkMode::GetEnabled());
+  SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM_WINDOW));
 
   // Set window text for accessibility
   m_coolBar.SetWindowText("Toolbar area");
@@ -593,7 +593,7 @@ void ProjectFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
   MenuBarFrameWnd::OnSettingChange(uFlags,lpszSection);
 
   UpdateMenuParams();
-  if ((m_dark != NULL) != DarkMode::IsEnabled())
+  if ((m_dark != NULL) != DarkMode::IsEnabled(REGISTRY_INFORM_WINDOW))
     theApp.SendAllFrames(InformApp::LightDarkMode,0);
 }
 
@@ -1158,7 +1158,7 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
       ((TabExtensions*)GetPanel(i)->GetTab(Panel::Tab_Extensions))->DownloadedExt(value);
     break;
   case InformApp::LightDarkMode:
-    SetDarkMode(DarkMode::GetEnabled());
+    SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM_WINDOW));
     SendChanged(InformApp::Preferences,0);
     break;
   }
