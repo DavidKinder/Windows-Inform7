@@ -202,6 +202,15 @@
 #define IDC_COLOUR_SCHEME               1102
 #define IDC_NEW_SCHEME                  1103
 #define IDC_DELETE_SCHEME               1104
+#define IDC_FONT_BOX                    1105
+#define IDC_STYLES_BOX                  1106
+#define IDC_TABSIZE_BOX                 1107
+#define IDC_INDENT_BOX                  1108
+#define IDC_NUMBER_BOX                  1109
+#define IDC_SCHEME_BOX                  1110
+#define IDC_UI_BOX                      1111
+#define IDC_CLEAN_BOX                   1112
+#define IDC_TERP_BOX                    1113
 #define IDC_FIND                        1200
 #define IDC_FIND_ALL                    1201
 #define IDC_LOOK_SOURCE                 1202

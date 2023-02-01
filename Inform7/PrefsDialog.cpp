@@ -25,9 +25,29 @@ static LPCWSTR previewText =
 
 #define NUM_PREVIEW_TABS 60
 
-IMPLEMENT_DYNAMIC(PrefsEditPage, CPropertyPage)
+class NoColourSettings : public SourceSettings
+{
+public:
+  bool GetDWord(const char* name, DWORD& value)
+  {
+    CString n(name);
+    if (n == "Syntax Colouring")
+    {
+      value = false;
+      return true;
+    }
+    return false;
+  }
 
-BEGIN_MESSAGE_MAP(PrefsEditPage, CPropertyPage)
+  bool GetString(const char*, char*, ULONG)
+  {
+    return false;
+  }
+};
+
+IMPLEMENT_DYNAMIC(PrefsEditPage, DarkModePropertyPage)
+
+BEGIN_MESSAGE_MAP(PrefsEditPage, DarkModePropertyPage)
   ON_BN_CLICKED(IDC_RESTORE, OnClickedRestore)
   ON_CBN_SELCHANGE(IDC_FONT, OnChangeFont)
   ON_CBN_SELCHANGE(IDC_FONTSIZE, OnChangeFont)
@@ -60,7 +80,7 @@ BEGIN_MESSAGE_MAP(PrefsEditPage, CPropertyPage)
 END_MESSAGE_MAP()
 
 PrefsEditPage::PrefsEditPage(PrefsDialog* dlg)
-  : CPropertyPage(PrefsEditPage::IDD), m_dialog(dlg)
+  : DarkModePropertyPage(PrefsEditPage::IDD), m_dialog(dlg)
 {
   SetDefaults();
 }
@@ -172,26 +192,42 @@ void PrefsEditPage::WriteSettings(void)
 
 void PrefsEditPage::DoDataExchange(CDataExchange* pDX)
 {
-  CPropertyPage::DoDataExchange(pDX);
-  DDX_Control(pDX, IDC_FONT, m_font);
-  DDX_CBString(pDX, IDC_FONTSIZE, m_fontSize);
+  DarkModePropertyPage::DoDataExchange(pDX);
   DDX_Check(pDX, IDC_ENABLE_STYLES, m_styles);
-  DDX_Control(pDX,IDC_ENABLE_STYLES, m_stylesCheck);
+  DDX_Control(pDX, IDC_RESTORE, m_restoreBtn);
+  DDX_Control(pDX, IDC_FONT_BOX, m_fontBox);
+  DDX_Control(pDX, IDC_FONT, m_fontNameCtrl);
+  DDX_Control(pDX, IDC_FONTSIZE, m_fontSizeCtrl);
+  DDX_CBString(pDX, IDC_FONTSIZE, m_fontSize);
+  DDX_Control(pDX, IDC_STYLES_BOX, m_stylesBox);
+  DDX_Control(pDX, IDC_HEAD_LABEL, m_labelHead);
+  DDX_Control(pDX, IDC_MAIN_LABEL, m_labelMain);
+  DDX_Control(pDX, IDC_COMMENT_LABEL, m_labelComment);
+  DDX_Control(pDX, IDC_QUOTE_LABEL, m_labelQuote);
+  DDX_Control(pDX, IDC_SUBST_LABEL, m_labelSubst);
+  DDX_Control(pDX, IDC_HEAD_SIZE, m_sizeHeadCtrl);
   DDX_CBIndex(pDX, IDC_HEAD_SIZE, m_sizeHead);
+  DDX_Control(pDX, IDC_MAIN_SIZE, m_sizeMainCtrl);
   DDX_CBIndex(pDX, IDC_MAIN_SIZE, m_sizeMain);
+  DDX_Control(pDX, IDC_COMMENT_SIZE, m_sizeCommentCtrl);
   DDX_CBIndex(pDX, IDC_COMMENT_SIZE, m_sizeComment);
+  DDX_Control(pDX, IDC_QUOTE_SIZE, m_sizeQuoteCtrl);
   DDX_CBIndex(pDX, IDC_QUOTE_SIZE, m_sizeQuote);
+  DDX_Control(pDX, IDC_SUBST_SIZE, m_sizeSubstCtrl);
   DDX_CBIndex(pDX, IDC_SUBST_SIZE, m_sizeSubst);
+  DDX_Control(pDX, IDC_TABSIZE_BOX, m_tabSizeBox);
   DDX_Control(pDX, IDC_TABSIZE, m_tabSizeCtrl);
   DDX_Slider(pDX, IDC_TABSIZE, m_tabSize);
+  DDX_Control(pDX, IDC_INDENT_BOX, m_indentBox);
   DDX_Check(pDX, IDC_AUTO_INDENT, m_autoIndent);
   DDX_Check(pDX, IDC_ELASTIC_TABS, m_autoSpaceTables);
+  DDX_Control(pDX, IDC_NUMBER_BOX, m_numberBox);
   DDX_Check(pDX, IDC_AUTO_NUMBER, m_autoNumber);
 }
 
 BOOL PrefsEditPage::OnInitDialog()
 {
-  CPropertyPage::OnInitDialog();
+  DarkModePropertyPage::OnInitDialog();
 
   // Get all the possible fonts
   CDC* dc = GetDC();
@@ -202,25 +238,29 @@ BOOL PrefsEditPage::OnInitDialog()
   ReleaseDC(dc);
 
   // Initialize the font control
-  if (m_font.SelectString(-1,m_fontName) == CB_ERR)
-    m_font.SetCurSel(0);
+  if (m_fontNameCtrl.SelectString(-1,m_fontName) == CB_ERR)
+    m_fontNameCtrl.SetCurSel(0);
 
   // Subclass dialog controls
-  m_boldHead.SubclassDlgItem(IDC_HEAD_BOLD,this);
-  m_boldMain.SubclassDlgItem(IDC_MAIN_BOLD,this);
-  m_boldComment.SubclassDlgItem(IDC_COMMENT_BOLD,this);
-  m_boldQuote.SubclassDlgItem(IDC_QUOTE_BOLD,this);
-  m_boldSubst.SubclassDlgItem(IDC_SUBST_BOLD,this);
-  m_italicHead.SubclassDlgItem(IDC_HEAD_ITALIC,this);
-  m_italicMain.SubclassDlgItem(IDC_MAIN_ITALIC,this);
-  m_italicComment.SubclassDlgItem(IDC_COMMENT_ITALIC,this);
-  m_italicQuote.SubclassDlgItem(IDC_QUOTE_ITALIC,this);
-  m_italicSubst.SubclassDlgItem(IDC_SUBST_ITALIC,this);
-  m_underHead.SubclassDlgItem(IDC_HEAD_UNDER,this);
-  m_underMain.SubclassDlgItem(IDC_MAIN_UNDER,this);
-  m_underComment.SubclassDlgItem(IDC_COMMENT_UNDER,this);
-  m_underQuote.SubclassDlgItem(IDC_QUOTE_UNDER,this);
-  m_underSubst.SubclassDlgItem(IDC_SUBST_UNDER,this);
+  m_stylesCheck.SubclassDlgItem(IDC_ENABLE_STYLES,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_boldHead.SubclassDlgItem(IDC_HEAD_BOLD,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_boldMain.SubclassDlgItem(IDC_MAIN_BOLD,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_boldComment.SubclassDlgItem(IDC_COMMENT_BOLD,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_boldQuote.SubclassDlgItem(IDC_QUOTE_BOLD,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_boldSubst.SubclassDlgItem(IDC_SUBST_BOLD,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_italicHead.SubclassDlgItem(IDC_HEAD_ITALIC,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_italicMain.SubclassDlgItem(IDC_MAIN_ITALIC,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_italicComment.SubclassDlgItem(IDC_COMMENT_ITALIC,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_italicQuote.SubclassDlgItem(IDC_QUOTE_ITALIC,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_italicSubst.SubclassDlgItem(IDC_SUBST_ITALIC,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_underHead.SubclassDlgItem(IDC_HEAD_UNDER,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_underMain.SubclassDlgItem(IDC_MAIN_UNDER,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_underComment.SubclassDlgItem(IDC_COMMENT_UNDER,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_underQuote.SubclassDlgItem(IDC_QUOTE_UNDER,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_underSubst.SubclassDlgItem(IDC_SUBST_UNDER,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_autoIndentCtrl.SubclassDlgItem(IDC_AUTO_INDENT,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_autoSpaceTablesCtrl.SubclassDlgItem(IDC_ELASTIC_TABS,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_autoNumberCtrl.SubclassDlgItem(IDC_AUTO_NUMBER,this,IDR_DARK_CHECK,DarkMode::Back);
 
   // Initialize the tab width slider
   m_tabSizeCtrl.SetRange(2,32);
@@ -232,8 +272,8 @@ BOOL PrefsEditPage::OnInitDialog()
   GetDlgItem(IDC_PREVIEW)->GetWindowRect(previewRect);
   ScreenToClient(previewRect);
   m_preview.MoveWindow(previewRect);
-  SourceEdit& previewEdit = m_preview.GetEdit();
   m_preview.LoadSettings(*m_dialog);
+  SourceEdit& previewEdit = m_preview.GetEdit();
   previewEdit.ReplaceSelect(previewText);
   previewEdit.SetReadOnly(true);
   previewEdit.HideCaret();
@@ -246,6 +286,7 @@ BOOL PrefsEditPage::OnInitDialog()
   GetDlgItem(IDC_TABPREVIEW)->GetWindowRect(previewRect);
   ScreenToClient(previewRect);
   m_tabPreview.MoveWindow(previewRect);
+  m_tabPreview.LoadSettings(NoColourSettings());
   SourceEdit& tabPreviewEdit = m_tabPreview.GetEdit();
   tabPreviewEdit.ReplaceSelect(
     L"\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|\t|"
@@ -267,8 +308,8 @@ BOOL PrefsEditPage::OnInitDialog()
 
 void PrefsEditPage::OnOK()
 {
-  m_font.GetWindowText(m_fontName);
-  CPropertyPage::OnOK();
+  m_fontNameCtrl.GetWindowText(m_fontName);
+  DarkModePropertyPage::OnOK();
 }
 
 void PrefsEditPage::OnClickedRestore()
@@ -285,7 +326,7 @@ void PrefsEditPage::OnClickedRestore()
 
       // Update the controls to match the defaults
       UpdateData(FALSE);
-      m_font.SelectString(-1,m_fontName);
+      m_fontNameCtrl.SelectString(-1,m_fontName);
       UpdateControlStates();
       m_dialog->UpdatePreviews();
       m_tabPreview.GetEdit().SetCustomTabStops(NUM_PREVIEW_TABS,
@@ -350,7 +391,7 @@ void PrefsEditPage::UpdateControlStates(void)
 void PrefsEditPage::UpdatePreview(void)
 {
   UpdateData(TRUE);
-  m_font.GetWindowText(m_fontName);
+  m_fontNameCtrl.GetWindowText(m_fontName);
 
   m_dialog->UpdatePreviews();
   m_tabPreview.GetEdit().SetCustomTabStops(NUM_PREVIEW_TABS,
@@ -361,6 +402,12 @@ void PrefsEditPage::PreviewChanged(void)
 {
   m_preview.LoadSettings(*m_dialog);
   m_preview.PrefsChanged();
+}
+
+void PrefsEditPage::SetDarkMode(DarkMode* dark)
+{
+  m_tabPreview.LoadSettings(NoColourSettings());
+  m_tabPreview.PrefsChanged();
 }
 
 // Set the default preferences values
@@ -544,13 +591,13 @@ int CALLBACK PrefsEditPage::ListFonts(ENUMLOGFONTEX *font, NEWTEXTMETRICEX *metr
 {
   PrefsEditPage* page = (PrefsEditPage*)param;
   if (font->elfLogFont.lfFaceName[0] != '@')
-    page->m_font.AddString(font->elfLogFont.lfFaceName);
+    page->m_fontNameCtrl.AddString(font->elfLogFont.lfFaceName);
   return 1;
 }
 
-IMPLEMENT_DYNAMIC(PrefsColourPage, CPropertyPage)
+IMPLEMENT_DYNAMIC(PrefsColourPage, DarkModePropertyPage)
 
-BEGIN_MESSAGE_MAP(PrefsColourPage, CPropertyPage)
+BEGIN_MESSAGE_MAP(PrefsColourPage, DarkModePropertyPage)
   ON_BN_CLICKED(IDC_NEW_SCHEME, OnClickedNewScheme)
   ON_BN_CLICKED(IDC_DELETE_SCHEME, OnClickedDeleteScheme)
   ON_BN_CLICKED(IDC_RESTORE, OnClickedRestore)
@@ -562,7 +609,7 @@ BEGIN_MESSAGE_MAP(PrefsColourPage, CPropertyPage)
 END_MESSAGE_MAP()
 
 PrefsColourPage::PrefsColourPage(PrefsDialog* dlg)
-  : CPropertyPage(PrefsColourPage::IDD), m_dialog(dlg)
+  : DarkModePropertyPage(PrefsColourPage::IDD), m_dialog(dlg)
 {
   SetDefaults();
 }
@@ -664,18 +711,30 @@ void PrefsColourPage::WriteSettings(void)
 
 void PrefsColourPage::DoDataExchange(CDataExchange* pDX)
 {
-  CPropertyPage::DoDataExchange(pDX);
+  DarkModePropertyPage::DoDataExchange(pDX);
   DDX_Check(pDX, IDC_ENABLE_COLOURS, m_colours);
-  DDX_Control(pDX,IDC_ENABLE_COLOURS, m_coloursCheck);
+  DDX_Control(pDX, IDC_SCHEME_LABEL, m_colourSchemeLabel);
   DDX_CBString(pDX, IDC_COLOUR_SCHEME, m_colourScheme);
   DDX_Control(pDX, IDC_COLOUR_SCHEME, m_colourSchemeCombo);
+  DDX_Control(pDX, IDC_NEW_SCHEME, m_newBtn);
+  DDX_Control(pDX, IDC_DELETE_SCHEME, m_deleteBtn);
+  DDX_Control(pDX, IDC_SCHEME_BOX, m_schemeBox);
+  DDX_Control(pDX, IDC_HEAD_LABEL, m_labelHead);
+  DDX_Control(pDX, IDC_MAIN_LABEL, m_labelMain);
+  DDX_Control(pDX, IDC_COMMENT_LABEL, m_labelComment);
+  DDX_Control(pDX, IDC_QUOTE_LABEL, m_labelQuote);
+  DDX_Control(pDX, IDC_SUBST_LABEL, m_labelSubst);
+  DDX_Control(pDX, IDC_COLOUR_SOURCE_LABEL, m_labelSource);
+  DDX_Control(pDX, IDC_COLOUR_EXT_LABEL, m_labelExt);
+  DDX_Control(pDX, IDC_RESTORE, m_restoreBtn);
 }
 
 BOOL PrefsColourPage::OnInitDialog()
 {
-  CPropertyPage::OnInitDialog();
+  DarkModePropertyPage::OnInitDialog();
 
   // Subclass dialog controls
+  m_coloursCheck.SubclassDlgItem(IDC_ENABLE_COLOURS,this,IDR_DARK_CHECK,DarkMode::Back);
   m_colourSource.SubclassDlgItem(IDC_COLOUR_SOURCE,this,WM_COLOURCHANGED);
   m_colourExt.SubclassDlgItem(IDC_COLOUR_EXT,this,WM_COLOURCHANGED);
   m_colourHead.SubclassDlgItem(IDC_HEAD_COLOUR,this,WM_COLOURCHANGED);
@@ -1008,12 +1067,12 @@ bool PrefsColourPage::GetString(const char* name, char* value, ULONG len)
   return false;
 }
 
-BEGIN_MESSAGE_MAP(PrefsAdvancedPage, CPropertyPage)
+BEGIN_MESSAGE_MAP(PrefsAdvancedPage, DarkModePropertyPage)
   ON_BN_CLICKED(IDC_CLEANFILES, OnClickedCleanFiles)
   ON_MESSAGE(WM_AFTERFONTSET, OnAfterFontSet)
 END_MESSAGE_MAP()
 
-PrefsAdvancedPage::PrefsAdvancedPage() : CPropertyPage(PrefsAdvancedPage::IDD)
+PrefsAdvancedPage::PrefsAdvancedPage() : DarkModePropertyPage(PrefsAdvancedPage::IDD)
 {
   // Set the default preferences values
   m_cleanFiles = TRUE;
@@ -1061,19 +1120,25 @@ void PrefsAdvancedPage::WriteSettings(void)
 
 void PrefsAdvancedPage::DoDataExchange(CDataExchange* pDX)
 {
-  CPropertyPage::DoDataExchange(pDX);
+  DarkModePropertyPage::DoDataExchange(pDX);
+  DDX_Control(pDX, IDC_UI_BOX, m_uiBox);
+  DDX_Check(pDX, IDC_TABS_HORIZONTAL, m_tabsHorizontal);
+  DDX_Control(pDX, IDC_FIXEDFONT, m_fixedFontCombo);
+  DDX_Control(pDX, IDC_CLEAN_BOX, m_cleanBox);
   DDX_Check(pDX, IDC_CLEANFILES, m_cleanFiles);
   DDX_Check(pDX, IDC_CLEANINDEX, m_cleanIndexes);
-  DDX_Control(pDX, IDC_CLEANFILES, m_cleanFilesCheck);
-  DDX_Control(pDX, IDC_CLEANINDEX, m_cleanIndexCheck);
+  DDX_Control(pDX, IDC_TERP_BOX, m_terpBox);
+  DDX_Control(pDX, IDC_GLULX, m_glulxTerpCombo);
   DDX_CBString(pDX, IDC_GLULX, m_glulxTerp);
-  DDX_Check(pDX, IDC_TABS_HORIZONTAL, m_tabsHorizontal);
-  DDX_Control(pDX, IDC_FIXEDFONT, m_fixedFont);
 }
 
 BOOL PrefsAdvancedPage::OnInitDialog()
 {
-  CPropertyPage::OnInitDialog();
+  DarkModePropertyPage::OnInitDialog();
+
+  m_tabsHorizontalCheck.SubclassDlgItem(IDC_TABS_HORIZONTAL,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_cleanFilesCheck.SubclassDlgItem(IDC_CLEANFILES,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_cleanIndexCheck.SubclassDlgItem(IDC_CLEANINDEX,this,IDR_DARK_CHECK,DarkMode::Back);
 
   // Get all the possible fonts
   CDC* dc = GetDC();
@@ -1084,8 +1149,8 @@ BOOL PrefsAdvancedPage::OnInitDialog()
   ReleaseDC(dc);
 
   // Initialize the font control
-  if (m_fixedFont.SelectString(-1,m_fixedFontName) == CB_ERR)
-    m_fixedFont.SetCurSel(0);
+  if (m_fixedFontCombo.SelectString(-1,m_fixedFontName) == CB_ERR)
+    m_fixedFontCombo.SetCurSel(0);
 
   UpdateControlStates();
   return TRUE;
@@ -1093,8 +1158,8 @@ BOOL PrefsAdvancedPage::OnInitDialog()
 
 void PrefsAdvancedPage::OnOK()
 {
-  m_fixedFont.GetWindowText(m_fixedFontName);
-  CPropertyPage::OnOK();
+  m_fixedFontCombo.GetWindowText(m_fixedFontName);
+  DarkModePropertyPage::OnOK();
 }
 
 void PrefsAdvancedPage::OnClickedCleanFiles()
@@ -1127,28 +1192,32 @@ int CALLBACK PrefsAdvancedPage::ListFonts(ENUMLOGFONTEX *font, NEWTEXTMETRICEX *
   if (font->elfLogFont.lfFaceName[0] != '@')
   {
     if (font->elfLogFont.lfPitchAndFamily & FIXED_PITCH)
-      page->m_fixedFont.AddString(font->elfLogFont.lfFaceName);
+      page->m_fixedFontCombo.AddString(font->elfLogFont.lfFaceName);
   }
   return 1;
 }
 
 PrefsDialog::PrefsDialog(void)
-  : CPropertySheet("Preferences"), m_editPage(this), m_colourPage(this)
+  : DarkModePropertySheet("Preferences"), m_editPage(this), m_colourPage(this)
 {
   m_dpi = 96;
   m_fontHeightPerDpi = 1.0;
   m_psh.dwFlags |= PSH_NOAPPLYNOW;
 }
 
-BEGIN_MESSAGE_MAP(PrefsDialog, CPropertySheet)
+IMPLEMENT_DYNAMIC(PrefsDialog, DarkModePropertySheet)
+
+BEGIN_MESSAGE_MAP(PrefsDialog, DarkModePropertySheet)
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
   ON_MESSAGE(WM_RESIZEPAGE, OnResizePage)  
 END_MESSAGE_MAP()
 
 BOOL PrefsDialog::OnInitDialog() 
 {
-  CPropertySheet::OnInitDialog();
+  DarkModePropertySheet::OnInitDialog();
+
   m_dpi = DPI::getWindowDPI(this);
+  SetDarkMode(DarkMode::GetActive(this));
 
   // Get the default font for the dialog
   CFont* sysFont = theApp.GetFont(this,InformApp::FontSystem);
@@ -1190,7 +1259,7 @@ BOOL PrefsDialog::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
   NMHDR* pnmh = (LPNMHDR) lParam;
   if (pnmh->code == TCN_SELCHANGE)
     PostMessage(WM_RESIZEPAGE);
-  return CPropertySheet::OnNotify(wParam, lParam, pResult);
+  return DarkModePropertySheet::OnNotify(wParam, lParam, pResult);
 }
 
 LRESULT PrefsDialog::OnDpiChanged(WPARAM wparam, LPARAM lparam)
@@ -1349,7 +1418,10 @@ void PrefsDialog::ShowDialog(void)
   AddPage(&m_advPage);
 
   // Show the dialog
-  if (DoModal() == IDOK)
+  theApp.AddModalDialog(this);
+  INT_PTR result = DoModal();
+  theApp.RemoveModalDialog(this);
+  if (result == IDOK)
   {
     // Store the new settings
     m_editPage.WriteSettings();

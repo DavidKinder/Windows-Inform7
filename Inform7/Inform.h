@@ -134,8 +134,8 @@ public:
     LightDarkMode
   };
   void SendAllFrames(Changed changed, int value);
-  void AddModalDialog(I7BaseDialog* dialog);
-  void RemoveModalDialog(I7BaseDialog* dialog);
+  void AddModalDialog(CWnd* dialog);
+  void RemoveModalDialog(CWnd* dialog);
 
   CDibSection* GetImage(const char* path, bool adjustGamma);
   CSize GetImageSize(const char* path);
@@ -226,7 +226,7 @@ protected:
   std::map<std::pair<Fonts,int>,CFont*> m_fonts;
 
   CArray<CFrameWnd*> m_frames;
-  std::set<I7BaseDialog*> m_modalDialogs;
+  std::set<CWnd*> m_modalDialogs;
   std::map<std::string,CDibSection*> m_bitmaps;
   std::vector<ExtLocation> m_extensions;
 

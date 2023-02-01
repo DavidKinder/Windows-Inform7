@@ -746,17 +746,22 @@ void InformApp::SendAllFrames(Changed changed, int value)
 
   if (changed == LightDarkMode)
   {
-    for (I7BaseDialog* dialog : m_modalDialogs)
-      dialog->SetDarkMode(DarkMode::GetActive(dialog));
+    for (CWnd* dialog : m_modalDialogs)
+    {
+      if (dialog->IsKindOf(RUNTIME_CLASS(I7BaseDialog)))
+        ((I7BaseDialog*)dialog)->SetDarkMode(DarkMode::GetActive(dialog));
+      else if (dialog->IsKindOf(RUNTIME_CLASS(PrefsDialog)))
+        ((PrefsDialog*)dialog)->SetDarkMode(DarkMode::GetActive(dialog));
+    }
   }
 }
 
-void InformApp::AddModalDialog(I7BaseDialog* dialog)
+void InformApp::AddModalDialog(CWnd* dialog)
 {
   m_modalDialogs.insert(dialog);
 }
 
-void InformApp::RemoveModalDialog(I7BaseDialog* dialog)
+void InformApp::RemoveModalDialog(CWnd* dialog)
 {
   m_modalDialogs.erase(dialog);
 }
