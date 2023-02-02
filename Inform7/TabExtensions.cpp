@@ -200,7 +200,7 @@ void TabExtensions::OnSize(UINT nType, int cx, int cy)
 
 LRESULT TabExtensions::OnPubLibError(WPARAM, LPARAM)
 {
-  Show(TextFormat::AnsiToUTF8(theApp.GetAppDir()+"\\Documentation\\sections\\pl404.html"));
+  Show(TextFormat::AnsiToUTF8(theApp.GetAppDir()+"\\Documentation\\windows\\pl404.html"));
   return 0;
 }
 
