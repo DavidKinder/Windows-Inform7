@@ -39,8 +39,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_WM_CLOSE()
   ON_WM_SIZE()
   ON_WM_SETCURSOR()
-  ON_WM_MEASUREITEM()
-  ON_WM_DRAWITEM()
   ON_WM_SETTINGCHANGE()
   ON_WM_TIMER()
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
@@ -464,128 +462,6 @@ BOOL ProjectFrame::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
     return TRUE;
   }
   return MenuBarFrameWnd::OnSetCursor(pWnd,nHitTest,message);
-}
-
-void ProjectFrame::OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT mi)
-{
-  if (mi->CtlType == ODT_MENU)
-  {
-    // Custom measurement for extensions menu items
-    if (((mi->itemID >= ID_OPEN_EXTENSIONS_LIST) && (mi->itemID < ID_OPEN_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS)) ||
-        ((mi->itemID >= ID_NEW_EXTENSIONS_LIST ) && (mi->itemID < ID_NEW_EXTENSIONS_LIST +MAX_MENU_EXTENSIONS)))
-    {
-      InformApp::ExtLocation* ext = (InformApp::ExtLocation*)mi->itemData;
-
-      // Get the size of the menu text
-      CDC* dc = GetDC();
-      CFont* oldFont = dc->SelectObject(&m_menuFonts[ext->system ? 1 : 0]);
-      CSize sz = dc->GetTextExtent(CString(ext->title.c_str()));
-      dc->SelectObject(oldFont);
-      ReleaseDC(dc);
-
-      // Add space around the text
-      sz.cx += m_menuGutter+(2*m_menuTextGap.cx);
-      sz.cy += 2*m_menuTextGap.cy;
-
-      mi->itemWidth = sz.cx;
-      mi->itemHeight = sz.cy;
-      return;
-    }
-  }
-  MenuBarFrameWnd::OnMeasureItem(nIDCtl,mi);
-}
-
-void ProjectFrame::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di)
-{
-  if (di->CtlType == ODT_MENU)
-  {
-    // Custom drawing for extensions menu items
-    if (((di->itemID >= ID_OPEN_EXTENSIONS_LIST) && (di->itemID < ID_OPEN_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS)) ||
-        ((di->itemID >= ID_NEW_EXTENSIONS_LIST ) && (di->itemID < ID_NEW_EXTENSIONS_LIST +MAX_MENU_EXTENSIONS)))
-    {
-      CRect rc(di->rcItem);
-      InformApp::ExtLocation* ext = (InformApp::ExtLocation*)di->itemData;
-
-      // Get the theme, if any
-      HTHEME theme = 0;
-      if (::IsAppThemed())
-        theme = ::OpenThemeData(GetSafeHwnd(),L"Menu");
-
-      if (theme != 0)
-      {
-        // Get a device context for buffered painting
-        HDC hdc = 0;
-        HANDLE pb = ::BeginBufferedPaint(di->hDC,&(di->rcItem),BPBF_COMPATIBLEBITMAP,NULL,&hdc);
-        if (pb == 0)
-          return;
-        CDC* dc = CDC::FromHandle(hdc);
-
-        // Draw the menu background
-        ::DrawThemeBackground(theme,dc->GetSafeHdc(),MENU_POPUPBACKGROUND,0,&rc,NULL);
-
-        // Draw the menu gutter
-        rc.right = di->rcItem.left+m_menuGutter;
-        ::DrawThemeBackground(theme,dc->GetSafeHdc(),MENU_POPUPGUTTER,0,&rc,NULL);
-
-        // Draw the menu item
-        int state = (di->itemState & ODS_SELECTED) ? MPI_HOT : MPI_NORMAL;
-        rc.left = di->rcItem.left;
-        rc.right = di->rcItem.right;
-        ::DrawThemeBackground(theme,dc->GetSafeHdc(),MENU_POPUPITEM,state,&rc,NULL);
-
-        // Select a colour for the menu text, based on the theme's colours
-        COLORREF itemColour = 0;
-        ::GetThemeColor(theme,MENU_POPUPITEM,state,TMT_TEXTCOLOR,&itemColour);
-        if (ext->system)
-        {
-          COLORREF backColour = 0;
-          ::GetThemeColor(theme,MENU_POPUPBACKGROUND,0,TMT_FILLCOLORHINT,&backColour);
-          dc->SetTextColor(theApp.BlendedColour(itemColour,4,backColour,1));
-        }
-        else
-          dc->SetTextColor(itemColour);
-
-        // Draw the menu text
-        rc.left = di->rcItem.left+m_menuGutter+m_menuTextGap.cx;
-        CFont* oldFont = dc->SelectObject(&m_menuFonts[ext->system ? 1 : 0]);
-        dc->SetBkMode(TRANSPARENT);
-        dc->DrawText(CString(ext->title.c_str()),rc,DT_VCENTER|DT_SINGLELINE);
-        dc->SelectObject(oldFont);
-
-        ::EndBufferedPaint(pb,TRUE);
-        ::CloseThemeData(theme);
-      }
-      else
-      {
-        CDC* dc = CDC::FromHandle(di->hDC);
-
-        if (di->itemState & ODS_SELECTED)
-        {
-          dc->SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
-          dc->SetBkColor(::GetSysColor(COLOR_HIGHLIGHT));
-        }
-        else
-        {
-          if (ext->system)
-          {
-            dc->SetTextColor(theApp.BlendedColour(
-              ::GetSysColor(COLOR_MENUTEXT),4,::GetSysColor(COLOR_MENU),1));
-          }
-          else
-            dc->SetTextColor(::GetSysColor(COLOR_MENUTEXT));
-          dc->SetBkColor(::GetSysColor(COLOR_MENU));
-        }
-
-        dc->ExtTextOut(0,0,ETO_OPAQUE,rc,NULL,0,NULL);
-        rc.left = di->rcItem.left+m_menuGutter+m_menuTextGap.cx;
-        CFont* oldFont = dc->SelectObject(&m_menuFonts[ext->system ? 1 : 0]);
-        dc->DrawText(CString(ext->title.c_str()),rc,DT_VCENTER|DT_SINGLELINE);
-        dc->SelectObject(oldFont);
-      }
-      return;
-    }
-  }
-  MenuBarFrameWnd::OnDrawItem(nIDCtl,di);
 }
 
 void ProjectFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
@@ -2416,9 +2292,9 @@ void ProjectFrame::UpdateExtensionsMenu(void)
     }
 
     ASSERT(newAuthorMenu != 0);
-    ::AppendMenu(newAuthorMenu,MF_OWNERDRAW,ID_NEW_EXTENSIONS_LIST+i,(LPCSTR)&(extensions[i]));
+    ::AppendMenu(newAuthorMenu,MF_STRING,ID_NEW_EXTENSIONS_LIST+i,extensions[i].title.c_str());
     ASSERT(openAuthorMenu != 0);
-    ::AppendMenu(openAuthorMenu,MF_OWNERDRAW,ID_OPEN_EXTENSIONS_LIST+i,(LPCSTR)&(extensions[i]));
+    ::AppendMenu(openAuthorMenu,MF_STRING,ID_OPEN_EXTENSIONS_LIST+i,extensions[i].title.c_str());
   }
 }
 

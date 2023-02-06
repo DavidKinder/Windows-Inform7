@@ -56,8 +56,6 @@ protected:
   afx_msg void OnActivate(UINT nState, CWnd*, BOOL);
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
-  afx_msg void OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT mi);
-  afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT di);
   afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
   afx_msg void OnTimer(UINT_PTR nIDEvent);
   afx_msg void OnChangedExample();

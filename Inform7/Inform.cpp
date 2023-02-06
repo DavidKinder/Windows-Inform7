@@ -124,6 +124,9 @@ BOOL InformApp::InitInstance()
   // Adjust the colour scheme, if necessary
   ColourScheme::AdjustForDarkMode();
 
+  // Turn on dark mode for the application, if necessary
+  DarkMode::SetAppDarkMode(REGISTRY_INFORM_WINDOW);
+
   // Find and create documentation for extensions
   FindExtensions();
   CreatedProcess i7 = RunCensus();
@@ -746,6 +749,7 @@ void InformApp::SendAllFrames(Changed changed, int value)
 
   if (changed == LightDarkMode)
   {
+    DarkMode::SetAppDarkMode(REGISTRY_INFORM_WINDOW);
     for (CWnd* dialog : m_modalDialogs)
     {
       if (dialog->IsKindOf(RUNTIME_CLASS(I7BaseDialog)))
