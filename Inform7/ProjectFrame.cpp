@@ -290,6 +290,9 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
   }
 
+  // Turn on dark mode, if needed
+  SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM_WINDOW));
+
   // Set the application icon
   theApp.SetIcon(this);
 
@@ -306,9 +309,6 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     // Remove test menu item
     GetMenu()->RemoveMenu(ID_PLAY_LOAD,MF_BYCOMMAND);
   }
-
-  // Turn on dark mode, if needed
-  SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM_WINDOW));
 
   // Set window text for accessibility
   m_coolBar.SetWindowText("Toolbar area");
@@ -1036,6 +1036,7 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
   case InformApp::LightDarkMode:
     SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM_WINDOW));
     SendChanged(InformApp::Preferences,0);
+    UpdateExtensionsMenu(); // Update menu icons
     break;
   }
 }
@@ -2282,19 +2283,53 @@ void ProjectFrame::UpdateExtensionsMenu(void)
   const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
   for (int i = 0; (i < MAX_MENU_EXTENSIONS) && (i < (int)extensions.size()); i++)
   {
-    if ((x == -1) || (extensions[i].author != extensions[x].author))
+    const InformApp::ExtLocation& ext = extensions[i];
+    if ((x == -1) || (ext.author != extensions[x].author))
     {
       newAuthorMenu = ::CreatePopupMenu();
-      newExtMenu->AppendMenu(MF_POPUP|MF_STRING,(UINT_PTR)newAuthorMenu,extensions[i].author.c_str());
+      newExtMenu->AppendMenu(MF_POPUP|MF_STRING,(UINT_PTR)newAuthorMenu,ext.author.c_str());
       openAuthorMenu = ::CreatePopupMenu();
-      openExtMenu->AppendMenu(MF_POPUP|MF_STRING,(UINT_PTR)openAuthorMenu,extensions[i].author.c_str());
+      openExtMenu->AppendMenu(MF_POPUP|MF_STRING,(UINT_PTR)openAuthorMenu,ext.author.c_str());
       x = i;
     }
 
     ASSERT(newAuthorMenu != 0);
-    ::AppendMenu(newAuthorMenu,MF_STRING,ID_NEW_EXTENSIONS_LIST+i,extensions[i].title.c_str());
+    ::AppendMenu(newAuthorMenu,MF_STRING,ID_NEW_EXTENSIONS_LIST+i,ext.title.c_str());
     ASSERT(openAuthorMenu != 0);
-    ::AppendMenu(openAuthorMenu,MF_STRING,ID_OPEN_EXTENSIONS_LIST+i,extensions[i].title.c_str());
+    ::AppendMenu(openAuthorMenu,MF_STRING,ID_OPEN_EXTENSIONS_LIST+i,ext.title.c_str());
+
+    if (ext.system)
+    {
+      // Indicate extensions that are part of the installation with an icon
+      const char* iconName = "ExtensionMenuGearIcon-scaled";
+      CDibSection* icon = theApp.GetCachedImage(iconName);
+      if (icon == NULL)
+      {
+        // Menu icons need to be 16 x 15 pixels
+        CSize iconSize(16,15);
+        CDibSection* original = theApp.GetCachedImage("Gear");
+        icon = theApp.CreateScaledImage(original,iconSize);
+        if (m_dark)
+        {
+          for (int y = 0; y < iconSize.cy; y++)
+          {
+            for (int x = 0; x < iconSize.cx; x++)
+            {
+              int a = (icon->GetPixel(x,y) & 0xFF000000) >> 24;
+              int v = (0xFF*a) >> 8;
+              icon->SetPixel(x,y,(a<<24)|(v<<16)|(v<<8)|v);
+            }
+          }
+        }
+        theApp.CacheImage(iconName,icon);
+      }
+
+      MENUITEMINFO mii = { sizeof MENUITEMINFO,0 };
+      mii.fMask = MIIM_BITMAP;
+      mii.hbmpItem = icon->GetSafeHandle();
+      ::SetMenuItemInfo(newAuthorMenu,ID_NEW_EXTENSIONS_LIST+i,FALSE,&mii);
+      ::SetMenuItemInfo(openAuthorMenu,ID_OPEN_EXTENSIONS_LIST+i,FALSE,&mii);
+    }
   }
 }
 

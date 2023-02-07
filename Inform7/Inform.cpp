@@ -125,7 +125,8 @@ BOOL InformApp::InitInstance()
   ColourScheme::AdjustForDarkMode();
 
   // Turn on dark mode for the application, if necessary
-  DarkMode::SetAppDarkMode(REGISTRY_INFORM_WINDOW);
+  if (DarkMode::IsEnabled(REGISTRY_INFORM_WINDOW))
+    DarkMode::SetAppDarkMode();
 
   // Find and create documentation for extensions
   FindExtensions();
@@ -749,7 +750,9 @@ void InformApp::SendAllFrames(Changed changed, int value)
 
   if (changed == LightDarkMode)
   {
-    DarkMode::SetAppDarkMode(REGISTRY_INFORM_WINDOW);
+    if (DarkMode::IsEnabled(REGISTRY_INFORM_WINDOW))
+      DarkMode::SetAppDarkMode();
+
     for (CWnd* dialog : m_modalDialogs)
     {
       if (dialog->IsKindOf(RUNTIME_CLASS(I7BaseDialog)))
@@ -1066,17 +1069,21 @@ CDibSection* InformApp::CreateScaledImage(CDibSection* fromImage, double scaleX,
   // Work out the scaled image size
   CSize fromSize = fromImage->GetSize();
   CSize newSize((int)(fromSize.cx*scaleX),(int)(fromSize.cy*scaleY));
+  return CreateScaledImage(fromImage,newSize);
+}
 
+CDibSection* InformApp::CreateScaledImage(CDibSection* fromImage, CSize size)
+{
   // Create a scaled image
   CDibSection* newImage = new CDibSection();
   CDC* dc = AfxGetMainWnd()->GetDC();
-  BOOL created = newImage->CreateBitmap(dc->GetSafeHdc(),newSize.cx,newSize.cy);
+  BOOL created = newImage->CreateBitmap(dc->GetSafeHdc(),size.cx,size.cy);
   ASSERT(created);
   AfxGetMainWnd()->ReleaseDC(dc);
 
   // Scale and stretch the image
-  ScaleGfx(fromImage->GetBits(),fromSize.cx,fromSize.cy,
-    newImage->GetBits(),newSize.cx,newSize.cy);
+  CSize fromSize = fromImage->GetSize();
+  ScaleGfx(fromImage->GetBits(),fromSize.cx,fromSize.cy,newImage->GetBits(),size.cx,size.cy);
   return newImage;
 }
 
