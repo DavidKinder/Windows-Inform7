@@ -89,6 +89,7 @@ protected:
   afx_msg LRESULT OnStoryName(WPARAM, LPARAM);
   afx_msg LRESULT OnReplayAll(WPARAM, LPARAM);
   afx_msg LRESULT OnTestingTabShown(WPARAM, LPARAM);
+  afx_msg LRESULT OnIsBuildFile(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();
@@ -214,7 +215,7 @@ protected:
   void GenerateIntestReport(CString result);
   void GenerateIntestCombinedReport(void);
   bool BusyWantStop(void);
-  DWORD GetMaxLast5Time(void);
+  LONGLONG GetMaxLast5Seconds(void);
 
   Panel* GetPanel(int column) const;
   int ChoosePanel(Panel::Tabs newTab);
@@ -252,7 +253,8 @@ protected:
   CString m_projectDir;
   CRegKey m_registryKey;
   bool m_needCompile;
-  DWORD m_last5StartTime;
+  CTime m_startTime;
+  CTime m_last5StartTime;
 
   ProjectSettings m_settings;
   bool m_busy;

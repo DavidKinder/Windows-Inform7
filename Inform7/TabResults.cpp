@@ -189,20 +189,18 @@ void TabResults::CompileProject(CompileStage stage, int code)
     break;
 
   case RanInblorb:
-    switch (code)
+    // Show the inblorb status report if created, otherwise show the generic error page
     {
-    case 0:
-      // Show the inblorb status report
-      m_report.Navigate(TextFormat::AnsiToUTF8(m_projectDir+CBLORB_FILE),false);
-      SetActiveTab(ResTab_Report,false);
-      break;
-    default:
-      // Show the generic inblorb error page
-      m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
-        "\\Documentation\\sections\\ErrorCblorb.html"),false);
-      SetActiveTab(ResTab_Report,false);
-      break;
+      CString statusPath = m_projectDir+CBLORB_FILE;
+      if (GetParentFrame()->SendMessage(WM_ISBUILDFILE,(WPARAM)(LPCSTR)statusPath))
+        m_report.Navigate(TextFormat::AnsiToUTF8(statusPath),false);
+      else
+      {
+        m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
+          "\\Documentation\\sections\\ErrorCblorb.html"),false);
+      }
     }
+    SetActiveTab(ResTab_Report,false);
     break;
 
   case RanIntestSource:

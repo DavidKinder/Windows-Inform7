@@ -19,8 +19,6 @@
 #include "TabStory.h"
 #include "TabTesting.h"
 
-#include <sys/stat.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -74,6 +72,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_STORYNAME, OnStoryName)
   ON_MESSAGE(WM_REPLAYALL, OnReplayAll)
   ON_MESSAGE(WM_TESTINGTABSHOWN, OnTestingTabShown)
+  ON_MESSAGE(WM_ISBUILDFILE, OnIsBuildFile)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -182,9 +181,10 @@ private:
 };
 
 ProjectFrame::ProjectFrame(ProjectType projectType)
-  : m_projectType(projectType), m_needCompile(true), m_last5StartTime(0),
-    m_busy(false), m_I6debug(false), m_game(m_skein), m_finder(this), m_focus(0),
-    m_loadFilter(1), m_menuGutter(0), m_menuTextGap(0,0), m_splitter(true)
+  : m_projectType(projectType),
+    m_needCompile(true), m_busy(false), m_I6debug(false),
+    m_game(m_skein), m_finder(this), m_focus(0), m_loadFilter(1),
+    m_menuGutter(0), m_menuTextGap(0,0), m_splitter(true)
 {
   m_menuBar.SetUseF10(false);
   if (m_projectType == Project_I7XP)
@@ -891,7 +891,7 @@ LRESULT ProjectFrame::OnProgress(WPARAM wp, LPARAM lp)
     m_progress.TaskProgress(text,pos);
 
     if ((lastPos < 95) && (pos >= 95))
-      m_last5StartTime = ::GetTickCount();
+      m_last5StartTime = CTime::GetCurrentTime();
   }
   else
   {
@@ -1413,6 +1413,14 @@ LRESULT ProjectFrame::OnTestingTabShown(WPARAM wparam, LPARAM)
     m_settings.m_changed = true;
   }
   return m_settings.m_testingTabShownCount;
+}
+
+LRESULT ProjectFrame::OnIsBuildFile(WPARAM wparam, LPARAM)
+{
+  CFileStatus status;
+  if (CFile::GetStatus((LPCSTR)wparam,status))
+    return (status.m_mtime >= m_startTime);
+  return 0;
 }
 
 void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)
@@ -2052,7 +2060,8 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
   // Run Inform 7
   if (code == 0)
   {
-    m_last5StartTime = ::GetTickCount();
+    m_startTime = CTime::GetCurrentTime();
+    m_last5StartTime = m_startTime;
     code = theApp.RunCommand(NULL,Inform7CommandLine(release),*this);
     if (code != 0)
       failed = "i7";
@@ -2065,9 +2074,9 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
     {
       if (theApp.GetProfileInt("Window","Slow Compile Warn",1) != 0)
       {
-        // Check if the last 5% of compiling took more than 15 seconds
-        DWORD niLast5Time = ::GetTickCount() - m_last5StartTime;
-        if (niLast5Time > GetMaxLast5Time())
+        // Check if the last 5% of compiling took more than about 15 seconds
+        CTimeSpan niLast5Time = CTime::GetCurrentTime() - m_last5StartTime;
+        if (niLast5Time.GetTotalSeconds() > GetMaxLast5Seconds())
         {
           TASKDIALOGCONFIG config = { 0 };
           config.cbSize = sizeof config;
@@ -2512,17 +2521,17 @@ bool ProjectFrame::BusyWantStop(void)
   return WantStop();
 }
 
-DWORD ProjectFrame::GetMaxLast5Time(void)
+LONGLONG ProjectFrame::GetMaxLast5Seconds(void)
 {
-  DWORD maxTime = 15*1000;
+  LONGLONG seconds = 15;
   
   // Scale the maximum time with the size of the Inform 6 source
-  CString autoFile;
-  autoFile.Format("%s\\Build\\auto.inf",(LPCSTR)m_projectDir);
-  struct _stat autoInfo;
-  if (_stat(autoFile,&autoInfo) == 0)
-    maxTime += autoInfo.st_size / 512;
-  return maxTime;
+  CString autoPath;
+  autoPath.Format("%s\\Build\\auto.inf",(LPCSTR)m_projectDir);
+  CFileStatus autoStatus;
+  if (CFile::GetStatus(autoPath,autoStatus))
+    seconds += autoStatus.m_size / (512*1000);
+  return seconds;
 }
 
 void ProjectFrame::MonitorProcess(InformApp::CreatedProcess cp, ProcessAction action, LPCSTR name)

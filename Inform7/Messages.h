@@ -209,3 +209,7 @@ enum FindCommand
 // Sent to the main application thread when the IFTF news file has been
 // downloaded.
 #define WM_NEWSDOWNLOAD   WM_APP+43
+
+// Set to the window frame to determine if the file given in wParam was
+// built during the last compilation.
+#define WM_ISBUILDFILE    WM_APP+44
