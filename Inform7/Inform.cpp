@@ -37,9 +37,14 @@ BOOL WINAPI HookCreateProcessW(
   LPCWSTR appName, LPWSTR cmdLine, LPSECURITY_ATTRIBUTES procAttrs, LPSECURITY_ATTRIBUTES threadAttrs,
   BOOL inherit, DWORD flags, LPVOID env, LPCWSTR cd, LPSTARTUPINFOW startInfo, LPPROCESS_INFORMATION procInfo)
 {
-  BOOL created = CreateProcessW(appName,cmdLine,procAttrs,threadAttrs,inherit,flags,env,cd,startInfo,procInfo);
+  BOOL created = CreateProcessW(appName,cmdLine,procAttrs,threadAttrs,inherit,
+    flags|CREATE_SUSPENDED,env,cd,startInfo,procInfo);
   if (created)
+  {
     theApp.AddProcessToJob(procInfo->hProcess);
+    if ((flags & CREATE_SUSPENDED) == 0)
+      ::ResumeThread(procInfo->hThread);
+  }
   return created;
 }
 
@@ -1128,7 +1133,7 @@ void InformApp::RunMessagePump(void)
 
 InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug)
 {
-  BOOL flags = CREATE_NO_WINDOW;
+  BOOL flags = CREATE_NO_WINDOW|CREATE_SUSPENDED;
   if (debug)
     flags |= DEBUG_PROCESS;
   if (m_job)
@@ -1150,11 +1155,14 @@ InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& com
       m_debugging[process.dwProcessId] = dp;
     }
 
-    // Close the thread handle that is never used
-    ::CloseHandle(process.hThread);
-
     // If there is a job, assign the process to it
     AddProcessToJob(process.hProcess);
+
+    // Allow the process to run
+    ::ResumeThread(process.hThread);
+
+    // Close the thread handle that is never used again
+    ::CloseHandle(process.hThread);
   }
   return cp;
 }
