@@ -188,7 +188,6 @@ protected:
   bool IsProjectEdited(void);
   const char* GetProjectFileExt(void);
 
-  void UpdateMenuParams(void);
   void UpdateExtensionsMenu(void);
   bool UpdateExampleList(void);
   void SetExampleListLocation(void);
@@ -262,10 +261,6 @@ protected:
 
   CString m_outputFileLoc;
   int m_loadFilter;
-
-  CFont m_menuFonts[2];
-  int m_menuGutter;
-  CSize m_menuTextGap;
 
   struct SubProcess
   {

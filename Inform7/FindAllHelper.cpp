@@ -4,6 +4,7 @@
 #include "TextFormat.h"
 
 #include "DarkMode.h"
+#include "DpiFunctions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -202,7 +203,8 @@ void FindAllHelper::UpdateResultsCtrl(FindResultsListCtrl* ctrl, bool details)
   CRect resultsRect;
   ctrl->GetWindowRect(resultsRect);
 
-  int remain = resultsRect.Width() - (::GetSystemMetrics(SM_CXVSCROLL)+4);
+  int dpi = DPI::getWindowDPI(ctrl);
+  int remain = resultsRect.Width() - (DPI::getSystemMetrics(SM_CXVSCROLL,dpi)+4);
   if (details)
   {
     // Resize all but the first column to be as wide as the least of their contents, or 25%

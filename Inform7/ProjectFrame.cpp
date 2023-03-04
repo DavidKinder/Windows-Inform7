@@ -182,9 +182,8 @@ private:
 
 ProjectFrame::ProjectFrame(ProjectType projectType)
   : m_projectType(projectType),
-    m_needCompile(true), m_busy(false), m_I6debug(false),
-    m_game(m_skein), m_finder(this), m_focus(0), m_loadFilter(1),
-    m_menuGutter(0), m_menuTextGap(0,0), m_splitter(true)
+    m_needCompile(true), m_busy(false), m_I6debug(false), m_game(m_skein),
+    m_finder(this), m_focus(0), m_loadFilter(1), m_splitter(true)
 {
   m_menuBar.SetUseF10(false);
   if (m_projectType == Project_I7XP)
@@ -297,7 +296,6 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   theApp.SetIcon(this);
 
   // Create the menu of available extensions
-  UpdateMenuParams();
   UpdateExtensionsMenu();
 
   // Remove menu items that do not apply to the project
@@ -468,7 +466,6 @@ void ProjectFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
   MenuBarFrameWnd::OnSettingChange(uFlags,lpszSection);
 
-  UpdateMenuParams();
   if ((m_dark != NULL) != DarkMode::IsEnabled(REGISTRY_INFORM_WINDOW))
     theApp.SendAllFrames(InformApp::LightDarkMode,0);
 }
@@ -501,8 +498,6 @@ LRESULT ProjectFrame::OnDpiChanged(WPARAM wparam, LPARAM lparam)
 
   UINT newDpi = (int)HIWORD(wparam);
   MoveWindow((LPRECT)lparam,TRUE);
-
-  UpdateMenuParams();
   UpdateDPI(newDpi);
 
   // Set the text on the toolbar buttons again to force them to resize
@@ -2227,51 +2222,6 @@ const char* ProjectFrame::GetProjectFileExt(void)
     break;
   }
   return 0;
-}
-
-void ProjectFrame::UpdateMenuParams(void)
-{
-  m_menuFonts[0].DeleteObject();
-  m_menuFonts[1].DeleteObject();
-
-  // Create the menu item fonts
-  int dpi = DPI::getWindowDPI(this);
-  DPI::createSystemMenuFont(&(m_menuFonts[0]),dpi,1.0);
-  DPI::createSystemMenuFont(&(m_menuFonts[1]),dpi,0.9);
-
-  // Get the theme, if any
-  HTHEME theme = 0;
-  if (::IsAppThemed())
-    theme = ::OpenThemeData(GetSafeHwnd(),L"Menu");
-
-  // Get the menu item spacings
-  if (theme != 0)
-  {
-    CDC* dc = GetDC();
-
-    CSize szC(0,0);
-    ::GetThemePartSize(theme,dc->GetSafeHdc(),MENU_POPUPCHECK,0,NULL,TS_TRUE,&szC);
-    MARGINS mrgC = {0}, mrgCb = {0};
-    ::GetThemeMargins(theme,dc->GetSafeHdc(),MENU_POPUPCHECK,0,TMT_CONTENTMARGINS,NULL,&mrgC);
-    ::GetThemeMargins(theme,dc->GetSafeHdc(),MENU_POPUPCHECKBACKGROUND,0,TMT_CONTENTMARGINS,NULL,&mrgCb);
-    m_menuGutter = szC.cx+mrgC.cxLeftWidth+mrgC.cxRightWidth+mrgCb.cxLeftWidth+mrgCb.cxRightWidth;
-
-    int gapX = 0;
-    ::GetThemeInt(theme,MENU_POPUPBACKGROUND,0,TMT_BORDERSIZE,&gapX);
-    m_menuTextGap.cx = gapX;
-    CSize sz = dc->GetTextExtent("Test");
-    m_menuTextGap.cy =
-      szC.cy+mrgC.cyTopHeight+mrgC.cyBottomHeight+mrgCb.cyTopHeight+mrgCb.cyBottomHeight-sz.cy;
-    m_menuTextGap.cy = max(0,m_menuTextGap.cy/2);
-
-    ReleaseDC(dc);
-    ::CloseThemeData(theme);
-  }
-  else
-  {
-    m_menuGutter = ::GetSystemMetrics(SM_CXMENUCHECK)+2;
-    m_menuTextGap = CSize(2,2);
-  }
 }
 
 void ProjectFrame::UpdateExtensionsMenu(void)
