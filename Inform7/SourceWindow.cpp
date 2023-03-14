@@ -13,7 +13,7 @@
 
 IMPLEMENT_DYNAMIC(SourceWindow, CWnd)
 
-BEGIN_MESSAGE_MAP(SourceWindow, CWnd)
+BEGIN_MESSAGE_MAP(SourceWindow, DrawScrollWindow)
   ON_WM_ERASEBKGND()
   ON_WM_LBUTTONDOWN()
   ON_WM_PAINT()
@@ -57,7 +57,7 @@ void SourceWindow::Create(CWnd* parent, ProjectType projectType, WindowType wind
   DWORD style = WS_CHILD|WS_CLIPCHILDREN|WS_VSCROLL;
   if (m_windowType == SingleLine)
     style |= WS_BORDER;
-  CWnd::Create(NULL,NULL,style,CRect(0,0,0,0),parent,0);
+  DrawScrollWindow::Create(style,parent,0);
 
   // Create the edit control and make this window in charge of the scroll bar
   m_edit.Create(this,1,m_back,(projectType == Project_I7XP));
@@ -188,7 +188,7 @@ BOOL SourceWindow::OnEraseBkgnd(CDC* pDC)
 
 void SourceWindow::OnLButtonDown(UINT nFlags, CPoint point)
 {
-  CWnd::OnLButtonDown(nFlags,point);
+  DrawScrollWindow::OnLButtonDown(nFlags,point);
 
   // Check for a click on an arrow
   CPoint cursor = GetCurrentMessage()->pt;
@@ -214,7 +214,7 @@ LRESULT SourceWindow::OnPrint(WPARAM dc, LPARAM)
 
 void SourceWindow::OnSize(UINT nType, int cx, int cy)
 {
-  CWnd::OnSize(nType,cx,cy);
+  DrawScrollWindow::OnSize(nType,cx,cy);
   if (m_edit.GetSafeHwnd() != 0)
     Resize();
 }
@@ -230,7 +230,7 @@ void SourceWindow::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 void SourceWindow::OnEditSetScrollInfo(NMHDR* pNotifyStruct, LRESULT* result)
 {
   SCNXSetScrollInfo* ssi = (SCNXSetScrollInfo*)pNotifyStruct;
-  ssi->nPos = ::SetScrollInfo(GetSafeHwnd(),ssi->nBar,(LPCSCROLLINFO)ssi->lpsi,ssi->bRedraw);
+  ssi->nPos = SetScrollInfo(ssi->nBar,(LPCSCROLLINFO)ssi->lpsi,ssi->bRedraw);
   *result = 1;
 }
 
@@ -238,8 +238,7 @@ void SourceWindow::OnEditSetScrollInfo(NMHDR* pNotifyStruct, LRESULT* result)
 void SourceWindow::OnEditGetScrollInfo(NMHDR* pNotifyStruct, LRESULT* result)
 {
   SCNXGetScrollInfo* gsi = (SCNXGetScrollInfo*)pNotifyStruct;
-  GetScrollInfo(gsi->nBar,(LPSCROLLINFO)gsi->lpsi);
-  *result = 1;
+  *result = GetScrollInfo(gsi->nBar,(LPSCROLLINFO)gsi->lpsi) ? 1 : 0;
 }
 
 void SourceWindow::Resize(void)
@@ -310,21 +309,24 @@ void SourceWindow::Draw(CDC& dc)
 
   if (m_windowType == Border)
   {
-    // Get the colour for the lines around groups
-    COLORREF lineColour = ::GetSysColor(COLOR_BTNSHADOW);
-    HTHEME theme = 0;
-    if (::IsAppThemed())
+    COLORREF lineColour = dark ? dark->GetColour(DarkMode::Dark2) : ::GetSysColor(COLOR_BTNSHADOW);
+    if (!dark)
     {
-      HTHEME theme = ::OpenThemeData(GetSafeHwnd(),L"Button");
-      if (theme != 0)
+      // Get the colour for the lines around groups
+      HTHEME theme = 0;
+      if (::IsAppThemed())
       {
-        COLORREF themeColour = 0;
-        if (SUCCEEDED(::GetThemeColor(theme,BP_GROUPBOX,GBS_NORMAL,TMT_EDGEFILLCOLOR,&themeColour)))
+        HTHEME theme = ::OpenThemeData(GetSafeHwnd(),L"Button");
+        if (theme != 0)
         {
-          if (themeColour != 0)
-            lineColour = themeColour;
+          COLORREF themeColour = 0;
+          if (SUCCEEDED(::GetThemeColor(theme,BP_GROUPBOX,GBS_NORMAL,TMT_EDGEFILLCOLOR,&themeColour)))
+          {
+            if (themeColour != 0)
+              lineColour = themeColour;
+          }
+          ::CloseThemeData(theme);
         }
-        ::CloseThemeData(theme);
       }
     }
 

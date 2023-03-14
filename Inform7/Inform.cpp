@@ -109,6 +109,7 @@ BOOL InformApp::InitInstance()
 
   SetRegistryKey("David Kinder");
   SetFonts();
+  DrawScrollWindow::SetDraw(new DrawChromeScroll());
   if (!ReportHtml::InitWebBrowser())
     return FALSE;
 

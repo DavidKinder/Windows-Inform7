@@ -334,6 +334,9 @@
     <ClInclude Include="ColourScheme.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="DrawScrollWindow.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1448,6 +1451,9 @@
     </ClCompile>
     <ClCompile Include="ColourScheme.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawScrollWindow.cpp">
+      <Filter>Controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

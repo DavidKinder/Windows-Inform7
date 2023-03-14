@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SourceEdit.h"
+#include "DrawScrollWindow.h"
 #include "Inform.h"
 #include "Messages.h"
 #include "SourceSettings.h"
@@ -8,7 +9,7 @@
 class DarkMode;
 class DibSection;
 
-class SourceWindow : public CWnd
+class SourceWindow : public DrawScrollWindow
 {
   DECLARE_DYNAMIC(SourceWindow)
 

@@ -214,6 +214,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="ReportHtml.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RichEdit.h" />
+    <ClInclude Include="DrawScrollWindow.h" />
     <ClInclude Include="SearchBar.h" />
     <ClInclude Include="SearchEdit.h" />
     <ClInclude Include="SemanticVersion.h" />
@@ -2311,6 +2312,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
       </PrecompiledHeader>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Level1</WarningLevel>
     </ClCompile>
+    <ClCompile Include="DrawScrollWindow.cpp" />
     <ClCompile Include="SearchBar.cpp" />
     <ClCompile Include="SearchEdit.cpp" />
     <ClCompile Include="SemanticVersion.cpp" />
