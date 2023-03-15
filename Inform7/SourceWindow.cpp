@@ -16,6 +16,7 @@ IMPLEMENT_DYNAMIC(SourceWindow, CWnd)
 BEGIN_MESSAGE_MAP(SourceWindow, DrawScrollWindow)
   ON_WM_ERASEBKGND()
   ON_WM_LBUTTONDOWN()
+  ON_WM_MOUSEWHEEL()
   ON_WM_PAINT()
   ON_WM_SIZE()
   ON_WM_VSCROLL()
@@ -197,6 +198,17 @@ void SourceWindow::OnLButtonDown(UINT nFlags, CPoint point)
     GetParent()->PostMessage(WM_NEXTRANGE,1);
   else if (m_arrowBottom.PtInRect(cursor))
     GetParent()->PostMessage(WM_NEXTRANGE,0);
+}
+
+BOOL SourceWindow::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+  // Disallow zooming
+  if (nFlags & (MK_CONTROL|MK_SHIFT))
+    return TRUE;
+
+  // Send the mouse wheel message to the edit control
+  const MSG* msg = GetCurrentMessage();
+  return (BOOL)m_edit.SendMessage(WM_MOUSEWHEEL,msg->wParam,msg->lParam);
 }
 
 void SourceWindow::OnPaint()

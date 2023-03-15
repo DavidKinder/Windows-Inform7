@@ -214,7 +214,7 @@ void SourceEdit::OnContextMenu(CWnd* pWnd, CPoint point)
 BOOL SourceEdit::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
   // Disallow zooming
-  if (nFlags & MK_CONTROL)
+  if (nFlags & (MK_CONTROL|MK_SHIFT))
     return TRUE;
   return CWnd::OnMouseWheel(nFlags,zDelta,pt);
 }
