@@ -737,6 +737,7 @@ void InformApp::SendAllFrames(Changed changed, int value)
     break;
   case LightDarkMode:
     ClearGeneratedImages();
+    ColourScheme::AdjustForDarkMode();
     break;
   }
 
