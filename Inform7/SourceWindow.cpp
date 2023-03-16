@@ -54,11 +54,7 @@ void SourceWindow::Create(CWnd* parent, ProjectType projectType, WindowType wind
   }
 
   m_windowType = windowType;
-
-  DWORD style = WS_CHILD|WS_CLIPCHILDREN|WS_VSCROLL;
-  if (m_windowType == SingleLine)
-    style |= WS_BORDER;
-  DrawScrollWindow::Create(style,parent,0);
+  DrawScrollWindow::Create(WS_CHILD|WS_CLIPCHILDREN|WS_VSCROLL,parent,0);
 
   // Create the edit control and make this window in charge of the scroll bar
   m_edit.Create(this,1,m_back,(projectType == Project_I7XP));
@@ -273,13 +269,19 @@ void SourceWindow::Resize(void)
   else
     client.bottom -= fontSize.cy/4;
 
-  if (m_windowType == Border)
-    client.left += 1;
-  else if (m_windowType != SingleLine)
+  if (m_windowType != SingleLine)
   {
     // Make sure that an integral number of lines are visible
     int lineHeight = m_edit.GetLineHeight();
     client.bottom -= client.Height() % lineHeight;
+  }
+
+  if (m_windowType == Border)
+    client.left += 1;
+  else if (m_windowType == SingleLine)
+  {
+    client.left += 1;
+    client.right -= 1;
   }
 
   m_edit.MoveWindow(client,IsWindowVisible());
@@ -319,7 +321,7 @@ void SourceWindow::Draw(CDC& dc)
   if (y > editRect.bottom)
     dc.FillSolidRect(0,editRect.bottom,client.Width(),y-editRect.bottom,m_back);
 
-  if (m_windowType == Border)
+  if ((m_windowType == Border) || (m_windowType == SingleLine))
   {
     COLORREF lineColour = dark ? dark->GetColour(DarkMode::Dark2) : ::GetSysColor(COLOR_BTNSHADOW);
     if (!dark)
@@ -348,6 +350,8 @@ void SourceWindow::Draw(CDC& dc)
     dc.LineTo(0,0);
     dc.LineTo(0,client.Height()-1);
     dc.LineTo(client.Width()-1,client.Height()-1);
+    if (m_windowType == SingleLine)
+      dc.LineTo(client.Width()-1,0);
   }
 }
 
