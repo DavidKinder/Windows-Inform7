@@ -406,6 +406,7 @@ void PrefsEditPage::PreviewChanged(void)
 
 void PrefsEditPage::SetDarkMode(DarkMode* dark)
 {
+  DarkModePropertyPage::SetDarkMode(dark);
   m_tabPreview.LoadSettings(NoColourSettings());
   m_tabPreview.PrefsChanged();
 }
@@ -1004,6 +1005,27 @@ void PrefsColourPage::PreviewChanged(void)
 {
   m_preview.LoadSettings(*m_dialog);
   m_preview.PrefsChanged();
+}
+
+void PrefsColourPage::SetDarkMode(DarkMode* dark)
+{
+  DarkModePropertyPage::SetDarkMode(dark);
+
+  if (GetSafeHwnd() != 0)
+  {
+    // If the dark mode setting of Windows is changed while the dialog is up,
+    // adjust the colour scheme.
+    UpdateData(TRUE);
+    if (dark && (m_colourScheme == "Light Mode"))
+      m_colourScheme = "Dark Mode";
+    else if (!dark && (m_colourScheme == "Dark Mode"))
+      m_colourScheme = "Light Mode";
+    UpdateData(FALSE);
+
+    UpdateColourButtons();
+    UpdateControlStates();
+    UpdatePreview();
+  }
 }
 
 // Set the default preferences values

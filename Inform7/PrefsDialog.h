@@ -131,6 +131,7 @@ public:
   bool GetString(const char* name, char* value, ULONG len);
 
   void PreviewChanged(void);
+  void SetDarkMode(DarkMode* dark);
 
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);
