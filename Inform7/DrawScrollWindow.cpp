@@ -859,6 +859,7 @@ BEGIN_MESSAGE_MAP(DrawScrollArea, DrawScrollWindow)
   ON_WM_SIZE()
   ON_WM_HSCROLL()
   ON_WM_VSCROLL()
+  ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
 
 void DrawScrollArea::SetScrollSizes(int mapMode, SIZE sizeTotal, const SIZE& sizePage, const SIZE& sizeLine)
@@ -1171,4 +1172,59 @@ void DrawScrollArea::OnVScroll(UINT code, UINT pos, CScrollBar* bar)
     }
     OnScroll(MAKEWORD(0xFF,code),pos);
   }
+}
+
+BOOL DrawScrollArea::OnMouseWheel(UINT flags, short delta, CPoint point)
+{
+  if (flags & (MK_SHIFT|MK_CONTROL))
+    return FALSE;
+
+  if (!m_v.visible && !m_h.visible)
+    return FALSE;
+
+  static UINT scrollLines = 0;
+  if (scrollLines == 0)
+  {
+    scrollLines = 3;
+    ::SystemParametersInfo(SPI_GETWHEELSCROLLLINES,0,&scrollLines,0);
+  }
+
+  BOOL result = FALSE;
+  int toScroll = ::MulDiv(-delta,scrollLines,WHEEL_DELTA);
+  int displace;
+
+  if (m_v.visible)
+  {
+    if (scrollLines == WHEEL_PAGESCROLL)
+    {
+      displace = m_page.cy;
+      if (delta > 0)
+        displace = -displace;
+    }
+    else
+    {
+      displace = toScroll * m_line.cy;
+      displace = min(displace,m_page.cy);
+    }
+    result = OnScrollBy(CSize(0,displace),TRUE);
+  }
+  else if (m_h.visible)
+  {
+    if (scrollLines == WHEEL_PAGESCROLL)
+    {
+      displace = m_page.cx;
+      if (delta > 0)
+        displace = -displace;
+    }
+    else
+    {
+      displace = toScroll * m_line.cx;
+      displace = min(displace,m_page.cx);
+    }
+    result = OnScrollBy(CSize(displace,0),TRUE);
+  }
+
+  if (result)
+    UpdateWindow();
+  return result;
 }

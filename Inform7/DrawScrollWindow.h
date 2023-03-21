@@ -169,6 +169,7 @@ protected:
   afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnHScroll(UINT code, UINT pos, CScrollBar* bar);
   afx_msg void OnVScroll(UINT code, UINT pos, CScrollBar* bar);
+  afx_msg BOOL OnMouseWheel(UINT flags, short delta, CPoint point);
 
   CSize m_total = CSize(0,0);
   CSize m_page = CSize(0,0);
