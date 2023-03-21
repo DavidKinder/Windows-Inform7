@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DrawScrollWindow.h"
+#include "DrawScrollArea.h"
 #include "Messages.h"
 #include "SourceLexer.h"
 
