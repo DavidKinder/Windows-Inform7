@@ -13,6 +13,7 @@ std::unique_ptr<DrawScroll> DrawScrollWindow::m_draw;
 BEGIN_MESSAGE_MAP(DrawScrollWindow, CWnd)
   ON_WM_NCCALCSIZE()
   ON_WM_NCPAINT()
+  ON_MESSAGE(WM_PRINT, OnPrint)
   ON_WM_NCHITTEST()
   ON_WM_NCMOUSEMOVE()
   ON_WM_NCMOUSELEAVE()
@@ -31,10 +32,36 @@ void DrawScrollWindow::SetDraw(DrawScroll* draw)
 
 BOOL DrawScrollWindow::Create(DWORD style, CWnd* parentWnd, UINT id)
 {
-  m_v.active = style & WS_VSCROLL;
-  m_h.active = style & WS_HSCROLL;
+  m_v.SetActive(style & WS_VSCROLL);
+  m_h.SetActive(style & WS_HSCROLL);
   style &= ~(WS_VSCROLL|WS_HSCROLL);
   return CWnd::Create(NULL,NULL,style,CRect(0,0,0,0),parentWnd,id);
+}
+
+void DrawScrollWindow::EnableScrollBarCtrl(int bar, BOOL enable)
+{
+  bool redraw = false;
+
+  switch (bar)
+  {
+  case SB_VERT:
+    redraw = m_v.SetActive(enable);
+    break;
+  case SB_HORZ:
+    redraw = m_h.SetActive(enable);
+    break;
+  case SB_BOTH:
+    redraw = m_v.SetActive(enable);
+    if (m_h.SetActive(enable))
+      redraw = true;
+    return;
+  default:
+    ASSERT(FALSE);
+    return;
+  }
+
+  if (redraw)
+    RedrawNonClient();
 }
 
 int DrawScrollWindow::SetScrollInfo(int bar, LPCSCROLLINFO scrollInfo, BOOL redraw)
@@ -63,13 +90,17 @@ int DrawScrollWindow::SetScrollInfo(int bar, LPCSCROLLINFO scrollInfo, BOOL redr
     state->min = scrollInfo->nMin;
     state->max = scrollInfo->nMax;
   }
+
+  int range = state->max - state->min + 1;
   if (scrollInfo->fMask & SIF_PAGE)
-  {
-    UINT range = scrollInfo->nMax - scrollInfo->nMin + 1;
-    state->page = (scrollInfo->nPage < range) ? scrollInfo->nPage : range;
-  }
+    state->page = ((int)scrollInfo->nPage < range) ? (int)scrollInfo->nPage : range;
+  else
+    state->page = (state->page < range) ? state->page : range;
+
   if (scrollInfo->fMask & SIF_POS)
     state->SetPos(scrollInfo->nPos);
+  else
+    state->SetPos(state->pos);
 
   state->visible = (state->page < (state->max - state->min + 1));
 
@@ -112,6 +143,130 @@ BOOL DrawScrollWindow::GetScrollInfo(int bar, LPSCROLLINFO scrollInfo, UINT mask
   if (mask & SIF_TRACKPOS)
     scrollInfo->nTrackPos = state->trackPos;
   return TRUE;
+}
+
+int DrawScrollWindow::GetScrollLimit(int bar)
+{
+  switch (bar)
+  {
+  case SB_VERT:
+    if (m_v.active)
+      return m_v.max - m_v.page + 1;
+    else
+      return 0;
+  case SB_HORZ:
+    if (m_h.active)
+      return m_h.max - m_h.page + 1;
+    else
+      return 0;
+  default:
+    ASSERT(FALSE);
+    return 0;
+  }
+}
+
+int DrawScrollWindow::SetScrollPos(int bar, int pos, BOOL redraw)
+{
+  BarState* state = NULL;
+  switch (bar)
+  {
+  case SB_VERT:
+    state = &m_v;
+    break;
+  case SB_HORZ:
+    state = &m_h;
+    break;
+  default:
+    ASSERT(FALSE);
+    return 0;
+  }
+
+  if (!state->active)
+    return 0;
+
+  int previous = state->pos;
+  state->SetPos(pos);
+  state->visible = (state->page < (state->max - state->min + 1));
+
+  UpdateMouseOver();
+  if (redraw)
+    RedrawNonClient();
+  return previous;
+}
+
+int DrawScrollWindow::GetScrollPos(int bar)
+{
+  switch (bar)
+  {
+  case SB_VERT:
+    if (m_v.active)
+      return m_v.pos;
+    else
+      return 0;
+  case SB_HORZ:
+    if (m_h.active)
+      return m_h.pos;
+    else
+      return 0;
+  default:
+    ASSERT(FALSE);
+    return 0;
+  }
+}
+
+void DrawScrollWindow::SetScrollRange(int bar, int minPos, int maxPos, BOOL redraw)
+{
+  BarState* state = NULL;
+  switch (bar)
+  {
+  case SB_VERT:
+    state = &m_v;
+    break;
+  case SB_HORZ:
+    state = &m_h;
+    break;
+  default:
+    ASSERT(FALSE);
+    return;
+  }
+
+  if (!state->active)
+    return;
+
+  state->min = minPos;
+  state->max = maxPos;
+  int range = state->max - state->min + 1;
+  state->page = (state->page < range) ? state->page : range;
+  state->SetPos(state->pos);
+  state->visible = (state->page < (state->max - state->min + 1));
+
+  UpdateMouseOver();
+  if (redraw)
+    RedrawNonClient();
+}
+
+void DrawScrollWindow::GetScrollRange(int bar, LPINT minPos, LPINT maxPos)
+{
+  switch (bar)
+  {
+  case SB_VERT:
+    if (m_v.active)
+    {
+      *minPos = m_v.min;
+      *maxPos = m_v.max;
+    }
+    break;
+  case SB_HORZ:
+    if (m_h.active)
+    {
+      *minPos = m_h.min;
+      *maxPos = m_h.max;
+    }
+    break;
+  default:
+    ASSERT(FALSE);
+    break;
+  }
 }
 
 void DrawScrollWindow::OnNcCalcSize(BOOL, NCCALCSIZE_PARAMS* lpncsp)
@@ -183,6 +338,27 @@ void DrawScrollWindow::OnNcPaint()
   }
 }
 
+LRESULT DrawScrollWindow::OnPrint(WPARAM wp, LPARAM lp)
+{
+  if (lp & PRF_NONCLIENT)
+  {
+    CDC* dc = CDC::FromHandle((HDC)wp);
+    DarkMode* dark = DarkMode::GetActive(this);
+
+    if (m_v.visible)
+      m_draw->DrawVertical(*dc,dark,IsDraggingSlider(BarVertical),m_v,GetVerticalSlider(),m_mouseOver,m_capture);
+    if (m_h.visible)
+    {
+      //TODO: horizontal
+    }
+    if (m_v.visible && m_h.visible)
+    {
+      //TODO: horizontal and vertical
+    }
+  }
+  return 0;
+}
+
 LRESULT DrawScrollWindow::OnNcHitTest(CPoint point)
 {
   // Convert the point to window co-ordinates
@@ -236,6 +412,7 @@ void DrawScrollWindow::OnNcLButtonDown(UINT nHitTest, CPoint point)
       {
       case BarVertical:
         {
+          m_v.trackPos = m_v.pos;
           Slider slide = GetVerticalSlider();
           m_dragSliderOffset = wndPoint.y - (m_v.rect.top + slide.btn + slide.pos);
           m_dragStartPos = m_v.pos;
@@ -280,7 +457,7 @@ void DrawScrollWindow::OnMouseMove(UINT nHitTest, CPoint point)
       Slider slide = GetVerticalSlider();
       int range = m_v.max - m_v.min + 1;
       int height = m_v.rect.Height() - (2*slide.btn);
-      trackPos = MulDiv(point.y - m_dragSliderOffset,range - m_v.page,height - slide.len);
+      trackPos = MulDiv(point.y - m_dragSliderOffset - m_v.rect.top - slide.btn,range - m_v.page,height - slide.len);
     }
     else
       trackPos = m_dragStartPos;
@@ -428,25 +605,19 @@ void DrawScrollWindow::DoElementAction(const Element& element)
     break;
   }
 
-  WPARAM wp;
-  bool changed = false;
-
+  WPARAM wp = -1;
   switch (element.part)
   {
   case PartUpButton:
-    changed = state->SetPos(state->pos-1);
     wp = SB_LINEUP;
     break;
   case PartAboveSlider:
-    changed = state->SetPos(state->pos - state->page);
     wp = SB_PAGEUP;
     break;
   case PartBelowSlider:
-    changed = state->SetPos(state->pos + state->page);
     wp = SB_PAGEDOWN;
     break;
   case PartDownButton:
-    changed = state->SetPos(state->pos+1);
     wp = SB_LINEDOWN;
     break;
   default:
@@ -454,10 +625,8 @@ void DrawScrollWindow::DoElementAction(const Element& element)
     break;
   }
 
-  if (changed)
+  if (wp >= 0)
   {
-    UpdateMouseOver();
-    RedrawNonClient();
     switch (element.bar)
     {
     case BarVertical:
@@ -525,6 +694,22 @@ void DrawScrollWindow::DoCaptureTimer(void)
     ASSERT(FALSE);
     break;
   }
+}
+
+bool DrawScrollWindow::BarState::SetActive(bool newActive)
+{
+  bool change = (active != newActive);
+  active = newActive;
+  if (change && !active)
+  {
+    visible = false;
+    rect = CRect(0,0,0,0);
+    min = 0;
+    max = 0;
+    page = 0;
+    pos = 0;
+  }
+  return change;
 }
 
 bool DrawScrollWindow::BarState::SetPos(int newPos)
@@ -667,4 +852,323 @@ COLORREF DrawChromeScroll::GetSysColour(DarkMode* dark, int sysColour)
   }
 
   return ::GetSysColor(sysColour);
+}
+
+BEGIN_MESSAGE_MAP(DrawScrollArea, DrawScrollWindow)
+  ON_WM_PAINT()
+  ON_WM_SIZE()
+  ON_WM_HSCROLL()
+  ON_WM_VSCROLL()
+END_MESSAGE_MAP()
+
+void DrawScrollArea::SetScrollSizes(int mapMode, SIZE sizeTotal, const SIZE& sizePage, const SIZE& sizeLine)
+{
+  ASSERT((sizeTotal.cx >= 0) && (sizeTotal.cy >= 0));
+  ASSERT(mapMode == MM_TEXT);
+
+  m_total = sizeTotal;
+  m_page = sizePage;
+  m_line = sizeLine;
+
+  ASSERT((m_total.cx >= 0) && (m_total.cy >= 0));
+  if (m_page.cx == 0)
+    m_page.cx = m_total.cx / 10;
+  if (m_page.cy == 0)
+    m_page.cy = m_total.cy / 10;
+  if (m_line.cx == 0)
+    m_line.cx = m_page.cx / 10;
+  if (m_line.cy == 0)
+    m_line.cy = m_page.cy / 10;
+
+  if (GetSafeHwnd() != 0)
+    UpdateBars();
+}
+
+CPoint DrawScrollArea::GetDeviceScrollPosition()
+{
+  CPoint pos(GetScrollPos(SB_HORZ),GetScrollPos(SB_VERT));
+  ASSERT((pos.x >= 0) && (pos.y >= 0));
+  return pos;
+}
+
+void DrawScrollArea::ScrollToDevicePosition(POINT point)
+{
+  ASSERT(point.x >= 0);
+  ASSERT(point.y >= 0);
+
+  int xOrig = GetScrollPos(SB_HORZ);
+  SetScrollPos(SB_HORZ,point.x);
+  int yOrig = GetScrollPos(SB_VERT);
+  SetScrollPos(SB_VERT,point.y);
+  ScrollWindow(xOrig - point.x,yOrig - point.y);
+}
+
+void DrawScrollArea::UpdateBars()
+{
+  if (m_insideUpdate)
+    return;
+  m_insideUpdate = true;
+
+  ASSERT((m_total.cx >= 0) && (m_total.cy >= 0));
+
+  CSize sizeClient, sizeBars;
+  if (!GetTrueClientSize(sizeClient,sizeBars))
+  {
+    CRect r;
+    GetClientRect(&r);
+    if ((r.right > 0) && (r.bottom > 0))
+    {
+      EnableScrollBarCtrl(SB_BOTH,FALSE);
+    }
+    m_insideUpdate = false;
+    return;
+  }
+
+  CSize sizeRange, needBars;
+  CPoint moveTo;
+  GetScrollBarState(sizeClient,needBars,sizeRange,moveTo,TRUE);
+  if (needBars.cx)
+    sizeClient.cy -= sizeBars.cy;
+  if (needBars.cy)
+    sizeClient.cx -= sizeBars.cx;
+
+  ScrollToDevicePosition(moveTo);
+
+  SCROLLINFO info;
+  info.fMask = SIF_PAGE|SIF_RANGE;
+  info.nMin = 0;
+
+  EnableScrollBarCtrl(SB_HORZ,needBars.cx);
+  if (needBars.cx)
+  {
+    info.nPage = sizeClient.cx;
+    info.nMax = m_total.cx-1;
+    SetScrollInfo(SB_HORZ,&info,TRUE);
+  }
+
+  EnableScrollBarCtrl(SB_VERT,needBars.cy);
+  if (needBars.cy)
+  {
+    info.nPage = sizeClient.cy;
+    info.nMax = m_total.cy-1;
+    SetScrollInfo(SB_VERT,&info,TRUE);
+  }
+
+  m_insideUpdate = false;
+}
+
+BOOL DrawScrollArea::GetTrueClientSize(CSize& size, CSize& sizeBars)
+{
+  CRect rc;
+  GetClientRect(&rc);
+
+  size.cx = rc.Width();
+  size.cy = rc.Height();
+  GetScrollBarSizes(sizeBars);
+
+  if ((sizeBars.cx != 0) && m_v.visible)
+    size.cx += sizeBars.cx;
+  if ((sizeBars.cy != 0) && m_h.visible)
+    size.cy += sizeBars.cy;
+  return ((size.cx > sizeBars.cx) && (size.cy > sizeBars.cy));
+}
+
+void DrawScrollArea::GetScrollBarSizes(CSize& sizeBars)
+{
+  int dpi = DPI::getWindowDPI(this);
+  sizeBars.cx = DPI::getSystemMetrics(SM_CXVSCROLL,dpi);
+  sizeBars.cy = DPI::getSystemMetrics(SM_CYHSCROLL,dpi);
+}
+
+void DrawScrollArea::GetScrollBarState(CSize sizeClient, CSize& needBars, CSize& sizeRange, CPoint& moveTo, BOOL insideClient)
+{
+  CSize sizeBars;
+  GetScrollBarSizes(sizeBars);
+
+  sizeRange = m_total - sizeClient;
+  moveTo = GetDeviceScrollPosition();
+
+  bool needH = (sizeRange.cx > 0);
+  if (!needH)
+    moveTo.x = 0;
+  else if (insideClient)
+    sizeRange.cy += sizeBars.cy;
+
+  bool needV = (sizeRange.cy > 0);
+  if (!needV)
+    moveTo.y = 0;
+  else if (insideClient)
+    sizeRange.cx += sizeBars.cx;
+
+  if (needV && !needH && (sizeRange.cx > 0))
+  {
+    ASSERT(insideClient);
+
+    needH = true;
+    sizeRange.cy += sizeBars.cy;
+  }
+
+  if ((sizeRange.cx > 0) && (moveTo.x >= sizeRange.cx))
+    moveTo.x = sizeRange.cx;
+  if ((sizeRange.cy > 0) && (moveTo.y >= sizeRange.cy))
+    moveTo.y = sizeRange.cy;
+
+  needBars.cx = needH;
+  needBars.cy = needV;
+}
+
+void DrawScrollArea::OnPrepareDC(CDC* dc)
+{
+  ASSERT((m_total.cx >= 0) && (m_total.cy >= 0));
+
+  dc->SetMapMode(MM_TEXT);
+
+  CPoint vpOrg(0,0);
+  if (!dc->IsPrinting())
+    vpOrg = -GetDeviceScrollPosition();
+  dc->SetViewportOrg(vpOrg);
+}
+
+BOOL DrawScrollArea::OnScroll(UINT code, UINT pos, BOOL doScroll)
+{
+  int x = GetScrollPos(SB_HORZ);
+  int xOrig = x;
+  switch (LOBYTE(code))
+  {
+  case SB_TOP:
+    x = 0;
+    break;
+  case SB_BOTTOM:
+    x = INT_MAX;
+    break;
+  case SB_LINEUP:
+    x -= m_line.cx;
+    break;
+  case SB_LINEDOWN:
+    x += m_line.cx;
+    break;
+  case SB_PAGEUP:
+    x -= m_page.cx;
+    break;
+  case SB_PAGEDOWN:
+    x += m_page.cx;
+    break;
+  case SB_THUMBTRACK:
+    x = pos;
+    break;
+  }
+
+  int y = GetScrollPos(SB_VERT);
+  int yOrig = y;
+  switch (HIBYTE(code))
+  {
+  case SB_TOP:
+    y = 0;
+    break;
+  case SB_BOTTOM:
+    y = INT_MAX;
+    break;
+  case SB_LINEUP:
+    y -= m_line.cy;
+    break;
+  case SB_LINEDOWN:
+    y += m_line.cy;
+    break;
+  case SB_PAGEUP:
+    y -= m_page.cy;
+    break;
+  case SB_PAGEDOWN:
+    y += m_page.cy;
+    break;
+  case SB_THUMBTRACK:
+    y = pos;
+    break;
+  }
+
+  return OnScrollBy(CSize(x - xOrig, y - yOrig),doScroll);
+}
+
+BOOL DrawScrollArea::OnScrollBy(CSize sizeScroll, BOOL doScroll)
+{
+  int xOrig, x;
+  int yOrig, y;
+
+  if (!m_v.visible)
+    sizeScroll.cy = 0;
+  if (!m_h.visible)
+    sizeScroll.cx = 0;
+
+  xOrig = x = GetScrollPos(SB_HORZ);
+  int xMax = GetScrollLimit(SB_HORZ);
+  x += sizeScroll.cx;
+  if (x < 0)
+    x = 0;
+  else if (x > xMax)
+    x = xMax;
+
+  yOrig = y = GetScrollPos(SB_VERT);
+  int yMax = GetScrollLimit(SB_VERT);
+  y += sizeScroll.cy;
+  if (y < 0)
+    y = 0;
+  else if (y > yMax)
+    y = yMax;
+
+  if ((x == xOrig) && (y == yOrig))
+    return FALSE;
+
+  if (doScroll)
+  {
+    ScrollWindow(-(x-xOrig),-(y-yOrig));
+    if (x != xOrig)
+      SetScrollPos(SB_HORZ,x);
+    if (y != yOrig)
+      SetScrollPos(SB_VERT,y);
+  }
+  return TRUE;
+}
+
+void DrawScrollArea::OnPaint()
+{
+  CPaintDC dc(this);
+  OnPrepareDC(&dc);
+  OnDraw(&dc);
+}
+
+void DrawScrollArea::OnSize(UINT type, int cx, int cy)
+{
+  DrawScrollWindow::OnSize(type,cx,cy);
+  UpdateBars();
+}
+
+void DrawScrollArea::OnHScroll(UINT code, UINT pos, CScrollBar* bar)
+{
+  if ((bar != NULL) && bar->SendChildNotifyLastMsg())
+    return;
+  if (bar == NULL)
+  {
+    if ((code == SB_THUMBPOSITION) || (code == SB_THUMBTRACK))
+    {
+      SCROLLINFO si = { sizeof (SCROLLINFO), 0 };
+      GetScrollInfo(SB_HORZ,&si);
+      pos = si.nTrackPos;
+    }
+    OnScroll(MAKEWORD(0xFF,code),pos);
+  }
+}
+
+void DrawScrollArea::OnVScroll(UINT code, UINT pos, CScrollBar* bar)
+{
+  if ((bar != NULL) && bar->SendChildNotifyLastMsg())
+    return;
+  if (bar == NULL)
+  {
+    if ((code == SB_THUMBPOSITION) || (code == SB_THUMBTRACK))
+    {
+      SCROLLINFO si = { sizeof (SCROLLINFO), 0 };
+      GetScrollInfo(SB_VERT,&si);
+      pos = si.nTrackPos;
+    }
+    OnScroll(MAKEWORD(0xFF,code),pos);
+  }
 }

@@ -26,7 +26,7 @@ ReportEdit::ReportEdit()
 
 BOOL ReportEdit::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
-  if (nFlags & MK_CONTROL)
+  if (nFlags & (MK_SHIFT|MK_CONTROL))
     return TRUE;
   return CWnd::OnMouseWheel(nFlags,zDelta,pt);
 }

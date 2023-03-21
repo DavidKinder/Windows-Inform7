@@ -10,13 +10,12 @@
 #define new DEBUG_NEW
 #endif
 
-IMPLEMENT_DYNAMIC(ContentsPane, CScrollView)
+IMPLEMENT_DYNAMIC(ContentsPane, CWnd)
 
-BEGIN_MESSAGE_MAP(ContentsPane, CScrollView)
+BEGIN_MESSAGE_MAP(ContentsPane, DrawScrollArea)
   ON_WM_CREATE()
   ON_WM_ERASEBKGND()
   ON_WM_LBUTTONUP()
-  ON_WM_VSCROLL()
   ON_MESSAGE(WM_PRINT, OnPrint)
 END_MESSAGE_MAP()
 
@@ -59,7 +58,7 @@ void ContentsPane::PrefsChanged(void)
 
 int ContentsPane::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-  if (CWnd::OnCreate(lpCreateStruct) == -1)
+  if (DrawScrollArea::OnCreate(lpCreateStruct) == -1)
     return -1;
 
   CreateFonts();
@@ -113,30 +112,13 @@ void ContentsPane::OnLButtonUp(UINT nFlags, CPoint point)
       tab->PostMessage(WM_SOURCERANGE,(WPARAM)sr.release());
   }
 
-  CScrollView::OnLButtonUp(nFlags,point);
+  DrawScrollArea::OnLButtonUp(nFlags,point);
 }
 
-void ContentsPane::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+LRESULT ContentsPane::OnPrint(WPARAM wp, LPARAM lp)
 {
-  if (pScrollBar != NULL && pScrollBar->SendChildNotifyLastMsg())
-    return;
-  if (pScrollBar == NULL)
-  {
-    if ((nSBCode == SB_THUMBPOSITION) || (nSBCode == SB_THUMBTRACK))
-    {
-      SCROLLINFO scroll;
-      ::ZeroMemory(&scroll,sizeof scroll);
-      scroll.cbSize = sizeof scroll;
-      GetScrollInfo(SB_VERT,&scroll);
-      nPos = scroll.nTrackPos;
-    }
-    OnScroll(MAKEWORD(0xFF,nSBCode),nPos);
-  }
-}
-
-LRESULT ContentsPane::OnPrint(WPARAM dc, LPARAM)
-{
-  Draw(CDC::FromHandle((HDC)dc),-GetDeviceScrollPosition().y);
+  DrawScrollArea::OnPrint(wp,lp);
+  Draw(CDC::FromHandle((HDC)wp),-GetDeviceScrollPosition().y);
 
   // Use default processing to pass the print message to all child windows
   return Default();
@@ -165,11 +147,6 @@ void ContentsPane::OnDraw(CDC* pDC)
 
   // Restore the original device context settings
   dc.SelectObject(oldBitmap);
-}
-
-void ContentsPane::PostNcDestroy()
-{
-  // Do nothing
 }
 
 void ContentsPane::Draw(CDC* dc, int origin_y)
@@ -743,7 +720,7 @@ int ContentsWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
 
   // Create the scrolling contents pane
-  m_contents.Create(NULL,NULL,WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,0);
+  m_contents.Create(WS_CHILD|WS_VISIBLE,this,0);
   m_contents.UpdateSmallest(SourceLexer::Part);
 
   // Create the depth slider

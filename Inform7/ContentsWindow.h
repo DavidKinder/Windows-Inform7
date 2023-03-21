@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DrawScrollWindow.h"
 #include "Messages.h"
 #include "SourceLexer.h"
 
@@ -8,7 +9,7 @@
 
 #include <memory>
 
-class ContentsPane : public CScrollView
+class ContentsPane : public DrawScrollArea
 {
   DECLARE_DYNAMIC(ContentsPane)
 
@@ -28,12 +29,10 @@ protected:
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
   afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-  afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 
-  afx_msg LRESULT OnPrint(WPARAM, LPARAM);
+  afx_msg LRESULT OnPrint(WPARAM wp, LPARAM lp);
 
   virtual void OnDraw(CDC* pDC);
-  virtual void PostNcDestroy();
 
 private:
   struct Node
