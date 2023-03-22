@@ -83,12 +83,14 @@ protected:
   afx_msg void OnNcLButtonDblClk(UINT nHitTest, CPoint point);
   afx_msg void OnMouseMove(UINT nHitTest, CPoint point);
   afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+  afx_msg void OnCancelMode();
   afx_msg void OnCaptureChanged(CWnd* pWnd);
   afx_msg void OnTimer(UINT_PTR nIDEvent);
 
   CPoint ScreenToWindow(CPoint screenPt);
   void RedrawNonClient(void);
   Slider GetVerticalSlider(void);
+  Slider GetHorizontalSlider(void);
 
   BarState m_v, m_h;
   Element m_capture;
@@ -105,7 +107,7 @@ protected:
 
   enum Timer
   {
-    TimerInitialClick = 1,
+    TimerInitialClick = 0xD000,
     TimerMouseCapture
   };
 
@@ -126,6 +128,10 @@ public:
   virtual void DrawVertical(CDC& dc, DarkMode* dark, bool drag,
     const DrawScrollWindow::BarState& state, const DrawScrollWindow::Slider& slide,
     const DrawScrollWindow::Element& hot, const DrawScrollWindow::Element& capture) = 0;
+  virtual void DrawHorizontal(CDC& dc, DarkMode* dark, bool drag,
+    const DrawScrollWindow::BarState& state, const DrawScrollWindow::Slider& slide,
+    const DrawScrollWindow::Element& hot, const DrawScrollWindow::Element& capture) = 0;
+  virtual void DrawCorner(CDC& dc, DarkMode* dark, const CRect& rect) = 0;
 };
 
 class DrawChromeScroll : public DrawScroll
@@ -134,9 +140,16 @@ public:
   void DrawVertical(CDC& dc, DarkMode* dark, bool drag,
     const DrawScrollWindow::BarState& state, const DrawScrollWindow::Slider& slide,
     const DrawScrollWindow::Element& hot, const DrawScrollWindow::Element& capture);
+  void DrawHorizontal(CDC& dc, DarkMode* dark, bool drag,
+    const DrawScrollWindow::BarState& state, const DrawScrollWindow::Slider& slide,
+    const DrawScrollWindow::Element& hot, const DrawScrollWindow::Element& capture);
+  void DrawCorner(CDC& dc, DarkMode* dark, const CRect& rect);
 
 protected:
   void DrawVerticalArrow(CDC& dc, DarkMode* dark, bool drag,
+    const DrawScrollWindow::BarState& state, const DrawScrollWindow::Slider& slide, DrawScrollWindow::Part part,
+    const DrawScrollWindow::Element& hot, const DrawScrollWindow::Element& capture);
+  void DrawHorizontalArrow(CDC& dc, DarkMode* dark, bool drag,
     const DrawScrollWindow::BarState& state, const DrawScrollWindow::Slider& slide, DrawScrollWindow::Part part,
     const DrawScrollWindow::Element& hot, const DrawScrollWindow::Element& capture);
   COLORREF GetSysColour(DarkMode* dark, int sysColour);

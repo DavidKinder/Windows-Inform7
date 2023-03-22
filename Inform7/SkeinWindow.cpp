@@ -12,9 +12,9 @@
 
 #define WINNING_LABEL L"***"
 
-IMPLEMENT_DYNCREATE(SkeinWindow, CScrollView)
+IMPLEMENT_DYNCREATE(SkeinWindow, CWnd)
 
-BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
+BEGIN_MESSAGE_MAP(SkeinWindow, DrawScrollArea)
   ON_WM_CREATE()
   ON_WM_SIZE()
   ON_WM_VSCROLL()
@@ -25,19 +25,17 @@ BEGIN_MESSAGE_MAP(SkeinWindow, CScrollView)
   ON_WM_CONTEXTMENU()
   ON_WM_MOUSEACTIVATE()
   ON_WM_MOUSEMOVE()
-  ON_WM_MOUSEWHEEL()
   ON_WM_CANCELMODE()
   ON_WM_CAPTURECHANGED()
   ON_WM_CHAR()
   ON_WM_TIMER()
 
-  ON_MESSAGE(WM_MBUTTONDOWN, HandleMButtonDown)
   ON_MESSAGE(WM_RENAMENODE, OnRenameNode)
 END_MESSAGE_MAP()
 
 SkeinWindow::SkeinWindow() : m_skein(NULL), m_skeinIndex(-1),
   m_mouseOverNode(NULL), m_mouseOverMenu(false), m_mouseMode(MouseNormal), m_clickTime(0), m_dragNode(NULL),
-  m_pctAnim(-1), m_showTranscriptAfterAnim(false), m_anchorWindow(NULL)
+  m_pctAnim(-1), m_showTranscriptAfterAnim(false)
 {
   HINSTANCE hInst = AfxFindResourceHandle(MAKEINTRESOURCE(IDC_DRAGCOPY),RT_GROUP_CURSOR);
   ASSERT(hInst != NULL);
@@ -53,7 +51,7 @@ SkeinWindow::~SkeinWindow()
 
 int SkeinWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-  if (CScrollView::OnCreate(lpCreateStruct) == -1)
+  if (DrawScrollArea::OnCreate(lpCreateStruct) == -1)
     return -1;
 
   // Control for editing text
@@ -66,46 +64,10 @@ int SkeinWindow::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void SkeinWindow::OnSize(UINT nType, int cx, int cy)
 {
-  CScrollView::OnSize(nType,cx,cy);
+  DrawScrollArea::OnSize(nType,cx,cy);
 
   if (m_skein != NULL)
     Layout(Skein::LayoutDefault);
-}
-
-void SkeinWindow::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-  if (pScrollBar != NULL && pScrollBar->SendChildNotifyLastMsg())
-    return;
-  if (pScrollBar == NULL)
-  {
-    if ((nSBCode == SB_THUMBPOSITION) || (nSBCode == SB_THUMBTRACK))
-    {
-      SCROLLINFO scroll;
-      ::ZeroMemory(&scroll,sizeof scroll);
-      scroll.cbSize = sizeof scroll;
-      GetScrollInfo(SB_VERT,&scroll);
-      nPos = scroll.nTrackPos;
-    }
-    OnScroll(MAKEWORD(0xFF,nSBCode),nPos);
-  }
-}
-
-void SkeinWindow::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-  if (pScrollBar != NULL && pScrollBar->SendChildNotifyLastMsg())
-    return;
-  if (pScrollBar == NULL)
-  {
-    if ((nSBCode == SB_THUMBPOSITION) || (nSBCode == SB_THUMBTRACK))
-    {
-      SCROLLINFO scroll;
-      ::ZeroMemory(&scroll,sizeof scroll);
-      scroll.cbSize = sizeof scroll;
-      GetScrollInfo(SB_HORZ,&scroll);
-      nPos = scroll.nTrackPos;
-    }
-    OnScroll(MAKEWORD(nSBCode,0xFF),nPos);
-  }
 }
 
 BOOL SkeinWindow::OnEraseBkgnd(CDC* pDC)
@@ -159,7 +121,7 @@ void SkeinWindow::OnLButtonDown(UINT nFlags, CPoint point)
       PostMessage(WM_LBUTTONUP,nFlags,MAKELPARAM(point.x,point.y));
   }
 
-  CScrollView::OnLButtonDown(nFlags,point);
+  DrawScrollArea::OnLButtonDown(nFlags,point);
 }
 
 void SkeinWindow::OnLButtonUp(UINT nFlags, CPoint point)
@@ -192,7 +154,7 @@ void SkeinWindow::OnLButtonUp(UINT nFlags, CPoint point)
               ClientToScreen(&sp);
               OnContextMenu(this,sp);
             }
-            CScrollView::OnLButtonUp(nFlags,point);
+            DrawScrollArea::OnLButtonUp(nFlags,point);
             return;
           }
         }
@@ -264,7 +226,7 @@ void SkeinWindow::OnLButtonUp(UINT nFlags, CPoint point)
     break;
   }
 
-  CScrollView::OnLButtonUp(nFlags,point);
+  DrawScrollArea::OnLButtonUp(nFlags,point);
 }
 
 void SkeinWindow::OnContextMenu(CWnd* pWnd, CPoint point)
@@ -441,7 +403,7 @@ int SkeinWindow::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
     if (ChildWindowFromPoint(point) != &m_edit)
       m_edit.EndEdit();
   }
-  return CScrollView::OnMouseActivate(pDesktopWnd,nHitTest,message);
+  return DrawScrollArea::OnMouseActivate(pDesktopWnd,nHitTest,message);
 }
 
 void SkeinWindow::OnMouseMove(UINT nFlags, CPoint point)
@@ -469,73 +431,7 @@ void SkeinWindow::OnMouseMove(UINT nFlags, CPoint point)
       Invalidate();
   }
 
-  CScrollView::OnMouseMove(nFlags,point);
-}
-
-BOOL SkeinWindow::OnMouseWheel(UINT fFlags, short zDelta, CPoint point)
-{
-  if (fFlags & (MK_SHIFT|MK_CONTROL))
-    return FALSE;
-  return DoMouseWheel(fFlags,zDelta,point);
-}
-
-LRESULT SkeinWindow::HandleMButtonDown(WPARAM wParam, LPARAM lParam)
-{
-  UINT nFlags = static_cast<UINT>(wParam);
-  CPoint point(lParam);
-
-  if (nFlags & (MK_SHIFT|MK_CONTROL))
-  {
-    CView::OnMButtonDown(nFlags,point);
-    return FALSE;
-  }
-
-  BOOL bSupport = FALSE;
-  if (!bSupport)
-    bSupport = ::GetSystemMetrics(SM_MOUSEWHEELPRESENT);
-
-  if (!bSupport)
-    CView::OnMButtonDown(nFlags,point);
-  else
-  {
-    if (m_anchorWindow == NULL)
-    {
-      BOOL bVertBar;
-      BOOL bHorzBar;
-      CheckScrollBars(bHorzBar,bVertBar);
-
-      UINT nBitmapID = 0;
-      if (bVertBar)
-      {
-        if (bHorzBar)
-          nBitmapID = AFX_IDC_MOUSE_ORG_HV;
-        else
-          nBitmapID = AFX_IDC_MOUSE_ORG_VERT;
-      }
-      else if (bHorzBar)
-        nBitmapID = AFX_IDC_MOUSE_ORG_HORZ;
-
-      if (nBitmapID == 0)
-      {
-        CView::OnMButtonDown(nFlags,point);
-        return FALSE;
-      }
-      else
-      {
-        m_anchorWindow = new SkeinMouseAnchorWnd(point);
-        m_anchorWindow->SetBitmap(nBitmapID);
-        m_anchorWindow->Create(this);
-        m_anchorWindow->ShowWindow(SW_SHOWNA);
-      }
-    }
-    else
-    {
-      m_anchorWindow->DestroyWindow();
-      delete m_anchorWindow;
-      m_anchorWindow = NULL;
-    }
-  }
-  return TRUE;
+  DrawScrollArea::OnMouseMove(nFlags,point);
 }
 
 void SkeinWindow::OnCancelMode()
@@ -545,14 +441,14 @@ void SkeinWindow::OnCancelMode()
     m_mouseMode = MouseNormal;
     ::ReleaseCapture();
   }
-  CScrollView::OnCancelMode();
+  DrawScrollArea::OnCancelMode();
 }
 
 void SkeinWindow::OnCaptureChanged(CWnd* wnd)
 {
   if ((m_mouseMode == MouseDragMove) || (m_mouseMode == MouseDragCopy))
     m_mouseMode = MouseNormal;
-  CScrollView::OnCaptureChanged(wnd);
+  DrawScrollArea::OnCaptureChanged(wnd);
 }
 
 void SkeinWindow::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
@@ -565,7 +461,7 @@ void SkeinWindow::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
       ::ReleaseCapture();
     }
   }
-  CScrollView::OnChar(nChar,nRepCnt,nFlags);
+  DrawScrollArea::OnChar(nChar,nRepCnt,nFlags);
 }
 
 void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
@@ -594,7 +490,7 @@ void SkeinWindow::OnTimer(UINT_PTR nIDEvent)
     }
   }
 
-  CScrollView::OnTimer(nIDEvent);
+  DrawScrollArea::OnTimer(nIDEvent);
 }
 
 LRESULT SkeinWindow::OnRenameNode(WPARAM node, LPARAM line)
@@ -695,7 +591,7 @@ void SkeinWindow::OnDraw(CDC* pDC)
 BOOL SkeinWindow::PreCreateWindow(CREATESTRUCT& cs)
 {
   cs.style |= WS_CLIPCHILDREN;
-  return CScrollView::PreCreateWindow(cs);
+  return DrawScrollArea::PreCreateWindow(cs);
 }
 
 void SkeinWindow::SetSkein(Skein* skein, int idx)
@@ -800,14 +696,12 @@ void SkeinWindow::SkeinShowNode(Skein::Node* node, bool select)
       y = 0;
 
     // Only change the co-ordinates if there are scrollbars
-    BOOL horiz, vert;
-    CheckScrollBars(horiz,vert);
-    if (horiz == FALSE)
+    if (!m_h.visible)
       x = 0;
-    if (vert == FALSE)
+    if (!m_v.visible)
       y = 0;
 
-    ScrollToPosition(CPoint(x,y));
+    ScrollToDevicePosition(CPoint(x,y));
   }
 
   if (select)
@@ -1611,210 +1505,4 @@ SkeinWindow::CommandStartEdit::CommandStartEdit(SkeinWindow* wnd, Skein::Node* n
 void SkeinWindow::CommandStartEdit::Run(void)
 {
   m_wnd->StartEdit(m_node);
-}
-
-// SkeinMouseAnchorWnd
-
-#define ID_TIMER_TRACKING	0xE000
-
-BEGIN_MESSAGE_MAP(SkeinMouseAnchorWnd, CWnd)
-  ON_WM_TIMER()
-END_MESSAGE_MAP()
-
-SkeinMouseAnchorWnd::SkeinMouseAnchorWnd(CPoint& ptAnchor)
-  : m_size(32,33), m_ptAnchor(ptAnchor), m_bQuitTracking(FALSE)
-{
-}
-
-BOOL SkeinMouseAnchorWnd::Create(SkeinWindow* pParent)
-{
-  ASSERT(pParent != NULL);
-
-  pParent->ClientToScreen(&m_ptAnchor);
-
-  int dpi = DPI::getWindowDPI(pParent);
-  m_rectDrag.top = m_ptAnchor.y - DPI::getSystemMetrics(SM_CYDOUBLECLK,dpi);
-  m_rectDrag.bottom = m_ptAnchor.y + DPI::getSystemMetrics(SM_CYDOUBLECLK,dpi);
-  m_rectDrag.left = m_ptAnchor.x - DPI::getSystemMetrics(SM_CXDOUBLECLK,dpi);
-  m_rectDrag.right = m_ptAnchor.x + DPI::getSystemMetrics(SM_CXDOUBLECLK,dpi);
-
-  BOOL bRetVal = CreateEx(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED,
-    AfxRegisterWndClass(CS_SAVEBITS),NULL,WS_POPUP,
-    m_ptAnchor.x - m_size.cx/2,m_ptAnchor.y - m_size.cy/2,m_size.cx,m_size.cy,NULL,NULL);
-  SetOwner(pParent);
-
-  if (bRetVal)
-  {
-    HDC dc = ::GetDC(NULL);
-    CDC dcMem;
-    dcMem.CreateCompatibleDC(CDC::FromHandle(dc));
-    CDibSection bitmap;
-    if (bitmap.CreateBitmap(dc,m_size.cx,m_size.cy))
-    {
-      CBitmap* oldBitmap = CDibSection::SelectDibSection(dcMem,&bitmap);
-
-      // Copy the circle image
-      CDibSection* circle = NULL;
-      switch (m_nAnchorID)
-      {
-      case AFX_IDC_MOUSE_ORG_HV:
-        circle = theApp.GetCachedImage("Anchor-pan");
-        break;
-      case AFX_IDC_MOUSE_ORG_HORZ:
-        circle = theApp.GetCachedImage("Anchor-pan-horizontal");
-        break;
-      case AFX_IDC_MOUSE_ORG_VERT:
-        circle = theApp.GetCachedImage("Anchor-pan-vertical");
-        break;
-      }
-      ASSERT(circle != NULL);
-      if (circle != NULL)
-      {
-        ASSERT(circle->GetSize().cx == m_size.cx);
-        ASSERT(circle->GetSize().cy == m_size.cy);
-        memcpy(bitmap.GetBits(),circle->GetBits(),m_size.cx * m_size.cy * sizeof (DWORD));
-      }
-
-      // Use the bitmap as the alpha blended image for this window
-      CPoint layerTopLeft(0,0);
-      BLENDFUNCTION layerBlend = { AC_SRC_OVER,0,0xFF,AC_SRC_ALPHA };
-      ::UpdateLayeredWindow(GetSafeHwnd(),dc,
-        NULL,&m_size,dcMem.GetSafeHdc(),&layerTopLeft,0,&layerBlend,ULW_ALPHA);
-
-      dcMem.SelectObject(&oldBitmap);
-    }
-    ::ReleaseDC(NULL,dc);
-
-    SetCapture();
-    SetTimer(ID_TIMER_TRACKING,50,NULL);
-  }
-  return bRetVal;
-}
-
-void SkeinMouseAnchorWnd::SetBitmap(UINT nID)
-{
-  HINSTANCE hInst = AfxFindResourceHandle(MAKEINTRESOURCE(nID),RT_GROUP_CURSOR);
-  ASSERT(hInst != NULL);
-  m_hAnchorCursor = ::LoadCursor(hInst,MAKEINTRESOURCE(nID));
-  m_nAnchorID = nID;
-}
-
-BOOL SkeinMouseAnchorWnd::PreTranslateMessage(MSG* pMsg)
-{
-  BOOL bRetVal = FALSE;
-
-  switch (pMsg->message)
-  {
-  case WM_MOUSEWHEEL:
-  case WM_KEYDOWN:
-  case WM_CHAR:
-  case WM_KEYUP:
-  case WM_SYSKEYDOWN:
-  case WM_SYSKEYUP:
-  case WM_LBUTTONDOWN:
-  case WM_LBUTTONUP:
-  case WM_RBUTTONDOWN:
-  case WM_RBUTTONUP:
-  case WM_MBUTTONDOWN:
-    m_bQuitTracking = TRUE;
-    bRetVal = TRUE;
-    break;
-
-  case WM_MBUTTONUP:
-    {
-      CPoint pt(pMsg->lParam);
-      ClientToScreen(&pt);
-      if (!PtInRect(&m_rectDrag,pt))
-        m_bQuitTracking = TRUE;
-      bRetVal = TRUE;
-    }
-    break;
-  }
-  return bRetVal;
-}
-
-void SkeinMouseAnchorWnd::OnTimer(UINT_PTR nIDEvent)
-{
-  ASSERT(nIDEvent == ID_TIMER_TRACKING);
-
-  CPoint ptNow;
-  GetCursorPos(&ptNow);
-
-  CRect rectClient;
-  GetWindowRect(&rectClient);
-
-  int nCursor = 0;
-  if (m_nAnchorID == AFX_IDC_MOUSE_ORG_HV || m_nAnchorID == AFX_IDC_MOUSE_ORG_VERT)
-  {
-    if (ptNow.y < rectClient.top)
-      nCursor = AFX_IDC_MOUSE_PAN_N;
-    else if (ptNow.y > rectClient.bottom)
-      nCursor = AFX_IDC_MOUSE_PAN_S;
-  }
-  if (m_nAnchorID == AFX_IDC_MOUSE_ORG_HV || m_nAnchorID == AFX_IDC_MOUSE_ORG_HORZ)
-  {
-    if (ptNow.x < rectClient.left)
-    {
-      if (nCursor == 0)
-        nCursor = AFX_IDC_MOUSE_PAN_W;
-      else if (m_nAnchorID == AFX_IDC_MOUSE_ORG_HV)
-        nCursor--;
-    }
-    else if (ptNow.x > rectClient.right)
-    {
-      if (nCursor == 0)
-        nCursor = AFX_IDC_MOUSE_PAN_E;
-      else if (m_nAnchorID == AFX_IDC_MOUSE_ORG_HV)
-        nCursor++;
-    }
-  }
-
-  if (m_bQuitTracking)
-  {
-    KillTimer(ID_TIMER_TRACKING);
-    ReleaseCapture();
-    SetCursor(NULL);
-    SkeinWindow* pView = (SkeinWindow*)GetOwner();
-    DestroyWindow();
-    delete pView->m_anchorWindow;
-    pView->m_anchorWindow = NULL;
-  }
-  else if (nCursor == 0)
-    SetCursor(m_hAnchorCursor);
-  else
-  {
-    HINSTANCE hInst = AfxFindResourceHandle(MAKEINTRESOURCE(nCursor),
-      RT_GROUP_CURSOR);
-    HICON hCursor = ::LoadCursor(hInst,MAKEINTRESOURCE(nCursor));
-    ASSERT(hCursor != NULL);
-    SetCursor(hCursor);
-
-    CSize sizeDistance;
-    if (ptNow.x > rectClient.right)
-      sizeDistance.cx = ptNow.x - rectClient.right;
-    else if (ptNow.x < rectClient.left)
-      sizeDistance.cx = ptNow.x - rectClient.left;
-    else
-      sizeDistance.cx = 0;
-
-    if (ptNow.y > rectClient.bottom)
-      sizeDistance.cy = ptNow.y - rectClient.bottom;
-    else if (ptNow.y < rectClient.top)
-      sizeDistance.cy = ptNow.y - rectClient.top;
-    else
-      sizeDistance.cy = 0;
-
-    SkeinWindow* pView = (SkeinWindow*)GetOwner();
-
-    CSize sizeToScroll = pView->GetWheelScrollDistance(sizeDistance,
-      m_nAnchorID == AFX_IDC_MOUSE_ORG_HV || m_nAnchorID == AFX_IDC_MOUSE_ORG_HORZ,
-      m_nAnchorID == AFX_IDC_MOUSE_ORG_HV || m_nAnchorID == AFX_IDC_MOUSE_ORG_VERT);
-
-    pView->OnScrollBy(sizeToScroll,TRUE);
-    UpdateWindow();
-    SetWindowPos(&CWnd::wndTop,
-      m_ptAnchor.x - m_size.cx/2,
-      m_ptAnchor.y - m_size.cy/2,0,0,
-      SWP_NOACTIVATE|SWP_NOSIZE|SWP_SHOWWINDOW);
-  }
 }

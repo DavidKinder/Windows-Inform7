@@ -1,19 +1,17 @@
 #pragma once
 
+#include "DrawScrollArea.h"
+#include "Messages.h"
 #include "Skein.h"
 #include "SkeinEdit.h"
-#include "Messages.h"
 #include "TranscriptPane.h"
 
 #include "DarkMode.h"
 #include "Dib.h"
 
 #include <map>
-#include <vector>
 
-class SkeinMouseAnchorWnd;
-
-class SkeinWindow : public CScrollView, public Skein::Listener
+class SkeinWindow : public DrawScrollArea, public Skein::Listener
 {
   DECLARE_DYNCREATE(SkeinWindow)
 
@@ -39,7 +37,7 @@ public:
   bool IsTranscriptActive(void);
   void SaveTranscript(const char* path);
 
-  virtual CSize GetWheelScrollDistance(CSize sizeDistance, BOOL bHorz, BOOL bVert);
+  virtual CSize GetWheelScrollDistance(CSize distance, BOOL horz, BOOL vert);
 
   enum NodeBitmap
   {
@@ -65,22 +63,17 @@ protected:
 
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
   afx_msg void OnSize(UINT nType, int cx, int cy);
-  afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-  afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
   afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
   afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
   afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
   afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
   afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-  afx_msg BOOL OnMouseWheel(UINT fFlags, short zDelta, CPoint point);
-  afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
   afx_msg void OnCancelMode();
   afx_msg void OnCaptureChanged(CWnd* pWnd);
   afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
   afx_msg void OnTimer(UINT_PTR nIDEvent);
 
-  afx_msg LRESULT HandleMButtonDown(WPARAM wParam, LPARAM lParam);
   afx_msg LRESULT OnRenameNode(WPARAM, LPARAM);
 
   virtual void OnDraw(CDC* pDC);
@@ -158,9 +151,6 @@ private:
   TranscriptPane m_transcript;
   bool m_showTranscriptAfterAnim;
 
-  SkeinMouseAnchorWnd* m_anchorWindow;
-  friend class SkeinMouseAnchorWnd;
-
   class CommandStartEdit : public Command
   {
   public:
@@ -171,27 +161,4 @@ private:
     SkeinWindow* m_wnd;
     Skein::Node* m_node;
   };
-};
-
-class SkeinMouseAnchorWnd : public CWnd
-{
-public:
-  SkeinMouseAnchorWnd(CPoint& ptAnchor);
-
-  BOOL Create(SkeinWindow* pParent);
-  void SetBitmap(UINT nID);
-
-  virtual BOOL PreTranslateMessage(MSG* pMsg);
-
-  afx_msg void OnTimer(UINT_PTR nIDEvent);
-  
-  DECLARE_MESSAGE_MAP()
-
-private:
-  CSize m_size;
-  CRect m_rectDrag;
-  CPoint m_ptAnchor;
-  BOOL m_bQuitTracking;
-  UINT m_nAnchorID;
-  HCURSOR m_hAnchorCursor;
 };

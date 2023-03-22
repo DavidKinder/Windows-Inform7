@@ -318,7 +318,7 @@ void DrawScrollArea::OnHScroll(UINT code, UINT pos, CScrollBar* bar)
       GetScrollInfo(SB_HORZ,&si);
       pos = si.nTrackPos;
     }
-    OnScroll(MAKEWORD(0xFF,code),pos);
+    OnScroll(MAKEWORD(code,0xFF),pos);
   }
 }
 

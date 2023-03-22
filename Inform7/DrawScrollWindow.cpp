@@ -21,6 +21,7 @@ BEGIN_MESSAGE_MAP(DrawScrollWindow, CWnd)
   ON_WM_NCLBUTTONDBLCLK()
   ON_WM_MOUSEMOVE()
   ON_WM_LBUTTONUP()
+  ON_WM_CANCELMODE()
   ON_WM_CAPTURECHANGED()
   ON_WM_TIMER()
 END_MESSAGE_MAP()
@@ -326,13 +327,9 @@ void DrawScrollWindow::OnNcPaint()
     if (m_v.visible)
       m_draw->DrawVertical(*dc,dark,IsDraggingSlider(BarVertical),m_v,GetVerticalSlider(),m_mouseOver,m_capture);
     if (m_h.visible)
-    {
-      //TODO: horizontal
-    }
+      m_draw->DrawHorizontal(*dc,dark,IsDraggingSlider(BarHorizontal),m_h,GetHorizontalSlider(),m_mouseOver,m_capture);
     if (m_v.visible && m_h.visible)
-    {
-      //TODO: horizontal and vertical
-    }
+      m_draw->DrawCorner(*dc,dark,CRect(m_v.rect.left,m_h.rect.top,m_v.rect.right,m_h.rect.bottom));
 
     ::EndBufferedPaint(pb,TRUE);
   }
@@ -348,13 +345,9 @@ LRESULT DrawScrollWindow::OnPrint(WPARAM wp, LPARAM lp)
     if (m_v.visible)
       m_draw->DrawVertical(*dc,dark,IsDraggingSlider(BarVertical),m_v,GetVerticalSlider(),m_mouseOver,m_capture);
     if (m_h.visible)
-    {
-      //TODO: horizontal
-    }
+      m_draw->DrawHorizontal(*dc,dark,IsDraggingSlider(BarHorizontal),m_h,GetHorizontalSlider(),m_mouseOver,m_capture);
     if (m_v.visible && m_h.visible)
-    {
-      //TODO: horizontal and vertical
-    }
+      m_draw->DrawCorner(*dc,dark,CRect(m_v.rect.left,m_h.rect.top,m_v.rect.right,m_h.rect.bottom));
   }
   return 0;
 }
@@ -419,7 +412,12 @@ void DrawScrollWindow::OnNcLButtonDown(UINT nHitTest, CPoint point)
         }
         break;
       case BarHorizontal:
-        //TODO: horizontal
+        {
+          m_h.trackPos = m_h.pos;
+          Slider slide = GetHorizontalSlider();
+          m_dragSliderOffset = wndPoint.x - (m_h.rect.left + slide.btn + slide.pos);
+          m_dragStartPos = m_h.pos;
+        }
         break;
       default:
         ASSERT(FALSE);
@@ -470,13 +468,35 @@ void DrawScrollWindow::OnMouseMove(UINT nHitTest, CPoint point)
   }
   else if (IsDraggingSlider(BarHorizontal))
   {
-    //TODO: horizontal
+    int trackPos;
+    if ((point.y > m_h.rect.top - DRAG_SLIDER_LIMIT) && (point.y < m_h.rect.bottom + DRAG_SLIDER_LIMIT))
+    {
+      Slider slide = GetHorizontalSlider();
+      int range = m_h.max - m_h.min + 1;
+      int width = m_h.rect.Width() - (2*slide.btn);
+      trackPos = MulDiv(point.x - m_dragSliderOffset - m_h.rect.left - slide.btn,range - m_h.page,width - slide.len);
+    }
+    else
+      trackPos = m_dragStartPos;
+
+    if (m_h.SetTrackPos(trackPos))
+    {
+      RedrawNonClient();
+      PostMessage(WM_HSCROLL,MAKEWPARAM(SB_THUMBTRACK,m_h.trackPos));
+    }
   }
 
   Default();
 }
 
 void DrawScrollWindow::OnLButtonUp(UINT nFlags, CPoint point)
+{
+  if (GetCapture() == this)
+    ReleaseCapture();
+  Default();
+}
+
+void DrawScrollWindow::OnCancelMode()
 {
   if (GetCapture() == this)
     ReleaseCapture();
@@ -492,7 +512,8 @@ void DrawScrollWindow::OnCaptureChanged(CWnd* pWnd)
   }
   else if (IsDraggingSlider(BarHorizontal))
   {
-    //TODO: horizontal
+    PostMessage(WM_HSCROLL,MAKEWPARAM(SB_THUMBPOSITION,m_h.trackPos));
+    PostMessage(WM_HSCROLL,SB_ENDSCROLL);
   }
 
   m_capture = Element();
@@ -513,9 +534,6 @@ void DrawScrollWindow::OnTimer(UINT_PTR nIDEvent)
     break;
   case TimerMouseCapture:
     DoCaptureTimer();
-    break;
-  default:
-    ASSERT(FALSE);
     break;
   }
 }
@@ -544,6 +562,23 @@ DrawScrollWindow::Slider DrawScrollWindow::GetVerticalSlider(void)
     slide.len = 8;
   int pos = IsDraggingSlider(BarVertical) ? m_v.trackPos : m_v.pos;
   slide.pos = MulDiv(pos,height - slide.len,range - m_v.page);
+  if (slide.pos < 0)
+    slide.pos = 0;
+  return slide;
+}
+
+DrawScrollWindow::Slider DrawScrollWindow::GetHorizontalSlider(void)
+{
+  Slider slide;
+  slide.btn = DPI::getSystemMetrics(SM_CXHSCROLL,DPI::getWindowDPI(this));
+
+  int range = m_h.max - m_h.min + 1;
+  int width = m_h.rect.Width() - (2*slide.btn);
+  slide.len = MulDiv(m_h.page,width,range);
+  if (slide.len < 8)
+    slide.len = 8;
+  int pos = IsDraggingSlider(BarHorizontal) ? m_h.trackPos : m_h.pos;
+  slide.pos = MulDiv(pos,width - slide.len,range - m_h.page);
   if (slide.pos < 0)
     slide.pos = 0;
   return slide;
@@ -584,7 +619,20 @@ DrawScrollWindow::Element DrawScrollWindow::GetElementAtPoint(CPoint point)
   else if (m_h.visible && m_h.rect.PtInRect(point))
   {
     element.bar = BarHorizontal;
-    //TODO: horizontal
+
+    int btnSize = DPI::getSystemMetrics(SM_CXHSCROLL,DPI::getWindowDPI(this));
+    int pos = point.x - m_h.rect.left;
+    Slider slide = GetHorizontalSlider();
+    if (pos < btnSize)
+      element.part = PartUpButton;
+    else if (pos < btnSize + slide.pos)
+      element.part = PartAboveSlider;
+    else if (pos < btnSize + slide.pos + slide.len)
+      element.part = PartSlider;
+    else if (pos < m_h.rect.right - btnSize)
+      element.part = PartBelowSlider;
+    else
+      element.part = PartDownButton;
   }
   return element;
 }
@@ -771,6 +819,28 @@ void DrawChromeScroll::DrawVertical(CDC& dc, DarkMode* dark, bool drag,
   dc.FillSolidRect(state.rect.left+1,state.rect.top+slide.btn+slide.pos,state.rect.Width()-2,slide.len,fore);
 }
 
+void DrawChromeScroll::DrawHorizontal(CDC& dc, DarkMode* dark, bool drag,
+  const DrawScrollWindow::BarState& state, const DrawScrollWindow::Slider& slide,
+  const DrawScrollWindow::Element& hot, const DrawScrollWindow::Element& capture)
+{
+  // Draw the background
+  dc.FillSolidRect(state.rect,GetSysColour(dark,COLOR_BTNFACE));
+
+  // Draw the arrows
+  DrawHorizontalArrow(dc,dark,drag,state,slide,DrawScrollWindow::PartUpButton,hot,capture);
+  DrawHorizontalArrow(dc,dark,drag,state,slide,DrawScrollWindow::PartDownButton,hot,capture);
+
+  // Draw the slider bar
+  bool sliderHot = (hot.bar == DrawScrollWindow::BarHorizontal) && (hot.part == DrawScrollWindow::PartSlider);
+  COLORREF fore = GetSysColour(dark,drag || sliderHot ? COLOR_BTNSHADOW : COLOR_SCROLLBAR);
+  dc.FillSolidRect(state.rect.left+slide.btn+slide.pos,state.rect.top+1,slide.len,state.rect.Height()-2,fore);
+}
+
+void DrawChromeScroll::DrawCorner(CDC& dc, DarkMode* dark, const CRect& rect)
+{
+  dc.FillSolidRect(rect,GetSysColour(dark,COLOR_BTNFACE));
+}
+
 void DrawChromeScroll::DrawVerticalArrow(CDC& dc, DarkMode* dark, bool drag,
   const DrawScrollWindow::BarState& state, const DrawScrollWindow::Slider& slide, DrawScrollWindow::Part part,
   const DrawScrollWindow::Element& hot, const DrawScrollWindow::Element& capture)
@@ -824,6 +894,64 @@ void DrawChromeScroll::DrawVerticalArrow(CDC& dc, DarkMode* dark, bool drag,
   {
     dc.MoveTo(c.x-i,y+(dir*i));
     dc.LineTo(c.x+i+1,y+(dir*i));
+  }
+
+  dc.SelectObject(oldPen);
+}
+
+void DrawChromeScroll::DrawHorizontalArrow(CDC& dc, DarkMode* dark, bool drag,
+  const DrawScrollWindow::BarState& state, const DrawScrollWindow::Slider& slide, DrawScrollWindow::Part part,
+  const DrawScrollWindow::Element& hot, const DrawScrollWindow::Element& capture)
+{
+  CRect r;
+  int dir = 0;
+  bool atEnd = false;
+
+  switch (part)
+  {
+  case DrawScrollWindow::PartUpButton:
+    r = CRect(state.rect.left,state.rect.bottom-slide.btn,state.rect.left+slide.btn,state.rect.bottom);
+    dir = +1;
+    atEnd = ((drag ? state.trackPos : state.pos) <= 0);
+    break;
+  case DrawScrollWindow::PartDownButton:
+    r = CRect(state.rect.right-slide.btn,state.rect.bottom-slide.btn,state.rect.right,state.rect.bottom);
+    dir = -1;
+    atEnd = ((drag ? state.trackPos : state.pos) >= state.max - state.page + 1);
+    break;
+  default:
+    ASSERT(FALSE);
+    break;
+  }
+
+  COLORREF back = GetSysColour(dark,COLOR_BTNFACE);
+  COLORREF fore = GetSysColour(dark,COLOR_BTNTEXT);
+
+  if (atEnd)
+    fore = GetSysColour(dark,COLOR_BTNSHADOW);
+  else if ((capture.bar == DrawScrollWindow::BarHorizontal) && (capture.part == part))
+  {
+    back = GetSysColour(dark,COLOR_BTNSHADOW);
+    fore = GetSysColour(dark,COLOR_WINDOW);
+  }
+  else if ((hot.bar == DrawScrollWindow::BarHorizontal) && (hot.part == part))
+  {
+    back = GetSysColour(dark,COLOR_SCROLLBAR);
+    fore = GetSysColour(dark,COLOR_BTNTEXT);
+  }
+
+  dc.FillSolidRect(r,back);
+
+  CPen pen;
+  pen.CreatePen(PS_SOLID,1,fore);
+  CPen* oldPen = dc.SelectObject(&pen);
+
+  CPoint c = r.CenterPoint();
+  int x = c.x-(dir*(r.Width()/16));
+  for (int i = 0; i < r.Width()/4; i++)
+  {
+    dc.MoveTo(x+(dir*i),c.y-i);
+    dc.LineTo(x+(dir*i),c.y+i+1);
   }
 
   dc.SelectObject(oldPen);
