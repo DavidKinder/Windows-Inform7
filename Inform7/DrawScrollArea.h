@@ -41,7 +41,7 @@ protected:
 
   bool m_insideUpdate = false;
 
-  DrawScrollMouseAnchorWnd* m_anchorWindow;
+  DrawScrollMouseAnchorWnd* m_anchorWindow = NULL;
   friend class DrawScrollMouseAnchorWnd;
 };
 
