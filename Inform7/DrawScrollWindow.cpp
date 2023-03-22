@@ -33,10 +33,15 @@ void DrawScrollWindow::SetDraw(DrawScroll* draw)
 
 BOOL DrawScrollWindow::Create(DWORD style, CWnd* parentWnd, UINT id)
 {
+  return Create(NULL,style,parentWnd,id);
+}
+
+BOOL DrawScrollWindow::Create(LPCSTR className, DWORD style, CWnd* parentWnd, UINT id)
+{
   m_v.SetActive(style & WS_VSCROLL);
   m_h.SetActive(style & WS_HSCROLL);
   style &= ~(WS_VSCROLL|WS_HSCROLL);
-  return CWnd::Create(NULL,NULL,style,CRect(0,0,0,0),parentWnd,id);
+  return CWnd::Create(className,NULL,style,CRect(0,0,0,0),parentWnd,id);
 }
 
 void DrawScrollWindow::EnableScrollBarCtrl(int bar, BOOL enable)
@@ -536,6 +541,7 @@ void DrawScrollWindow::OnTimer(UINT_PTR nIDEvent)
     DoCaptureTimer();
     break;
   }
+  Default();
 }
 
 CPoint DrawScrollWindow::ScreenToWindow(CPoint screenPt)

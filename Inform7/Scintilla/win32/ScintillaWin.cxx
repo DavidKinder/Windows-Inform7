@@ -1145,7 +1145,7 @@ void ScintillaWin::UpdateSystemCaret() {
 }
 
 int ScintillaWin::SetScrollInfo(int nBar, LPCSCROLLINFO lpsi, BOOL bRedraw) {
-/*XXXXDK Parent scrollbar */
+/*XXXXDK Custom scrollbar */
   SCNXSetScrollInfo scn;
   memset(&scn, 0, sizeof(scn));
 	scn.nmhdr.code = SCNX_SETSCROLLINFO;
@@ -1158,12 +1158,12 @@ int ScintillaWin::SetScrollInfo(int nBar, LPCSCROLLINFO lpsi, BOOL bRedraw) {
 	                            GetCtrlID(), reinterpret_cast<LPARAM>(&scn));
   if (res != 0)
     return scn.nPos;
-/*XXXXDK Parent scrollbar */
+/*XXXXDK Custom scrollbar */
 	return ::SetScrollInfo(MainHWND(), nBar, lpsi, bRedraw);
 }
 
 bool ScintillaWin::GetScrollInfo(int nBar, LPSCROLLINFO lpsi) {
-/*XXXXDK Parent scrollbar */
+/*XXXXDK Custom scrollbar */
   SCNXGetScrollInfo scn;
   memset(&scn, 0, sizeof(scn));
 	scn.nmhdr.code = SCNX_GETSCROLLINFO;
@@ -1175,7 +1175,7 @@ bool ScintillaWin::GetScrollInfo(int nBar, LPSCROLLINFO lpsi) {
 	                            GetCtrlID(), reinterpret_cast<LPARAM>(&scn));
   if (res != 0)
     return true;
-/*XXXXDK Parent scrollbar */
+/*XXXXDK Custom scrollbar */
 	return ::GetScrollInfo(MainHWND(), nBar, lpsi) ? true : false;
 }
 

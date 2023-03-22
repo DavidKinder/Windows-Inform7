@@ -11,11 +11,13 @@
 
 IMPLEMENT_DYNAMIC(ReportEdit, CWnd)
 
-BEGIN_MESSAGE_MAP(ReportEdit, CWnd)
+BEGIN_MESSAGE_MAP(ReportEdit, DrawScrollWindow)
   ON_WM_MOUSEWHEEL()
   ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateNeedSel)
   ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
   ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
+  ON_NOTIFY_REFLECT(SCNX_SETSCROLLINFO, OnSetScrollInfo)
+  ON_NOTIFY_REFLECT(SCNX_GETSCROLLINFO, OnGetScrollInfo)
 END_MESSAGE_MAP()
 
 ReportEdit::ReportEdit()
@@ -24,17 +26,13 @@ ReportEdit::ReportEdit()
   m_fixed = false;
 }
 
-BOOL ReportEdit::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
-{
-  if (nFlags & (MK_SHIFT|MK_CONTROL))
-    return TRUE;
-  return CWnd::OnMouseWheel(nFlags,zDelta,pt);
-}
-
 BOOL ReportEdit::Create(CWnd* parent, UINT id)
 {
-  if (!CWnd::Create("Scintilla",NULL,WS_CHILD|WS_CLIPCHILDREN,CRect(0,0,0,0),parent,id))
+  if (!DrawScrollWindow::Create("Scintilla",WS_CHILD|WS_CLIPCHILDREN,parent,id))
     return FALSE;
+
+  m_v.SetActive(true);
+  m_h.SetActive(true);
 
   m_editPtr = (sptr_t)SendMessage(SCI_GETDIRECTPOINTER);
   CallEdit(SCI_SETREADONLY,TRUE);
@@ -93,6 +91,26 @@ void ReportEdit::SetDarkMode(DarkMode* dark)
       CallEdit(SCI_STYLESETBACK,i,theApp.GetColour(InformApp::ColourBack));
     }
   }
+}
+
+BOOL ReportEdit::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+  if (nFlags & (MK_SHIFT|MK_CONTROL))
+    return TRUE;
+  return DrawScrollWindow::OnMouseWheel(nFlags,zDelta,pt);
+}
+
+void ReportEdit::OnSetScrollInfo(NMHDR* pNotifyStruct, LRESULT* result)
+{
+  SCNXSetScrollInfo* ssi = (SCNXSetScrollInfo*)pNotifyStruct;
+  ssi->nPos = SetScrollInfo(ssi->nBar,(LPCSCROLLINFO)ssi->lpsi,ssi->bRedraw);
+  *result = 1;
+}
+
+void ReportEdit::OnGetScrollInfo(NMHDR* pNotifyStruct, LRESULT* result)
+{
+  SCNXGetScrollInfo* gsi = (SCNXGetScrollInfo*)pNotifyStruct;
+  *result = GetScrollInfo(gsi->nBar,(LPSCROLLINFO)gsi->lpsi) ? 1 : 0;
 }
 
 void ReportEdit::OnUpdateNeedSel(CCmdUI* pCmdUI)

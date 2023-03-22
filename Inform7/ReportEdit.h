@@ -1,8 +1,10 @@
 #pragma once
 
+#include "DrawScrollWindow.h"
+
 #include "DarkMode.h"
 
-class ReportEdit : public CWnd
+class ReportEdit : public DrawScrollWindow
 {
   DECLARE_DYNAMIC(ReportEdit)
 
@@ -22,6 +24,8 @@ protected:
   DECLARE_MESSAGE_MAP()
 
   afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+  afx_msg void OnSetScrollInfo(NMHDR* pNotifyStruct, LRESULT* result);
+  afx_msg void OnGetScrollInfo(NMHDR* pNotifyStruct, LRESULT* result);
 
   afx_msg void OnUpdateNeedSel(CCmdUI* pCmdUI);
   afx_msg void OnEditCopy();

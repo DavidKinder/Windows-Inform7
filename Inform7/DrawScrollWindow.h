@@ -10,6 +10,7 @@ public:
   static void SetDraw(DrawScroll* draw);
 
   BOOL Create(DWORD style, CWnd* parentWnd, UINT id);
+  BOOL Create(LPCSTR className, DWORD style, CWnd* parentWnd, UINT id);
   void EnableScrollBarCtrl(int bar, BOOL enable = TRUE);
 
   int SetScrollInfo(int bar, LPCSCROLLINFO scrollInfo, BOOL redraw = TRUE);
