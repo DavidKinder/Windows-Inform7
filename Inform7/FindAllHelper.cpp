@@ -141,9 +141,15 @@ void FindResultsListCtrl::SetDarkMode(DarkMode* dark)
   if (GetSafeHwnd() != 0)
   {
     if (dark)
+    {
+      ::SetWindowTheme(GetSafeHwnd(),L"DarkMode_Explorer",NULL);
       SetBkColor(dark->GetColour(DarkMode::Back));
+    }
     else
+    {
+      ::SetWindowTheme(GetSafeHwnd(),NULL,NULL);
       SetBkColor(theApp.GetColour(InformApp::ColourBack));
+    }
   }
 }
 
