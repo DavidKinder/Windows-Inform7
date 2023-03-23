@@ -404,11 +404,12 @@ void PrefsEditPage::PreviewChanged(void)
   m_preview.PrefsChanged();
 }
 
-void PrefsEditPage::SetDarkMode(DarkMode* dark)
+void PrefsEditPage::SetDarkMode(DarkMode* dark, bool init)
 {
-  DarkModePropertyPage::SetDarkMode(dark);
+  DarkModePropertyPage::SetDarkMode(dark,init);
   m_tabPreview.LoadSettings(NoColourSettings());
   m_tabPreview.PrefsChanged();
+  m_fontNameCtrl.SetDarkMode(dark);
 }
 
 // Set the default preferences values
@@ -1007,11 +1008,11 @@ void PrefsColourPage::PreviewChanged(void)
   m_preview.PrefsChanged();
 }
 
-void PrefsColourPage::SetDarkMode(DarkMode* dark)
+void PrefsColourPage::SetDarkMode(DarkMode* dark, bool init)
 {
-  DarkModePropertyPage::SetDarkMode(dark);
+  DarkModePropertyPage::SetDarkMode(dark,init);
 
-  if (GetSafeHwnd() != 0)
+  if (!init)
   {
     // If the dark mode setting of Windows is changed while the dialog is up,
     // adjust the colour scheme.
@@ -1140,6 +1141,12 @@ void PrefsAdvancedPage::WriteSettings(void)
   theApp.CWinApp::WriteProfileString("Game","Glulx Interpreter",m_glulxTerp);
 }
 
+void PrefsAdvancedPage::SetDarkMode(DarkMode* dark, bool init)
+{
+  DarkModePropertyPage::SetDarkMode(dark,init);
+  m_fixedFontCombo.SetDarkMode(dark);
+}
+
 void PrefsAdvancedPage::DoDataExchange(CDataExchange* pDX)
 {
   DarkModePropertyPage::DoDataExchange(pDX);
@@ -1237,9 +1244,7 @@ END_MESSAGE_MAP()
 BOOL PrefsDialog::OnInitDialog() 
 {
   DarkModePropertySheet::OnInitDialog();
-
   m_dpi = DPI::getWindowDPI(this);
-  SetDarkMode(DarkMode::GetActive(this));
 
   // Get the default font for the dialog
   CFont* sysFont = theApp.GetFont(this,InformApp::FontSystem);
@@ -1266,6 +1271,9 @@ BOOL PrefsDialog::OnInitDialog()
     page->SendMessage(WM_AFTERFONTSET);
   }
   SetActivePage(page);
+
+  // Set dark mode only after all pages have been created by being made active
+  SetDarkMode(DarkMode::GetActive(this),true);
 
   CTabCtrl* tab = GetTabControl();
   tab->SetMinTabWidth(8);

@@ -765,7 +765,7 @@ void InformApp::SendAllFrames(Changed changed, int value)
       if (dialog->IsKindOf(RUNTIME_CLASS(I7BaseDialog)))
         ((I7BaseDialog*)dialog)->SetDarkMode(DarkMode::GetActive(dialog));
       else if (dialog->IsKindOf(RUNTIME_CLASS(PrefsDialog)))
-        ((PrefsDialog*)dialog)->SetDarkMode(DarkMode::GetActive(dialog));
+        ((PrefsDialog*)dialog)->SetDarkMode(DarkMode::GetActive(dialog),false);
     }
   }
 }

@@ -28,7 +28,7 @@ public:
   bool GetString(const char* name, char* value, ULONG len);
 
   void PreviewChanged(void);
-  void SetDarkMode(DarkMode* dark);
+  void SetDarkMode(DarkMode* dark, bool init);
 
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);
@@ -131,7 +131,7 @@ public:
   bool GetString(const char* name, char* value, ULONG len);
 
   void PreviewChanged(void);
-  void SetDarkMode(DarkMode* dark);
+  void SetDarkMode(DarkMode* dark, bool init);
 
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);
@@ -197,6 +197,8 @@ public:
 
   void ReadSettings(void);
   void WriteSettings(void);
+
+  void SetDarkMode(DarkMode* dark, bool init);
 
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);
