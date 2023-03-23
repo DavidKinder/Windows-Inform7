@@ -94,6 +94,10 @@ void GameGraphics::FontChanged(void)
 {
 }
 
+void GameGraphics::SetDarkMode(DarkMode* dark)
+{
+}
+
 void GameGraphics::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r)
 {
   w = size;

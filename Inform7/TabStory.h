@@ -25,6 +25,7 @@ public:
   bool IsEnabled(void);
   void PrefsChanged(CRegKey& key);
   void UpdateDPI(const std::map<CWnd*,double>& layout);
+  void SetDarkMode(DarkMode* dark);
 
   BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 

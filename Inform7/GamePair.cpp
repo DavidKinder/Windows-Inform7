@@ -142,6 +142,10 @@ void GamePair::FontChanged(void)
 {
 }
 
+void GamePair::SetDarkMode(DarkMode* dark)
+{
+}
+
 void GamePair::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r)
 {
 }

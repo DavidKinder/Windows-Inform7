@@ -16,6 +16,7 @@ public:
 
   void Layout(const CRect& r);
   void FontChanged(void);
+  void SetDarkMode(DarkMode* dark);
   void GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r);
   void AddText(const CStringW& text);
   void ClearText(bool styles, bool reverse, COLORREF fore, COLORREF back);

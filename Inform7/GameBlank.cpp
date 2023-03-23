@@ -46,6 +46,10 @@ void GameBlank::FontChanged(void)
 {
 }
 
+void GameBlank::SetDarkMode(DarkMode* dark)
+{
+}
+
 void GameBlank::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r)
 {
   w = 0;

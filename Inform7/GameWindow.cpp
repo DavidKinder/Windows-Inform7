@@ -286,6 +286,13 @@ void GameWindow::PrefsChanged(void)
   Resize(true);
 }
 
+void GameWindow::SetDarkMode(DarkMode* dark)
+{
+  WindowMapIt it(m_windows);
+  while (it.Iterate())
+    it.Value()->SetDarkMode(dark);
+}
+
 bool GameWindow::ReadFromPipe(LPBYTE data, DWORD length)
 {
   DWORD readTotal = 0;

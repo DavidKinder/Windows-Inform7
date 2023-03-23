@@ -1,6 +1,7 @@
 #pragma once
 
 class CDibSection;
+class DarkMode;
 
 class GameBase
 {
@@ -36,6 +37,7 @@ public:
 
   virtual void Layout(const CRect& r) = 0;
   virtual void FontChanged(void) = 0;
+  virtual void SetDarkMode(DarkMode* dark) = 0;
   virtual void GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r) = 0;
   virtual void AddText(const CStringW& text) = 0;
   virtual void ClearText(bool styles, bool reverse, COLORREF fore, COLORREF back) = 0;

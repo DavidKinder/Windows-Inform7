@@ -116,6 +116,13 @@ void TabStory::UpdateDPI(const std::map<CWnd*,double>& layout)
     m_game->PrefsChanged();
 }
 
+void TabStory::SetDarkMode(DarkMode* dark)
+{
+  TabBase::SetDarkMode(dark);
+  if (m_game != NULL)
+    m_game->SetDarkMode(dark);
+}
+
 CString TabStory::GetToolTip(UINT_PTR id)
 {
   if (id == ID_PLAY_STOP)

@@ -1,16 +1,17 @@
 #pragma once
 
+#include "GameBase.h"
+#include "InterpreterCommands.h"
+#include "MapIterator.h"
+#include "PropList.h"
+#include "Skein.h"
+
 #include <map>
 #include <set>
 
-#include "Skein.h"
-#include "GameBase.h"
-#include "MapIterator.h"
-#include "InterpreterCommands.h"
-#include "PropList.h"
-
 class CDibSection;
 class CWinGlkSound;
+class DarkMode;
 class GamePair;
 
 typedef CMap<int,int,GameBase*,GameBase*> WindowMap;
@@ -39,6 +40,7 @@ public:
   bool IsWaiting(void);
   void InputFromSkein(void);
   void PrefsChanged(void);
+  void SetDarkMode(DarkMode* dark);
 
   bool GameKeyEvent(CWnd* wnd, WPARAM wParam, LPARAM lParam);
   void GameMouseEvent(GameBase* wnd, int x, int y);

@@ -74,6 +74,10 @@ void GameGrid::FontChanged(void)
   m_charHeight = fontSize.cy;
 }
 
+void GameGrid::SetDarkMode(DarkMode* dark)
+{
+}
+
 void GameGrid::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r)
 {
   w = size * m_charWidth;

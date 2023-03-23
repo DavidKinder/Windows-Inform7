@@ -91,6 +91,11 @@ void GameText::FontChanged(void)
   SetMargins(fontSize.cx);
 }
 
+void GameText::SetDarkMode(DarkMode* dark)
+{
+  RichEdit::SetDarkMode(dark);
+}
+
 void GameText::GetNeededSize(int size, int& w, int& h, CSize fontSize, const CRect& r)
 {
   w = size * fontSize.cx;
