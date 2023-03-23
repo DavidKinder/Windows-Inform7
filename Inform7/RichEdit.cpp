@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Messages.h"
 #include "RichEdit.h"
+
+#include "DarkMode.h"
 #include "DpiFunctions.h"
 
 #ifdef _DEBUG
@@ -285,6 +287,12 @@ void RichEdit::FontChanged(void)
   SetDefaultCharFormat(format);
 }
 
+void RichEdit::SetDarkMode(DarkMode* dark)
+{
+  LPCWSTR theme = dark ? L"DarkMode_Explorer" : NULL;
+  ::SetWindowTheme(GetSafeHwnd(),theme,NULL);
+}
+
 bool RichEdit::RejectMsg(MSG* msg)
 {
   if (msg->hwnd == GetSafeHwnd())
@@ -319,7 +327,7 @@ bool RichEdit::RejectMsg(MSG* msg)
       break;
     case WM_MOUSEWHEEL:
       // Reject mouse wheel zooming
-      if (GET_KEYSTATE_WPARAM(msg->wParam) & MK_CONTROL)
+      if (GET_KEYSTATE_WPARAM(msg->wParam) & (MK_SHIFT|MK_CONTROL))
         return true;
       break;
     }

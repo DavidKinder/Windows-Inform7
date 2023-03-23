@@ -2,6 +2,8 @@
 
 #include "Inform.h"
 
+class DarkMode;
+
 class RichEdit : public CWnd
 {
   DECLARE_DYNAMIC(RichEdit)
@@ -13,6 +15,7 @@ public:
   BOOL SubclassWindow(HWND wnd);
 
   void FontChanged(void);
+  void SetDarkMode(DarkMode* dark);
 
   DWORD SetEventMask(DWORD eventMask);
   void EmptyUndoBuffer(void);

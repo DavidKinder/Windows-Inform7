@@ -216,6 +216,7 @@ void AboutDialog::SetDarkMode(DarkMode* dark)
   if (GetSafeHwnd() != 0)
   {
     SetLogoBitmap();
+    m_credits.SetDarkMode(dark);
 
     // Set colours for the credits control
     CHARFORMAT format;
