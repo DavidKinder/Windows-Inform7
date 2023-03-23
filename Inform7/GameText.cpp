@@ -46,14 +46,17 @@ GameText::GameText(MainWindow* main) : RichEdit(InformApp::FontDisplay)
   m_main = main;
   m_drawing = NULL;
 
-  Create(WS_CHILD|WS_VISIBLE,main->GetWnd(),0);
+  if (Create(WS_CHILD|WS_VISIBLE,main->GetWnd(),0))
+  {
+    RichEdit::SetDarkMode(dark);
 
-  m_background = dark ?
-    dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack);
-  SendMessage(EM_SETBKGNDCOLOR,FALSE,m_background);
+    m_background = dark ?
+      dark->GetColour(DarkMode::Back) : theApp.GetColour(InformApp::ColourBack);
+    SendMessage(EM_SETBKGNDCOLOR,FALSE,m_background);
 
-  // Allow full justification
-  SendMessage(EM_SETTYPOGRAPHYOPTIONS,TO_ADVANCEDTYPOGRAPHY,TO_ADVANCEDTYPOGRAPHY);
+    // Allow full justification
+    SendMessage(EM_SETTYPOGRAPHYOPTIONS,TO_ADVANCEDTYPOGRAPHY,TO_ADVANCEDTYPOGRAPHY);
+  }
 }
 
 bool GameText::IsKindOf(const CRuntimeClass* rclass) const
