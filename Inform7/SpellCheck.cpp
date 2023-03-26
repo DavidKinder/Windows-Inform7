@@ -173,6 +173,14 @@ SpellCheck::SpellCheck(SourceEdit* edit) : I7BaseDialog(FALSE), m_edit(edit)
   m_settingBadWord = false;
 }
 
+void SpellCheck::SetDarkMode(DarkMode* dark)
+{
+  I7BaseDialog::SetDarkMode(dark);
+
+  if (GetSafeHwnd() != 0)
+    m_suggestions.SetDarkMode(dark);
+}
+
 void SpellCheck::ShowWordFromSelection(void)
 {
   // Create the dialog, if needed

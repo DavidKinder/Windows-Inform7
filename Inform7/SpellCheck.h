@@ -18,6 +18,7 @@ public:
   static void Finalize(void);
 
   SpellCheck(SourceEdit* edit);
+  void SetDarkMode(DarkMode* dark);
   void ShowWordFromSelection(void);
 
   bool FindWord(bool current);
