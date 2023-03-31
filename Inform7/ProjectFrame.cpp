@@ -290,7 +290,7 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   }
 
   // Turn on dark mode, if needed
-  SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM_WINDOW));
+  SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM));
 
   // Set the application icon
   theApp.SetIcon(this);
@@ -466,7 +466,7 @@ void ProjectFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
   MenuBarFrameWnd::OnSettingChange(uFlags,lpszSection);
 
-  if ((m_dark != NULL) != DarkMode::IsEnabled(REGISTRY_INFORM_WINDOW))
+  if ((m_dark != NULL) != DarkMode::IsEnabled(REGISTRY_INFORM))
     theApp.SendAllFrames(InformApp::LightDarkMode,0);
 }
 
@@ -1029,7 +1029,7 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
       ((TabExtensions*)GetPanel(i)->GetTab(Panel::Tab_Extensions))->DownloadedExt(value);
     break;
   case InformApp::LightDarkMode:
-    SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM_WINDOW));
+    SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM));
     SendChanged(InformApp::Preferences,0);
     UpdateExtensionsMenu(); // Update menu icons
     break;

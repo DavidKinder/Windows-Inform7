@@ -1180,7 +1180,7 @@ void WelcomeLauncherFrame::SetDarkMode(DarkMode* dark)
 void WelcomeLauncherFrame::SendChanged(InformApp::Changed changed, int value)
 {
   if (changed == InformApp::LightDarkMode)
-    SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM_WINDOW));
+    SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM));
 }
 
 BOOL WelcomeLauncherFrame::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle,
@@ -1240,7 +1240,7 @@ int WelcomeLauncherFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   theApp.SetIcon(this);
 
   // Turn on dark mode, if needed
-  SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM_WINDOW));
+  SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM));
 
   return 0;
 }
@@ -1266,7 +1266,7 @@ void WelcomeLauncherFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
   CFrameWnd::OnSettingChange(uFlags,lpszSection);
 
-  if ((m_dark != NULL) != DarkMode::IsEnabled(REGISTRY_INFORM_WINDOW))
+  if ((m_dark != NULL) != DarkMode::IsEnabled(REGISTRY_INFORM))
     theApp.SendAllFrames(InformApp::LightDarkMode,0);
 }
 

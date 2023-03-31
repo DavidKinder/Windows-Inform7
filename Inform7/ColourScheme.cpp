@@ -35,7 +35,7 @@ ColourScheme::ColourScheme(int srtIdx,
 
 void ColourScheme::AdjustForDarkMode(void)
 {
-  bool dark = DarkMode::IsEnabled(REGISTRY_INFORM_WINDOW);
+  bool dark = DarkMode::IsEnabled(REGISTRY_INFORM);
   const char* convertFrom = dark ? "Light Mode" : "Dark Mode";
   const char* convertTo = dark ? "Dark Mode" : "Light Mode";
 

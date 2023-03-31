@@ -65,7 +65,7 @@ int ExtensionFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   theApp.SetIcon(this);
 
   // Turn on dark mode, if needed
-  SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM_WINDOW));
+  SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM));
 
   // Set window text for accessibility
   m_coolBar.SetWindowText("Toolbar area");
@@ -169,7 +169,7 @@ void ExtensionFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
   MenuBarFrameWnd::OnSettingChange(uFlags,lpszSection);
 
-  if ((m_dark != NULL) != DarkMode::IsEnabled(REGISTRY_INFORM_WINDOW))
+  if ((m_dark != NULL) != DarkMode::IsEnabled(REGISTRY_INFORM))
     theApp.SendAllFrames(InformApp::LightDarkMode,0);
 }
 
@@ -947,7 +947,7 @@ void ExtensionFrame::SendChanged(InformApp::Changed changed, int value)
     m_edit.UpdateSpellCheck();
     break;
   case InformApp::LightDarkMode:
-    SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM_WINDOW));
+    SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM));
     SendChanged(InformApp::Preferences,0);
     break;
   }

@@ -131,7 +131,7 @@ BOOL InformApp::InitInstance()
   ColourScheme::AdjustForDarkMode();
 
   // Turn on dark mode for the application, if necessary
-  if (DarkMode::IsEnabled(REGISTRY_INFORM_WINDOW))
+  if (DarkMode::IsEnabled(REGISTRY_INFORM))
     DarkMode::SetAppDarkMode();
 
   // Find and create documentation for extensions
@@ -757,7 +757,7 @@ void InformApp::SendAllFrames(Changed changed, int value)
 
   if (changed == LightDarkMode)
   {
-    if (DarkMode::IsEnabled(REGISTRY_INFORM_WINDOW))
+    if (DarkMode::IsEnabled(REGISTRY_INFORM))
       DarkMode::SetAppDarkMode();
 
     for (CWnd* dialog : m_modalDialogs)

@@ -29,9 +29,9 @@ void NoFocusCheck::SetIsChecked(bool checked)
     SetCheck(checked ? BST_CHECKED : BST_UNCHECKED);
 }
 
-BOOL NoFocusCheck::SubclassDlgItem(UINT id, CWnd* parent, UINT imageId, DarkMode::DarkColour back)
+BOOL NoFocusCheck::SubclassDlgItem(UINT id, CWnd* parent, UINT imageId)
 {
-  if (DarkModeCheckButton::SubclassDlgItem(id,parent,imageId,back))
+  if (DarkModeCheckButton::SubclassDlgItem(id,parent,imageId))
   {
     SetCheck(m_checked ? BST_CHECKED : BST_UNCHECKED);
     return TRUE;

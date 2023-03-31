@@ -375,12 +375,12 @@ BOOL FindInFiles::OnInitDialog()
 {
   if (I7BaseDialog::OnInitDialog())
   {
-    m_lookSourceCtrl.SubclassDlgItem(IDC_LOOK_SOURCE,this,IDR_DARK_CHECK,DarkMode::Darkest);
-    m_lookExtsCtrl.SubclassDlgItem(IDC_LOOK_EXTENSIONS,this,IDR_DARK_CHECK,DarkMode::Darkest);
-    m_lookDocPhrasesCtrl.SubclassDlgItem(IDC_LOOK_DOC_PHRASES,this,IDR_DARK_CHECK,DarkMode::Darkest);
-    m_lookDocMainCtrl.SubclassDlgItem(IDC_LOOK_DOC_MAIN,this,IDR_DARK_CHECK,DarkMode::Darkest);
-    m_lookDocCodeCtrl.SubclassDlgItem(IDC_LOOK_DOC_CODE,this,IDR_DARK_CHECK,DarkMode::Darkest);
-    m_ignoreCaseCtrl.SubclassDlgItem(IDC_IGNORE_CASE,this,IDR_DARK_CHECK,DarkMode::Darkest);
+    m_lookSourceCtrl.SubclassDlgItem(IDC_LOOK_SOURCE,this,IDR_DARK_CHECK);
+    m_lookExtsCtrl.SubclassDlgItem(IDC_LOOK_EXTENSIONS,this,IDR_DARK_CHECK);
+    m_lookDocPhrasesCtrl.SubclassDlgItem(IDC_LOOK_DOC_PHRASES,this,IDR_DARK_CHECK);
+    m_lookDocMainCtrl.SubclassDlgItem(IDC_LOOK_DOC_MAIN,this,IDR_DARK_CHECK);
+    m_lookDocCodeCtrl.SubclassDlgItem(IDC_LOOK_DOC_CODE,this,IDR_DARK_CHECK);
+    m_ignoreCaseCtrl.SubclassDlgItem(IDC_IGNORE_CASE,this,IDR_DARK_CHECK);
     m_resultsList.SubclassHeader(&m_resultsHeader);
 
     // Initialize auto-completion for the find string

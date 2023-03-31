@@ -12,7 +12,7 @@ public:
   bool GetIsChecked(void);
   void SetIsChecked(bool checked);
 
-  BOOL SubclassDlgItem(UINT id, CWnd* parent, UINT imageId, DarkMode::DarkColour back);
+  BOOL SubclassDlgItem(UINT id, CWnd* parent, UINT imageId);
 
 protected:
   DECLARE_MESSAGE_MAP()

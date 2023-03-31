@@ -242,25 +242,25 @@ BOOL PrefsEditPage::OnInitDialog()
     m_fontNameCtrl.SetCurSel(0);
 
   // Subclass dialog controls
-  m_stylesCheck.SubclassDlgItem(IDC_ENABLE_STYLES,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_boldHead.SubclassDlgItem(IDC_HEAD_BOLD,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_boldMain.SubclassDlgItem(IDC_MAIN_BOLD,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_boldComment.SubclassDlgItem(IDC_COMMENT_BOLD,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_boldQuote.SubclassDlgItem(IDC_QUOTE_BOLD,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_boldSubst.SubclassDlgItem(IDC_SUBST_BOLD,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_italicHead.SubclassDlgItem(IDC_HEAD_ITALIC,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_italicMain.SubclassDlgItem(IDC_MAIN_ITALIC,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_italicComment.SubclassDlgItem(IDC_COMMENT_ITALIC,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_italicQuote.SubclassDlgItem(IDC_QUOTE_ITALIC,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_italicSubst.SubclassDlgItem(IDC_SUBST_ITALIC,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_underHead.SubclassDlgItem(IDC_HEAD_UNDER,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_underMain.SubclassDlgItem(IDC_MAIN_UNDER,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_underComment.SubclassDlgItem(IDC_COMMENT_UNDER,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_underQuote.SubclassDlgItem(IDC_QUOTE_UNDER,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_underSubst.SubclassDlgItem(IDC_SUBST_UNDER,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_autoIndentCtrl.SubclassDlgItem(IDC_AUTO_INDENT,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_autoSpaceTablesCtrl.SubclassDlgItem(IDC_ELASTIC_TABS,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_autoNumberCtrl.SubclassDlgItem(IDC_AUTO_NUMBER,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_stylesCheck.SubclassDlgItem(IDC_ENABLE_STYLES,this,IDR_DARK_CHECK);
+  m_boldHead.SubclassDlgItem(IDC_HEAD_BOLD,this,IDR_DARK_CHECK);
+  m_boldMain.SubclassDlgItem(IDC_MAIN_BOLD,this,IDR_DARK_CHECK);
+  m_boldComment.SubclassDlgItem(IDC_COMMENT_BOLD,this,IDR_DARK_CHECK);
+  m_boldQuote.SubclassDlgItem(IDC_QUOTE_BOLD,this,IDR_DARK_CHECK);
+  m_boldSubst.SubclassDlgItem(IDC_SUBST_BOLD,this,IDR_DARK_CHECK);
+  m_italicHead.SubclassDlgItem(IDC_HEAD_ITALIC,this,IDR_DARK_CHECK);
+  m_italicMain.SubclassDlgItem(IDC_MAIN_ITALIC,this,IDR_DARK_CHECK);
+  m_italicComment.SubclassDlgItem(IDC_COMMENT_ITALIC,this,IDR_DARK_CHECK);
+  m_italicQuote.SubclassDlgItem(IDC_QUOTE_ITALIC,this,IDR_DARK_CHECK);
+  m_italicSubst.SubclassDlgItem(IDC_SUBST_ITALIC,this,IDR_DARK_CHECK);
+  m_underHead.SubclassDlgItem(IDC_HEAD_UNDER,this,IDR_DARK_CHECK);
+  m_underMain.SubclassDlgItem(IDC_MAIN_UNDER,this,IDR_DARK_CHECK);
+  m_underComment.SubclassDlgItem(IDC_COMMENT_UNDER,this,IDR_DARK_CHECK);
+  m_underQuote.SubclassDlgItem(IDC_QUOTE_UNDER,this,IDR_DARK_CHECK);
+  m_underSubst.SubclassDlgItem(IDC_SUBST_UNDER,this,IDR_DARK_CHECK);
+  m_autoIndentCtrl.SubclassDlgItem(IDC_AUTO_INDENT,this,IDR_DARK_CHECK);
+  m_autoSpaceTablesCtrl.SubclassDlgItem(IDC_ELASTIC_TABS,this,IDR_DARK_CHECK);
+  m_autoNumberCtrl.SubclassDlgItem(IDC_AUTO_NUMBER,this,IDR_DARK_CHECK);
 
   // Initialize the tab width slider
   m_tabSizeCtrl.SetRange(2,32);
@@ -736,7 +736,7 @@ BOOL PrefsColourPage::OnInitDialog()
   DarkModePropertyPage::OnInitDialog();
 
   // Subclass dialog controls
-  m_coloursCheck.SubclassDlgItem(IDC_ENABLE_COLOURS,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_coloursCheck.SubclassDlgItem(IDC_ENABLE_COLOURS,this,IDR_DARK_CHECK);
   m_colourSource.SubclassDlgItem(IDC_COLOUR_SOURCE,this,WM_COLOURCHANGED);
   m_colourExt.SubclassDlgItem(IDC_COLOUR_EXT,this,WM_COLOURCHANGED);
   m_colourHead.SubclassDlgItem(IDC_HEAD_COLOUR,this,WM_COLOURCHANGED);
@@ -1165,9 +1165,9 @@ BOOL PrefsAdvancedPage::OnInitDialog()
 {
   DarkModePropertyPage::OnInitDialog();
 
-  m_tabsHorizontalCheck.SubclassDlgItem(IDC_TABS_HORIZONTAL,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_cleanFilesCheck.SubclassDlgItem(IDC_CLEANFILES,this,IDR_DARK_CHECK,DarkMode::Back);
-  m_cleanIndexCheck.SubclassDlgItem(IDC_CLEANINDEX,this,IDR_DARK_CHECK,DarkMode::Back);
+  m_tabsHorizontalCheck.SubclassDlgItem(IDC_TABS_HORIZONTAL,this,IDR_DARK_CHECK);
+  m_cleanFilesCheck.SubclassDlgItem(IDC_CLEANFILES,this,IDR_DARK_CHECK);
+  m_cleanIndexCheck.SubclassDlgItem(IDC_CLEANINDEX,this,IDR_DARK_CHECK);
 
   // Get all the possible fonts
   CDC* dc = GetDC();
