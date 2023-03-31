@@ -99,8 +99,13 @@ void SearchEdit::OnNcPaint()
 {
   DarkMode* dark = DarkMode::GetActive(this);
   if (dark)
-    dark->DrawNonClientBorder(this,
-      m_editing ? DarkMode::Dark2 : DarkMode::Dark3,DarkMode::Darkest);
+  {
+    CWindowDC dc(this);
+    CRect r = dark->PrepareNonClientBorder(this,dc);
+    dark->DrawControlBorder(&dc,r,m_editing ?
+      DarkMode::Dark2 : DarkMode::Dark3,dark->GetBackground(this),DarkMode::Darkest);
+    dc.SelectClipRgn(NULL);
+  }
   else
     Default();
 }
