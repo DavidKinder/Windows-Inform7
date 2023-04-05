@@ -142,6 +142,7 @@ public:
       "\\Documentation\\doc_images",
       "\\Documentation\\outcome_images",
       "\\Documentation\\sections",
+      "\\Documentation\\retrospective",
       "\\Images"
     };
 
