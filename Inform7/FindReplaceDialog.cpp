@@ -164,7 +164,8 @@ BOOL FindReplaceDialog::OnInitDialog()
   if (I7BaseDialog::OnInitDialog())
   {
     m_ignoreCaseCtrl.SubclassDlgItem(IDC_IGNORE_CASE,this,IDR_DARK_CHECK);
-    m_resultsList.SubclassHeader(&m_resultsHeader);
+    if (m_resultsList.GetSafeHwnd() != 0)
+      m_resultsList.SubclassHeader(&m_resultsHeader);
     return TRUE;
   }
   return FALSE;
