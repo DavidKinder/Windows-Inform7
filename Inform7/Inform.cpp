@@ -192,7 +192,7 @@ BOOL InformApp::PreTranslateMessage(MSG* pMsg)
 {
   if ((pMsg->hwnd == NULL) && DispatchThreadMessageEx(pMsg))
     return TRUE;
-  CWnd* wnd = CWnd::FromHandle(pMsg->hwnd);
+  CWnd* wnd = CWnd::FromHandlePermanent(pMsg->hwnd);
 
   CArray<CFrameWnd*> frames;
   GetWindowFrames(frames);
