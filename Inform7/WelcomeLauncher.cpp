@@ -382,7 +382,9 @@ void WelcomeLauncherView::OnToolTipText(NMHDR* hdr, LRESULT* result)
     id = (UINT)(WORD)::GetDlgCtrlID((HWND)id);
 
   CString tipText = GetToolTip(id);
-  lstrcpyn(ttt->szText,tipText,sizeof ttt->szText / sizeof ttt->szText[0]);
+  static char tipTextBuffer[256];
+  lstrcpyn(tipTextBuffer,tipText,sizeof tipTextBuffer / sizeof tipTextBuffer[0]);
+  ttt->lpszText = tipTextBuffer;
 
   ::SetWindowPos(hdr->hwndFrom,HWND_TOP,0,0,0,0,
     SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOMOVE|SWP_NOOWNERZORDER);
