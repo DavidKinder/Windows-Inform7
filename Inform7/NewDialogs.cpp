@@ -125,6 +125,13 @@ CString AbstractNewDialog::GetName(void)
   int ext = name.Find('.');
   if (ext != -1)
     name.Truncate(ext);
+
+  // Curly quotes and double quotes cause problems with mapping between the Windows code page,
+  // ISO Latin-1 and UTF-8, so we just avoid this by replacing them with 'ordinary' quotes.
+  name.Replace((char)0x91,'\'');
+  name.Replace((char)0x92,'\'');
+  name.Replace((char)0x93,'\"');
+  name.Replace((char)0x94,'\"');
   return name;
 }
 
