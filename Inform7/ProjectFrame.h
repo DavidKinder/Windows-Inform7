@@ -221,6 +221,7 @@ protected:
 
   bool LoadToolBar(void);
   void UpdateToolBarFont(void);
+  void UpdateToolBarImages(void);
 
   enum SkeinAction
   {

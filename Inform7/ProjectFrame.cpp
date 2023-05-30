@@ -591,6 +591,9 @@ void ProjectFrame::SetDarkMode(DarkMode* dark)
   DarkMode::Set(&m_toolBar,&m_coolBar,1,dark);
   DarkMode::Set(&m_searchBar,&m_coolBar,2,dark);
 
+  // Use the appropriate toolbar images
+  UpdateToolBarImages();
+
   // Changing dark mode will reset the toolbar font
   UpdateToolBarFont();
 
@@ -2801,8 +2804,6 @@ bool ProjectFrame::LoadToolBar(void)
 {
   m_toolBar.SetFont(theApp.GetFont(this,InformApp::FontSystem));
 
-  CToolBarCtrl& ctrl = m_toolBar.GetToolBarCtrl();
-
   // Set the button identifiers
   static const UINT buttons[] =
   {
@@ -2812,20 +2813,18 @@ bool ProjectFrame::LoadToolBar(void)
     ID_PLAY_TEST,
     ID_FILE_INSTALL_XP
   };
-  m_toolBar.SetButtons(buttons,sizeof buttons/sizeof buttons[0]);
+  const int btnCount = sizeof buttons/sizeof buttons[0];
+  m_toolBar.SetButtons(buttons,btnCount);
 
   // Set the size of the images
   int w = 32, h = 32;
   m_toolBar.SetSizes(CSize(w+8,h+7),CSize(w,h));
 
   // Load the images
-  HIMAGELIST imgList = ::ImageList_Create(32,32,ILC_COLOR32,0,5);
-  ::ImageList_Add(imgList,theApp.GetCachedImage("Toolbar")->GetSafeHandle(),0);
-  ctrl.SetImageList(CImageList::FromHandle(imgList));
-
-  imgList = ::ImageList_Create(32,32,ILC_COLOR32,0,5);
-  ::ImageList_Add(imgList,theApp.GetCachedImage("Toolbar-disabled")->GetSafeHandle(),0);
-  ctrl.SetDisabledImageList(CImageList::FromHandle(imgList));
+  CToolBarCtrl& ctrl = m_toolBar.GetToolBarCtrl();
+  ctrl.SetImageList(CImageList::FromHandle(::ImageList_Create(w,h,ILC_COLOR32,0,btnCount)));
+  ctrl.SetDisabledImageList(CImageList::FromHandle(::ImageList_Create(w,h,ILC_COLOR32,0,btnCount)));
+  UpdateToolBarImages();
 
   // Add selective text for buttons
   ctrl.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
@@ -2901,6 +2900,20 @@ void ProjectFrame::UpdateToolBarFont(void)
     m_exampleList.SetFont(m_toolBar.GetFont());
     SetExampleListLocation();
   }
+}
+
+void ProjectFrame::UpdateToolBarImages(void)
+{
+  CString name;
+  name.Format("Toolbar%s%d",m_dark ? "Dark" : "Light",32);
+
+  CToolBarCtrl& ctrl = m_toolBar.GetToolBarCtrl();
+  CImageList* images = ctrl.GetImageList();
+  images->SetImageCount(0);
+  ::ImageList_Add(images->GetSafeHandle(),theApp.GetCachedImage(name)->GetSafeHandle(),0);
+  images = ctrl.GetDisabledImageList();
+  images->SetImageCount(0);
+  ::ImageList_Add(images->GetSafeHandle(),theApp.GetCachedImage(name+"-disabled")->GetSafeHandle(),0);
 }
 
 bool ProjectFrame::UpdateExampleList(void)
