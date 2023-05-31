@@ -42,6 +42,7 @@ public:
   virtual void SetDarkMode(DarkMode* dark);
 
 protected:
+  int m_toolBarSize;
   DarkModeToolBar m_toolBar;
   SearchBar m_searchBar;
   ExampleComboBox m_exampleList;

@@ -181,13 +181,19 @@ private:
 };
 
 ProjectFrame::ProjectFrame(ProjectType projectType)
-  : m_projectType(projectType),
+  : m_projectType(projectType), m_toolBarSize(32),
     m_needCompile(true), m_busy(false), m_I6debug(false), m_game(m_skein),
     m_finder(this), m_focus(0), m_loadFilter(1), m_splitter(true)
 {
   m_menuBar.SetUseF10(false);
   if (m_projectType == Project_I7XP)
     m_skein.SetFile("");
+
+  // Set an appropriate size for the toolbar items
+  CPoint zero(0,0);
+  int displayHeight = DPI::getMonitorRect(&zero).Height();
+  if (displayHeight >= 1600)
+    m_toolBarSize = 48;
 }
 
 int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -2817,13 +2823,14 @@ bool ProjectFrame::LoadToolBar(void)
   m_toolBar.SetButtons(buttons,btnCount);
 
   // Set the size of the images
-  int w = 32, h = 32;
-  m_toolBar.SetSizes(CSize(w+8,h+7),CSize(w,h));
 
   // Load the images
+  m_toolBar.SetSizes(CSize(m_toolBarSize+8,m_toolBarSize+7),CSize(m_toolBarSize,m_toolBarSize));
   CToolBarCtrl& ctrl = m_toolBar.GetToolBarCtrl();
-  ctrl.SetImageList(CImageList::FromHandle(::ImageList_Create(w,h,ILC_COLOR32,0,btnCount)));
-  ctrl.SetDisabledImageList(CImageList::FromHandle(::ImageList_Create(w,h,ILC_COLOR32,0,btnCount)));
+  ctrl.SetImageList(CImageList::FromHandle(
+    ::ImageList_Create(m_toolBarSize,m_toolBarSize,ILC_COLOR32,0,btnCount)));
+  ctrl.SetDisabledImageList(CImageList::FromHandle(
+    ::ImageList_Create(m_toolBarSize,m_toolBarSize,ILC_COLOR32,0,btnCount)));
   UpdateToolBarImages();
 
   // Add selective text for buttons
@@ -2905,7 +2912,7 @@ void ProjectFrame::UpdateToolBarFont(void)
 void ProjectFrame::UpdateToolBarImages(void)
 {
   CString name;
-  name.Format("Toolbar%s%d",m_dark ? "Dark" : "Light",32);
+  name.Format("Toolbar%s%d",m_dark ? "Dark" : "Light",m_toolBarSize);
 
   CToolBarCtrl& ctrl = m_toolBar.GetToolBarCtrl();
   CImageList* images = ctrl.GetImageList();
