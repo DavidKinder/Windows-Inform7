@@ -6,10 +6,11 @@
 
 ## Building
 
-Download and install Visual Studio 2019 Community edition from https://visualstudio.microsoft.com/. In the installer, under "Workloads", make sure that "Desktop development with C++" is selected, and under "Individual components" that the following are selected:
-- C++ MFC for latest build tools (x86 & x64)
-- C++ Clang Compiler for Windows
+Download and install Visual Studio 2019 Community edition from https://visualstudio.microsoft.com/. In the installer, under "Workloads", make sure that "Desktop development with C++" is selected. In the list on the right-hand side make sure that the following are selected:
+- Windows 11 SDK
 - C++ Clang tools for Windows
+- C++ Clang Compiler for Windows
+- C++ MFC for latest build tools
 
 Install git. I use the version of git that is part of Cygwin, a Linux-like environment for Windows, but Git for Windows can be used from a Windows command prompt.
 
