@@ -23,6 +23,7 @@ INBLORBNAME = inblorb
 INFORM6NAME = inform6
 INFORM7NAME = inform7
 INTESTNAME = intest
+INBUILDNAME = inbuild
 
 INDOCOPTS = windows_app
 INRTPSOPTS = -no-font
