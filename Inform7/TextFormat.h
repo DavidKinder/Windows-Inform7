@@ -11,4 +11,5 @@ namespace TextFormat
   CStringW Latin1ToUnicode(const CString& in);
 
   CString FormatNumber(int value);
+  bool EndsWith(const CString& test, LPCSTR end);
 };

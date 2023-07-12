@@ -22,7 +22,7 @@ END_MESSAGE_MAP()
 
 const char* TabExtensions::m_files[TabExtensions::Number_ExtTabs] =
 {
-  "\\Inform\\Documentation\\Extensions.html",
+  "\\Extensions\\Reserved\\Documentation\\Extensions.html",
   PUBLIC_LIBRARY_URL "/index-windows.html"
 };
 
@@ -130,6 +130,8 @@ void TabExtensions::DownloadedExt(int id)
 
 void TabExtensions::SourceLink(const char* url)
 {
+  if (m_notify)
+    m_notify->OnSourceLink(url,this,theApp.GetColour(InformApp::ColourHighlight));
 }
 
 void TabExtensions::LibraryLink(const char* url)
@@ -276,7 +278,9 @@ void TabExtensions::UpdateActiveTab(void)
   {
     if (url.CompareNoCase("inform://Extensions/Extensions.html") == 0)
       idx = ExtTab_Home;
-    else if (url.Find("pl404.html") > 0)
+    else if (TextFormat::EndsWith(url,"NoExtensions.html"))
+      idx = ExtTab_Home;
+    else if (TextFormat::EndsWith(url,"pl404.html"))
       idx = ExtTab_Library;
   }
   if (idx != GetActiveTab())
@@ -291,7 +295,27 @@ void TabExtensions::GetTabState(TabState& state)
 
 CString TabExtensions::GetUrlForTab(ExtTabs tab)
 {
-  if (tab == ExtTab_Library)
+  switch (tab)
+  {
+  case ExtTab_Home:
+    {
+      CString* materials = (CString*)(GetParentFrame()->SendMessage(WM_MATERIALS));
+      if (materials != NULL)
+      {
+        CString htmlFile = (*materials)+m_files[tab];
+        delete materials;
+
+        if (::GetFileAttributes(htmlFile) == INVALID_FILE_ATTRIBUTES)
+          htmlFile = theApp.GetAppDir()+"\\Documentation\\sections\\NoExtensions.html";
+
+        return TextFormat::AnsiToUTF8(htmlFile);
+      }
+    }
+    break;
+  case ExtTab_Library:
     return m_files[tab];
-  return TextFormat::AnsiToUTF8(theApp.GetHomeDir()+m_files[tab]);
+  }
+
+  ASSERT(FALSE);
+  return "";
 }

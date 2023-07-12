@@ -73,6 +73,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_REPLAYALL, OnReplayAll)
   ON_MESSAGE(WM_TESTINGTABSHOWN, OnTestingTabShown)
   ON_MESSAGE(WM_ISBUILDFILE, OnIsBuildFile)
+  ON_MESSAGE(WM_MATERIALS, OnMaterials)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -1425,6 +1426,11 @@ LRESULT ProjectFrame::OnIsBuildFile(WPARAM wparam, LPARAM)
   if (CFile::GetStatus((LPCSTR)wparam,status))
     return (status.m_mtime >= m_startTime);
   return 0;
+}
+
+LRESULT ProjectFrame::OnMaterials(WPARAM wparam, LPARAM lparam)
+{
+  return (LRESULT)(new CString(GetMaterialsFolder()));
 }
 
 void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)

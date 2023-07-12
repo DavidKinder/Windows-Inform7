@@ -163,3 +163,8 @@ CString TextFormat::FormatNumber(int value)
   formatted.ReleaseBuffer();
   return CString(formatted);
 }
+
+bool TextFormat::EndsWith(const CString& test, LPCSTR end)
+{
+  return (test.Right((int)strlen(end)) == end);
+}
