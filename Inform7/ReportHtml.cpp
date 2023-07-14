@@ -32,11 +32,14 @@ static bool FileExists(const char* path)
   return (::GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES);
 }
 
+// Get a materials folder token from the client implementation
+UINT_PTR GetTokenFromClient(CefRefPtr<CefClient> client);
+
 // Implementation of inform: handler
 class I7SchemeHandler : public CefResourceHandler
 {
 public:
-  I7SchemeHandler() : m_data(NULL), m_dataLen(0), m_dataOffset(0)
+  I7SchemeHandler(UINT_PTR token) : m_data(NULL), m_dataLen(0), m_dataOffset(0), m_token(token)
   {
   }
 
@@ -53,7 +56,7 @@ public:
     ASSERT(m_dataLen == 0);
 
     handle_request = true;
-    CString path = ConvertUrlToPath(request->GetURL().ToString().c_str(),NULL);
+    CString path = ConvertUrlToPath(request->GetURL().ToString().c_str(),NULL,m_token);
     if (!path.IsEmpty())
     {
       CFileStatus status;
@@ -119,7 +122,7 @@ public:
   }
 
   // Convert an inform: URL to a file path
-  static CString ConvertUrlToPath(const char* url, CString* suffix)
+  static CString ConvertUrlToPath(const char* url, CString* suffix, UINT_PTR token)
   {
     if (strncmp(url,"inform:",7) != 0)
       return false;
@@ -154,19 +157,28 @@ public:
         return path;
     }
 
-    while (fileName.Left(11).MakeLower() == L"/extensions")
+    if (fileName.Left(11).MakeLower() == L"/extensions")
     {
-      fileName = fileName.Mid(11);
+      while (fileName.Left(11).MakeLower() == L"/extensions")
+      {
+        fileName = fileName.Mid(11);
 
-      CString path;
-      path.Format("%s\\Inform\\Documentation%S",
-        theApp.GetHomeDir().GetString(),fileName.GetString());
-      if (FileExists(path))
-        return path;
-
-      path.Format("%s\\Documentation%S",appDir.GetString(),fileName.GetString());
-      if (FileExists(path))
-        return path;
+        CString materials = theApp.GetMaterialsFolder(token);
+        if (!materials.IsEmpty())
+        {
+          CString path;
+          path.Format("%s\\Extensions%S",materials.GetString(),fileName.GetString());
+          if (FileExists(path))
+            return path;
+          path.Format("%s\\Extensions\\Reserved\\Documentation%S",materials.GetString(),fileName.GetString());
+          if (FileExists(path))
+            return path;
+          path.Format("%s\\Documentation%S",appDir.GetString(),fileName.GetString());
+          if (FileExists(path))
+            return path;
+        }
+      }
+      return appDir+"\\Documentation\\sections\\NoExtensions.html";
     }
 
     ASSERT(FALSE);
@@ -210,6 +222,7 @@ private:
   int64 m_dataLen;
   int64 m_dataOffset;
   std::string m_dataType;
+  UINT_PTR m_token;
 };
 
 // Implementation of handler for JavaScript calls
@@ -444,10 +457,10 @@ public:
   }
 
   // Implement CefSchemeHandlerFactory to create our custom scheme
-  CefRefPtr<CefResourceHandler> Create(CefRefPtr<CefBrowser>,
+  CefRefPtr<CefResourceHandler> Create(CefRefPtr<CefBrowser> browser,
     CefRefPtr<CefFrame>, const CefString&, CefRefPtr<CefRequest>)
   {
-    return new I7SchemeHandler();
+    return new I7SchemeHandler(GetTokenFromClient(browser->GetHost()->GetClient()));
   }
 
 private:
@@ -473,7 +486,7 @@ class I7CefClient : public CefClient,
   public CefResponseFilter
 {
 public:
-  I7CefClient()
+  I7CefClient(UINT_PTR token) : m_token(token)
   {
   }
 
@@ -481,6 +494,12 @@ public:
   void SetObject(ReportHtml* obj)
   {
     m_object = obj;
+  }
+
+  // Get the materials folder token
+  UINT_PTR GetToken(void)
+  {
+    return m_token;
   }
 
   // Implement CefClient to handle process messages from the renderer process
@@ -779,7 +798,18 @@ private:
   }
 
   ReportHtml* m_object;
+  UINT_PTR m_token;
 };
+
+// Get a materials folder token from the client implementation
+UINT_PTR GetTokenFromClient(CefRefPtr<CefClient> client)
+{
+  if (client)
+    return ((I7CefClient*)client.get())->GetToken();
+
+  ASSERT(FALSE);
+  return 0;
+}
 
 // Find dialog implementation
 class I7CefFind
@@ -1021,9 +1051,10 @@ ReportHtml::~ReportHtml()
 BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
   const RECT& rect, CWnd* parentWnd, UINT id, CCreateContext*)
 {
+  CFrameWnd* frame = parentWnd->GetParentFrame();
+
   CefRefPtr<CefRequestContext> context;
   {
-    CFrameWnd* frame = parentWnd->GetParentFrame();
     auto it = g_requestContexts->find(frame);
     if (it != g_requestContexts->end())
       context = it->second;
@@ -1043,7 +1074,7 @@ BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
   windowInfo.menu = (HMENU)(UINT_PTR)id;
 
   CefBrowserSettings browserSettings;
-  CefRefPtr<I7CefClient> client(new I7CefClient());
+  CefRefPtr<I7CefClient> client(new I7CefClient((UINT_PTR)frame));
   CefRefPtr<CefBrowser> browser = CefBrowserHost::CreateBrowserSync(
     windowInfo,client,"",browserSettings,nullptr,context);
   if (browser.get() == NULL)
@@ -1139,7 +1170,7 @@ bool ReportHtml::OnBeforeBrowse(const char* url, bool user)
     {
       // Got an inform: documentation URL
       CString suffix;
-      CString path = I7SchemeHandler::ConvertUrlToPath(url,&suffix);
+      CString path = I7SchemeHandler::ConvertUrlToPath(url,&suffix,(UINT_PTR)GetParentFrame());
       if (m_consumer->DocLink(theApp.PathToUrl(path)+suffix))
         return true;
     }

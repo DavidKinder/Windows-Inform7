@@ -73,7 +73,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_REPLAYALL, OnReplayAll)
   ON_MESSAGE(WM_TESTINGTABSHOWN, OnTestingTabShown)
   ON_MESSAGE(WM_ISBUILDFILE, OnIsBuildFile)
-  ON_MESSAGE(WM_MATERIALS, OnMaterials)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -431,6 +430,8 @@ void ProjectFrame::OnClose()
   // If there are any secondary frame windows and this is the main frame,
   // promote one of the secondaries to be the new main frame.
   theApp.FrameClosing(this);
+
+  theApp.UpdateMaterialsFolder((UINT_PTR)this,NULL);
   MenuBarFrameWnd::OnClose();
 }
 
@@ -1428,11 +1429,6 @@ LRESULT ProjectFrame::OnIsBuildFile(WPARAM wparam, LPARAM)
   return 0;
 }
 
-LRESULT ProjectFrame::OnMaterials(WPARAM wparam, LPARAM lparam)
-{
-  return (LRESULT)(new CString(GetMaterialsFolder()));
-}
-
 void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)
 {
   switch (m_projectType)
@@ -1778,7 +1774,10 @@ void ProjectFrame::SetFromRegistryPath(const char* path)
     char dir[MAX_PATH];
     len = sizeof dir;
     if (m_registryKey.QueryStringValue("Last Project",dir,&len) == ERROR_SUCCESS)
+    {
       m_projectDir = dir;
+      theApp.UpdateMaterialsFolder((UINT_PTR)this,GetMaterialsFolder());
+    }
 
     // Restore whether or not to generate Inform 6 debugging output
     DWORD I6debug = 0;
@@ -1910,6 +1909,7 @@ void ProjectFrame::OpenProject(const char* project)
   // Set the project directory
   m_projectDir = project;
   theApp.AddToRecentFileList(m_projectDir);
+  theApp.UpdateMaterialsFolder((UINT_PTR)this,GetMaterialsFolder());
 
   // Rename any old-style " Materials" folder to ".materials"
   int projectExt = m_projectDir.Find(GetProjectFileExt());
@@ -1940,6 +1940,8 @@ bool ProjectFrame::SaveProject(const char* project)
   ::CreateDirectory(m_projectDir+"\\Build",NULL);
   ::CreateDirectory(m_projectDir+"\\Index",NULL);
   ::CreateDirectory(m_projectDir+"\\Source",NULL);
+
+  theApp.UpdateMaterialsFolder((UINT_PTR)this,GetMaterialsFolder());
 
   // Save the project from the left hand panel
   bool saved = GetPanel(0)->SaveProject(m_projectDir,true);

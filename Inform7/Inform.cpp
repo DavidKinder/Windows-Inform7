@@ -1555,6 +1555,26 @@ CString InformApp::PickDirectory(const char* title, const char* folderLabel, con
   return chosenDir;
 }
 
+void InformApp::UpdateMaterialsFolder(UINT_PTR token, LPCSTR path)
+{
+  CSingleLock lock(&m_materialsLock,TRUE);
+
+  if (path)
+    m_materials[token] = path;
+  else
+    m_materials.erase(token);
+}
+
+CString InformApp::GetMaterialsFolder(UINT_PTR token)
+{
+  CSingleLock lock(&m_materialsLock,TRUE);
+
+  auto it = m_materials.find(token);
+  if (it != m_materials.end())
+    return it->second;
+  return "";
+}
+
 void InformApp::SetMyDocuments(bool showMsgs)
 {
   m_home.Empty();

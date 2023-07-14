@@ -216,6 +216,9 @@ public:
   CString PickDirectory(const char* title, const char* folderLabel, const char* okLabel,
     const char* initialDir, CWnd* parent);
 
+  void UpdateMaterialsFolder(UINT_PTR token, LPCSTR path);
+  CString GetMaterialsFolder(UINT_PTR token);
+
 protected:
   void ClearGeneratedImages(void);
   void SetMyDocuments(bool showMsgs);
@@ -247,6 +250,12 @@ protected:
   std::map<DWORD,CString> m_traces;
 
   std::vector<CompilerVersion> m_versions;
+
+  // Map of materials folder locations, accessible from any thread. The map keys are really pointers
+  // to ProjectFrame instances, but cast to UINT_PTR to indicate that on any thread but the UI thread,
+  // such pointers can only be treated as opaque tokens.
+  CCriticalSection m_materialsLock;
+  std::map<UINT_PTR,CString> m_materials;
 
   CString m_home;
   HANDLE m_job;

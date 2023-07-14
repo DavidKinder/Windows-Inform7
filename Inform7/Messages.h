@@ -213,7 +213,3 @@ enum FindCommand
 // Set to the window frame to determine if the file given in wParam was
 // built during the last compilation.
 #define WM_ISBUILDFILE    WM_APP+44
-
-// Sent to the window frame to get the materials path for the project.
-// This is returned as a pointer to a CString allocated on the heap.
-#define WM_MATERIALS      WM_APP+45
