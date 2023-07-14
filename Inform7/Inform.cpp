@@ -192,14 +192,24 @@ BOOL InformApp::PreTranslateMessage(MSG* pMsg)
 {
   if ((pMsg->hwnd == NULL) && DispatchThreadMessageEx(pMsg))
     return TRUE;
-  CWnd* wnd = CWnd::FromHandlePermanent(pMsg->hwnd);
+
+  // Find the top level parent for the window receiving this message
+  HWND top = pMsg->hwnd;
+  for (;;)
+  {
+    HWND parent = ::GetParent(top);
+    if (parent != 0)
+      top = parent;
+    else
+      break;
+  }
 
   CArray<CFrameWnd*> frames;
   GetWindowFrames(frames);
   for (int i = 0; i < frames.GetSize(); i++)
   {
     CFrameWnd* frame = frames[i];
-    if (wnd->GetTopLevelParent() == frame)
+    if (frame->GetSafeHwnd() == top)
       return CWnd::WalkPreTranslateTree(frame->GetSafeHwnd(),pMsg);
   }
 
