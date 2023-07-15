@@ -165,7 +165,6 @@ public:
   CreatedProcess CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug);
   void WaitForProcessEnd(HANDLE process);
   void AddProcessToJob(HANDLE process);
-  CreatedProcess RunCensus(void);
   int RunCommand(const char* dir, CString& command, OutputSink& output);
   void HandleDebugEvents(void);
   CString GetTraceForProcess(DWORD processId);

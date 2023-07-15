@@ -133,17 +133,12 @@ struct SourceRange
 // stop: 1 is returned if yes, otherwise 0.
 #define WM_WANTSTOP       WM_APP+30
 
-// Sent to the window frame to run an extension census. If wParam is
-// non-zero then the help on installed extensions is shown when the
-// census is complete.
-#define WM_RUNCENSUS      WM_APP+31
-
 // Sent to the window frame to get the name of the current story.
 // This is returned as a pointer to a CString allocated on the heap.
-#define WM_STORYNAME      WM_APP+32
+#define WM_STORYNAME      WM_APP+31
 
 // Sent to the a tab window to update the context sensitive help.
-#define WM_UPDATEHELP     WM_APP+33
+#define WM_UPDATEHELP     WM_APP+32
 
 class Command
 {
@@ -160,25 +155,25 @@ public:
 // an instance of Command to be run after the animation completes.
 // This command object is allocated on the heap and is freed by the
 // recipient.
-#define WM_ANIMATESKEIN   WM_APP+34
+#define WM_ANIMATESKEIN   WM_APP+33
 
 // Sent to a property sheet page after the dialog font has been set
 // and the page resized.
-#define WM_AFTERFONTSET   WM_APP+35
+#define WM_AFTERFONTSET   WM_APP+34
 
 // Sent to a property sheet to resize the currently active page.
-#define WM_RESIZEPAGE     WM_APP+36
+#define WM_RESIZEPAGE     WM_APP+35
 
 // Sent to a preferences dialog sheet to indicate that the preview
 // is to be updated.
-#define WM_UPDATEPREVIEW  WM_APP+37
+#define WM_UPDATEPREVIEW  WM_APP+36
 
 // Sent to a preferences dialog sheet to indicate that a colour button
 // has selected a new colour.
-#define WM_COLOURCHANGED  WM_APP+38
+#define WM_COLOURCHANGED  WM_APP+37
 
 // Sent to the Find in Files dialog to resize the results column.
-#define WM_RESIZERESULTS  WM_APP+39
+#define WM_RESIZERESULTS  WM_APP+38
 
 enum FindCommand
 {

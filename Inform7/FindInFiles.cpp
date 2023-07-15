@@ -750,7 +750,6 @@ LRESULT FindInFiles::OnResultsResize(WPARAM, LPARAM)
 
 void FindInFiles::FindInExtensions(void)
 {
-  WaitForCensus();
   for (const auto& extension : theApp.GetExtensions())
   {
     UpdateProgress();
@@ -783,31 +782,7 @@ void FindInFiles::FindInExtensions(void)
 
 size_t FindInFiles::CountExtensions(void)
 {
-  WaitForCensus();
   return theApp.GetExtensions().size();
-}
-
-void FindInFiles::WaitForCensus(void)
-{
-  // If an extension census is running, wait for it to finish
-  while (true)
-  {
-    bool findNow = true;
-    CArray<CFrameWnd*> frames;
-    theApp.GetWindowFrames(frames);
-    for (int i = 0; i < frames.GetSize(); i++)
-    {
-      if (frames[i]->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
-      {
-        if (((ProjectFrame*)frames[i])->IsProcessRunning("inform7 (census)"))
-          findNow = false;
-      }
-    }
-    if (findNow)
-      break;
-    ::Sleep(100);
-    theApp.RunMessagePump();
-  }
 }
 
 void FindInFiles::FindInDocumentation(void)

@@ -58,7 +58,6 @@ protected:
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
   afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
-  afx_msg void OnTimer(UINT_PTR nIDEvent);
   afx_msg void OnChangedExample();
   afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
 
@@ -86,7 +85,6 @@ protected:
   afx_msg LRESULT OnProjectType(WPARAM, LPARAM);
   afx_msg LRESULT OnStoryActive(WPARAM, LPARAM);
   afx_msg LRESULT OnWantStop(WPARAM, LPARAM);
-  afx_msg LRESULT OnRunCensus(WPARAM, LPARAM);
   afx_msg LRESULT OnStoryName(WPARAM, LPARAM);
   afx_msg LRESULT OnReplayAll(WPARAM, LPARAM);
   afx_msg LRESULT OnTestingTabShown(WPARAM, LPARAM);
@@ -155,14 +153,6 @@ public:
   void SelectInDocumentation(const char* link, LPCWSTR find);
 
   const ProjectSettings& GetSettings(void);
-
-  enum ProcessAction
-  {
-    ProcessNoAction,
-    ProcessHelpExtensions
-  };
-  void MonitorProcess(InformApp::CreatedProcess cp, ProcessAction action, LPCSTR name);
-  bool IsProcessRunning(LPCSTR name);
 
 protected:
   // Implementation of InformApp::OutputSink
@@ -263,18 +253,6 @@ protected:
 
   CString m_outputFileLoc;
   int m_loadFilter;
-
-  struct SubProcess
-  {
-    SubProcess() : action(ProcessNoAction)
-    {
-    }
-
-    InformApp::CreatedProcess cp;
-    ProcessAction action;
-    CString name;
-  };
-  CArray<SubProcess> m_processes;
 
   CArray<Example> m_examples;
   Example m_exampleCompiled;

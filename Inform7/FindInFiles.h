@@ -51,7 +51,6 @@ protected:
 private:
   void FindInExtensions(void);
   size_t CountExtensions(void);
-  void WaitForCensus(void);
   void FindInDocumentation(void);
   size_t CountDocumentation(void);
   void WaitForDocThread(void);

@@ -134,9 +134,8 @@ BOOL InformApp::InitInstance()
   if (DarkMode::IsEnabled(REGISTRY_INFORM))
     DarkMode::SetAppDarkMode();
 
-  // Find and create documentation for extensions
+  // Find extensions in the legacy extensions directory
   FindExtensions();
-  CreatedProcess i7 = RunCensus();
 
   // Download the IFTF news file
   WelcomeLauncherFrame::DownloadNews();
@@ -156,13 +155,6 @@ BOOL InformApp::InitInstance()
   {
     ASSERT(FALSE);
     return FALSE;
-  }
-
-  // Make sure that any census failure is reported
-  if (i7.process != INVALID_HANDLE_VALUE)
-  {
-    if (m_pMainWnd->IsKindOf(RUNTIME_CLASS(ProjectFrame)))
-      ((ProjectFrame*)m_pMainWnd)->MonitorProcess(i7,ProjectFrame::ProcessNoAction,"Extension census");
   }
   return TRUE;
 }
@@ -1197,20 +1189,6 @@ void InformApp::AddProcessToJob(HANDLE process)
 {
   if (m_job)
     ::AssignProcessToJobObject(m_job,process);
-}
-
-InformApp::CreatedProcess InformApp::RunCensus(void)
-{
-  CString command, dir = GetAppDir();
-  command.Format("\"%s\\Compilers\\inform7\" -internal \"%s\\Internal\" -census",
-    (LPCSTR)dir,(LPCSTR)dir);
-
-  STARTUPINFO start;
-  ::ZeroMemory(&start,sizeof start);
-  start.cb = sizeof start;
-  start.wShowWindow = SW_HIDE;
-  start.dwFlags = STARTF_USESHOWWINDOW;
-  return CreateProcess(NULL,command,start,true);
 }
 
 int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)

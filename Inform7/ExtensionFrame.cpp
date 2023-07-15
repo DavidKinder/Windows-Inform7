@@ -513,8 +513,7 @@ void ExtensionFrame::InstallExtensions(CFrameWnd* parent, CStringArray& paths)
     }
   }
 
-  // Update the extensions menu and documentation
-  parent->SendMessage(WM_RUNCENSUS,1);
+  // Update the extensions menu
   ShowInstalledMessage(parent,installed,total,lastExt);
   theApp.FindExtensions();
   theApp.SendAllFrames(InformApp::Extensions,0);
@@ -700,7 +699,6 @@ void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
     SetDownloadProgress(parent,total,total,installed);
 
     // Notify the user of what happened
-    parent->SendMessage(WM_RUNCENSUS,0);
     parent->SendMessage(WM_PROGRESS,-1);
     ShowInstalledMessage(parent,installed,total,lastExt);
   }
