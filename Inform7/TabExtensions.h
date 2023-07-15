@@ -23,6 +23,7 @@ public:
   void UpdateDPI(const std::map<CWnd*,double>& layout);
 
   void Show(const char* url);
+  void ShowHelp(void);
   void DownloadedExt(int id);
 
   // Implementation of ReportHtml::LinkConsumer

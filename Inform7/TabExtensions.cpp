@@ -127,6 +127,11 @@ void TabExtensions::Show(const char* url)
   UpdateActiveTab();
 }
 
+void TabExtensions::ShowHelp(void)
+{
+  Show(TextFormat::AnsiToUTF8(GetUrlForTab(ExtTab_Home)));
+}
+
 void TabExtensions::DownloadedExt(int id)
 {
   if (GetActiveTab() == ExtTab_Library)

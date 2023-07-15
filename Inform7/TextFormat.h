@@ -12,4 +12,5 @@ namespace TextFormat
 
   CString FormatNumber(int value);
   bool EndsWith(const CString& test, LPCSTR end);
+  bool EndsWith(const CStringW& test, LPCWSTR end);
 };

@@ -178,7 +178,8 @@ public:
             return path;
         }
       }
-      return appDir+"\\Documentation\\sections\\NoExtensions.html";
+      if (TextFormat::EndsWith(fileName,L".html"))
+        return appDir+"\\Documentation\\sections\\NoExtensions.html";
     }
 
     ASSERT(FALSE);

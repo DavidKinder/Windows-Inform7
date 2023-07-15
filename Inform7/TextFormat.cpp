@@ -168,3 +168,8 @@ bool TextFormat::EndsWith(const CString& test, LPCSTR end)
 {
   return (test.Right((int)strlen(end)) == end);
 }
+
+bool TextFormat::EndsWith(const CStringW& test, LPCWSTR end)
+{
+  return (test.Right((int)wcslen(end)) == end);
+}
