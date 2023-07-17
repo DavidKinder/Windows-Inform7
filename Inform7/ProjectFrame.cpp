@@ -1479,7 +1479,7 @@ void ProjectFrame::OnReleaseGame(UINT nID)
       return;
 
     // Get the appropriate file name extension
-    CString extension = m_settings.m_blorb ? blorbExt : m_settings.GetOutputFormat();
+    CString extension = m_settings.m_blorb ? blorbExt : m_settings.GetOutputExtension();
 
     // Should we ask the user where to copy to?
     if (releasePath.IsEmpty())
@@ -1944,7 +1944,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
       // output, we need to compile again.
       CString outPath;
       outPath.Format("%s\\Build\\output.%s",(LPCSTR)m_projectDir,
-        (LPCSTR)m_settings.GetOutputFormat());
+        (LPCSTR)m_settings.GetOutputExtension());
       CFileStatus outStatus;
       if (CFile::GetStatus(outPath,outStatus))
       {
@@ -2146,7 +2146,7 @@ void ProjectFrame::RunProject(void)
 {
   // Start the interpreter
   m_game.RunInterpreter(m_projectDir+"\\Build",
-    "output."+m_settings.GetOutputFormat(),
+    "output."+m_settings.GetOutputExtension(),
     m_settings.m_output == ProjectSettings::OutputGlulx);
 
   // Send out a skein notification now that the game is running
@@ -2291,23 +2291,38 @@ CString ProjectFrame::Inform7CommandLine(bool release)
 {
   CString app = theApp.GetAppDir();
   CString home = theApp.GetHomeDir();
-  CString format = m_settings.GetOutputFormat();
   CString version = m_settings.GetCompilerVersion();
 
   CString executable, arguments;
-  if ((version == INFORM_VER) || (version == "10.1"))
+  if ((version == INFORM_VER) || (version == "10.2"))
   {
-    CString i7format = m_settings.GetOutputNewFormat(release);
+    CString format = m_settings.GetOutputFormat(release);
+    executable.Format("%s\\Compilers\\inform7",(LPCSTR)app);
+    arguments.Format("-internal \"%s\\Internal\" -project \"%s\" -format=%s",
+      (LPCSTR)app,(LPCSTR)m_projectDir,(LPCSTR)format);
+    if (release)
+      arguments.Append(" -release");
+    if (m_settings.m_predictable && !release)
+      arguments.Append(" -rng");
+    if (m_settings.m_basic)
+      arguments.Append(" -basic");
+    if (m_settings.m_legacyExtensions)
+      arguments.AppendFormat(" -deprecated-external \"%s\\Inform\"",(LPCSTR)home);
+  }
+  else if (version == "10.1") //XXXXDK Retrospective build for 10.1?
+  {
+    CString format = m_settings.GetOutputFormat(release);
     executable.Format("%s\\Compilers\\inform7",(LPCSTR)app);
     arguments.Format(
       "%s%s%s-internal \"%s\\Internal\" -external \"%s\\Inform\" -project \"%s\" -format=%s",
       (release ? "-release " : ""),
       ((m_settings.m_predictable && !release)) ? "-rng " : "",
       (m_settings.m_basic) ? "-basic " : "",
-      (LPCSTR)app,(LPCSTR)home,(LPCSTR)m_projectDir,(LPCSTR)i7format);
+      (LPCSTR)app,(LPCSTR)home,(LPCSTR)m_projectDir,(LPCSTR)format);
   }
   else if ((version == "6L38") || (version == "6M62"))
   {
+    CString format = m_settings.GetOutputExtension();
     executable.Format("%s\\Compilers\\%s\\ni",(LPCSTR)app,(LPCSTR)version);
     arguments.Format(
       "%s%s-internal \"%s\\Retrospective\\%s\" -project \"%s\" -format=%s",
@@ -2317,6 +2332,7 @@ CString ProjectFrame::Inform7CommandLine(bool release)
   }
   else if (version == "6L02")
   {
+    CString format = m_settings.GetOutputExtension();
     executable.Format("%s\\Compilers\\%s\\ni",(LPCSTR)app,(LPCSTR)version);
     arguments.Format(
       "%s%s-rules \"%s\\Retrospective\\%s\\Extensions\" -package \"%s\" -extension=%s",
@@ -2340,12 +2356,12 @@ CString ProjectFrame::Inform6CommandLine(bool release)
 {
   CString app = theApp.GetAppDir();
   CString switches = m_settings.GetInformSwitches(release,m_I6debug);
-  CString format = m_settings.GetOutputFormat();
+  CString extension = m_settings.GetOutputExtension();
 
   CString executable, arguments;
   executable.Format("%s\\Compilers\\inform6",(LPCSTR)app);
   arguments.Format("%s +include_path=..\\Source,.\\ auto.inf output.%s",
-    (LPCSTR)switches,(LPCSTR)format);
+    (LPCSTR)switches,(LPCSTR)extension);
 
   CString output;
   output.Format("\n%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);

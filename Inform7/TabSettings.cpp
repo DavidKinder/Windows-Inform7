@@ -14,6 +14,7 @@ IMPLEMENT_DYNAMIC(TabSettings, CFormView)
 BEGIN_MESSAGE_MAP(TabSettings, CFormView)
   ON_WM_CTLCOLOR()
   ON_WM_ERASEBKGND()
+  ON_WM_PRINTCLIENT()
   ON_CBN_SELCHANGE(IDC_VERSION_COMBO, OnChangedVersion)
 END_MESSAGE_MAP()
 
@@ -49,7 +50,8 @@ void TabSettings::OnChangedVersion()
   else
     m_labelTexts[3] = "";
 
-  InvalidateRect(m_labelRects[3]);
+  CPoint pos = GetDeviceScrollPosition();
+  InvalidateRect(m_labelRects[3]-pos);
 }
 
 void TabSettings::PostNcDestroy()
@@ -68,6 +70,7 @@ void TabSettings::UpdateSettings(void)
   // Compiler settings
   m_settings->m_predictable = (m_predictable.GetCheck() == BST_CHECKED);
   m_settings->m_basic = (m_basic.GetCheck() == BST_CHECKED);
+  m_settings->m_legacyExtensions = (m_legacyExts.GetCheck() == BST_CHECKED);
 
   // Output format
   m_settings->m_blorb = (m_blorb.GetCheck() == BST_CHECKED);
@@ -94,6 +97,7 @@ void TabSettings::UpdateFromSettings(void)
   // Compiler settings
   m_predictable.SetCheck(m_settings->m_predictable ? BST_CHECKED : BST_UNCHECKED);
   m_basic.SetCheck(m_settings->m_basic ? BST_CHECKED : BST_UNCHECKED);
+  m_legacyExts.SetCheck(m_settings->m_legacyExtensions ? BST_CHECKED : BST_UNCHECKED);
 
   // Output format
   m_blorb.SetCheck(m_settings->m_blorb ? BST_CHECKED : BST_UNCHECKED);
@@ -143,12 +147,14 @@ void TabSettings::CreateTab(CWnd* parent)
   m_boxRandom.SubclassDlgItem(IDC_RANDOM_BOX,this);
   m_boxVersion.SubclassDlgItem(IDC_VERSION_BOX,this);
   m_boxBasic.SubclassDlgItem(IDC_BASIC_BOX,this);
+  m_boxLegacy.SubclassDlgItem(IDC_LEGACY_BOX,this);
   m_predictable.SubclassDlgItem(IDC_PREDICTABLE,this,IDR_DARK_CHECK);
   m_basic.SubclassDlgItem(IDC_BASIC,this,IDR_DARK_CHECK);
   m_blorb.SubclassDlgItem(IDC_BLORB,this,IDR_DARK_CHECK);
   m_outputZ8.SubclassDlgItem(IDC_OUTPUT_Z8,this,IDR_DARK_RADIO);
   m_outputGlulx.SubclassDlgItem(IDC_OUTPUT_GLULX,this,IDR_DARK_RADIO);
   m_version.SubclassDlgItem(IDC_VERSION_COMBO,this);
+  m_legacyExts.SubclassDlgItem(IDC_LEGACY_EXTS,this,IDR_DARK_CHECK);
 
   // Set window text for accessibility
   SetWindowText(GetName());
@@ -283,6 +289,7 @@ BOOL TabSettings::OnCommand(WPARAM wParam, LPARAM lParam)
   case IDC_PREDICTABLE:
   case IDC_BLORB:
   case IDC_BASIC:
+  case IDC_LEGACY_EXTS:
   case IDC_OUTPUT_Z8:
   case IDC_OUTPUT_GLULX:
   case IDC_VERSION_COMBO:
@@ -338,16 +345,16 @@ BOOL TabSettings::OnEraseBkgnd(CDC* dc)
 void TabSettings::OnDraw(CDC* pDC)
 {
   CFormView::OnDraw(pDC);
+  DrawLabels(*pDC,CPoint(0,0));
+}
 
-  DarkMode* dark = DarkMode::GetActive(this);
-  pDC->SetTextColor(dark ?
-    dark->GetColour(DarkMode::Fore) : ::GetSysColor(COLOR_BTNTEXT));
-
-  pDC->SetBkMode(TRANSPARENT);
-  CFont* oldFont = pDC->SelectObject(&m_labelFont);
-  for (int i = 0; i < 5; i++)
-    pDC->DrawText(m_labelTexts[i],m_labelRects[i],DT_WORDBREAK);
-  pDC->SelectObject(oldFont);
+LRESULT TabSettings::OnPrintClient(CDC* pDC, UINT nFlags)
+{
+  if (nFlags & PRF_ERASEBKGND)
+    OnEraseBkgnd(pDC);
+  if (nFlags & PRF_CLIENT)
+    DrawLabels(*pDC,GetDeviceScrollPosition());
+  return 0;
 }
 
 void TabSettings::AddVersions(void)
@@ -368,7 +375,8 @@ void TabSettings::Layout(void)
   CRect story = getRect(this,IDC_STORY_BOX);
   CRect outputZ8 = getRect(this,IDC_OUTPUT_Z8);
   CRect outputG = getRect(this,IDC_OUTPUT_GLULX);
-  CRect check = getRect(this,IDC_BLORB);
+  CRect blorb = getRect(this,IDC_BLORB);
+  CRect legacy = getRect(this,IDC_LEGACY_EXTS);
   for (int i = 0; i < 5; i++)
   {
     m_labelRects[i].left = outputZ8.left;
@@ -389,12 +397,12 @@ void TabSettings::Layout(void)
   moveWnd(this,IDC_OUTPUT_GLULX,outputZ8.left,m_labelRects[0].bottom+fh+(outputG.top-outputZ8.top));
   sizeText(dc,m_labelTexts[1],m_labelRects[1],m_labelRects[0].bottom+(2*fh)+(2*(outputG.top-outputZ8.top)));
   moveWnd(this,IDC_BLORB,outputZ8.left,m_labelRects[1].bottom+fh);
-  int sb = m_labelRects[1].bottom+(2*fh)+check.Height();
+  int sb = m_labelRects[1].bottom+(2*fh)+blorb.Height();
   moveWnd(this,IDC_STORY_BOX,story.left,story.top,story.Width(),sb-story.top);
 
   sizeText(dc,m_labelTexts[2],m_labelRects[2],sb+(fh*5/2));
   moveWnd(this,IDC_PREDICTABLE,outputZ8.left,m_labelRects[2].bottom+fh);
-  int rh = m_labelRects[2].bottom+(fh*3/2)+check.Height()-sb;
+  int rh = m_labelRects[2].bottom+(fh*3/2)+blorb.Height()-sb;
   moveWnd(this,IDC_RANDOM_BOX,story.left,sb+(fh/2),story.Width(),rh);
 
   CRect labelRect = getRect(this,IDC_VERSION_LABEL);
@@ -417,11 +425,32 @@ void TabSettings::Layout(void)
 
   sizeText(dc,m_labelTexts[4],m_labelRects[4],sb+rh+vh+(fh*7/2));
   moveWnd(this,IDC_BASIC,outputZ8.left,m_labelRects[4].bottom+fh);
-  int bh = m_labelRects[4].bottom+check.Height()-sb-rh-vh+(fh/2);
+  int bh = m_labelRects[4].bottom+blorb.Height()-sb-rh-vh+(fh/2);
   moveWnd(this,IDC_BASIC_BOX,story.left,sb+rh+vh+(fh*3/2),story.Width(),bh);
+
+  moveWnd(this,IDC_LEGACY_EXTS,outputZ8.left,sb+rh+vh+bh+(fh*4));
+  int lh = legacy.Height()+(fh*3);
+  moveWnd(this,IDC_LEGACY_BOX,story.left,sb+rh+vh+bh+(fh*2),story.Width(),lh);
 
   dc->SelectObject(oldFont);
   ReleaseDC(dc);
+
+  // Set the scrollbar sizes
+  CRect last = getRect(this,IDC_LEGACY_BOX);
+  SetScrollSizes(MM_TEXT,CSize(last.right+last.left,last.bottom+fh));
+}
+
+void TabSettings::DrawLabels(CDC& dc, const CPoint& p)
+{
+  DarkMode* dark = DarkMode::GetActive(this);
+  dc.SetTextColor(dark ?
+    dark->GetColour(DarkMode::Fore) : ::GetSysColor(COLOR_BTNTEXT));
+
+  dc.SetBkMode(TRANSPARENT);
+  CFont* oldFont = dc.SelectObject(&m_labelFont);
+  for (int i = 0; i < 5; i++)
+    dc.DrawText(m_labelTexts[i],m_labelRects[i]-p,DT_WORDBREAK);
+  dc.SelectObject(oldFont);
 }
 
 // Copied from MFC sources to enable a call to our CreateDlgIndirect()
@@ -444,9 +473,6 @@ BOOL TabSettings::Create(DWORD dwRequestedStyle, const RECT& rect, CWnd* pParent
   ModifyStyleEx(WS_EX_CLIENTEDGE,cs.dwExStyle & WS_EX_CLIENTEDGE);
 
   SetDlgCtrlID(nID);
-
-  // Don't use scrollbars
-  SetScrollSizes(MM_TEXT,CSize(1,1));
 
   if (!ExecuteDlgInit(m_lpszTemplateName))
     return FALSE;

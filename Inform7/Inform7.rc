@@ -407,7 +407,7 @@ BEGIN
     CTEXT           "Inform for Windows %s.%s",IDC_VERSION,1,42,203,9
 END
 
-IDD_SETTINGS DIALOGEX 0, 0, 300, 341
+IDD_SETTINGS DIALOGEX 0, 0, 300, 383
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -425,6 +425,9 @@ BEGIN
     LTEXT           "Version:",IDC_VERSION_LABEL,15,225,32,8
     GROUPBOX        "Basic Inform",IDC_BASIC_BOX,7,269,286,62
     CONTROL         "Use Basic Inform only",IDC_BASIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,315,120,8
+    GROUPBOX        "Legacy Extensions",IDC_LEGACY_BOX,7,336,286,38
+    CONTROL         "Allow extensions to be used from the legacy extensions area on your computer, if you have one.",IDC_LEGACY_EXTS,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,15,349,216,17
 END
 
 IDD_LAUNCHER DIALOGEX 0, 0, 440, 325
@@ -753,7 +756,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 293
         TOPMARGIN, 7
-        BOTTOMMARGIN, 336
+        BOTTOMMARGIN, 378
     END
 
     IDD_LAUNCHER, DIALOG

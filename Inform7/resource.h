@@ -118,6 +118,7 @@
 #define IDC_BLORB                       1004
 #define IDC_PREDICTABLE                 1005
 #define IDC_BASIC                       1006
+#define IDC_LEGACY_EXTS                 1007
 #define IDC_PROGRESS                    1010
 #define IDC_LOGO                        1011
 #define IDC_TITLE                       1012
@@ -157,6 +158,7 @@
 #define IDC_VERSION_LABEL               1046
 #define IDC_VERSION_COMBO               1047
 #define IDC_BASIC_BOX                   1048
+#define IDC_LEGACY_BOX                  1049
 #define IDC_EXAMPLE_LIST                1060
 #define IDC_STOP                        1061
 #define IDC_RESTORE                     1062

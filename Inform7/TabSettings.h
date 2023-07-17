@@ -57,18 +57,20 @@ protected:
   virtual void OnDraw(CDC* pDC);
   afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+  afx_msg LRESULT OnPrintClient(CDC* pDC, UINT nFlags);
 
   void AddVersions(void);
   void Layout(void);
+  void DrawLabels(CDC& dc, const CPoint& p);
 
   BOOL Create(DWORD, const RECT&, CWnd*, UINT);
   BOOL CreateDlg(LPCTSTR, CWnd*);
   BOOL CreateDlgIndirect(LPCDLGTEMPLATE, CWnd*, HINSTANCE);
 
 private:
-  DarkModeGroupBox m_boxStory, m_boxRandom, m_boxVersion, m_boxBasic;
+  DarkModeGroupBox m_boxStory, m_boxRandom, m_boxVersion, m_boxBasic, m_boxLegacy;
   DarkModeRadioButton m_outputZ8, m_outputGlulx;
-  DarkModeCheckButton m_blorb, m_predictable, m_basic;
+  DarkModeCheckButton m_blorb, m_predictable, m_basic, m_legacyExts;
   DarkModeComboBox m_version;
   CFont m_labelFont;
 

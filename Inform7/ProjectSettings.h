@@ -12,8 +12,8 @@ public:
   CTime GetFileTimestamp(const char* path);
 
   CString GetInformSwitches(bool release, bool debugFile);
-  CString GetOutputFormat(void);
-  CString GetOutputNewFormat(bool release);
+  CString GetOutputExtension(void);
+  CString GetOutputFormat(bool release);
   CString GetCompilerVersion(void);
 
   enum Output
@@ -26,6 +26,7 @@ public:
   bool m_blorb;
   bool m_predictable;
   bool m_basic;
+  bool m_legacyExtensions;
   CString m_compilerVersion;
   int m_testingTabShownCount;
 

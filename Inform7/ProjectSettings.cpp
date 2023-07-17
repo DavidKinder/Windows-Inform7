@@ -31,6 +31,10 @@ void ProjectSettings::Load(const char* path)
   m_blorb = propList.GetBoolean(L"IFOutputSettings",L"IFSettingCreateBlorb",true);
   m_predictable = propList.GetBoolean(L"IFOutputSettings",L"IFSettingNobbleRng",false);
   m_basic = propList.GetBoolean(L"IFOutputSettings",L"IFSettingBasicInform",false);
+
+  // On by default for existing projects
+  m_legacyExtensions = propList.GetBoolean(L"IFAdvancedSettings",L"IFSettingAllowLegacyExtensionDirectory",true);
+
   switch (propList.GetNumber(L"IFOutputSettings",L"IFSettingZCodeVersion"))
   {
   case 5:
@@ -116,6 +120,14 @@ bool ProjectSettings::Save(const char* path)
     (LPCSTR)m_compilerVersion);
 
   fprintf(settingsFile,
+    "\t<key>IFAdvancedSettings</key>\n"
+    "\t<dict>\n"
+    "\t\t<key>IFSettingAllowLegacyExtensionDirectory</key>\n"
+    "\t\t<%s/>\n"
+    "\t</dict>\n",
+    m_legacyExtensions ? "true" : "false");
+
+  fprintf(settingsFile,
     "\t<key>IFRandomSettings</key>\n"
     "\t<dict/>\n"
     "</dict>\n"
@@ -154,7 +166,7 @@ CString ProjectSettings::GetInformSwitches(bool release, bool debugFile)
   return switches;
 }
 
-CString ProjectSettings::GetOutputFormat(void)
+CString ProjectSettings::GetOutputExtension(void)
 {
   switch (m_output)
   {
@@ -166,7 +178,7 @@ CString ProjectSettings::GetOutputFormat(void)
   return "";
 }
 
-CString ProjectSettings::GetOutputNewFormat(bool release)
+CString ProjectSettings::GetOutputFormat(bool release)
 {
   switch (m_output)
   {
@@ -191,6 +203,7 @@ void ProjectSettings::SetDefaults(void)
   m_blorb = true;
   m_predictable = false;
   m_basic = false;
+  m_legacyExtensions = false; // Off by default for new projects
   m_testingTabShownCount = 0;
   m_changed = false;
 }
