@@ -340,6 +340,9 @@
     <ClInclude Include="DrawScrollArea.h">
       <Filter>Controls</Filter>
     </ClInclude>
+    <ClInclude Include="PickExtensionDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1460,6 +1463,9 @@
     </ClCompile>
     <ClCompile Include="DrawScrollArea.cpp">
       <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="PickExtensionDialog.cpp">
+      <Filter>Dialogs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

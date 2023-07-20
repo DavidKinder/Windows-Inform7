@@ -204,6 +204,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="NewDialogs.h" />
     <ClInclude Include="NoFocusCheck.h" />
     <ClInclude Include="Panel.h" />
+    <ClInclude Include="PickExtensionDialog.h" />
     <ClInclude Include="PrefsDialog.h" />
     <ClInclude Include="ProgressWnd.h" />
     <ClInclude Include="ProjectDirDialog.h" />
@@ -2072,6 +2073,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="NewDialogs.cpp" />
     <ClCompile Include="NoFocusCheck.cpp" />
     <ClCompile Include="Panel.cpp" />
+    <ClCompile Include="PickExtensionDialog.cpp" />
     <ClCompile Include="PrefsDialog.cpp" />
     <ClCompile Include="ProgressWnd.cpp" />
     <ClCompile Include="ProjectDirDialog.cpp" />

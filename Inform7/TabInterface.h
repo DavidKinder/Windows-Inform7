@@ -61,7 +61,8 @@ public:
     RanInform6,
     RanInblorb,
     RanIntestSource,
-    RanIntestReport
+    RanIntestReport,
+    RanInbuildExtension,
   };
 
   // Notification that a project is being opened
@@ -91,7 +92,7 @@ public:
   {
   public:
     virtual void OnSourceLink(const char* url, TabInterface* from, COLORREF highlight) = 0;
-    virtual void OnDocLink(const char* url, TabInterface* from) = 0;
+    virtual bool OnDocLink(const char* url, TabInterface* from) = 0;
     virtual void OnSkeinLink(const char* url, TabInterface* from) = 0;
   };
 };

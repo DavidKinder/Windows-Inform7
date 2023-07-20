@@ -92,13 +92,16 @@ protected:
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();
+  afx_msg void OnFileNewExt();
+  afx_msg void OnFileNewExtProject();
+  afx_msg void OnFileNewXPFromExt(UINT nID);
+  afx_msg void OnFileAddExtLibrary();
+  afx_msg void OnFileAddExtFile();
+  afx_msg void OnFileAddExtLegacy();
   afx_msg void OnFileInstallExt();
   afx_msg void OnFileInstallFolder();
   afx_msg void OnFileInstallExtProject();
-  afx_msg void OnFileNewExt();
-  afx_msg void OnFileNewExtProject();
   afx_msg void OnFileOpenExt(UINT nID);
-  afx_msg void OnFileNewXPFromExt(UINT nID);
   afx_msg void OnFileClose();
   afx_msg void OnFileSave();
   afx_msg void OnFileSaveAs();
@@ -164,7 +167,7 @@ protected:
 
   // Implementation of TabInterface::LinkTabNotify
   void OnSourceLink(const char* url, TabInterface* from, COLORREF highlight);
-  void OnDocLink(const char* url, TabInterface* from);
+  bool OnDocLink(const char* url, TabInterface* from);
   void OnSkeinLink(const char* url, TabInterface* from);
 
   static ProjectFrame* NewFrame(ProjectType projectType);
@@ -184,7 +187,6 @@ protected:
   void SetExampleListLocation(void);
   bool GetExtensionInfo(CString& path, CStringW& name, CStringW& author);
   CString GetMaterialsFolder(void);
-  bool CopyExtensionToMaterials(void);
 
   struct Example
   {
@@ -206,6 +208,9 @@ protected:
   void GenerateIntestCombinedReport(void);
   bool BusyWantStop(void);
   LONGLONG GetMaxLast5Seconds(void);
+
+  bool CopyExtensionToMaterials(void);
+  void AddExtensionToProject(CString extPath);
 
   Panel* GetPanel(int column) const;
   int ChoosePanel(Panel::Tabs newTab);

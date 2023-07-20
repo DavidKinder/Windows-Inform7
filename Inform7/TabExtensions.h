@@ -24,6 +24,7 @@ public:
 
   void Show(const char* url);
   void ShowHelp(void);
+  void ShowLibrary(void);
   void DownloadedExt(int id);
 
   // Implementation of ReportHtml::LinkConsumer

@@ -1,12 +1,9 @@
 #include "stdafx.h"
 #include "ProjectDirDialog.h"
-#include "Resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
-// Logic used by both file dialogs
 
 enum DirResult
 {

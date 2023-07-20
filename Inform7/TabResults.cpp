@@ -18,6 +18,7 @@ IMPLEMENT_DYNAMIC(TabResults, TabBase)
 
 BEGIN_MESSAGE_MAP(TabResults, TabBase)
   ON_WM_SIZE()
+  ON_MESSAGE(WM_USERNAVIGATE, OnUserNavigate)
   ON_MESSAGE(WM_FINDREPLACECMD, OnFindReplaceCmd)
 END_MESSAGE_MAP()
 
@@ -220,6 +221,19 @@ void TabResults::CompileProject(CompileStage stage, int code)
       m_report.Navigate(TextFormat::AnsiToUTF8(m_projectDir+PROBLEMS_FILE),false);
     SetActiveTab(ResTab_Report,false);
     break;
+
+  case RanInbuildExtension:
+    // Show the inbuild report
+    if (code == 0)
+    {
+      CString reportPath;
+      reportPath.Format("%s\\Build\\Inbuild.html",(LPCSTR)m_projectDir);
+      m_report.Navigate(TextFormat::AnsiToUTF8(reportPath),false);
+      SetActiveTab(ResTab_Report,false);
+    }
+    else
+      SetActiveTab(ResTab_Console,false);
+    break;
   }
 }
 
@@ -334,7 +348,7 @@ void TabResults::SkeinLink(const char* url)
 bool TabResults::DocLink(const char* url)
 {
   if (m_notify)
-    m_notify->OnDocLink(url,this);
+    return m_notify->OnDocLink(url,this);
   return true;
 }
 
@@ -359,6 +373,17 @@ void TabResults::OnSize(UINT nType, int cx, int cy)
 {
   TabBase::OnSize(nType,cx,cy);
   Resize();
+}
+
+LRESULT TabResults::OnUserNavigate(WPARAM, LPARAM)
+{
+  if (IsWindowVisible())
+  {
+    TabState state;
+    GetTabState(state);
+    Panel::GetPanel(this)->AddToTabHistory(state);
+  }
+  return 0;
 }
 
 LRESULT TabResults::OnFindReplaceCmd(WPARAM wParam, LPARAM lParam)

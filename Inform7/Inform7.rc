@@ -82,12 +82,20 @@ BEGIN
             END
         END
         MENUITEM "Ne&w Extension...",           ID_FILE_NEW_EXT
-        MENUITEM "&Install Extension...",       ID_FILE_INSTALL_EXT
-        POPUP "Open Installed &Extension"
+        MENUITEM SEPARATOR
+        POPUP "Add Extension to Project"
+        BEGIN
+            MENUITEM "From Public &Library",        ID_FILE_ADD_EXT_LIBRARY
+            MENUITEM "From &File...",               ID_FILE_ADD_EXT_FILE
+            MENUITEM "From Legacy Installed Extensions Folder...", ID_FILE_ADD_EXT_LEGACY
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Install Legacy Extension...", ID_FILE_INSTALL_EXT
+        POPUP "Open Legacy Installed Extension"
         BEGIN
             MENUITEM SEPARATOR
         END
-        MENUITEM "Show Installed Extensions &Folder", ID_FILE_INSTALL_FOLDER
+        MENUITEM "Show Legacy Installed Extensions Folder", ID_FILE_INSTALL_FOLDER
         MENUITEM "Export Extension...",         ID_FILE_EXPORT_EXT
         MENUITEM SEPARATOR
         MENUITEM "Import into S&kein...",       ID_FILE_IMPORT_SKEIN

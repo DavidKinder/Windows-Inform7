@@ -4,6 +4,7 @@
 #include "ExtensionFrame.h"
 #include "Messages.h"
 #include "NewDialogs.h"
+#include "PickExtensionDialog.h"
 #include "ProjectDirDialog.h"
 #include "TextFormat.h"
 #include "WelcomeLauncher.h"
@@ -74,14 +75,17 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
+  ON_COMMAND(ID_FILE_NEW_EXT, OnFileNewExt)
+  ON_COMMAND(ID_FILE_NEW_XP, OnFileNewExtProject)
+  ON_COMMAND_RANGE(ID_NEW_EXTENSIONS_LIST, ID_NEW_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileNewXPFromExt)
+  ON_COMMAND(ID_FILE_ADD_EXT_LIBRARY, OnFileAddExtLibrary)
+  ON_COMMAND(ID_FILE_ADD_EXT_FILE, OnFileAddExtFile)
+  ON_COMMAND(ID_FILE_ADD_EXT_LEGACY, OnFileAddExtLegacy)
   ON_COMMAND(ID_FILE_INSTALL_EXT, OnFileInstallExt)
   ON_COMMAND(ID_FILE_INSTALL_FOLDER, OnFileInstallFolder)
   ON_UPDATE_COMMAND_UI(ID_FILE_INSTALL_XP, OnUpdateIfNotBusy)
   ON_COMMAND(ID_FILE_INSTALL_XP, OnFileInstallExtProject)
-  ON_COMMAND(ID_FILE_NEW_EXT, OnFileNewExt)
-  ON_COMMAND(ID_FILE_NEW_XP, OnFileNewExtProject)
   ON_COMMAND_RANGE(ID_OPEN_EXTENSIONS_LIST, ID_OPEN_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileOpenExt)
-  ON_COMMAND_RANGE(ID_NEW_EXTENSIONS_LIST, ID_NEW_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileNewXPFromExt)
   ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE, OnUpdateIfNotBusy)
   ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
   ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateIfNotBusy)
@@ -1065,6 +1069,53 @@ void ProjectFrame::OnFileOpen()
   StartExistingProject(m_projectDir,this);
 }
 
+void ProjectFrame::OnFileNewExt()
+{
+  SaveSettings();
+  ExtensionFrame::StartNew(this,m_settings);
+}
+
+void ProjectFrame::OnFileNewExtProject()
+{
+  SaveSettings();
+  StartNewExtProject(m_projectDir,this,NULL);
+}
+
+void ProjectFrame::OnFileNewXPFromExt(UINT nID)
+{
+  int index = nID-ID_NEW_EXTENSIONS_LIST;
+  const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
+  if ((index >= 0) && (index < (int)extensions.size()))
+  {
+    SaveSettings();
+    StartNewExtProject(m_projectDir,this,&(extensions[index]));
+  }
+}
+
+void ProjectFrame::OnFileAddExtLibrary()
+{
+  Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Extensions));
+  ((TabExtensions*)panel->GetTab(Panel::Tab_Extensions))->ShowLibrary();
+  panel->SetActiveTab(Panel::Tab_Extensions);
+}
+
+void ProjectFrame::OnFileAddExtFile()
+{
+  PickExtensionDialog dialog(NULL,"Select the extension to add to the project",this);
+  if (dialog.ShowDialog() == IDOK)
+    AddExtensionToProject(dialog.GetExtensionPath());
+}
+
+void ProjectFrame::OnFileAddExtLegacy()
+{
+  CString dir;
+  dir.Format("%s\\Inform\\Extensions",(LPCSTR)theApp.GetHomeDir());
+
+  PickExtensionDialog dialog(dir,"Select the extension to add to the project",this);
+  if (dialog.ShowDialog() == IDOK)
+    AddExtensionToProject(dialog.GetExtensionPath());
+}
+
 void ProjectFrame::OnFileInstallExt()
 {
   CWaitCursor wc;
@@ -1098,18 +1149,6 @@ void ProjectFrame::OnFileInstallExtProject()
   ExtensionFrame::InstallExtensions(this,paths);
 }
 
-void ProjectFrame::OnFileNewExt()
-{
-  SaveSettings();
-  ExtensionFrame::StartNew(this,m_settings);
-}
-
-void ProjectFrame::OnFileNewExtProject()
-{
-  SaveSettings();
-  StartNewExtProject(m_projectDir,this,NULL);
-}
-
 void ProjectFrame::OnFileOpenExt(UINT nID)
 {
   int index = nID-ID_OPEN_EXTENSIONS_LIST;
@@ -1118,17 +1157,6 @@ void ProjectFrame::OnFileOpenExt(UINT nID)
   {
     SaveSettings();
     ExtensionFrame::StartExisting(extensions[index].path.c_str(),m_settings);
-  }
-}
-
-void ProjectFrame::OnFileNewXPFromExt(UINT nID)
-{
-  int index = nID-ID_NEW_EXTENSIONS_LIST;
-  const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
-  if ((index >= 0) && (index < (int)extensions.size()))
-  {
-    SaveSettings();
-    StartNewExtProject(m_projectDir,this,&(extensions[index]));
   }
 }
 
@@ -2224,7 +2252,7 @@ void ProjectFrame::UpdateExtensionsMenu(void)
   CMenu* fileMenu = GetMenu()->GetSubMenu(0);
   CMenu* newExtMenu = fileMenu->GetSubMenu(4)->GetSubMenu(1);
   ASSERT(newExtMenu != NULL);
-  CMenu* openExtMenu = fileMenu->GetSubMenu(7);
+  CMenu* openExtMenu = fileMenu->GetSubMenu(10);
   ASSERT(openExtMenu != NULL);
 
   while (newExtMenu->GetMenuItemCount() > 0)
@@ -2309,7 +2337,7 @@ CString ProjectFrame::Inform7CommandLine(bool release)
     if (m_settings.m_legacyExtensions)
       arguments.AppendFormat(" -deprecated-external \"%s\\Inform\"",(LPCSTR)home);
   }
-  else if (version == "10.1") //XXXXDK Retrospective build for 10.1?
+  else if (version == "10.1") //XXXXDK Retrospective build for 10.1? compiler path and -internal
   {
     CString format = m_settings.GetOutputFormat(release);
     executable.Format("%s\\Compilers\\inform7",(LPCSTR)app);
@@ -2495,6 +2523,92 @@ LONGLONG ProjectFrame::GetMaxLast5Seconds(void)
   return seconds;
 }
 
+bool ProjectFrame::CopyExtensionToMaterials(void)
+{
+  m_materialsExtPath.Empty();
+
+  CString sourcePath;
+  CStringW extName, extAuthor;
+  if (!GetExtensionInfo(sourcePath,extName,extAuthor))
+    return false;
+
+  CString destPath = GetMaterialsFolder();
+  ::CreateDirectory(destPath,NULL);
+  destPath.Append("\\Extensions");
+  ::CreateDirectory(destPath,NULL);
+  destPath.AppendFormat("\\%S",(LPCWSTR)extAuthor);
+  ::CreateDirectory(destPath,NULL);
+  if (::GetFileAttributes(destPath) == INVALID_FILE_ATTRIBUTES)
+    return false;
+
+  destPath.AppendFormat("\\%S.i7x",(LPCWSTR)extName);
+  if (::CopyFile(sourcePath,destPath,FALSE))
+  {
+    m_materialsExtPath = destPath;
+    return true;
+  }
+  return false;
+}
+
+void ProjectFrame::AddExtensionToProject(CString extPath)
+{
+  // Get the extension file name from the full path
+  int sep = extPath.ReverseFind('\\');
+  CString extFile = (sep >= 0) ? extPath.Mid(sep+1) : extPath;
+
+  // Make a temporary copy of the extension
+  CString tempPath = GetMaterialsFolder();
+  ::CreateDirectory(tempPath,NULL);
+  tempPath.Append("\\Extensions");
+  ::CreateDirectory(tempPath,NULL);
+  tempPath.Append("\\Reserved");
+  ::CreateDirectory(tempPath,NULL);
+  tempPath.Append("\\Temporary");
+  ::CreateDirectory(tempPath,NULL);
+  if (::GetFileAttributes(tempPath) == INVALID_FILE_ATTRIBUTES)
+  {
+    MessageBox("Failed to install extension\nCould not create temporary extension directory",
+      INFORM_TITLE,MB_OK|MB_ICONERROR);
+    return;
+  }
+  tempPath.AppendFormat("\\%s",extFile.GetString());
+  ::CopyFile(extPath,tempPath,FALSE);
+
+  // Run inbuild on the copied extension
+  {
+    BusyProject busy(this);
+
+    // Notify panels that an operation is starting
+    GetPanel(0)->CompileProject(TabInterface::CompileStart,0);
+    GetPanel(1)->CompileProject(TabInterface::CompileStart,0);
+
+    CString executable, arguments;
+    executable.Format("%s\\Compilers\\inbuild",(LPCSTR)theApp.GetAppDir());
+    arguments.Format("-project \"%s\" -install \"%s\" -results \"%s\\Build\\Inbuild.html\" -internal \"%s\\Internal\"",
+      (LPCSTR)m_projectDir,(LPCSTR)tempPath,(LPCSTR)m_projectDir,(LPCSTR)theApp.GetAppDir());
+
+    CString output;
+    output.Format("%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
+    Output(output);
+
+    // Run inbuild
+    CString cmdLine;
+    cmdLine.Format("\"%s\" %s",(LPCSTR)executable,(LPCSTR)arguments);
+    int code = theApp.RunCommand(m_projectDir,cmdLine,*this);
+    GetPanel(0)->CompileProject(TabInterface::RanInbuildExtension,code);
+    GetPanel(1)->CompileProject(TabInterface::RanInbuildExtension,code);
+
+    // If the call to inbuild failed, tell the user
+    GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
+    if (code != 0)
+    {
+      CString msg;
+      msg.Format("Failed to install extension\nInbuild returned code %d",code);
+      MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
+    }
+  }
+}
+
 Panel* ProjectFrame::GetPanel(int column) const
 {
   return (Panel*)m_splitter.GetPane(0,column);
@@ -2636,15 +2750,32 @@ void ProjectFrame::OnSourceLink(const char* url, TabInterface* from, COLORREF hi
     ::MessageBeep(MB_ICONASTERISK);
 }
 
-void ProjectFrame::OnDocLink(const char* url, TabInterface* from)
+bool ProjectFrame::OnDocLink(const char* url, TabInterface* from)
 {
   // Select the tab to show the page in
   Panel::Tabs tab = Panel::Tab_Doc;
-  CString docDir;
-  docDir.Format("%s\\Inform\\Documentation",(LPCSTR)theApp.GetHomeDir());
-  CString extUrlBase(theApp.PathToUrl(docDir));
+  CString extDir, extUrlBase;
+  extDir.Format("%s\\Extensions",(LPCSTR)GetMaterialsFolder());
+  extUrlBase = theApp.PathToUrl(extDir);
   if (strncmp(url,extUrlBase,extUrlBase.GetLength()) == 0)
     tab = Panel::Tab_Extensions;
+  extDir.Format("%s\\Inform\\Documentation",(LPCSTR)theApp.GetHomeDir());
+  extUrlBase = theApp.PathToUrl(extDir);
+  if (strncmp(url,extUrlBase,extUrlBase.GetLength()) == 0)
+    tab = Panel::Tab_Extensions;
+
+  // Do nothing if the tab to show the page in is the same as the page the request is from
+  switch (tab)
+  {
+  case Panel::Tab_Doc:
+    if (from->GetWindow()->IsKindOf(RUNTIME_CLASS(TabDoc)))
+      return false;
+    break;
+  case Panel::Tab_Extensions:
+    if (from->GetWindow()->IsKindOf(RUNTIME_CLASS(TabExtensions)))
+      return false;
+    break;
+  }
 
   // Select the panel to show the page in
   int thisPanel = 1;
@@ -2652,16 +2783,18 @@ void ProjectFrame::OnDocLink(const char* url, TabInterface* from)
     thisPanel = 0;
 
   // Show the appropriate tab
-  if (tab == Panel::Tab_Extensions)
+  switch (tab)
   {
-    ((TabExtensions*)GetPanel(thisPanel)->GetTab(Panel::Tab_Extensions))->Show(CString(url));
-    GetPanel(thisPanel)->SetActiveTab(Panel::Tab_Extensions);
-  }
-  else
-  {
+  case Panel::Tab_Doc:
     ((TabDoc*)GetPanel(thisPanel)->GetTab(Panel::Tab_Doc))->Show(CString(url));
     GetPanel(thisPanel)->SetActiveTab(Panel::Tab_Doc);
+    break;
+  case Panel::Tab_Extensions:
+    ((TabExtensions*)GetPanel(thisPanel)->GetTab(Panel::Tab_Extensions))->Show(CString(url));
+    GetPanel(thisPanel)->SetActiveTab(Panel::Tab_Extensions);
+    break;
   }
+  return true;
 }
 
 void ProjectFrame::OnSkeinLink(const char* url, TabInterface* from)
@@ -2933,33 +3066,6 @@ CString ProjectFrame::GetMaterialsFolder(void)
   CString path;
   path.Format("%s.materials",m_projectDir.Left(projectExt));
   return path;
-}
-
-bool ProjectFrame::CopyExtensionToMaterials(void)
-{
-  m_materialsExtPath.Empty();
-
-  CString sourcePath;
-  CStringW extName, extAuthor;
-  if (!GetExtensionInfo(sourcePath,extName,extAuthor))
-    return false;
-
-  CString destPath = GetMaterialsFolder();
-  ::CreateDirectory(destPath,NULL);
-  destPath.Append("\\Extensions");
-  ::CreateDirectory(destPath,NULL);
-  destPath.AppendFormat("\\%S",(LPCWSTR)extAuthor);
-  ::CreateDirectory(destPath,NULL);
-  if (::GetFileAttributes(destPath) == INVALID_FILE_ATTRIBUTES)
-    return false;
-
-  destPath.AppendFormat("\\%S.i7x",(LPCWSTR)extName);
-  if (::CopyFile(sourcePath,destPath,FALSE))
-  {
-    m_materialsExtPath = destPath;
-    return true;
-  }
-  return false;
 }
 
 ProjectFrame::Example ProjectFrame::GetCurrentExample(void)

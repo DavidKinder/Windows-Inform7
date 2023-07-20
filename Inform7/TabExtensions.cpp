@@ -132,6 +132,11 @@ void TabExtensions::ShowHelp(void)
   Show(TextFormat::AnsiToUTF8(GetUrlForTab(ExtTab_Home)));
 }
 
+void TabExtensions::ShowLibrary(void)
+{
+  Show(TextFormat::AnsiToUTF8(GetUrlForTab(ExtTab_Library)));
+}
+
 void TabExtensions::DownloadedExt(int id)
 {
   if (GetActiveTab() == ExtTab_Library)
@@ -161,18 +166,8 @@ void TabExtensions::SkeinLink(const char* url)
 
 bool TabExtensions::DocLink(const char* url)
 {
-  // Switch to the documentation tab if the URL points to a file in
-  // the application, and is not "NoExtensions.html".
-  CString appUrl = theApp.PathToUrl(theApp.GetAppDir());
-  if (strncmp(url,appUrl,appUrl.GetLength()) == 0)
-  {
-    if (!TextFormat::EndsWith(url,"NoExtensions.html"))
-    {
-      if (m_notify)
-        m_notify->OnDocLink(url,this);
-      return true;
-    }
-  }
+  if (m_notify)
+    return m_notify->OnDocLink(url,this);
   return false;
 }
 

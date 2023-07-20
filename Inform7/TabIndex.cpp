@@ -162,7 +162,7 @@ void TabIndex::SkeinLink(const char* url)
 bool TabIndex::DocLink(const char* url)
 {
   if (m_notify)
-    m_notify->OnDocLink(url,this);
+    return m_notify->OnDocLink(url,this);
   return true;
 }
 
