@@ -208,3 +208,7 @@ enum FindCommand
 // Set to the window frame to determine if the file given in wParam was
 // built during the last compilation.
 #define WM_ISBUILDFILE    WM_APP+44
+
+// Sent to the window frame to confirm the current action (currently only
+// installing an extension via inbuild).
+#define WM_CONFIRMACTION  WM_APP+45

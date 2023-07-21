@@ -79,6 +79,7 @@ protected:
   afx_msg LRESULT OnCanPlayAll(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectEdited(WPARAM, LPARAM);
   afx_msg LRESULT OnExtDownload(WPARAM, LPARAM);
+  afx_msg LRESULT OnConfirmAction(WPARAM, LPARAM);
   afx_msg LRESULT OnProgress(WPARAM, LPARAM);
   afx_msg LRESULT OnCreateNewProject(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectExt(WPARAM, LPARAM);
@@ -211,6 +212,7 @@ protected:
 
   bool CopyExtensionToMaterials(void);
   void AddExtensionToProject(CString extPath);
+  void RunInbuildInstallExtension(bool confirm);
 
   Panel* GetPanel(int column) const;
   int ChoosePanel(Panel::Tabs newTab);
@@ -259,9 +261,11 @@ protected:
   CString m_outputFileLoc;
   int m_loadFilter;
 
+  CString m_materialsExtPath;
+  CString m_extensionToInstall;
+
   CArray<Example> m_examples;
   Example m_exampleCompiled;
-  CString m_materialsExtPath;
 
   struct ExLineOffset
   {

@@ -62,6 +62,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_CANPLAYALL, OnCanPlayAll)
   ON_MESSAGE(WM_PROJECTEDITED, OnProjectEdited)
   ON_MESSAGE(WM_EXTDOWNLOAD, OnExtDownload)
+  ON_MESSAGE(WM_CONFIRMACTION, OnConfirmAction)
   ON_MESSAGE(WM_PROGRESS, OnProgress)
   ON_MESSAGE(WM_NEWPROJECT, OnCreateNewProject)
   ON_MESSAGE(WM_PROJECTEXT, OnProjectExt)
@@ -880,6 +881,13 @@ LRESULT ProjectFrame::OnExtDownload(WPARAM urls, LPARAM)
   CStringArray* libraryUrls = (CStringArray*)urls;
   ExtensionFrame::DownloadExtensions(this,libraryUrls);
   delete libraryUrls;
+  return 0;
+}
+
+LRESULT ProjectFrame::OnConfirmAction(WPARAM, LPARAM)
+{
+  if (!m_extensionToInstall.IsEmpty())
+    RunInbuildInstallExtension(true);
   return 0;
 }
 
@@ -2572,40 +2580,51 @@ void ProjectFrame::AddExtensionToProject(CString extPath)
     return;
   }
   tempPath.AppendFormat("\\%s",extFile.GetString());
-  ::CopyFile(extPath,tempPath,FALSE);
+  if (::CopyFile(extPath,tempPath,FALSE) == 0)
+  {
+    MessageBox("Failed to install extension\nCould not copy extension",
+      INFORM_TITLE,MB_OK|MB_ICONERROR);
+    return;
+  }
 
   // Run inbuild on the copied extension
+  m_extensionToInstall = tempPath;
+  RunInbuildInstallExtension(false);
+}
+
+void ProjectFrame::RunInbuildInstallExtension(bool confirm)
+{
+  BusyProject busy(this);
+
+  // Notify panels that an operation is starting
+  GetPanel(0)->CompileProject(TabInterface::CompileStart,0);
+  GetPanel(1)->CompileProject(TabInterface::CompileStart,0);
+
+  CString executable, arguments;
+  executable.Format("%s\\Compilers\\inbuild",(LPCSTR)theApp.GetAppDir());
+  arguments.Format("-project \"%s\" -install \"%s\" -results \"%s\\Build\\Inbuild.html\" -internal \"%s\\Internal\"",
+    (LPCSTR)m_projectDir,(LPCSTR)m_extensionToInstall,(LPCSTR)m_projectDir,(LPCSTR)theApp.GetAppDir());
+  if (confirm)
+    arguments.Append(" -confirmed");
+
+  CString output;
+  output.Format("%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
+  Output(output);
+
+  // Run inbuild
+  CString cmdLine;
+  cmdLine.Format("\"%s\" %s",(LPCSTR)executable,(LPCSTR)arguments);
+  int code = theApp.RunCommand(m_projectDir,cmdLine,*this);
+  GetPanel(0)->CompileProject(TabInterface::RanInbuildExtension,code);
+  GetPanel(1)->CompileProject(TabInterface::RanInbuildExtension,code);
+
+  // If the call to inbuild failed, tell the user
+  GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
+  if (code != 0)
   {
-    BusyProject busy(this);
-
-    // Notify panels that an operation is starting
-    GetPanel(0)->CompileProject(TabInterface::CompileStart,0);
-    GetPanel(1)->CompileProject(TabInterface::CompileStart,0);
-
-    CString executable, arguments;
-    executable.Format("%s\\Compilers\\inbuild",(LPCSTR)theApp.GetAppDir());
-    arguments.Format("-project \"%s\" -install \"%s\" -results \"%s\\Build\\Inbuild.html\" -internal \"%s\\Internal\"",
-      (LPCSTR)m_projectDir,(LPCSTR)tempPath,(LPCSTR)m_projectDir,(LPCSTR)theApp.GetAppDir());
-
-    CString output;
-    output.Format("%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
-    Output(output);
-
-    // Run inbuild
-    CString cmdLine;
-    cmdLine.Format("\"%s\" %s",(LPCSTR)executable,(LPCSTR)arguments);
-    int code = theApp.RunCommand(m_projectDir,cmdLine,*this);
-    GetPanel(0)->CompileProject(TabInterface::RanInbuildExtension,code);
-    GetPanel(1)->CompileProject(TabInterface::RanInbuildExtension,code);
-
-    // If the call to inbuild failed, tell the user
-    GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
-    if (code != 0)
-    {
-      CString msg;
-      msg.Format("Failed to install extension\nInbuild returned code %d",code);
-      MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
-    }
+    CString msg;
+    msg.Format("Failed to install extension\nInbuild returned code %d",code);
+    MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
   }
 }
 

@@ -250,6 +250,8 @@ public:
       SendMessage("I7.createNewProject",arguments);
     else if (name == "openFile")
       SendMessage("I7.openFile",arguments);
+    else if (name == "confirmAction")
+      SendMessage("I7.confirmAction",arguments);
     else if (name == "openUrl")
     {
       // We don't need anything from the browser process for this,
@@ -434,6 +436,7 @@ public:
     AddMethod(obj,"createNewProject",handler);
     AddMethod(obj,"openFile",handler);
     AddMethod(obj,"openUrl",handler);
+    AddMethod(obj,"confirmAction",handler);
     AddMethod(obj,"askInterfaceForLocalVersion",handler);
     AddMethod(obj,"askInterfaceForLocalVersionText",handler);
     AddMethod(obj,"downloadMultipleExtensions",handler);
@@ -541,6 +544,8 @@ public:
           std::string path = GetStringArgument(message,0).ToString();
           OpenFile(TextFormat::UTF8ToUnicode(path.c_str()));
         }
+        else if (name == "I7.confirmAction")
+          m_object->GetParentFrame()->PostMessage(WM_CONFIRMACTION);
         else if (name == "I7.downloadExts")
         {
           CStringArray* libraryUrls = new CStringArray();
