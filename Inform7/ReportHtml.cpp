@@ -128,7 +128,7 @@ public:
       return false;
 
     CString appDir = theApp.GetAppDir();
-    CStringW fileName = TextFormat::UTF8ToUnicode(Unescape(url+8));
+    CStringW fileName = TextFormat::UTF8ToUnicode(TextFormat::Unescape(url+8));
     fileName.TrimRight(L"/");
 
     int hash = fileName.Find('#');
@@ -189,36 +189,6 @@ public:
 private:
   IMPLEMENT_REFCOUNTING(I7SchemeHandler);
 
-  // Remove HTML-like escapes (e.g. "%20") from the input string
-  static CString Unescape(const char* input)
-  {
-    int len = (int)strlen(input);
-    CString output;
-    output.Preallocate(len);
-
-    static const char* hex = "0123456789ABCDEF";
-
-    int i = 0;
-    while (i < len)
-    {
-      if ((input[i] == L'%') && (i < len-2))
-      {
-        const char* hex1 = strchr(hex,toupper(input[i+1]));
-        const char* hex2 = strchr(hex,toupper(input[i+2]));
-        if ((hex1 != NULL) && (hex2 != NULL))
-        {
-          char ch = (char)(((hex1-hex)<<4)+(hex2-hex));
-          output.AppendChar(ch);
-          i += 3;
-          continue;
-        }
-      }
-      output.AppendChar(input[i++]);
-    }
-    return output;
-  }
-
-private:
   char* m_data;
   int64 m_dataLen;
   int64 m_dataOffset;
@@ -548,13 +518,9 @@ public:
           m_object->GetParentFrame()->PostMessage(WM_CONFIRMACTION);
         else if (name == "I7.downloadExts")
         {
-          CStringArray* libraryUrls = new CStringArray();
-          for (int i = 0; i < message->GetArgumentList()->GetSize(); i++)
-          {
-            CString libraryUrl = GetStringArgument(message,i).ToString().c_str();
-            libraryUrls->Add(libraryUrl);
-          }
-          m_object->GetParentFrame()->PostMessage(WM_EXTDOWNLOAD,(WPARAM)libraryUrls);
+          AfxMessageBox(
+            "The Javascript function downloadMultipleExtensions() is no longer supported.",
+            MB_ICONERROR|MB_OK);
         }
       }
     }

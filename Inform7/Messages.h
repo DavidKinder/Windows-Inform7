@@ -99,8 +99,8 @@ struct SourceRange
 #define WM_PROJECTEDITED  WM_APP+22
 
 // Sent to the window frame to download and install the extensions
-// given by the string array in wParam. This string array is
-// allocated on the heap and is freed by the recipient.
+// given by the CString instance pointed to by wParam. This CString
+// is allocated on the heap and is freed by the recipient.
 #define WM_EXTDOWNLOAD    WM_APP+23
 
 // Sent to the extensions tab window to indicate that navigating

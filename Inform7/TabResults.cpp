@@ -119,8 +119,6 @@ bool TabResults::SaveProject(const char* path, bool primary)
 
 void TabResults::CompileProject(CompileStage stage, int code)
 {
-  LPCSTR reportName = NULL;
-
   switch (stage)
   {
   case CompileStart:
@@ -235,10 +233,8 @@ void TabResults::CompileProject(CompileStage stage, int code)
     }
     else
       SetActiveTab(ResTab_Console,false);
-    reportName = "Inbuild";
     break;
   }
-  SetReportName(reportName);
 }
 
 void TabResults::Progress(const char* msg)
@@ -314,7 +310,6 @@ void TabResults::ShowRuntimeProblem(int problem)
   CString runtime;
   runtime.Format("%s\\Documentation\\sections\\RTP_P%d.html",theApp.GetAppDir(),problem);
   m_report.Navigate(TextFormat::AnsiToUTF8(runtime),false);
-  SetReportName(NULL);
   SetActiveTab(ResTab_Report,false);
 }
 
@@ -331,7 +326,6 @@ void TabResults::ShowTerpFailed(int failure)
     break;
   }
   m_report.Navigate(TextFormat::AnsiToUTF8(failed),false);
-  SetReportName(NULL);
   SetActiveTab(ResTab_Report,false);
 }
 
@@ -477,11 +471,6 @@ void TabResults::GetTabState(TabState& state)
   state.section = GetActiveTab();
   if ((ResultTabs)state.section == ResTab_Report)
     state.url = m_report.GetURL();
-}
-
-void TabResults::SetReportName(LPCSTR name)
-{
-  m_tab.RenameItem(ResTab_Report,name ? name : "Report");
 }
 
 void TabResults::SetFocusOnContent(void)

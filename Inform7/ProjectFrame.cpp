@@ -874,13 +874,170 @@ LRESULT ProjectFrame::OnProjectEdited(WPARAM wparam, LPARAM lparam)
   return 0;
 }
 
-LRESULT ProjectFrame::OnExtDownload(WPARAM urls, LPARAM)
+// Implementation of IBindStatusCallback used for the downloading of extensions
+class ExtensionDownload : public IBindStatusCallback
 {
+public:
+  ExtensionDownload() : m_timeout(::GetTickCount() + 10000)
+  {
+  }
+
+  bool Done(void)
+  {
+    return m_done;
+  }
+
+  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj)
+  {
+    if (ppvObj == NULL)
+      return E_INVALIDARG;
+
+    if ((riid == IID_IUnknown) || (riid == IID_IBindStatusCallback))
+    {
+      *ppvObj = (LPVOID)this;
+      AddRef();
+      return S_OK;
+    }
+
+    *ppvObj = NULL;
+    return E_NOINTERFACE;
+  }
+
+  ULONG STDMETHODCALLTYPE AddRef(void)
+  {
+    return 1;
+  }
+
+  ULONG STDMETHODCALLTYPE Release(void)
+  {
+    return 1;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnStartBinding(DWORD, IBinding*)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE GetPriority(LONG*)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnLowResource(DWORD)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnProgress(ULONG, ULONG, ULONG statusCode, LPCWSTR)
+  {
+    if (statusCode == BINDSTATUS_ENDDOWNLOADDATA)
+    {
+      m_done = true;
+      return S_OK;
+    }
+
+    if (::GetTickCount() > m_timeout)
+      return E_ABORT;
+
+    theApp.RunMessagePump();
+    return S_OK;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnStopBinding(HRESULT, LPCWSTR)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE GetBindInfo(DWORD* grfBINDF, BINDINFO*)
+  {
+    if (grfBINDF)
+    {
+      // Always download, never use cache
+      *grfBINDF |= BINDF_GETNEWESTVERSION;
+      *grfBINDF &= ~BINDF_GETFROMCACHE_IF_NET_FAIL;
+    }
+    return S_OK;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnDataAvailable(DWORD, DWORD, FORMATETC*, STGMEDIUM*)
+  {
+    return E_NOTIMPL;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnObjectAvailable(REFIID, IUnknown*)
+  {
+    return E_NOTIMPL;
+  }
+
+private:
+  const DWORD m_timeout;
+  bool m_done = false;
+};
+
+LRESULT ProjectFrame::OnExtDownload(WPARAM wparam, LPARAM)
+{
+  CString* urlPtr = (CString*)wparam;
+  CString url(*urlPtr);
+  delete urlPtr;
+
   BusyProject busy(this);
-  m_progress.ShowStop();
-  CStringArray* libraryUrls = (CStringArray*)urls;
-  ExtensionFrame::DownloadExtensions(this,libraryUrls);
-  delete libraryUrls;
+  CWaitCursor wc;
+
+  // Check that the URL starts with the correct protocol
+  if (url.Left(8) != "library:")
+    return 0;
+
+  // Get the ID of the download
+  int idIdx = url.Find("?id=");
+  if (idIdx <= 0)
+    return 0;
+  int id = atoi(((LPCSTR)url)+idIdx+4);
+
+  // Get the name of the download
+  int sepIdx = url.ReverseFind('/');
+  if (sepIdx <= 0)
+    return 0;
+  CString name = TextFormat::Unescape(url.Mid(sepIdx+1,idIdx-sepIdx-1));
+
+  // Get the path to download the extension to
+  CString downPath = CreateTemporaryExtensionDir();
+  if (::GetFileAttributes(downPath) == INVALID_FILE_ATTRIBUTES)
+  {
+    MessageBox("Failed to download extension\nCould not create temporary extension directory",
+      INFORM_TITLE,MB_OK|MB_ICONERROR);
+    return 0;
+  }
+  downPath.AppendFormat("\\%s",name);
+
+  // Determine the URL for the extension
+  url.Format(PUBLIC_LIBRARY_URL "%s",(LPCSTR)url.Mid(8));
+
+  // Make sure there is no matching cache entry
+  ::DeleteUrlCacheEntry(url);
+
+  // Download from the public library
+  ExtensionDownload download;
+  HRESULT hr = ::URLDownloadToFile(NULL,url,downPath,0,&download);
+  if (FAILED(hr))
+  {
+    CString error;
+    ::FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,NULL,hr,0,error.GetBufferSetLength(256),256,NULL);
+    error.ReleaseBuffer();
+    error.Trim("\r\n");
+    CString msg;
+    msg.Format("Failed to download extension: %s",error);
+    MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
+    return 0;
+  }
+  if (!download.Done())
+  {
+    MessageBox("Failed to download extension",INFORM_TITLE,MB_OK|MB_ICONERROR);
+    return 0;
+  }
+
+  // Run inbuild on the downloaded extension
+  m_extensionToInstall = downPath;
+  RunInbuildInstallExtension(false);
   return 0;
 }
 
@@ -2553,11 +2710,9 @@ bool ProjectFrame::CopyExtensionToMaterials(void)
     return false;
 
   CString destPath = GetMaterialsFolder();
-  ::CreateDirectory(destPath,NULL);
-  destPath.Append("\\Extensions");
-  ::CreateDirectory(destPath,NULL);
-  destPath.AppendFormat("\\%S",(LPCWSTR)extAuthor);
-  ::CreateDirectory(destPath,NULL);
+  destPath.AppendFormat("\\Extensions\\%S",(LPCWSTR)extAuthor);
+  if (::GetFileAttributes(destPath) == INVALID_FILE_ATTRIBUTES)
+    ::SHCreateDirectoryEx(GetSafeHwnd(),destPath,NULL);
   if (::GetFileAttributes(destPath) == INVALID_FILE_ATTRIBUTES)
     return false;
 
@@ -2570,6 +2725,15 @@ bool ProjectFrame::CopyExtensionToMaterials(void)
   return false;
 }
 
+CString ProjectFrame::CreateTemporaryExtensionDir(void)
+{
+  CString tempPath = GetMaterialsFolder();
+  tempPath.Append("\\Extensions\\Reserved\\Temporary");
+  if (::GetFileAttributes(tempPath) == INVALID_FILE_ATTRIBUTES)
+    ::SHCreateDirectoryEx(GetSafeHwnd(),tempPath,NULL);
+  return tempPath;
+}
+
 void ProjectFrame::AddExtensionToProject(CString extPath)
 {
   // Get the extension file name from the full path
@@ -2577,14 +2741,7 @@ void ProjectFrame::AddExtensionToProject(CString extPath)
   CString extFile = (sep >= 0) ? extPath.Mid(sep+1) : extPath;
 
   // Make a temporary copy of the extension
-  CString tempPath = GetMaterialsFolder();
-  ::CreateDirectory(tempPath,NULL);
-  tempPath.Append("\\Extensions");
-  ::CreateDirectory(tempPath,NULL);
-  tempPath.Append("\\Reserved");
-  ::CreateDirectory(tempPath,NULL);
-  tempPath.Append("\\Temporary");
-  ::CreateDirectory(tempPath,NULL);
+  CString tempPath = CreateTemporaryExtensionDir();
   if (::GetFileAttributes(tempPath) == INVALID_FILE_ATTRIBUTES)
   {
     MessageBox("Failed to install extension\nCould not create temporary extension directory",

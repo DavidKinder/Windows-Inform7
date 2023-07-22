@@ -155,9 +155,7 @@ void TabExtensions::SourceLink(const char* url)
 
 void TabExtensions::LibraryLink(const char* url)
 {
-  CStringArray* libraryUrls = new CStringArray();
-  libraryUrls->Add(url);
-  GetParentFrame()->PostMessage(WM_EXTDOWNLOAD,(WPARAM)libraryUrls);
+  GetParentFrame()->PostMessage(WM_EXTDOWNLOAD,(WPARAM)new CString(url));
 }
 
 void TabExtensions::SkeinLink(const char* url)

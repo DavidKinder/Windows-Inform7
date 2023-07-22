@@ -234,8 +234,6 @@ void ExtensionFrame::OnFileSave()
   ::DeleteFile(m_extension);
   if (::MoveFile(saveName,m_extension))
   {
-    DeleteOldExtension(m_extension);
-
     theApp.FindExtensions();
     theApp.SendAllFrames(InformApp::Extensions,0);
   }
@@ -486,14 +484,7 @@ void ExtensionFrame::InstallExtensions(CFrameWnd* parent, CStringArray& paths)
     target.AppendFormat("\\%S.i7x",(LPCWSTR)extName);
 
     // Check if the extension already exists
-    bool exists = (::GetFileAttributes(target) != INVALID_FILE_ATTRIBUTES);
-    if (!exists)
-    {
-      CString oldTarget(target);
-      if (RemoveI7X(oldTarget))
-        exists = (::GetFileAttributes(oldTarget) != INVALID_FILE_ATTRIBUTES);
-    }
-    if (exists)
+    if (::GetFileAttributes(target) != INVALID_FILE_ATTRIBUTES)
     {
       CString msg;
       msg.Format(
@@ -507,7 +498,6 @@ void ExtensionFrame::InstallExtensions(CFrameWnd* parent, CStringArray& paths)
     // Copy the extension
     if (::CopyFile(path,target,FALSE))
     {
-      DeleteOldExtension(target);
       lastExt.Format(L"\"%s\" by %s (%s)",(LPCWSTR)extName,(LPCWSTR)extAuthor,(LPCWSTR)extVersion);
       installed++;
     }
@@ -515,195 +505,6 @@ void ExtensionFrame::InstallExtensions(CFrameWnd* parent, CStringArray& paths)
 
   // Update the extensions menu
   ShowInstalledMessage(parent,installed,total,lastExt);
-  theApp.FindExtensions();
-  theApp.SendAllFrames(InformApp::Extensions,0);
-}
-
-// Implementation of IBindStatusCallback used for the downloading of extensions
-class ExtensionDownload : public IBindStatusCallback
-{
-public:
-  ExtensionDownload() : m_timeout(::GetTickCount() + 10000)
-  {
-  }
-
-  bool Done(void)
-  {
-    return m_done;
-  }
-
-  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj)
-  {
-    if (ppvObj == NULL)
-      return E_INVALIDARG;
-
-    if ((riid == IID_IUnknown) || (riid == IID_IBindStatusCallback))
-    {
-      *ppvObj = (LPVOID)this;
-      AddRef();
-      return S_OK;
-    }
-
-    *ppvObj = NULL;
-    return E_NOINTERFACE;
-  }
-
-  ULONG STDMETHODCALLTYPE AddRef(void)
-  {
-    return 1;
-  }
-
-  ULONG STDMETHODCALLTYPE Release(void)
-  {
-    return 1;
-  }
-
-  HRESULT STDMETHODCALLTYPE OnStartBinding(DWORD, IBinding*)
-  {
-    return E_NOTIMPL;
-  }
-
-  HRESULT STDMETHODCALLTYPE GetPriority(LONG*)
-  {
-    return E_NOTIMPL;
-  }
-
-  HRESULT STDMETHODCALLTYPE OnLowResource(DWORD)
-  {
-    return E_NOTIMPL;
-  }
-
-  HRESULT STDMETHODCALLTYPE OnProgress(ULONG, ULONG, ULONG statusCode, LPCWSTR)
-  {
-    if (statusCode == BINDSTATUS_ENDDOWNLOADDATA)
-    {
-      m_done = true;
-      return S_OK;
-    }
-
-    if (::GetTickCount() > m_timeout)
-      return E_ABORT;
-
-    theApp.RunMessagePump();
-    return S_OK;
-  }
-
-  HRESULT STDMETHODCALLTYPE OnStopBinding(HRESULT, LPCWSTR)
-  {
-    return E_NOTIMPL;
-  }
-
-  HRESULT STDMETHODCALLTYPE GetBindInfo(DWORD* grfBINDF, BINDINFO*)
-  {
-    if (grfBINDF)
-    {
-      // Always download, never use cache
-      *grfBINDF |= BINDF_GETNEWESTVERSION;
-      *grfBINDF &= ~BINDF_GETFROMCACHE_IF_NET_FAIL;
-    }
-    return S_OK;
-  }
-
-  HRESULT STDMETHODCALLTYPE OnDataAvailable(DWORD, DWORD, FORMATETC*, STGMEDIUM*)
-  {
-    return E_NOTIMPL;
-  }
-
-  HRESULT STDMETHODCALLTYPE OnObjectAvailable(REFIID, IUnknown*)
-  {
-    return E_NOTIMPL;
-  }
-
-private:
-  const DWORD m_timeout;
-  bool m_done = false;
-};
-
-void ExtensionFrame::DownloadExtensions(CFrameWnd* parent, CStringArray* urls)
-{
-  {
-    CWaitCursor wc;
-
-    CStringW lastExt;
-    int installed = 0, total = (int)urls->GetSize();
-    for (int i = 0; i < total; i++)
-    {
-      SetDownloadProgress(parent,total,i,installed);
-      if (parent->SendMessage(WM_WANTSTOP) != 0)
-        break;
-
-      CString url = urls->GetAt(i);
-      if (url.Left(8) != "library:")
-        continue;
-
-      // Get the ID of the download
-      int idIdx = url.Find("?id=");
-      if (idIdx <= 0)
-        continue;
-      int id = atoi(((LPCSTR)url)+idIdx+4);
-
-      // Determine the path for downloaded extension files
-      CString downPath;
-      ::GetTempPath(MAX_PATH,downPath.GetBuffer(MAX_PATH));
-      downPath.ReleaseBuffer();
-      int downLen = downPath.GetLength();
-      if (downLen > 0)
-      {
-        if (downPath.GetAt(downLen-1) != '\\')
-          downPath.AppendChar('\\');
-      }
-      downPath.Append("PubLibDownload.i7x");
-
-      // Determine the URL for the extension
-      url.Format(PUBLIC_LIBRARY_URL "%s",(LPCSTR)url.Mid(8));
-
-      // Make sure there is no matching cache entry
-      ::DeleteUrlCacheEntry(url);
-
-      // Download from the public library
-      ExtensionDownload download;
-      if (FAILED(::URLDownloadToFile(NULL,url,(LPCSTR)downPath,0,&download)))
-        continue;
-      if (!download.Done())
-        continue;
-
-      // Check for a valid extension
-      CStringW extLine = ReadExtensionFirstLine(downPath);
-      if (!extLine.IsEmpty())
-      {
-        CStringW extName, extAuthor, extVersion;
-        if (IsValidExtension(extLine,extName,extAuthor,extVersion))
-        {
-          // Work out the path to copy the extension to
-          CString target;
-          target.Format("%s\\Inform\\Extensions\\%S",
-            (LPCSTR)theApp.GetHomeDir(),(LPCWSTR)extAuthor);
-          ::CreateDirectory(target,NULL);
-          target.AppendFormat("\\%S.i7x",(LPCWSTR)extName);
-
-          // Copy the extension
-          if (::CopyFile(downPath,target,FALSE))
-          {
-            DeleteOldExtension(target);
-            theApp.AddToExtensions(CString(extAuthor),CString(extName),target);
-            theApp.SendAllFrames(InformApp::DownloadedExt,id);
-            lastExt.Format(L"\"%s\" by %s (%s)",(LPCWSTR)extName,(LPCWSTR)extAuthor,(LPCWSTR)extVersion);
-            installed++;
-          }
-        }
-      }
-
-      // Delete the downloaded file
-      ::DeleteFile(downPath);
-    }
-    SetDownloadProgress(parent,total,total,installed);
-
-    // Notify the user of what happened
-    parent->SendMessage(WM_PROGRESS,-1);
-    ShowInstalledMessage(parent,installed,total,lastExt);
-  }
-
-  // Update the extensions menu
   theApp.FindExtensions();
   theApp.SendAllFrames(InformApp::Extensions,0);
 }
@@ -836,7 +637,7 @@ ExtensionFrame* ExtensionFrame::NewFrame(const ProjectSettings& settings)
 
 bool ExtensionFrame::RemoveI7X(CString& path)
 {
-  // Does the extension file name have the new '.i7x' ending?
+  // Does the extension file name have an '.i7x' ending?
   if (path.GetLength() > 4)
   {
     if (path.Right(4).CompareNoCase(".i7x") == 0)
@@ -846,23 +647,6 @@ bool ExtensionFrame::RemoveI7X(CString& path)
     }
   }
   return false;
-}
-
-void ExtensionFrame::DeleteOldExtension(CString path)
-{
-  // Does the extension file name have the new '.i7x' ending?
-  if (RemoveI7X(path))
-    ::DeleteFile(path);
-}
-
-void ExtensionFrame::SetDownloadProgress(CFrameWnd* parent, int total, int current, int installed)
-{
-  CString status;
-  status.Format("Downloaded and installed %d of %d extensions",installed,total);
-  if (current > installed)
-    status.AppendFormat(" (%d failed)",current-installed);
-
-  parent->SendMessage(WM_PROGRESS,(int)(100 * ((double)current / (double)total)),(LPARAM)(LPCSTR)status);
 }
 
 void ExtensionFrame::ShowInstalledMessage(CWnd* parent, int installed, int total, LPCWSTR lastExt)

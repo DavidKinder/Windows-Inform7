@@ -173,3 +173,31 @@ bool TextFormat::EndsWith(const CStringW& test, LPCWSTR end)
 {
   return (test.Right((int)wcslen(end)) == end);
 }
+
+CString TextFormat::Unescape(const char* input)
+{
+  int len = (int)strlen(input);
+  CString output;
+  output.Preallocate(len);
+
+  static const char* hex = "0123456789ABCDEF";
+
+  int i = 0;
+  while (i < len)
+  {
+    if ((input[i] == L'%') && (i < len-2))
+    {
+      const char* hex1 = strchr(hex,toupper(input[i+1]));
+      const char* hex2 = strchr(hex,toupper(input[i+2]));
+      if ((hex1 != NULL) && (hex2 != NULL))
+      {
+        char ch = (char)(((hex1-hex)<<4)+(hex2-hex));
+        output.AppendChar(ch);
+        i += 3;
+        continue;
+      }
+    }
+    output.AppendChar(input[i++]);
+  }
+  return output;
+}

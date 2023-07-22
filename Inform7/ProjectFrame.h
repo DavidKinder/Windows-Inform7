@@ -211,6 +211,7 @@ protected:
   LONGLONG GetMaxLast5Seconds(void);
 
   bool CopyExtensionToMaterials(void);
+  CString CreateTemporaryExtensionDir(void);
   void AddExtensionToProject(CString extPath);
   void RunInbuildInstallExtension(bool confirm);
 
