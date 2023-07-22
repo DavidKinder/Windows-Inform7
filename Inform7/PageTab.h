@@ -28,6 +28,7 @@ public:
   CString GetItem(int item) const;
   CRect GetItemRect(int item);
   void InsertItem(int item, LPCSTR name);
+  void RenameItem(int item, LPCSTR name);
 
   int GetCurSel(void) const;
   void SetCurSel(int item);

@@ -81,6 +81,18 @@ void PageTab::InsertItem(int item, LPCSTR name)
   m_items[item] = name;
 }
 
+void PageTab::RenameItem(int item, LPCSTR name)
+{
+  if ((item >= 0) && (item < m_items.size()))
+  {
+    if (m_items[item] != name)
+    {
+      m_items[item] = name;
+      Invalidate();
+    }
+  }
+}
+
 int PageTab::GetCurSel(void) const
 {
   return m_currentItem;

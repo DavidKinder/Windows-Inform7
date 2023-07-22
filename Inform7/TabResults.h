@@ -54,6 +54,7 @@ private:
   ResultTabs GetActiveTab(void);
   void SetActiveTab(ResultTabs tab, bool focus);
   void GetTabState(TabState& state);
+  void SetReportName(LPCSTR name);
 
   void SetFocusOnContent(void);
 
