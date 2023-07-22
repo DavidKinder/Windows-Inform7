@@ -2191,6 +2191,16 @@ void ProjectFrame::RunProject(void)
 
 void ProjectFrame::CleanProject(void)
 {
+  // Delete any temporary extension installation files
+  CString tempPath = GetMaterialsFolder();
+  tempPath.Append("\\Extensions\\Reserved\\Temporary\\*.*");
+  tempPath.AppendChar('\0');
+  SHFILEOPSTRUCT op = { 0 };
+  op.wFunc = FO_DELETE;
+  op.pFrom = (LPCSTR)tempPath;
+  op.fFlags = FOF_NOCONFIRMATION;
+  int x = ::SHFileOperation(&op);
+
   if ((HKEY)m_registryKey != 0)
   {
     DWORD cleanFiles;
@@ -2201,6 +2211,7 @@ void ProjectFrame::CleanProject(void)
     }
   }
 
+  // Delete any build files
   CFileFind find;
   BOOL found = find.FindFile(m_projectDir+"\\Build\\*.*");
   while (found)
@@ -2217,6 +2228,7 @@ void ProjectFrame::CleanProject(void)
       indexes = (cleanIndexes != 0);
   }
 
+  // Delete any index files
   if (indexes)
   {
     found = find.FindFile(m_projectDir+"\\Index\\Details\\*.*");
