@@ -5,7 +5,7 @@ class PickExtensionDialogImpl;
 class PickExtensionDialog
 {
 public:
-  PickExtensionDialog(const char* dir, const char* title, CWnd* parentWnd);
+  PickExtensionDialog(const char* title, bool legacyDir, CWnd* parentWnd);
   ~PickExtensionDialog();
 
   INT_PTR ShowDialog(void);

@@ -5,32 +5,6 @@
 #define new DEBUG_NEW
 #endif
 
-enum DirResult
-{
-  NotProject,
-  IsProject,
-  NoExtension
-};
-
-DirResult IsProjectDir(const CString& dir)
-{
-  // Get the last part of the path
-  int i = dir.ReverseFind('\\');
-  if (i == -1)
-    return NotProject;
-  CString last = dir.Mid(i+1);
-
-  // Look at the extension on the last part
-  i = last.ReverseFind('.');
-  if (i == -1)
-    return NoExtension;
-  if (last.Mid(i).CompareNoCase(".inform") == 0)
-    return IsProject;
-  if (last.Mid(i).CompareNoCase(".i7xp") == 0)
-    return IsProject;
-  return NotProject;
-}
-
 class FixedTextButton : public CWnd
 {
 protected:
@@ -243,6 +217,32 @@ private:
       return pathStr;
     }
     return "";
+  }
+
+  enum DirResult
+  {
+    NotProject,
+    IsProject,
+    NoExtension
+  };
+
+  DirResult IsProjectDir(const CString& dir)
+  {
+    // Get the last part of the path
+    int i = dir.ReverseFind('\\');
+    if (i == -1)
+      return NotProject;
+    CString last = dir.Mid(i+1);
+
+    // Look at the extension on the last part
+    i = last.ReverseFind('.');
+    if (i == -1)
+      return NoExtension;
+    if (last.Mid(i).CompareNoCase(".inform") == 0)
+      return IsProject;
+    if (last.Mid(i).CompareNoCase(".i7xp") == 0)
+      return IsProject;
+    return NotProject;
   }
 
   bool m_open;

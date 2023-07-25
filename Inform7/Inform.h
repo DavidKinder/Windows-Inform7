@@ -218,6 +218,9 @@ public:
   void UpdateMaterialsFolder(UINT_PTR token, LPCSTR path);
   CString GetMaterialsFolder(UINT_PTR token);
 
+  bool ShellDelete(const char* path);
+  bool ShellCopy(const char* fromPath, const char* toPath);
+
 protected:
   void ClearGeneratedImages(void);
   void SetMyDocuments(bool showMsgs);

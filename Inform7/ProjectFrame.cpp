@@ -80,8 +80,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_NEW_XP, OnFileNewExtProject)
   ON_COMMAND_RANGE(ID_NEW_EXTENSIONS_LIST, ID_NEW_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileNewXPFromExt)
   ON_COMMAND(ID_FILE_ADD_EXT_LIBRARY, OnFileAddExtLibrary)
-  ON_COMMAND(ID_FILE_ADD_EXT_FILE, OnFileAddExtFile)
-  ON_COMMAND(ID_FILE_ADD_EXT_LEGACY, OnFileAddExtLegacy)
+  ON_COMMAND_RANGE(ID_FILE_ADD_EXT_FILE, ID_FILE_ADD_EXT_LEGACY, OnFileAddExtFile)
   ON_COMMAND(ID_FILE_INSTALL_EXT, OnFileInstallExt)
   ON_COMMAND(ID_FILE_INSTALL_FOLDER, OnFileInstallFolder)
   ON_UPDATE_COMMAND_UI(ID_FILE_INSTALL_XP, OnUpdateIfNotBusy)
@@ -1264,19 +1263,10 @@ void ProjectFrame::OnFileAddExtLibrary()
   panel->SetActiveTab(Panel::Tab_Extensions);
 }
 
-void ProjectFrame::OnFileAddExtFile()
+void ProjectFrame::OnFileAddExtFile(UINT nID)
 {
-  PickExtensionDialog dialog(NULL,"Select the extension to add to the project",this);
-  if (dialog.ShowDialog() == IDOK)
-    AddExtensionToProject(dialog.GetExtensionPath());
-}
-
-void ProjectFrame::OnFileAddExtLegacy()
-{
-  CString dir;
-  dir.Format("%s\\Inform\\Extensions",(LPCSTR)theApp.GetHomeDir());
-
-  PickExtensionDialog dialog(dir,"Select the extension to add to the project",this);
+  PickExtensionDialog dialog(
+    "Select the extension to add to the project",nID == ID_FILE_ADD_EXT_LEGACY,this);
   if (dialog.ShowDialog() == IDOK)
     AddExtensionToProject(dialog.GetExtensionPath());
 }
@@ -2349,14 +2339,7 @@ void ProjectFrame::RunProject(void)
 void ProjectFrame::CleanProject(void)
 {
   // Delete any temporary extension installation files
-  CString tempPath = GetMaterialsFolder();
-  tempPath.Append("\\Extensions\\Reserved\\Temporary\\*.*");
-  tempPath.AppendChar('\0');
-  SHFILEOPSTRUCT op = { 0 };
-  op.wFunc = FO_DELETE;
-  op.pFrom = (LPCSTR)tempPath;
-  op.fFlags = FOF_NOCONFIRMATION;
-  int x = ::SHFileOperation(&op);
+  theApp.ShellDelete(GetMaterialsFolder()+"\\Extensions\\Reserved\\Temporary\\*.*");
 
   if ((HKEY)m_registryKey != 0)
   {
@@ -2736,9 +2719,9 @@ CString ProjectFrame::CreateTemporaryExtensionDir(void)
 
 void ProjectFrame::AddExtensionToProject(CString extPath)
 {
-  // Get the extension file name from the full path
+  // Get the extension name from the full path
   int sep = extPath.ReverseFind('\\');
-  CString extFile = (sep >= 0) ? extPath.Mid(sep+1) : extPath;
+  CString extName = (sep >= 0) ? extPath.Mid(sep+1) : extPath;
 
   // Make a temporary copy of the extension
   CString tempPath = CreateTemporaryExtensionDir();
@@ -2748,8 +2731,8 @@ void ProjectFrame::AddExtensionToProject(CString extPath)
       INFORM_TITLE,MB_OK|MB_ICONERROR);
     return;
   }
-  tempPath.AppendFormat("\\%s",extFile.GetString());
-  if (::CopyFile(extPath,tempPath,FALSE) == 0)
+  tempPath.AppendFormat("\\%s",extName.GetString());
+  if (!theApp.ShellCopy(extPath,tempPath))
   {
     MessageBox("Failed to install extension\nCould not copy extension",
       INFORM_TITLE,MB_OK|MB_ICONERROR);

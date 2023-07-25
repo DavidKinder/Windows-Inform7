@@ -1555,6 +1555,33 @@ CString InformApp::GetMaterialsFolder(UINT_PTR token)
   return "";
 }
 
+bool InformApp::ShellDelete(const char* path)
+{
+  CString shPath(path);
+  shPath.AppendChar('\0');
+
+  SHFILEOPSTRUCT op = { 0 };
+  op.wFunc = FO_DELETE;
+  op.pFrom = (LPCSTR)shPath;
+  op.fFlags = FOF_NO_UI;
+  return (::SHFileOperation(&op) == 0);
+}
+
+bool InformApp::ShellCopy(const char* fromPath, const char* toPath)
+{
+  CString shFromPath(fromPath);
+  shFromPath.AppendChar('\0');
+  CString shToPath(toPath);
+  shToPath.AppendChar('\0');
+
+  SHFILEOPSTRUCT op = { 0 };
+  op.wFunc = FO_COPY;
+  op.pFrom = (LPCSTR)shFromPath;
+  op.pTo = (LPCSTR)shToPath;
+  op.fFlags = FOF_NO_UI;
+  return (::SHFileOperation(&op) == 0);
+}
+
 void InformApp::SetMyDocuments(bool showMsgs)
 {
   m_home.Empty();
