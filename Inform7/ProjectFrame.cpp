@@ -2723,7 +2723,7 @@ void ProjectFrame::AddExtensionToProject(CString extPath)
   int sep = extPath.ReverseFind('\\');
   CString extName = (sep >= 0) ? extPath.Mid(sep+1) : extPath;
 
-  // Make a temporary copy of the extension
+  // Work out where to make a temporary copy of the extension
   CString tempPath = CreateTemporaryExtensionDir();
   if (::GetFileAttributes(tempPath) == INVALID_FILE_ATTRIBUTES)
   {
@@ -2732,9 +2732,22 @@ void ProjectFrame::AddExtensionToProject(CString extPath)
     return;
   }
   tempPath.AppendFormat("\\%s",extName.GetString());
+
+  // Delete any previous copy of the same extension
+  if (::GetFileAttributes(tempPath) != INVALID_FILE_ATTRIBUTES)
+  {
+    if (!theApp.ShellDelete(tempPath))
+    {
+      MessageBox("Failed to install extension\nCould not delete previous temporary copy of the extension.",
+        INFORM_TITLE,MB_OK|MB_ICONERROR);
+      return;
+    }
+  }
+
+  // Make a temporary copy of the extension
   if (!theApp.ShellCopy(extPath,tempPath))
   {
-    MessageBox("Failed to install extension\nCould not copy extension",
+    MessageBox("Failed to install extension\nCould not create a temporary copy of the extension.",
       INFORM_TITLE,MB_OK|MB_ICONERROR);
     return;
   }
@@ -2758,6 +2771,8 @@ void ProjectFrame::RunInbuildInstallExtension(bool confirm)
     (LPCSTR)m_projectDir,(LPCSTR)m_extensionToInstall,(LPCSTR)m_projectDir,(LPCSTR)theApp.GetAppDir());
   if (confirm)
     arguments.Append(" -confirmed");
+  if (0)
+    arguments.Append(" -dry"); // For debugging inbuild
 
   CString output;
   output.Format("%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
