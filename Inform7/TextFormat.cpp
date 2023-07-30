@@ -164,6 +164,16 @@ CString TextFormat::FormatNumber(int value)
   return CString(formatted);
 }
 
+bool TextFormat::StartsWith(const CString& test, LPCSTR start)
+{
+  return (test.Left((int)strlen(start)) == start);
+}
+
+bool TextFormat::StartsWith(const CStringW& test, LPCWSTR start)
+{
+  return (test.Left((int)wcslen(start)) == start);
+}
+
 bool TextFormat::EndsWith(const CString& test, LPCSTR end)
 {
   return (test.Right((int)strlen(end)) == end);

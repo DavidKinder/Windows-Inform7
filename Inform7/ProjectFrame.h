@@ -211,7 +211,8 @@ protected:
 
   bool CopyExtensionToMaterials(void);
   CString CreateTemporaryExtensionDir(void);
-  void AddExtensionToProject(CString extPath);
+  bool UnpackExtensionZipFile(const CString& zipPath, const CString& destPath, CString& extPath);
+  void AddExtensionToProject(const CString& extPath);
   void RunInbuildInstallExtension(bool confirm);
 
   Panel* GetPanel(int column) const;

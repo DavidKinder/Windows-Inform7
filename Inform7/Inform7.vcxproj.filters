@@ -89,6 +89,9 @@
     <Filter Include="Libraries\libcef\wrapper">
       <UniqueIdentifier>{59c35be1-9797-41d3-883b-892e353d0173}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Libraries\zlib\minizip">
+      <UniqueIdentifier>{d532e7fb-17ff-4c5f-bff5-3f02954cef9c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Build.h">
@@ -1466,6 +1469,12 @@
     </ClCompile>
     <ClCompile Include="PickExtensionDialog.cpp">
       <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\zlib\contrib\minizip\unzip.c">
+      <Filter>Libraries\zlib\minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\zlib\contrib\minizip\ioapi.c">
+      <Filter>Libraries\zlib\minizip</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -20,6 +20,8 @@
 #include "TabStory.h"
 #include "TabTesting.h"
 
+#include "unzip.h" // zlib minizip
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -2717,43 +2719,165 @@ CString ProjectFrame::CreateTemporaryExtensionDir(void)
   return tempPath;
 }
 
-void ProjectFrame::AddExtensionToProject(CString extPath)
+bool ProjectFrame::UnpackExtensionZipFile(const CString& zipPath, const CString& destPath, CString& extPath)
 {
-  // Get the extension name from the full path
-  int sep = extPath.ReverseFind('\\');
-  CString extName = (sep >= 0) ? extPath.Mid(sep+1) : extPath;
+  // Open the zip file
+  unzFile zipFile = unzOpen(zipPath);
+  if (zipFile == NULL)
+    return false;
 
+  // Start with the first file in the zip file
+  if (unzGoToFirstFile(zipFile) != UNZ_OK)
+  {
+    unzClose(zipFile);
+    return false;
+  }
+
+  // Iterate over the files in the zip file
+  while (true)
+  {
+    // Get the filename and size
+    unz_file_info info;
+    CString name;
+    int result = unzGetCurrentFileInfo(zipFile,&info,
+      name.GetBufferSetLength(_MAX_PATH),_MAX_PATH,NULL,0,NULL,0);
+    name.ReleaseBuffer();
+    if (result != UNZ_OK)
+    {
+      unzClose(zipFile);
+      return false;
+    }
+
+    if (!name.IsEmpty())
+    {
+      // Skip extraneous MacOS files
+      bool extract = true;
+      if (TextFormat::StartsWith(name,"__MACOSX/"))
+        extract = false;
+      if (TextFormat::EndsWith(name,"/.DS_Store"))
+        extract = false;
+
+      // Extract from the zip file
+      if (extract)
+      {
+        CString extractPath(destPath);
+        extractPath.AppendFormat("\\%s",(LPCSTR)name);
+
+        char end = name.GetAt(name.GetLength()-1);
+        if ((end == '/') || (end == '\\'))
+          ::SHCreateDirectoryEx(GetSafeHwnd(),extractPath,NULL);
+        else
+        {
+          if (unzOpenCurrentFile(zipFile) != UNZ_OK)
+          {
+            unzClose(zipFile);
+            return false;
+          }
+
+          int length = info.uncompressed_size;
+          void* buffer = alloca(length);
+          if (unzReadCurrentFile(zipFile,buffer,length) != length)
+          {
+            unzClose(zipFile);
+            return false;
+          }
+
+          if (unzCloseCurrentFile(zipFile) != UNZ_OK)
+          {
+            unzClose(zipFile);
+            return false;
+          }
+
+          FILE* extractFile = fopen(extractPath,"wb");
+          if (extractFile != NULL)
+          {
+            fwrite(buffer,1,length,extractFile);
+            fclose(extractFile);
+          }
+          else
+          {
+            unzClose(zipFile);
+            return false;
+          }
+
+          // If we've extracted a .i7x file, use it to work out the extension path
+          if (TextFormat::EndsWith(name,".i7x"))
+          {
+            extPath.Format("%s\\%s",(LPCSTR)destPath,(LPCSTR)name);
+
+            int sep = name.FindOneOf("/\\");
+            if (sep > 0)
+            {
+              CString dir = name.Left(sep);
+              if (TextFormat::EndsWith(dir,".i7xd"))
+                extPath.Format("%s\\%s",(LPCSTR)destPath,(LPCSTR)dir);
+            }
+          }
+        }
+      }
+    }
+
+    // Move to the next file in the zip file
+    switch (unzGoToNextFile(zipFile))
+    {
+    case UNZ_OK:
+      break;
+    case UNZ_END_OF_LIST_OF_FILE:
+      unzClose(zipFile);
+      return !(extPath.IsEmpty());
+    default:
+      unzClose(zipFile);
+      return false;
+    }
+  }
+
+  return false;
+}
+
+void ProjectFrame::AddExtensionToProject(const CString& extPath)
+{
   // Work out where to make a temporary copy of the extension
-  CString tempPath = CreateTemporaryExtensionDir();
-  if (::GetFileAttributes(tempPath) == INVALID_FILE_ATTRIBUTES)
+  CString installPath = CreateTemporaryExtensionDir();
+  if (::GetFileAttributes(installPath) == INVALID_FILE_ATTRIBUTES)
   {
     MessageBox("Failed to install extension\nCould not create temporary extension directory",
       INFORM_TITLE,MB_OK|MB_ICONERROR);
     return;
   }
-  tempPath.AppendFormat("\\%s",extName.GetString());
 
-  // Delete any previous copy of the same extension
-  if (::GetFileAttributes(tempPath) != INVALID_FILE_ATTRIBUTES)
+  // Delete any previous temporary extension installation files
+  theApp.ShellDelete(installPath+"\\*.*");
+
+  if (extPath.Right(4).CompareNoCase(".zip") == 0)
   {
-    if (!theApp.ShellDelete(tempPath))
+    // Unpack the zip file to the temporary location
+    CString unpackedPath;
+    if (!UnpackExtensionZipFile(extPath,installPath,unpackedPath))
     {
-      MessageBox("Failed to install extension\nCould not delete previous temporary copy of the extension.",
+      MessageBox("Failed to install extension\nCould not unpack the extension zip file.",
+        INFORM_TITLE,MB_OK|MB_ICONERROR);
+      return;
+    }
+    installPath = unpackedPath;
+  }
+  else
+  {
+    // Get the extension name from the full path and add to the path to install from
+    int sep = extPath.ReverseFind('\\');
+    CString extName = (sep >= 0) ? extPath.Mid(sep+1) : extPath;
+    installPath.AppendFormat("\\%s",extName.GetString());
+
+    // Make a temporary copy of the extension
+    if (!theApp.ShellCopy(extPath,installPath))
+    {
+      MessageBox("Failed to install extension\nCould not create a temporary copy of the extension.",
         INFORM_TITLE,MB_OK|MB_ICONERROR);
       return;
     }
   }
 
-  // Make a temporary copy of the extension
-  if (!theApp.ShellCopy(extPath,tempPath))
-  {
-    MessageBox("Failed to install extension\nCould not create a temporary copy of the extension.",
-      INFORM_TITLE,MB_OK|MB_ICONERROR);
-    return;
-  }
-
   // Run inbuild on the copied extension
-  m_extensionToInstall = tempPath;
+  m_extensionToInstall = installPath;
   RunInbuildInstallExtension(false);
 }
 
