@@ -95,7 +95,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, OnUpdateIfNotBusy)
   ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
   ON_COMMAND(ID_FILE_IMPORT_SKEIN, OnFileImportSkein)
-  ON_COMMAND(ID_FILE_EXPORT_EXT, OnFileExportExtProject)
 
   ON_COMMAND(ID_EDIT_FIND_IN_FILES, OnEditFindInFiles)
 
@@ -307,10 +306,6 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
   // Create the menu of available extensions
   UpdateExtensionsMenu();
-
-  // Remove menu items that do not apply to the project
-  if (m_projectType != Project_I7XP)
-    GetMenu()->RemoveMenu(ID_FILE_EXPORT_EXT,MF_BYCOMMAND);
 
   if (!theApp.GetTestMode())
   {
@@ -1354,30 +1349,6 @@ void ProjectFrame::OnFileImportSkein()
   dialog.m_ofn.lpstrTitle = "Select the file to import into the skein";
   if (dialog.DoModal() == IDOK)
     m_skein.Import(dialog.GetPathName());
-}
-
-void ProjectFrame::OnFileExportExtProject()
-{
-  if (m_busy || (m_projectType != Project_I7XP))
-    return;
-  if (SaveProject(m_projectDir) == false)
-  {
-    MessageBox("Failed to save project",INFORM_TITLE,MB_OK|MB_ICONERROR);
-    return;
-  }
-
-  CString sourcePath;
-  CStringW extName, extAuthor;
-  if (!GetExtensionInfo(sourcePath,extName,extAuthor))
-    return;
-
-  CString saveName(extName);
-  saveName += ".i7x";
-  SimpleFileDialog dialog(FALSE,"i7x",saveName,OFN_HIDEREADONLY|OFN_ENABLESIZING|OFN_OVERWRITEPROMPT,
-    "Inform extensions (*.i7x)|*.i7x|All Files (*.*)|*.*||",this);
-  dialog.m_ofn.lpstrTitle = "Export this extension";
-  if (dialog.DoModal() == IDOK)
-    ::CopyFile(sourcePath,dialog.GetPathName(),FALSE);
 }
 
 void ProjectFrame::OnEditFindInFiles()

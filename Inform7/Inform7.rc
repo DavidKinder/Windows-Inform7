@@ -96,7 +96,6 @@ BEGIN
             MENUITEM SEPARATOR
         END
         MENUITEM "Show Legacy Installed Extensions Folder", ID_FILE_INSTALL_FOLDER
-        MENUITEM "Export Extension...",         ID_FILE_EXPORT_EXT
         MENUITEM SEPARATOR
         MENUITEM "Import into S&kein...",       ID_FILE_IMPORT_SKEIN
         MENUITEM SEPARATOR
@@ -1088,7 +1087,6 @@ BEGIN
     ID_FILE_NEW_EXT         "Start a new extension"
     ID_FILE_NEW_XP          "Start a new extension project"
     ID_FILE_IMPORT_SKEIN    "Import story commands into the skein from a text file"
-    ID_FILE_EXPORT_EXT      "Export this extension as a .i7x file"
     ID_EDIT_DELETE          "Delete the selected text"
 END
 

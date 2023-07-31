@@ -106,7 +106,6 @@ protected:
   afx_msg void OnFileSave();
   afx_msg void OnFileSaveAs();
   afx_msg void OnFileImportSkein();
-  afx_msg void OnFileExportExtProject();
 
   afx_msg void OnEditFindInFiles();
 
