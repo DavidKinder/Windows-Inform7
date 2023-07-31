@@ -2039,6 +2039,8 @@ void ProjectFrame::OpenProject(const char* project)
 
   // As this can take a while, make sure the display is updated
   theApp.RunMessagePump();
+  if (!theApp.IsValidFrame(this))
+    return;
 
   // Set the project directory
   m_projectDir = project;
@@ -2067,6 +2069,8 @@ void ProjectFrame::OpenProject(const char* project)
 bool ProjectFrame::SaveProject(const char* project)
 {
   theApp.RunMessagePump();
+  if (!theApp.IsValidFrame(this))
+    return false;
 
   // Create project directories
   m_projectDir = project;
