@@ -257,9 +257,9 @@ bool NewProjectDialog::CheckPath(void)
 
 IMPLEMENT_DYNAMIC(NewExtensionDialog, AbstractNewDialog)
 
-NewExtensionDialog::NewExtensionDialog(CWnd* parent) : AbstractNewDialog(parent)
+NewExtensionDialog::NewExtensionDialog(CWnd* parent, const char* dir) : AbstractNewDialog(parent)
 {
-  m_dir.Format("%s\\Inform\\Extensions",theApp.GetHomeDir());
+  m_dir = dir;
 }
 
 BOOL NewExtensionDialog::OnInitDialog()

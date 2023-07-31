@@ -296,9 +296,9 @@ void ExtensionFrame::OnWindowList(UINT nID)
     frames[index]->ActivateFrame();
 }
 
-void ExtensionFrame::StartNew(CWnd* parent, const ProjectSettings& settings)
+void ExtensionFrame::StartNew(CWnd* parent, const char* dir, const ProjectSettings& settings)
 {
-  NewExtensionDialog dialog(parent);
+  NewExtensionDialog dialog(parent,dir);
   if (dialog.DoModal() != IDOK)
     return;
 

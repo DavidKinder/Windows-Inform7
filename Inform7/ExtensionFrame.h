@@ -43,7 +43,7 @@ protected:
   afx_msg void OnWindowList(UINT nID);
 
 public:
-  static void StartNew(CWnd* parent, const ProjectSettings& settings);
+  static void StartNew(CWnd* parent, const char* dir, const ProjectSettings& settings);
   static void StartExisting(const char* path, const ProjectSettings& settings);
   static bool StartHighlight(const char* url, COLORREF colour, const ProjectSettings& settings);
   static void StartSelect(const char* path, const CHARRANGE& range, const ProjectSettings& settings);

@@ -67,7 +67,7 @@ class NewExtensionDialog : public AbstractNewDialog
   DECLARE_DYNAMIC(NewExtensionDialog)
 
 public:
-  NewExtensionDialog(CWnd* parent);
+  NewExtensionDialog(CWnd* parent, LPCSTR dir);
 
   virtual BOOL OnInitDialog();
 

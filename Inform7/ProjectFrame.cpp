@@ -1231,8 +1231,12 @@ void ProjectFrame::OnFileOpen()
 
 void ProjectFrame::OnFileNewExt()
 {
+  CString extDir = GetMaterialsFolder()+"\\Extensions";
+  if (::GetFileAttributes(extDir) == INVALID_FILE_ATTRIBUTES)
+    ::SHCreateDirectoryEx(GetSafeHwnd(),extDir,NULL);
+
   SaveSettings();
-  ExtensionFrame::StartNew(this,m_settings);
+  ExtensionFrame::StartNew(this,extDir,m_settings);
 }
 
 void ProjectFrame::OnFileNewExtProject()
@@ -2382,7 +2386,8 @@ void ProjectFrame::UpdateExtensionsMenu(void)
   CMenu* fileMenu = GetSubMenu(GetMenu(),0,"File");
   CMenu* newExtProjMenu = GetSubMenu(fileMenu,4,"New Extension Project");
   CMenu* newFromMenu = GetSubMenu(newExtProjMenu,1,"Create From Installed Extension");
-  CMenu* openExtMenu = GetSubMenu(fileMenu,9,"Open Legacy Installed Extension");
+  CMenu* legacyMenu = GetSubMenu(fileMenu,7,"Legacy Extensions");
+  CMenu* openExtMenu = GetSubMenu(legacyMenu,0,"Open Legacy Installed Extension");
   ASSERT(openExtMenu != NULL);
 
   while (newFromMenu->GetMenuItemCount() > 0)
