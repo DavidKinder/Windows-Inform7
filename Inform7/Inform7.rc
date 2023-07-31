@@ -90,7 +90,6 @@ BEGIN
             MENUITEM "From Legacy Installed Extensions Folder...", ID_FILE_ADD_EXT_LEGACY
         END
         MENUITEM SEPARATOR
-        MENUITEM "Install Legacy Extension...", ID_FILE_INSTALL_EXT
         POPUP "Open Legacy Installed Extension"
         BEGIN
             MENUITEM SEPARATOR
@@ -1081,7 +1080,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_FILE_INSTALL_EXT     "Install an extension for use in Inform projects"
     ID_FILE_INSTALL_FOLDER  "Open an Explorer window in the installed extensions folder"
     ID_FILE_INSTALL_XP      "Install this extension\nInstall"
     ID_FILE_NEW_EXT         "Start a new extension"

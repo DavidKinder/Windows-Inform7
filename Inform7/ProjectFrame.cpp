@@ -83,7 +83,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND_RANGE(ID_NEW_EXTENSIONS_LIST, ID_NEW_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileNewXPFromExt)
   ON_COMMAND(ID_FILE_ADD_EXT_LIBRARY, OnFileAddExtLibrary)
   ON_COMMAND_RANGE(ID_FILE_ADD_EXT_FILE, ID_FILE_ADD_EXT_LEGACY, OnFileAddExtFile)
-  ON_COMMAND(ID_FILE_INSTALL_EXT, OnFileInstallExt)
   ON_COMMAND(ID_FILE_INSTALL_FOLDER, OnFileInstallFolder)
   ON_UPDATE_COMMAND_UI(ID_FILE_INSTALL_XP, OnUpdateIfNotBusy)
   ON_COMMAND(ID_FILE_INSTALL_XP, OnFileInstallExtProject)
@@ -1268,12 +1267,6 @@ void ProjectFrame::OnFileAddExtFile(UINT nID)
     AddExtensionToProject(dialog.GetExtensionPath());
 }
 
-void ProjectFrame::OnFileInstallExt()
-{
-  CWaitCursor wc;
-  ExtensionFrame::InstallExtensions(this);
-}
-
 void ProjectFrame::OnFileInstallFolder()
 {
   // Get the path to the installed extensions directory
@@ -2389,7 +2382,7 @@ void ProjectFrame::UpdateExtensionsMenu(void)
   CMenu* fileMenu = GetSubMenu(GetMenu(),0,"File");
   CMenu* newExtProjMenu = GetSubMenu(fileMenu,4,"New Extension Project");
   CMenu* newFromMenu = GetSubMenu(newExtProjMenu,1,"Create From Installed Extension");
-  CMenu* openExtMenu = GetSubMenu(fileMenu,10,"Open Legacy Installed Extension");
+  CMenu* openExtMenu = GetSubMenu(fileMenu,9,"Open Legacy Installed Extension");
   ASSERT(openExtMenu != NULL);
 
   while (newFromMenu->GetMenuItemCount() > 0)

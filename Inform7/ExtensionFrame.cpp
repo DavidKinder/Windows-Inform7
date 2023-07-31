@@ -424,26 +424,6 @@ void ExtensionFrame::StartSelect(const char* path, const CHARRANGE& range, const
   }
 }
 
-void ExtensionFrame::InstallExtensions(CFrameWnd* parent)
-{
-  // Ask the user for one or more extensions
-  SimpleFileDialog dialog(TRUE,"i7x",NULL,OFN_HIDEREADONLY|OFN_ENABLESIZING|OFN_ALLOWMULTISELECT,
-    "Inform extensions (*.i7x)|*.i7x|All Files (*.*)|*.*||",parent);
-  dialog.m_ofn.lpstrTitle = "Select the extensions to install";
-  dialog.m_ofn.nMaxFile = 16384;
-  dialog.m_ofn.lpstrFile = (LPSTR)_alloca(dialog.m_ofn.nMaxFile);
-  memset(dialog.m_ofn.lpstrFile,0,dialog.m_ofn.nMaxFile);
-  if (dialog.DoModal() != IDOK)
-    return;
-
-  // Iterate over the selected extensions
-  CStringArray paths;
-  POSITION pos = dialog.GetStartPosition();
-  while (pos != NULL)
-    paths.Add(dialog.GetNextPathName(pos));
-  InstallExtensions(parent,paths);
-}
-
 void ExtensionFrame::InstallExtensions(CFrameWnd* parent, CStringArray& paths)
 {
   // Iterate over the extensions
