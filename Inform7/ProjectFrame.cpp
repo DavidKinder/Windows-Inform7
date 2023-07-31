@@ -1778,7 +1778,7 @@ void ProjectFrame::OnWindowShowIndex(UINT nID)
 
 void ProjectFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
 {
-  CMenu* windowMenu = GetMenu()->GetSubMenu(5);
+  CMenu* windowMenu = GetSubMenu(GetMenu(),5,"Window");
   int maximum = 9;
 
   // Remove any existing items in the window list
@@ -2411,14 +2411,14 @@ const char* ProjectFrame::GetProjectFileExt(void)
 
 void ProjectFrame::UpdateExtensionsMenu(void)
 {
-  CMenu* fileMenu = GetMenu()->GetSubMenu(0);
-  CMenu* newExtMenu = fileMenu->GetSubMenu(4)->GetSubMenu(1);
-  ASSERT(newExtMenu != NULL);
-  CMenu* openExtMenu = fileMenu->GetSubMenu(10);
+  CMenu* fileMenu = GetSubMenu(GetMenu(),0,"File");
+  CMenu* newExtProjMenu = GetSubMenu(fileMenu,4,"New Extension Project");
+  CMenu* newFromMenu = GetSubMenu(newExtProjMenu,1,"Create From Installed Extension");
+  CMenu* openExtMenu = GetSubMenu(fileMenu,10,"Open Legacy Installed Extension");
   ASSERT(openExtMenu != NULL);
 
-  while (newExtMenu->GetMenuItemCount() > 0)
-    newExtMenu->RemoveMenu(0,MF_BYPOSITION);
+  while (newFromMenu->GetMenuItemCount() > 0)
+    newFromMenu->RemoveMenu(0,MF_BYPOSITION);
   while (openExtMenu->GetMenuItemCount() > 0)
     openExtMenu->RemoveMenu(0,MF_BYPOSITION);
 
@@ -2431,7 +2431,7 @@ void ProjectFrame::UpdateExtensionsMenu(void)
     if ((x == -1) || (ext.author != extensions[x].author))
     {
       newAuthorMenu = ::CreatePopupMenu();
-      newExtMenu->AppendMenu(MF_POPUP|MF_STRING,(UINT_PTR)newAuthorMenu,ext.author.c_str());
+      newFromMenu->AppendMenu(MF_POPUP|MF_STRING,(UINT_PTR)newAuthorMenu,ext.author.c_str());
       openAuthorMenu = ::CreatePopupMenu();
       openExtMenu->AppendMenu(MF_POPUP|MF_STRING,(UINT_PTR)openAuthorMenu,ext.author.c_str());
       x = i;

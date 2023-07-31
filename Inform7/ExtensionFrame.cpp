@@ -254,7 +254,7 @@ void ExtensionFrame::OnFileSaveAs()
 
 void ExtensionFrame::OnUpdateWindowList(CCmdUI *pCmdUI)
 {
-  CMenu* windowMenu = GetMenu()->GetSubMenu(3);
+  CMenu* windowMenu = GetSubMenu(GetMenu(),3,"Window");
   int maximum = 9;
 
   // Remove any existing items in the window list
