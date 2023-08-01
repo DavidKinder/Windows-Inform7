@@ -99,7 +99,6 @@ protected:
   afx_msg void OnFileAddExtLibrary();
   afx_msg void OnFileAddExtFile(UINT nID);
   afx_msg void OnFileInstallFolder();
-  afx_msg void OnFileInstallExtProject();
   afx_msg void OnFileOpenExt(UINT nID);
   afx_msg void OnFileClose();
   afx_msg void OnFileSave();

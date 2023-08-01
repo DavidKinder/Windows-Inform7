@@ -47,7 +47,6 @@ public:
   static void StartExisting(const char* path, const ProjectSettings& settings);
   static bool StartHighlight(const char* url, COLORREF colour, const ProjectSettings& settings);
   static void StartSelect(const char* path, const CHARRANGE& range, const ProjectSettings& settings);
-  static void InstallExtensions(CFrameWnd* parent, CStringArray& paths);
 
   static CStringW ReadExtensionFirstLine(const char* path);
   static bool IsValidExtension(const CStringW& firstLine,
@@ -59,7 +58,6 @@ public:
 protected:
   static ExtensionFrame* NewFrame(const ProjectSettings& settings);
   static bool RemoveI7X(CString& path);
-  static void ShowInstalledMessage(CWnd* parent, int installed, int total, LPCWSTR lastExt);
   
   void OpenFile(const char* path);
   void SetFromRegistryPath(const char* path);

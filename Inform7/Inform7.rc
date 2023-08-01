@@ -1083,7 +1083,6 @@ END
 STRINGTABLE
 BEGIN
     ID_FILE_INSTALL_FOLDER  "Open an Explorer window in the installed extensions folder"
-    ID_FILE_INSTALL_XP      "Install this extension\nInstall"
     ID_FILE_NEW_EXT         "Start a new extension"
     ID_FILE_NEW_XP          "Start a new extension project"
     ID_FILE_IMPORT_SKEIN    "Import story commands into the skein from a text file"

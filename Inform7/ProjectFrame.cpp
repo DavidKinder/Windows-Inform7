@@ -84,8 +84,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_ADD_EXT_LIBRARY, OnFileAddExtLibrary)
   ON_COMMAND_RANGE(ID_FILE_ADD_EXT_FILE, ID_FILE_ADD_EXT_LEGACY, OnFileAddExtFile)
   ON_COMMAND(ID_FILE_INSTALL_FOLDER, OnFileInstallFolder)
-  ON_UPDATE_COMMAND_UI(ID_FILE_INSTALL_XP, OnUpdateIfNotBusy)
-  ON_COMMAND(ID_FILE_INSTALL_XP, OnFileInstallExtProject)
   ON_COMMAND_RANGE(ID_OPEN_EXTENSIONS_LIST, ID_OPEN_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileOpenExt)
   ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE, OnUpdateIfNotBusy)
   ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
@@ -1279,23 +1277,6 @@ void ProjectFrame::OnFileInstallFolder()
 
   // Open an Explorer window
   ::ShellExecute(0,"explore",path,NULL,NULL,SW_SHOWNORMAL);
-}
-
-void ProjectFrame::OnFileInstallExtProject()
-{
-  if (m_busy || (m_projectType != Project_I7XP))
-    return;
-  if (SaveProject(m_projectDir) == false)
-  {
-    MessageBox("Failed to save project",INFORM_TITLE,MB_OK|MB_ICONERROR);
-    return;
-  }
-
-  CStringArray paths;
-  paths.Add(m_projectDir+"\\Source\\extension.i7x");
-
-  CWaitCursor wc;
-  ExtensionFrame::InstallExtensions(this,paths);
 }
 
 void ProjectFrame::OnFileOpenExt(UINT nID)
@@ -3136,8 +3117,7 @@ bool ProjectFrame::LoadToolBar(void)
     ID_PLAY_GO,
     ID_PLAY_REPLAY,
     ID_RELEASE_GAME,
-    ID_PLAY_TEST,
-    ID_FILE_INSTALL_XP
+    ID_PLAY_TEST
   };
   const int btnCount = sizeof buttons/sizeof buttons[0];
   m_toolBar.SetButtons(buttons,btnCount);
@@ -3172,7 +3152,6 @@ bool ProjectFrame::LoadToolBar(void)
   {
   case Project_I7:
     ctrl.HideButton(ID_PLAY_TEST);
-    ctrl.HideButton(ID_FILE_INSTALL_XP);
     break;
   case Project_I7XP:
     {

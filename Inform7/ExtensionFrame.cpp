@@ -424,71 +424,6 @@ void ExtensionFrame::StartSelect(const char* path, const CHARRANGE& range, const
   }
 }
 
-void ExtensionFrame::InstallExtensions(CFrameWnd* parent, CStringArray& paths)
-{
-  // Iterate over the extensions
-  CStringW lastExt;
-  int installed = 0, total = 0;
-  for (int i = 0; i < paths.GetSize(); i++)
-  {
-    total++;
-
-    // Get the first line of the extension
-    const CString& path = paths.GetAt(i);
-    CStringW extLine = ReadExtensionFirstLine(path);
-    if (extLine.IsEmpty())
-      continue;
-
-    // Check for a valid extension
-    CStringW extName, extAuthor, extVersion;
-    if (!IsValidExtension(extLine,extName,extAuthor,extVersion))
-    {
-      CString msg;
-      msg.Format(
-        "The file \"%s\"\n"
-        "does not seem to be an extension. Extensions should be\n"
-        "saved as UTF-8 format text files, and should start with a\n"
-        "line of one of these forms:\n\n"
-        "<Extension> by <Author> begins here.\n"
-        "Version <Version> of <Extension> by <Author> begins here.",
-        (LPCSTR)path);
-      parent->MessageBox(msg,INFORM_TITLE,MB_ICONERROR|MB_OK);
-      continue;
-    }
-
-    // Work out the path to copy the extension to
-    CString target;
-    target.Format("%s\\Inform\\Extensions\\%S",
-      (LPCSTR)theApp.GetHomeDir(),(LPCWSTR)extAuthor);
-    ::CreateDirectory(target,NULL);
-    target.AppendFormat("\\%S.i7x",(LPCWSTR)extName);
-
-    // Check if the extension already exists
-    if (::GetFileAttributes(target) != INVALID_FILE_ATTRIBUTES)
-    {
-      CString msg;
-      msg.Format(
-        "A version of the extension %S by %S is already installed.\n"
-        "Do you want to overwrite the installed extension with this new one?",
-        (LPCWSTR)extName,(LPCWSTR)extAuthor);
-      if (parent->MessageBox(msg,INFORM_TITLE,MB_ICONWARNING|MB_YESNO) != IDYES)
-        continue;
-    }
-
-    // Copy the extension
-    if (::CopyFile(path,target,FALSE))
-    {
-      lastExt.Format(L"\"%s\" by %s (%s)",(LPCWSTR)extName,(LPCWSTR)extAuthor,(LPCWSTR)extVersion);
-      installed++;
-    }
-  }
-
-  // Update the extensions menu
-  ShowInstalledMessage(parent,installed,total,lastExt);
-  theApp.FindExtensions();
-  theApp.SendAllFrames(InformApp::Extensions,0);
-}
-
 CStringW ExtensionFrame::ReadExtensionFirstLine(const char* path)
 {
   // Get the first line of the file
@@ -627,50 +562,6 @@ bool ExtensionFrame::RemoveI7X(CString& path)
     }
   }
   return false;
-}
-
-void ExtensionFrame::ShowInstalledMessage(CWnd* parent, int installed, int total, LPCWSTR lastExt)
-{
-  CStringW head, msg;
-  LPCWSTR icon = NULL;
-
-  if (total > installed)
-  {
-    // One or more errors
-    head = L"Installation error.";
-    icon = TD_ERROR_ICON;
-
-    if (installed > 0)
-    {
-      if (installed == 1)
-        msg.Format(L"One extension installed successfully, %d failed.",total-installed);
-      else
-        msg.Format(L"%d extensions installed successfully, %d failed.",installed,total-installed);
-    }
-    else
-    {
-      if (total > 1)
-        msg.Format(L"Failed to install %d extensions.",total);
-      else
-        msg = "Failed to install extension.";
-    }
-  }
-  else
-  {
-    // No errors
-    head = L"Installation complete.";
-    icon = TD_INFORMATION_ICON;
-
-    if (total == 0)
-      msg = "Nothing to install.";
-    else if (installed > 1)
-      msg.Format(L"%d extensions installed successfully.",installed);
-    else
-      msg.Format(L"Extension %s installed successfully.",lastExt);
-  }
-
-  ::TaskDialog(parent->GetSafeHwnd(),0,
-    L_INFORM_TITLE,head,msg,TDCBF_OK_BUTTON,TD_INFORMATION_ICON,NULL);
 }
 
 CString ExtensionFrame::GetDisplayName(bool fullName)
