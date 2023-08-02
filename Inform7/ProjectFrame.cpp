@@ -993,17 +993,21 @@ LRESULT ProjectFrame::OnExtDownload(WPARAM wparam, LPARAM)
   CString name = TextFormat::Unescape(url.Mid(sepIdx+1,idIdx-sepIdx-1));
 
   // Get the path to download the extension to
-  CString downPath = CreateTemporaryExtensionDir();
-  if (::GetFileAttributes(downPath) == INVALID_FILE_ATTRIBUTES)
+  CString tempExtDir = CreateTemporaryExtensionDir();
+  if (::GetFileAttributes(tempExtDir) == INVALID_FILE_ATTRIBUTES)
   {
     MessageBox("Failed to download extension\nCould not create temporary extension directory",
       INFORM_TITLE,MB_OK|MB_ICONERROR);
     return 0;
   }
-  downPath.AppendFormat("\\%s",name);
+  CString downPath;
+  downPath.Format("%s\\%s",(LPCSTR)tempExtDir,(LPCSTR)name);
 
   // Determine the URL for the extension
   url.Format(PUBLIC_LIBRARY_URL "%s",(LPCSTR)url.Mid(8));
+
+  // Delete any previous temporary extension installation files
+  theApp.ShellDelete(tempExtDir+"\\*.*");
 
   // Make sure there is no matching cache entry
   ::DeleteUrlCacheEntry(url);
@@ -1026,6 +1030,19 @@ LRESULT ProjectFrame::OnExtDownload(WPARAM wparam, LPARAM)
   {
     MessageBox("Failed to download extension",INFORM_TITLE,MB_OK|MB_ICONERROR);
     return 0;
+  }
+
+  if (name.Right(4).CompareNoCase(".zip") == 0)
+  {
+    // Unpack the zip file to the temporary location
+    CString unpackedPath;
+    if (!UnpackExtensionZipFile(downPath,tempExtDir,unpackedPath))
+    {
+      MessageBox("Failed to unpack the downloaded extension zip file.",
+        INFORM_TITLE,MB_OK|MB_ICONERROR);
+      return 0;
+    }
+    downPath = unpackedPath;
   }
 
   // Run inbuild on the downloaded extension
