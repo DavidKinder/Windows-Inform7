@@ -1003,13 +1003,13 @@ bool ExtensionFrame::IsUserExtension(void)
 
 COLORREF ExtensionFrame::GetBackColour(SourceSettings& set)
 {
-  // Use the source paper colour for the background
+  // Use the extension paper colour for the background
   DWORD enabled = 1;
   set.GetDWord("Syntax Colouring",enabled);
   if (enabled)
   {
     DWORD colour;
-    if (set.GetDWord("Source Paper Colour",colour))
+    if (set.GetDWord("Ext Paper Colour",colour))
       return (COLORREF)colour;
   }
 
