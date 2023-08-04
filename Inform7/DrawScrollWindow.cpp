@@ -10,7 +10,9 @@
 
 std::unique_ptr<DrawScroll> DrawScrollWindow::m_draw;
 
-BEGIN_MESSAGE_MAP(DrawScrollWindow, CWnd)
+IMPLEMENT_DYNAMIC(DrawScrollWindow, DarkModeParentWnd)
+
+BEGIN_MESSAGE_MAP(DrawScrollWindow, DarkModeParentWnd)
   ON_WM_NCCALCSIZE()
   ON_WM_NCPAINT()
   ON_MESSAGE(WM_PRINT, OnPrint)
@@ -41,7 +43,7 @@ BOOL DrawScrollWindow::Create(LPCSTR className, DWORD style, CWnd* parentWnd, UI
   m_v.SetActive(style & WS_VSCROLL);
   m_h.SetActive(style & WS_HSCROLL);
   style &= ~(WS_VSCROLL|WS_HSCROLL);
-  return CWnd::Create(className,NULL,style,CRect(0,0,0,0),parentWnd,id);
+  return DarkModeParentWnd::Create(className,NULL,style,CRect(0,0,0,0),parentWnd,id);
 }
 
 void DrawScrollWindow::EnableScrollBarCtrl(int bar, BOOL enable)
@@ -273,6 +275,11 @@ void DrawScrollWindow::GetScrollRange(int bar, LPINT minPos, LPINT maxPos)
     ASSERT(FALSE);
     break;
   }
+}
+
+DarkMode::DarkColour DrawScrollWindow::GetDarkBackground(void)
+{
+  return DarkMode::Darkest;
 }
 
 void DrawScrollWindow::OnNcCalcSize(BOOL, NCCALCSIZE_PARAMS* lpncsp)

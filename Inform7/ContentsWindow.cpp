@@ -10,7 +10,7 @@
 #define new DEBUG_NEW
 #endif
 
-IMPLEMENT_DYNAMIC(ContentsPane, CWnd)
+IMPLEMENT_DYNAMIC(ContentsPane, DrawScrollArea)
 
 BEGIN_MESSAGE_MAP(ContentsPane, DrawScrollArea)
   ON_WM_CREATE()

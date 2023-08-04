@@ -7,6 +7,8 @@ class DrawScrollMouseAnchorWnd;
 // Replacement for CScrollView
 class DrawScrollArea : public DrawScrollWindow
 {
+  DECLARE_DYNAMIC(DrawScrollArea)
+
 public:
   void SetScrollSizes(int mapMode, SIZE sizeTotal,
     const SIZE& sizePage = CScrollView::sizeDefault, const SIZE& sizeLine = CScrollView::sizeDefault);
@@ -20,6 +22,7 @@ protected:
   void GetScrollBarSizes(CSize& sizeBars);
   void GetScrollBarState(CSize sizeClient, CSize& needBars, CSize& sizeRange, CPoint& moveTo, BOOL insideClient);
 
+  virtual void OnInitialUpdate();
   virtual void OnPrepareDC(CDC* dc);
   virtual void OnDraw(CDC* dc) = 0;
   virtual BOOL OnScroll(UINT scrollCode, UINT pos, BOOL doScroll = TRUE);

@@ -9,7 +9,10 @@
 #define new DEBUG_NEW
 #endif
 
+IMPLEMENT_DYNAMIC(DrawScrollArea, DrawScrollWindow)
+
 BEGIN_MESSAGE_MAP(DrawScrollArea, DrawScrollWindow)
+  ON_MESSAGE_VOID(WM_INITIALUPDATE, OnInitialUpdate)
   ON_WM_PAINT()
   ON_WM_SIZE()
   ON_WM_HSCROLL()
@@ -172,6 +175,11 @@ void DrawScrollArea::GetScrollBarState(CSize sizeClient, CSize& needBars, CSize&
 
   needBars.cx = needH;
   needBars.cy = needV;
+}
+
+void DrawScrollArea::OnInitialUpdate()
+{
+  Invalidate(TRUE);
 }
 
 void DrawScrollArea::OnPrepareDC(CDC* dc)

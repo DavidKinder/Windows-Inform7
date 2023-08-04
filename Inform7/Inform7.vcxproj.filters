@@ -340,6 +340,9 @@
     <ClInclude Include="DrawScrollArea.h">
       <Filter>Controls</Filter>
     </ClInclude>
+    <ClInclude Include="FormScrollArea.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1459,6 +1462,9 @@
       <Filter>Controls</Filter>
     </ClCompile>
     <ClCompile Include="DrawScrollArea.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="FormScrollArea.cpp">
       <Filter>Controls</Filter>
     </ClCompile>
   </ItemGroup>

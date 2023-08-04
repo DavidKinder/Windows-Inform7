@@ -1,11 +1,12 @@
 #pragma once
 
+#include "FormScrollArea.h"
 #include "ProjectSettings.h"
 #include "TabInterface.h"
 
 #include "DarkMode.h"
 
-class TabSettings : public CFormView, public TabInterface
+class TabSettings : public FormScrollArea, public TabInterface
 {
   DECLARE_DYNAMIC(TabSettings)
 
@@ -60,10 +61,6 @@ protected:
 
   void AddVersions(void);
   void Layout(void);
-
-  BOOL Create(DWORD, const RECT&, CWnd*, UINT);
-  BOOL CreateDlg(LPCTSTR, CWnd*);
-  BOOL CreateDlgIndirect(LPCDLGTEMPLATE, CWnd*, HINSTANCE);
 
 private:
   DarkModeGroupBox m_boxStory, m_boxRandom, m_boxVersion, m_boxBasic;

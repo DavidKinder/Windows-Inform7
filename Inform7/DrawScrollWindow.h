@@ -1,11 +1,15 @@
 #pragma once
 
+#include "DarkMode.h"
+
 #include <memory>
 
 class DrawScroll;
 
-class DrawScrollWindow : public CWnd
+class DrawScrollWindow : public DarkModeParentWnd
 {
+  DECLARE_DYNAMIC(DrawScrollWindow)
+
 public:
   static void SetDraw(DrawScroll* draw);
 
@@ -70,6 +74,8 @@ public:
     bool operator==(const Element& element) const;
     bool operator!=(const Element& element) const;
   };
+
+  virtual DarkMode::DarkColour GetDarkBackground(void);
 
 protected:
   DECLARE_MESSAGE_MAP()
