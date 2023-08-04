@@ -180,6 +180,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClInclude Include="ColourScheme.h" />
     <ClInclude Include="CommandButton.h" />
     <ClInclude Include="DrawScrollArea.h" />
+    <ClInclude Include="FormScrollArea.h" />
     <ClInclude Include="PageTab.h" />
     <ClInclude Include="ContentsWindow.h" />
     <ClInclude Include="EditFind.h" />
@@ -2061,6 +2062,7 @@ xcopy /y ..\..\..\Libraries\libcef\resources\locales\en-US.pak ..\Build\Chrome\l
     <ClCompile Include="ColourScheme.cpp" />
     <ClCompile Include="CommandButton.cpp" />
     <ClCompile Include="DrawScrollArea.cpp" />
+    <ClCompile Include="FormScrollArea.cpp" />
     <ClCompile Include="PageTab.cpp" />
     <ClCompile Include="ContentsWindow.cpp" />
     <ClCompile Include="EditFind.cpp" />

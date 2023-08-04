@@ -12,7 +12,7 @@
 
 #define WINNING_LABEL L"***"
 
-IMPLEMENT_DYNCREATE(SkeinWindow, CWnd)
+IMPLEMENT_DYNCREATE(SkeinWindow, DrawScrollArea)
 
 BEGIN_MESSAGE_MAP(SkeinWindow, DrawScrollArea)
   ON_WM_CREATE()

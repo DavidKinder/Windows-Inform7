@@ -346,6 +346,9 @@
     <ClInclude Include="PickExtensionDialog.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="FormScrollArea.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1475,6 +1478,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\zlib\contrib\minizip\ioapi.c">
       <Filter>Libraries\zlib\minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="FormScrollArea.cpp">
+      <Filter>Controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
