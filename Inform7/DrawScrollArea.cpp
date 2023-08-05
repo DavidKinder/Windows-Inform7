@@ -540,7 +540,7 @@ BOOL DrawScrollMouseAnchorWnd::PreTranslateMessage(MSG* msg)
   case WM_RBUTTONDOWN:
   case WM_RBUTTONUP:
   case WM_MBUTTONDOWN:
-    m_quitTracking = TRUE;
+    m_quitTracking = true;
     result = TRUE;
     break;
 
@@ -549,7 +549,7 @@ BOOL DrawScrollMouseAnchorWnd::PreTranslateMessage(MSG* msg)
       CPoint pt(msg->lParam);
       ClientToScreen(&pt);
       if (!PtInRect(&m_drag,pt))
-        m_quitTracking = TRUE;
+        m_quitTracking = true;
       result = TRUE;
     }
     break;
