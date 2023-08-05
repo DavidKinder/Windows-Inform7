@@ -197,10 +197,30 @@ BOOL InformApp::PreTranslateMessage(MSG* pMsg)
   HWND top = pMsg->hwnd;
   for (;;)
   {
+    bool found = false;
+
     HWND parent = ::GetParent(top);
     if (parent != 0)
+    {
       top = parent;
-    else
+      found = true;
+    }
+
+    if (!found)
+    {
+      CWnd* wnd = CWnd::FromHandlePermanent(top);
+      if (wnd != NULL)
+      {
+        CWnd* owner = wnd->GetOwner();
+        if (owner != NULL)
+        {
+          top = owner->GetSafeHwnd();
+          found = true;
+        }
+      }
+    }
+
+    if (!found)
       break;
   }
 
