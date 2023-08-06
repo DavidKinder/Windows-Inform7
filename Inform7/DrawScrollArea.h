@@ -58,6 +58,7 @@ public:
 
   virtual BOOL PreTranslateMessage(MSG* msg);
 
+  afx_msg void OnCaptureChanged(CWnd* pWnd);
   afx_msg void OnTimer(UINT_PTR id);
   
   DECLARE_MESSAGE_MAP()

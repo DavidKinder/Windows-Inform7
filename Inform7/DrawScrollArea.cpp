@@ -442,6 +442,7 @@ LRESULT DrawScrollArea::OnMButtonDown(WPARAM wp, LPARAM lp)
 #define ID_TIMER_TRACKING 0xE000
 
 BEGIN_MESSAGE_MAP(DrawScrollMouseAnchorWnd, CWnd)
+  ON_WM_CAPTURECHANGED()
   ON_WM_TIMER()
 END_MESSAGE_MAP()
 
@@ -555,6 +556,12 @@ BOOL DrawScrollMouseAnchorWnd::PreTranslateMessage(MSG* msg)
     break;
   }
   return result;
+}
+
+void DrawScrollMouseAnchorWnd::OnCaptureChanged(CWnd* wnd)
+{
+  m_quitTracking = true;
+  CWnd::OnCaptureChanged(wnd);
 }
 
 void DrawScrollMouseAnchorWnd::OnTimer(UINT_PTR id)
