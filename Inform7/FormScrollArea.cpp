@@ -87,8 +87,9 @@ BOOL FormScrollArea::Create(DWORD dwRequestedStyle, const RECT& rect, CWnd* pPar
   if (!ExecuteDlgInit(m_lpszTemplateName))
     return FALSE;
 
-  SetWindowPos(NULL,rect.left,rect.top,
-    rect.right - rect.left,rect.bottom - rect.top,SWP_NOZORDER|SWP_NOACTIVATE);
+  CRect r(rect);
+  if (!r.IsRectEmpty())
+    SetWindowPos(NULL,r.left,r.top,r.Width(),r.Height(),SWP_NOZORDER|SWP_NOACTIVATE);
 
   if (dwRequestedStyle & WS_VISIBLE)
     ShowWindow(SW_NORMAL);

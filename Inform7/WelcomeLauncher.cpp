@@ -13,16 +13,16 @@
 
 #define RECENT_MAX 8
 
-IMPLEMENT_DYNAMIC(WelcomeLauncherView, CFormView)
+IMPLEMENT_DYNAMIC(WelcomeLauncherView, FormScrollArea)
 
-WelcomeLauncherView::WelcomeLauncherView() : CFormView(WelcomeLauncherView::IDD)
+WelcomeLauncherView::WelcomeLauncherView() : FormScrollArea(WelcomeLauncherView::IDD)
 {
   m_rightGapPerDpi = 0.0;
   m_bottomGapPerDpi = 0.0;
   m_newsTabPerDpi = 0.0;
 }
 
-BEGIN_MESSAGE_MAP(WelcomeLauncherView, CFormView)
+BEGIN_MESSAGE_MAP(WelcomeLauncherView, FormScrollArea)
   ON_WM_CTLCOLOR()
   ON_WM_ERASEBKGND()
   ON_WM_LBUTTONUP()
@@ -38,31 +38,15 @@ BEGIN_MESSAGE_MAP(WelcomeLauncherView, CFormView)
   ON_MESSAGE(WM_CMDLISTCLICKED, OnCmdListClicked)
 END_MESSAGE_MAP()
 
-BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
-  DWORD dwRequestedStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext)
+BOOL WelcomeLauncherView::Create(DWORD dwRequestedStyle, const RECT& rect, CWnd* pParentWnd, UINT nID)
 {
-  // Start of code copied from CFormView::Create() in MFC sources to enable a call to our CreateDlg()
-  CREATESTRUCT cs = { 0 };
-  cs.style = dwRequestedStyle;
-  if (!PreCreateWindow(cs))
+  if (!FormScrollArea::Create(dwRequestedStyle,rect,pParentWnd,nID))
+  {
+    TRACE("Failed to create form\n");
     return FALSE;
-
-  if (!CreateDlg(m_lpszTemplateName,pParentWnd))
-    return FALSE;
-  ModifyStyle(WS_BORDER|WS_CAPTION,cs.style & (WS_BORDER|WS_CAPTION));
-  ModifyStyleEx(WS_EX_CLIENTEDGE,cs.dwExStyle & WS_EX_CLIENTEDGE);
-  SetDlgCtrlID(nID);
-
+  }
   CRect rectTemplate;
   GetWindowRect(rectTemplate);
-  SetScrollSizes(MM_TEXT,rectTemplate.Size());
-
-  if (!ExecuteDlgInit(m_lpszTemplateName))
-    return FALSE;
-
-  SetWindowPos(NULL,rect.left,rect.top,rect.right - rect.left,rect.bottom - rect.top,SWP_NOZORDER|SWP_NOACTIVATE);
-  ShowWindow(SW_NORMAL);
-  // End of code copied from CFormView::Create() in MFC sources
 
   // Create the HTML control window
   if (!m_html.Create(NULL,NULL,WS_CHILD,CRect(0,0,0,0),this,1))
@@ -168,84 +152,6 @@ CSize WelcomeLauncherView::GetTotalSize() const
   return CSize(w,h);
 }
 
-// Copied from MFC sources to enable a call to our CreateDlgIndirect()
-BOOL WelcomeLauncherView::CreateDlg(LPCTSTR lpszTemplateName, CWnd* pParentWnd)
-{
-  LPCDLGTEMPLATE lpDialogTemplate = NULL;
-  HGLOBAL hDialogTemplate = NULL;
-  HINSTANCE hInst = AfxFindResourceHandle(lpszTemplateName,RT_DIALOG);
-  HRSRC hResource = ::FindResource(hInst,lpszTemplateName,RT_DIALOG);
-  hDialogTemplate = LoadResource(hInst,hResource);
-  if (hDialogTemplate != NULL)
-    lpDialogTemplate = (LPCDLGTEMPLATE)LockResource(hDialogTemplate);
-  ASSERT(lpDialogTemplate != NULL);
-
-  BOOL bSuccess = CreateDlgIndirect(lpDialogTemplate,pParentWnd,hInst);
-  UnlockResource(hDialogTemplate);
-  FreeResource(hDialogTemplate);
-  return bSuccess;
-}
-
-INT_PTR CALLBACK AfxDlgProc(HWND, UINT, WPARAM, LPARAM);
-
-BOOL WelcomeLauncherView::CreateDlgIndirect(LPCDLGTEMPLATE lpDialogTemplate, CWnd* pParentWnd, HINSTANCE hInst)
-{
-  if (!hInst)
-    hInst = AfxGetResourceHandle();
-
-  HGLOBAL hTemplate = NULL;
-  HWND hWnd = NULL;
-
-  TRY
-  {
-    CDialogTemplate dlgTemp(lpDialogTemplate);
-    SetFont(dlgTemp);
-    hTemplate = dlgTemp.Detach();
-    lpDialogTemplate = (DLGTEMPLATE*)GlobalLock(hTemplate);
-
-    m_nModalResult = -1;
-    m_nFlags |= WF_CONTINUEMODAL;
-
-    AfxHookWindowCreate(this);
-    hWnd = ::CreateDialogIndirect(hInst,lpDialogTemplate,pParentWnd->GetSafeHwnd(),AfxDlgProc);
-  }
-  CATCH_ALL(e)
-  {
-    e->Delete();
-    m_nModalResult = -1;
-  }
-  END_CATCH_ALL
-
-  if (!AfxUnhookWindowCreate())
-    PostNcDestroy();
-
-  if ((hWnd != NULL) && !(m_nFlags & WF_CONTINUEMODAL))
-  {
-    ::DestroyWindow(hWnd);
-    hWnd = NULL;
-  }
-
-  if (hTemplate != NULL)
-  {
-    GlobalUnlock(hTemplate);
-    GlobalFree(hTemplate);
-  }
-
-  if (hWnd == NULL)
-    return FALSE;
-  return TRUE;
-}
-
-void WelcomeLauncherView::SetFont(CDialogTemplate& dlgTemplate)
-{
-  NONCLIENTMETRICS ncm;
-  ::ZeroMemory(&ncm,sizeof ncm);
-  ncm.cbSize = sizeof ncm;
-  ::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof ncm,&ncm,0);
-
-  dlgTemplate.SetFont(ncm.lfMessageFont.lfFaceName,DPI::getSystemFontSize());
-}
-
 void WelcomeLauncherView::PostNcDestroy()
 {
   // Do nothing
@@ -253,8 +159,9 @@ void WelcomeLauncherView::PostNcDestroy()
 
 BOOL WelcomeLauncherView::PreTranslateMessage(MSG* pMsg)
 {
-  if (CView::PreTranslateMessage(pMsg))
+  if (DrawScrollArea::PreTranslateMessage(pMsg))
     return TRUE;
+
   CFrameWnd* pFrameWnd = GetParentFrame();
   while (pFrameWnd != NULL)
   {
@@ -278,7 +185,7 @@ BOOL WelcomeLauncherView::PreTranslateMessage(MSG* pMsg)
 
 HBRUSH WelcomeLauncherView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-  HBRUSH brush = CFormView::OnCtlColor(pDC,pWnd,nCtlColor);
+  HBRUSH brush = FormScrollArea::OnCtlColor(pDC,pWnd,nCtlColor);
   if (nCtlColor == CTLCOLOR_STATIC)
   {
     brush = (HBRUSH)::GetStockObject(NULL_BRUSH);
@@ -398,7 +305,7 @@ void WelcomeLauncherView::OnToolTipText(NMHDR* hdr, LRESULT* result)
 
 void WelcomeLauncherView::OnLButtonUp(UINT nFlags, CPoint point)
 {
-  CFormView::OnLButtonUp(nFlags,point);
+  FormScrollArea::OnLButtonUp(nFlags,point);
 
   CArray<CRect> regions;
   GetRegions(regions);
@@ -422,12 +329,12 @@ BOOL WelcomeLauncherView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
       return TRUE;
     }
   }
-  return CFormView::OnSetCursor(pWnd,nHitTest,message);
+  return FormScrollArea::OnSetCursor(pWnd,nHitTest,message);
 }
 
 void WelcomeLauncherView::OnSize(UINT nType, int cx, int cy)
 {
-  CFormView::OnSize(nType,cx,cy);
+  FormScrollArea::OnSize(nType,cx,cy);
 
   // Turn scrollbars off
   EnableScrollBarCtrl(SB_BOTH,FALSE);
@@ -808,7 +715,7 @@ void WelcomeLauncherView::SetBannerBitmap(void)
 
 INT_PTR WelcomeLauncherView::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
 {
-  INT_PTR result = CFormView::OnToolHitTest(point,pTI);
+  INT_PTR result = FormScrollArea::OnToolHitTest(point,pTI);
   if (pTI)
     pTI->uFlags &= ~TTF_CENTERTIP;
   return result;
@@ -1231,7 +1138,7 @@ int WelcomeLauncherFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
 
   // Create the welcome launcher view
-  if (!m_view.Create(NULL,NULL,WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,AFX_IDW_PANE_FIRST,NULL))
+  if (!m_view.Create(WS_CHILD|WS_VISIBLE,CRect(0,0,0,0),this,AFX_IDW_PANE_FIRST))
   {
     TRACE("Failed to create welcome launcher view\n");
     return -1;
