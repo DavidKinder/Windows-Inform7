@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommandButton.h"
+#include "FormScrollArea.h"
 #include "Inform.h"
 #include "ReportHtml.h"
 #include "Resource.h"
@@ -11,15 +12,14 @@
 #include <string>
 #include <vector>
 
-class WelcomeLauncherView : public CFormView
+class WelcomeLauncherView : public FormScrollArea
 {
   DECLARE_DYNAMIC(WelcomeLauncherView)
 
 public:
   WelcomeLauncherView();
 
-  BOOL WelcomeLauncherView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
-    DWORD dwRequestedStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext);
+  virtual BOOL Create(DWORD dwRequestedStyle, const RECT& rect, CWnd* pParentWnd, UINT nID);
   CSize GetTotalSize() const;
 
   void UpdateDPI(void);
@@ -30,10 +30,6 @@ public:
   virtual INT_PTR OnToolHitTest(CPoint point, TOOLINFO* pTI) const;
 
 protected:
-  BOOL CreateDlg(LPCTSTR lpszTemplateName, CWnd* pParentWnd);
-  BOOL CreateDlgIndirect(LPCDLGTEMPLATE lpDialogTemplate, CWnd* pParentWnd, HINSTANCE hInst);
-  void SetFont(CDialogTemplate& dlgTemplate);
-
   virtual void PostNcDestroy();
   virtual BOOL PreTranslateMessage(MSG* pMsg);
 
