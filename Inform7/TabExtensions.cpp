@@ -90,8 +90,10 @@ BOOL TabExtensions::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERIN
 
 void TabExtensions::CompileProject(CompileStage stage, int code)
 {
-  if (stage == RanInform7)
+  switch (stage)
   {
+  case RanInform7:
+  case RanInbuildExtension:
     if (code == 0)
     {
       if (GetActiveTab() == ExtTab_Home)
@@ -106,6 +108,7 @@ void TabExtensions::CompileProject(CompileStage stage, int code)
         m_html.Refresh();
       }
     }
+    break;
   }
 }
 
