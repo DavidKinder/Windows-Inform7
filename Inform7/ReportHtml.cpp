@@ -222,6 +222,10 @@ public:
       SendMessage("I7.openFile",arguments);
     else if (name == "confirmAction")
       SendMessage("I7.confirmAction",arguments);
+    else if (name == "install")
+      SendMessage("I7.install",arguments);
+    else if (name == "uninstall")
+      SendMessage("I7.uninstall",arguments);
     else if (name == "openUrl")
     {
       // We don't need anything from the browser process for this,
@@ -406,10 +410,12 @@ public:
     AddMethod(obj,"createNewProject",handler);
     AddMethod(obj,"openFile",handler);
     AddMethod(obj,"openUrl",handler);
-    AddMethod(obj,"confirmAction",handler);
     AddMethod(obj,"askInterfaceForLocalVersion",handler);
     AddMethod(obj,"askInterfaceForLocalVersionText",handler);
     AddMethod(obj,"downloadMultipleExtensions",handler);
+    AddMethod(obj,"confirmAction",handler);
+    AddMethod(obj,"install",handler);
+    AddMethod(obj,"uninstall",handler);
 
     // Add our object as 'window.Project'
     CefRefPtr<CefV8Value> global = context->GetGlobal();
@@ -516,6 +522,18 @@ public:
         }
         else if (name == "I7.confirmAction")
           m_object->GetParentFrame()->PostMessage(WM_CONFIRMACTION);
+        else if (name == "I7.install")
+        {
+          CStringW extPath = TextFormat::UTF8ToUnicode(
+            TextFormat::Unescape(GetStringArgument(message,0).ToString().c_str()));
+          m_object->GetParentFrame()->PostMessage(WM_INSTALLEXT,(WPARAM)(new CString(extPath)));
+        }
+        else if (name == "I7.uninstall")
+        {
+          CStringW extPath =
+            TextFormat::UTF8ToUnicode(TextFormat::Unescape(GetStringArgument(message,0).ToString().c_str()));
+          m_object->GetParentFrame()->PostMessage(WM_UNINSTALLEXT,(WPARAM)(new CString(extPath)));
+        }
         else if (name == "I7.downloadExts")
         {
           AfxMessageBox(

@@ -80,6 +80,8 @@ protected:
   afx_msg LRESULT OnProjectEdited(WPARAM, LPARAM);
   afx_msg LRESULT OnExtDownload(WPARAM, LPARAM);
   afx_msg LRESULT OnConfirmAction(WPARAM, LPARAM);
+  afx_msg LRESULT OnInstallExt(WPARAM, LPARAM);
+  afx_msg LRESULT OnUninstallExt(WPARAM, LPARAM);
   afx_msg LRESULT OnProgress(WPARAM, LPARAM);
   afx_msg LRESULT OnCreateNewProject(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectExt(WPARAM, LPARAM);
@@ -210,7 +212,7 @@ protected:
   CString CreateTemporaryExtensionDir(void);
   bool UnpackExtensionZipFile(const CString& zipPath, const CString& destPath, CString& extPath);
   void AddExtensionToProject(const CString& extPath);
-  void RunInbuildInstallExtension(bool confirm);
+  void RunInbuildForExtension(const char* cmd, bool confirm);
 
   Panel* GetPanel(int column) const;
   int ChoosePanel(Panel::Tabs newTab);
@@ -260,7 +262,15 @@ protected:
   int m_loadFilter;
 
   CString m_materialsExtPath;
-  CString m_extensionToInstall;
+
+  enum ConfirmedAction
+  {
+    NothingToConfirm,
+    ActionInstallExtension,
+    ActionUninstallExtension
+  };
+  ConfirmedAction m_confirm;
+  CString m_confirmArgument;
 
   CArray<Example> m_examples;
   Example m_exampleCompiled;

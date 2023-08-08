@@ -65,6 +65,8 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_PROJECTEDITED, OnProjectEdited)
   ON_MESSAGE(WM_EXTDOWNLOAD, OnExtDownload)
   ON_MESSAGE(WM_CONFIRMACTION, OnConfirmAction)
+  ON_MESSAGE(WM_INSTALLEXT, OnInstallExt)
+  ON_MESSAGE(WM_UNINSTALLEXT, OnUninstallExt)
   ON_MESSAGE(WM_PROGRESS, OnProgress)
   ON_MESSAGE(WM_NEWPROJECT, OnCreateNewProject)
   ON_MESSAGE(WM_PROJECTEXT, OnProjectExt)
@@ -183,7 +185,8 @@ private:
 ProjectFrame::ProjectFrame(ProjectType projectType)
   : m_projectType(projectType), m_toolBarSize(32),
     m_needCompile(true), m_busy(false), m_I6debug(false), m_game(m_skein),
-    m_finder(this), m_focus(0), m_loadFilter(1), m_splitter(true)
+    m_finder(this), m_focus(0), m_loadFilter(1), m_splitter(true),
+    m_confirm(NothingToConfirm)
 {
   m_menuBar.SetUseF10(false);
   if (m_projectType == Project_I7XP)
@@ -1046,15 +1049,47 @@ LRESULT ProjectFrame::OnExtDownload(WPARAM wparam, LPARAM)
   }
 
   // Run inbuild on the downloaded extension
-  m_extensionToInstall = downPath;
-  RunInbuildInstallExtension(false);
+  m_confirm = ActionInstallExtension;
+  m_confirmArgument = downPath;
+  RunInbuildForExtension("install",false);
   return 0;
 }
 
 LRESULT ProjectFrame::OnConfirmAction(WPARAM, LPARAM)
 {
-  if (!m_extensionToInstall.IsEmpty())
-    RunInbuildInstallExtension(true);
+  switch (m_confirm)
+  {
+  case ActionInstallExtension:
+    RunInbuildForExtension("install",true);
+    break;
+  case ActionUninstallExtension:
+    RunInbuildForExtension("uninstall",true);
+    break;
+  }
+  return 0;
+}
+
+LRESULT ProjectFrame::OnInstallExt(WPARAM wp, LPARAM)
+{
+  CString* pathPtr = (CString*)wp;
+  CString extPath(*pathPtr);
+  delete pathPtr;
+
+  m_confirm = ActionInstallExtension;
+  m_confirmArgument = extPath;
+  RunInbuildForExtension("install",false);
+  return 0;
+}
+
+LRESULT ProjectFrame::OnUninstallExt(WPARAM wp, LPARAM)
+{
+  CString* pathPtr = (CString*)wp;
+  CString extPath(*pathPtr);
+  delete pathPtr;
+
+  m_confirm = ActionUninstallExtension;
+  m_confirmArgument = extPath;
+  RunInbuildForExtension("uninstall",false);
   return 0;
 }
 
@@ -2848,11 +2883,12 @@ void ProjectFrame::AddExtensionToProject(const CString& extPath)
   }
 
   // Run inbuild on the copied extension
-  m_extensionToInstall = installPath;
-  RunInbuildInstallExtension(false);
+  m_confirm = ActionInstallExtension;
+  m_confirmArgument = installPath;
+  RunInbuildForExtension("install",false);
 }
 
-void ProjectFrame::RunInbuildInstallExtension(bool confirm)
+void ProjectFrame::RunInbuildForExtension(const char* cmd, bool confirm)
 {
   BusyProject busy(this);
 
@@ -2862,8 +2898,8 @@ void ProjectFrame::RunInbuildInstallExtension(bool confirm)
 
   CString executable, arguments;
   executable.Format("%s\\Compilers\\inbuild",(LPCSTR)theApp.GetAppDir());
-  arguments.Format("-project \"%s\" -install \"%s\" -results \"%s\\Build\\Inbuild.html\" -internal \"%s\\Internal\"",
-    (LPCSTR)m_projectDir,(LPCSTR)m_extensionToInstall,(LPCSTR)m_projectDir,(LPCSTR)theApp.GetAppDir());
+  arguments.Format("-project \"%s\" -%s \"%s\" -results \"%s\\Build\\Inbuild.html\" -internal \"%s\\Internal\"",
+    (LPCSTR)m_projectDir,cmd,(LPCSTR)m_confirmArgument,(LPCSTR)m_projectDir,(LPCSTR)theApp.GetAppDir());
   if (confirm)
     arguments.Append(" -confirmed");
   if (0)
@@ -2885,7 +2921,7 @@ void ProjectFrame::RunInbuildInstallExtension(bool confirm)
   if (code != 0)
   {
     CString msg;
-    msg.Format("Failed to install extension\nInbuild returned code %d",code);
+    msg.Format("Failed to %s extension\nInbuild returned code %d",cmd,code);
     MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
   }
 }

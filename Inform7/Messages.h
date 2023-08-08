@@ -98,7 +98,7 @@ struct SourceRange
 // zero then the project must now be recompiled.
 #define WM_PROJECTEDITED  WM_APP+22
 
-// Sent to the window frame to download and install the extensions
+// Sent to the window frame to download and install the extension
 // given by the CString instance pointed to by wParam. This CString
 // is allocated on the heap and is freed by the recipient.
 #define WM_EXTDOWNLOAD    WM_APP+23
@@ -209,6 +209,16 @@ enum FindCommand
 // built during the last compilation.
 #define WM_ISBUILDFILE    WM_APP+44
 
-// Sent to the window frame to confirm the current action (currently only
+// Sent to the window frame to confirm the current action (such as
 // installing an extension via inbuild).
 #define WM_CONFIRMACTION  WM_APP+45
+
+// Sent to the window frame to install the extension given by the CString
+// instance pointed to by wParam. This CString is allocated on the heap
+// and is freed by the recipient.
+#define WM_INSTALLEXT     WM_APP+46
+
+// Sent to the window frame to uninstall the extension given by the
+// CString instance pointed to by wParam. This CString is allocated on
+// the heap and is freed by the recipient.
+#define WM_UNINSTALLEXT   WM_APP+47
