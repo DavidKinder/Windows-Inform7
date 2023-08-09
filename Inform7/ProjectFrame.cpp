@@ -41,6 +41,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_WM_SIZE()
   ON_WM_SETCURSOR()
   ON_WM_SETTINGCHANGE()
+  ON_WM_TIMER()
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 
   ON_CBN_SELCHANGE(IDC_EXAMPLE_LIST, OnChangedExample)
@@ -371,8 +372,13 @@ void ProjectFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 void ProjectFrame::OnDestroy()
 {
   SaveSettings();
+
   m_game.StopInterpreter(false);
+  for (int i = 0; i < m_processes.GetSize(); i++)
+    m_processes.GetAt(i).cp.close();
+  m_processes.RemoveAll();
   ReportHtml::RemoveContext(this);
+
   MenuBarFrameWnd::OnDestroy();
 }
 
@@ -2924,6 +2930,92 @@ void ProjectFrame::RunInbuildForExtension(const char* cmd, bool confirm)
     msg.Format("Failed to %s extension\nInbuild returned code %d",cmd,code);
     MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
   }
+}
+
+void ProjectFrame::MonitorProcess(InformApp::CreatedProcess cp, LPCSTR name)
+{
+  // Add to the list of processes being monitored
+  SubProcess sub;
+  sub.cp = cp;
+  sub.name = name;
+  m_processes.Add(sub);
+
+  // If this is the first process, start a timer
+  if (m_processes.GetSize() == 1)
+    SetTimer(1,200,NULL);
+}
+
+bool ProjectFrame::IsProcessRunning(LPCSTR name)
+{
+  for (int i = 0; i < m_processes.GetSize(); i++)
+  {
+    const SubProcess& sub = m_processes.GetAt(i);
+    if (sub.name == name)
+    {
+      DWORD result = STILL_ACTIVE;
+      ::GetExitCodeProcess(sub.cp.process,&result);
+      if (result == STILL_ACTIVE)
+        return true;
+    }
+  }
+  return false;
+}
+
+void ProjectFrame::OnTimer(UINT_PTR nIDEvent)
+{
+  if (nIDEvent == 1)
+  {
+    // Look for any processes that have finished
+    CArray<SubProcess> finished;
+    for (int i = 0; i < m_processes.GetSize();)
+    {
+      const SubProcess& sub = m_processes.GetAt(i);
+
+      DWORD result = STILL_ACTIVE;
+      ::GetExitCodeProcess(sub.cp.process,&result);
+      if (result != STILL_ACTIVE)
+      {
+        finished.Add(sub);
+        m_processes.RemoveAt(i);
+      }
+      else
+        i++;
+    }
+
+    // If there are no processes left, stop the timer
+    if (m_processes.IsEmpty())
+      KillTimer(1);
+
+    // Now handle the finished processes
+    for (int i = 0; i < finished.GetSize(); i++)
+    {
+      SubProcess& sub = finished.GetAt(i);
+
+      // Stop monitoring this process
+      DWORD result = 0;
+      ::GetExitCodeProcess(sub.cp.process,&result);
+      theApp.WaitForProcessEnd(sub.cp.process);
+      std::string trace = theApp.GetTraceForProcess(sub.cp.processId);
+      sub.cp.close();
+
+      // Tell the user if the process was not successful
+      if (result != 0)
+      {
+        if (!trace.empty())
+        {
+          CString msg;
+          msg.Format("\n%s process failed, stack backtrace:\n",(LPCSTR)sub.name);
+          Output(msg);
+          Output(trace.c_str());
+        }
+
+        CString msg;
+        msg.Format("%s returned code %d",(LPCSTR)sub.name,(int)result);
+        MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
+      }
+    }
+  }
+  MenuBarFrameWnd::OnTimer(nIDEvent);
 }
 
 Panel* ProjectFrame::GetPanel(int column) const
