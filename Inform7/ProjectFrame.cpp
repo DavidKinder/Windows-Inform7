@@ -95,6 +95,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, OnUpdateIfNotBusy)
   ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
   ON_COMMAND(ID_FILE_IMPORT_SKEIN, OnFileImportSkein)
+  ON_COMMAND(ID_FILE_EXPORT_EXT, OnFileExportExtProject)
 
   ON_COMMAND(ID_EDIT_FIND_IN_FILES, OnEditFindInFiles)
 
@@ -308,11 +309,11 @@ int ProjectFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   // Create the menu of available extensions
   UpdateExtensionsMenu();
 
+  // Remove menu items that do not apply
+  if (m_projectType != Project_I7XP)
+    GetMenu()->RemoveMenu(ID_FILE_EXPORT_EXT,MF_BYCOMMAND);
   if (!theApp.GetTestMode())
-  {
-    // Remove test menu item
     GetMenu()->RemoveMenu(ID_PLAY_LOAD,MF_BYCOMMAND);
-  }
 
   // Set window text for accessibility
   m_coolBar.SetWindowText("Toolbar area");
@@ -1387,6 +1388,30 @@ void ProjectFrame::OnFileImportSkein()
     m_skein.Import(dialog.GetPathName());
 }
 
+void ProjectFrame::OnFileExportExtProject()
+{
+  if (m_busy || (m_projectType != Project_I7XP))
+    return;
+  if (SaveProject(m_projectDir) == false)
+  {
+    MessageBox("Failed to save project",INFORM_TITLE,MB_OK|MB_ICONERROR);
+    return;
+  }
+
+  CString sourcePath;
+  CStringW extName, extAuthor;
+  if (!GetExtensionInfo(sourcePath,extName,extAuthor))
+    return;
+
+  CString saveName(extName);
+  saveName += ".i7x";
+  SimpleFileDialog dialog(FALSE,"i7x",saveName,OFN_HIDEREADONLY|OFN_ENABLESIZING|OFN_OVERWRITEPROMPT,
+    "Inform extensions (*.i7x)|*.i7x|All Files (*.*)|*.*||",this);
+  dialog.m_ofn.lpstrTitle = "Export this extension";
+  if (dialog.DoModal() == IDOK)
+    ::CopyFile(sourcePath,dialog.GetPathName(),FALSE);
+}
+
 void ProjectFrame::OnEditFindInFiles()
 {
   m_finder.Show();
@@ -2425,9 +2450,8 @@ void ProjectFrame::UpdateExtensionsMenu(void)
   CMenu* fileMenu = GetSubMenu(GetMenu(),0,"File");
   CMenu* newExtProjMenu = GetSubMenu(fileMenu,4,"New Extension Project");
   CMenu* newFromMenu = GetSubMenu(newExtProjMenu,1,"Create From Installed Extension");
-  CMenu* legacyMenu = GetSubMenu(fileMenu,7,"Legacy Extensions");
+  CMenu* legacyMenu = GetSubMenu(fileMenu,8,"Legacy Extensions");
   CMenu* openExtMenu = GetSubMenu(legacyMenu,0,"Open Legacy Installed Extension");
-  ASSERT(openExtMenu != NULL);
 
   while (newFromMenu->GetMenuItemCount() > 0)
     newFromMenu->RemoveMenu(0,MF_BYPOSITION);

@@ -81,13 +81,14 @@ BEGIN
                 MENUITEM SEPARATOR
             END
         END
+        MENUITEM "Export from Extension &Project...", ID_FILE_EXPORT_EXT
         MENUITEM SEPARATOR
         POPUP "Add &Extension to Project"
         BEGIN
-            MENUITEM "Create Ne&w Extension...",    ID_FILE_NEW_EXT
-            MENUITEM "From &Public Library",        ID_FILE_ADD_EXT_LIBRARY
-            MENUITEM "From &File...",               ID_FILE_ADD_EXT_FILE
-            MENUITEM "From &Legacy Installed Extensions Folder...", ID_FILE_ADD_EXT_LEGACY
+            MENUITEM "Create a Ne&w Extension...",  ID_FILE_NEW_EXT
+            MENUITEM "From the &Public Library",    ID_FILE_ADD_EXT_LIBRARY
+            MENUITEM "From a &File...",             ID_FILE_ADD_EXT_FILE
+            MENUITEM "From the &Legacy Installed Extensions Folder...", ID_FILE_ADD_EXT_LEGACY
         END
         POPUP "&Legacy Extensions"
         BEGIN
@@ -1105,11 +1106,11 @@ BEGIN
     ID_PLAY_STOP            "Stop the story that is currently running\nStop"
     ID_PLAY_TEST            "Translate the story and run the ""test me"" command\nTest"
     ID_PLAY_TEST_EXAMPLES   "Translate and test the examples\nTest"
+    ID_PLAY_REFRESH         "Translate the story and refresh the index\nRefresh"
 END
 
 STRINGTABLE
 BEGIN
-    ID_PLAY_REFRESH         "Translate the story and refresh the index\nRefresh"
     ID_PLAY_LOAD            "Load and play a story"
     ID_PLAY_REPLAY          "Translate the story, and re-run through the skein to the previously active play point\nReplay"
 END
