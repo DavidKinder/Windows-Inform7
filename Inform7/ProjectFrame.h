@@ -58,7 +58,6 @@ protected:
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
   afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
-  afx_msg void OnTimer(UINT_PTR nIDEvent);
   afx_msg void OnChangedExample();
   afx_msg LRESULT OnDpiChanged(WPARAM, LPARAM);
 
@@ -157,9 +156,6 @@ public:
   void SelectInDocumentation(const char* link, LPCWSTR find);
 
   const ProjectSettings& GetSettings(void);
-
-  void MonitorProcess(InformApp::CreatedProcess cp, LPCSTR name);
-  bool IsProcessRunning(LPCSTR name);
 
 protected:
   // Implementation of InformApp::OutputSink
@@ -276,13 +272,6 @@ protected:
   };
   ConfirmedAction m_confirm;
   CString m_confirmArgument;
-
-  struct SubProcess
-  {
-    InformApp::CreatedProcess cp;
-    CString name;
-  };
-  CArray<SubProcess> m_processes;
 
   CArray<Example> m_examples;
   Example m_exampleCompiled;

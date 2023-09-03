@@ -166,6 +166,7 @@ public:
   void WaitForProcessEnd(HANDLE process);
   void AddProcessToJob(HANDLE process);
   int RunCommand(const char* dir, CString& command, OutputSink& output);
+  CString ReadFromPipe(HANDLE pipe);
   void HandleDebugEvents(void);
   CString GetTraceForProcess(DWORD processId);
   void WriteLog(const char* msg);
@@ -200,17 +201,15 @@ public:
   {
     std::string author;
     std::string title;
-    bool system;
     std::string path;
 
-    ExtLocation(const char* a, const char* t, bool s, const char* p);
+    ExtLocation(const char* a, const char* t, const char* p);
     bool operator<(const ExtLocation& el) const;
   };
 
-  void FindExtensions(void);
-  void AddToExtensions(const char* author, const char* title, const char* path);
+  void RunLegacyExtensionCensus(void);
+  void HandleCensusEvent(void);
   const std::vector<ExtLocation>& GetExtensions(void);
-  const ExtLocation* GetExtension(const char* author, const char* title);
 
   CString PickDirectory(const char* title, const char* folderLabel, const char* okLabel,
     const char* initialDir, CWnd* parent);
@@ -251,6 +250,11 @@ protected:
   std::map<DWORD,DebugProcess> m_debugging;
   std::map<DWORD,CString> m_traces;
 
+  CreatedProcess m_census;
+  HANDLE m_censusRead = INVALID_HANDLE_VALUE;
+  HANDLE m_censusWrite = INVALID_HANDLE_VALUE;
+  CString m_censusOutput;
+
   std::vector<CompilerVersion> m_versions;
 
   // Map of materials folder locations, accessible from any thread. The map keys are really pointers
@@ -260,8 +264,8 @@ protected:
   std::map<UINT_PTR,CString> m_materials;
 
   CString m_home;
-  HANDLE m_job;
-  bool m_doneProjectsOnExit;
+  HANDLE m_job = 0;
+  bool m_doneProjectsOnExit = false;
 };
 
 extern InformApp theApp;

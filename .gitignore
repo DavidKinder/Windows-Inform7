@@ -28,6 +28,7 @@ Distribution/intest/
 Distribution/inform/
 Distribution/inform-public-library/
 Distribution/*Screencast*
+Distribution/*macos*
 Distribution_*/
 Inform7/Build.h
 Projects/

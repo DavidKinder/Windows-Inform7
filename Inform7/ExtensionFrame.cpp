@@ -233,10 +233,7 @@ void ExtensionFrame::OnFileSave()
 
   ::DeleteFile(m_extension);
   if (::MoveFile(saveName,m_extension))
-  {
-    theApp.FindExtensions();
-    theApp.SendAllFrames(InformApp::Extensions,0);
-  }
+    theApp.RunLegacyExtensionCensus();
 }
 
 void ExtensionFrame::OnFileSaveAs()

@@ -41,7 +41,6 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_WM_SIZE()
   ON_WM_SETCURSOR()
   ON_WM_SETTINGCHANGE()
-  ON_WM_TIMER()
   ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 
   ON_CBN_SELCHANGE(IDC_EXAMPLE_LIST, OnChangedExample)
@@ -373,11 +372,7 @@ void ProjectFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 void ProjectFrame::OnDestroy()
 {
   SaveSettings();
-
   m_game.StopInterpreter(false);
-  for (int i = 0; i < m_processes.GetSize(); i++)
-    m_processes.GetAt(i).cp.close();
-  m_processes.RemoveAll();
   ReportHtml::RemoveContext(this);
 
   MenuBarFrameWnd::OnDestroy();
@@ -1245,7 +1240,6 @@ void ProjectFrame::SendChanged(InformApp::Changed changed, int value)
   case InformApp::LightDarkMode:
     SetDarkMode(DarkMode::GetEnabled(REGISTRY_INFORM));
     SendChanged(InformApp::Preferences,0);
-    UpdateExtensionsMenu(); // Update menu icons
     break;
   }
 }
@@ -2447,11 +2441,20 @@ const char* ProjectFrame::GetProjectFileExt(void)
 
 void ProjectFrame::UpdateExtensionsMenu(void)
 {
+  int NEW_I7X_MENU = 4;
+  int NEW_I7X_FROM_EXT = 1;
+  int LEGACY_EXT_MENU = 8;
+  int OPEN_LEGACY_EXT = 0;
+
+  // Adjust menu positions to account for removed menu items
+  if (GetMenu()->GetMenuState(ID_FILE_EXPORT_EXT,MF_BYCOMMAND) == 0xFFFFFFFF)
+    LEGACY_EXT_MENU--;
+
   CMenu* fileMenu = GetSubMenu(GetMenu(),0,"File");
-  CMenu* newExtProjMenu = GetSubMenu(fileMenu,4,"New Extension Project");
-  CMenu* newFromMenu = GetSubMenu(newExtProjMenu,1,"Create From Installed Extension");
-  CMenu* legacyMenu = GetSubMenu(fileMenu,8,"Legacy Extensions");
-  CMenu* openExtMenu = GetSubMenu(legacyMenu,0,"Open Legacy Installed Extension");
+  CMenu* newExtProjMenu = GetSubMenu(fileMenu,NEW_I7X_MENU,"New Extension Project");
+  CMenu* newFromMenu = GetSubMenu(newExtProjMenu,NEW_I7X_FROM_EXT,"Create From Installed Extension");
+  CMenu* legacyMenu = GetSubMenu(fileMenu,LEGACY_EXT_MENU,"Legacy Extensions");
+  CMenu* openExtMenu = GetSubMenu(legacyMenu,OPEN_LEGACY_EXT,"Open Legacy Installed Extension");
 
   while (newFromMenu->GetMenuItemCount() > 0)
     newFromMenu->RemoveMenu(0,MF_BYPOSITION);
@@ -2461,6 +2464,10 @@ void ProjectFrame::UpdateExtensionsMenu(void)
   int x = -1;
   HMENU newAuthorMenu = 0, openAuthorMenu = 0;
   const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
+
+  newExtProjMenu->EnableMenuItem(NEW_I7X_FROM_EXT,MF_BYPOSITION|(extensions.empty() ? MF_DISABLED : MF_ENABLED));
+  legacyMenu->EnableMenuItem(OPEN_LEGACY_EXT,MF_BYPOSITION|(extensions.empty() ? MF_DISABLED : MF_ENABLED));
+
   for (int i = 0; (i < MAX_MENU_EXTENSIONS) && (i < (int)extensions.size()); i++)
   {
     const InformApp::ExtLocation& ext = extensions[i];
@@ -2477,39 +2484,6 @@ void ProjectFrame::UpdateExtensionsMenu(void)
     ::AppendMenu(newAuthorMenu,MF_STRING,ID_NEW_EXTENSIONS_LIST+i,ext.title.c_str());
     ASSERT(openAuthorMenu != 0);
     ::AppendMenu(openAuthorMenu,MF_STRING,ID_OPEN_EXTENSIONS_LIST+i,ext.title.c_str());
-
-    if (ext.system)
-    {
-      // Indicate extensions that are part of the installation with an icon
-      const char* iconName = "ExtensionMenuGearIcon-scaled";
-      CDibSection* icon = theApp.GetCachedImage(iconName);
-      if (icon == NULL)
-      {
-        // Menu icons need to be 16 x 15 pixels
-        CSize iconSize(16,15);
-        CDibSection* original = theApp.GetCachedImage("Gear");
-        icon = theApp.CreateScaledImage(original,iconSize);
-        if (m_dark)
-        {
-          for (int y = 0; y < iconSize.cy; y++)
-          {
-            for (int x = 0; x < iconSize.cx; x++)
-            {
-              int a = (icon->GetPixel(x,y) & 0xFF000000) >> 24;
-              int v = (0xFF*a) >> 8;
-              icon->SetPixel(x,y,(a<<24)|(v<<16)|(v<<8)|v);
-            }
-          }
-        }
-        theApp.CacheImage(iconName,icon);
-      }
-
-      MENUITEMINFO mii = { sizeof MENUITEMINFO,0 };
-      mii.fMask = MIIM_BITMAP;
-      mii.hbmpItem = icon->GetSafeHandle();
-      ::SetMenuItemInfo(newAuthorMenu,ID_NEW_EXTENSIONS_LIST+i,FALSE,&mii);
-      ::SetMenuItemInfo(openAuthorMenu,ID_OPEN_EXTENSIONS_LIST+i,FALSE,&mii);
-    }
   }
 }
 
@@ -2954,92 +2928,6 @@ void ProjectFrame::RunInbuildForExtension(const char* cmd, bool confirm)
     msg.Format("Failed to %s extension\nInbuild returned code %d",cmd,code);
     MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
   }
-}
-
-void ProjectFrame::MonitorProcess(InformApp::CreatedProcess cp, LPCSTR name)
-{
-  // Add to the list of processes being monitored
-  SubProcess sub;
-  sub.cp = cp;
-  sub.name = name;
-  m_processes.Add(sub);
-
-  // If this is the first process, start a timer
-  if (m_processes.GetSize() == 1)
-    SetTimer(1,200,NULL);
-}
-
-bool ProjectFrame::IsProcessRunning(LPCSTR name)
-{
-  for (int i = 0; i < m_processes.GetSize(); i++)
-  {
-    const SubProcess& sub = m_processes.GetAt(i);
-    if (sub.name == name)
-    {
-      DWORD result = STILL_ACTIVE;
-      ::GetExitCodeProcess(sub.cp.process,&result);
-      if (result == STILL_ACTIVE)
-        return true;
-    }
-  }
-  return false;
-}
-
-void ProjectFrame::OnTimer(UINT_PTR nIDEvent)
-{
-  if (nIDEvent == 1)
-  {
-    // Look for any processes that have finished
-    CArray<SubProcess> finished;
-    for (int i = 0; i < m_processes.GetSize();)
-    {
-      const SubProcess& sub = m_processes.GetAt(i);
-
-      DWORD result = STILL_ACTIVE;
-      ::GetExitCodeProcess(sub.cp.process,&result);
-      if (result != STILL_ACTIVE)
-      {
-        finished.Add(sub);
-        m_processes.RemoveAt(i);
-      }
-      else
-        i++;
-    }
-
-    // If there are no processes left, stop the timer
-    if (m_processes.IsEmpty())
-      KillTimer(1);
-
-    // Now handle the finished processes
-    for (int i = 0; i < finished.GetSize(); i++)
-    {
-      SubProcess& sub = finished.GetAt(i);
-
-      // Stop monitoring this process
-      DWORD result = 0;
-      ::GetExitCodeProcess(sub.cp.process,&result);
-      theApp.WaitForProcessEnd(sub.cp.process);
-      std::string trace = theApp.GetTraceForProcess(sub.cp.processId);
-      sub.cp.close();
-
-      // Tell the user if the process was not successful
-      if (result != 0)
-      {
-        if (!trace.empty())
-        {
-          CString msg;
-          msg.Format("\n%s process failed, stack backtrace:\n",(LPCSTR)sub.name);
-          Output(msg);
-          Output(trace.c_str());
-        }
-
-        CString msg;
-        msg.Format("%s returned code %d",(LPCSTR)sub.name,(int)result);
-        MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
-      }
-    }
-  }
-  MenuBarFrameWnd::OnTimer(nIDEvent);
 }
 
 Panel* ProjectFrame::GetPanel(int column) const

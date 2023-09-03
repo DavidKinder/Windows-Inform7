@@ -19,6 +19,8 @@
 #include "Platform.h"
 #include "Scintilla.h"
 
+#include "nlohmann/json.hpp"
+
 #include "png.h"
 extern "C" {
 #include "jpeglib.h"
@@ -63,7 +65,7 @@ END_MESSAGE_MAP()
 // The one and only InformApp object
 InformApp theApp;
 
-InformApp::InformApp() : m_job(0), m_doneProjectsOnExit(false)
+InformApp::InformApp()
 {
   for (int i = 0; i < sizeof m_fontSizes / sizeof m_fontSizes[0]; i++)
     m_fontSizes[i] = 0;
@@ -135,7 +137,7 @@ BOOL InformApp::InitInstance()
     DarkMode::SetAppDarkMode();
 
   // Find extensions in the legacy extensions directory
-  FindExtensions();
+  RunLegacyExtensionCensus();
 
   // Download the IFTF news file
   WelcomeLauncherFrame::DownloadNews();
@@ -247,6 +249,7 @@ BOOL InformApp::OnIdle(LONG lCount)
   if (lCount == 0)
   {
     HandleDebugEvents();
+    HandleCensusEvent();
     ReportHtml::DoWebBrowserWork();
   }
   return CWinApp::OnIdle(lCount);
@@ -667,7 +670,7 @@ CString InformApp::GetHomeDir(void)
 CString InformApp::PathToUrl(const char* path)
 {
   CString url;
-  DWORD urlBufLen = 32+3+2048; // INTERNET_MAX_URL_LENGTH
+  DWORD urlBufLen = INTERNET_MAX_URL_LENGTH;
   LPSTR urlBuf = url.GetBufferSetLength(urlBufLen);
   HRESULT urlCreate = UrlCreateFromPath(path,urlBuf,&urlBufLen,0);
   url.ReleaseBuffer();
@@ -1251,18 +1254,9 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
       RunMessagePump();
 
       // Is there any more output?
-      DWORD available = 0;
-      ::PeekNamedPipe(pipeRead,NULL,0,NULL,&available,NULL);
-      if (available > 0)
-      {
-        // Read the output from the pipe
-        CString msg;
-        char* buffer = msg.GetBuffer(available);
-        DWORD read = 0;
-        ::ReadFile(pipeRead,buffer,available,&read,NULL);
-        msg.ReleaseBuffer(read);
+      CString msg = ReadFromPipe(pipeRead);
+      if (!msg.IsEmpty())
         output.Output(msg);
-      }
 
       // Get the exit code
       ::GetExitCodeProcess(cp.process,&result);
@@ -1270,17 +1264,9 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
 
     // Wait for the process to end and read any final output
     WaitForProcessEnd(cp.process);
-    DWORD available = 0;
-    ::PeekNamedPipe(pipeRead,NULL,0,NULL,&available,NULL);
-    if (available > 0)
-    {
-      CString msg;
-      char* buffer = msg.GetBuffer(available);
-      DWORD read = 0;
-      ::ReadFile(pipeRead,buffer,available,&read,NULL);
-      msg.ReleaseBuffer(read);
+    CString msg = ReadFromPipe(pipeRead);
+    if (!msg.IsEmpty())
       output.Output(msg);
-    }
 
     // If the process failed, print any stack trace
     if (result != 0)
@@ -1300,6 +1286,24 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
   ::CloseHandle(pipeRead);
   ::CloseHandle(pipeWrite);
   return result;
+}
+
+CString InformApp::ReadFromPipe(HANDLE pipe)
+{
+  CString output;
+  if (pipe != INVALID_HANDLE_VALUE)
+  {
+    DWORD available = 0;
+    ::PeekNamedPipe(pipe,NULL,0,NULL,&available,NULL);
+    if (available > 0)
+    {
+      char* buffer = output.GetBuffer(available);
+      DWORD read = 0;
+      ::ReadFile(pipe,buffer,available,&read,NULL);
+      output.ReleaseBuffer(read);
+    }
+  }
+  return output;
 }
 
 void InformApp::WriteLog(const char* msg)
@@ -1438,83 +1442,101 @@ const std::vector<InformApp::CompilerVersion>& InformApp::GetCompilerVersions(vo
   return m_versions;
 }
 
-void InformApp::FindExtensions(void)
+void InformApp::RunLegacyExtensionCensus(void)
 {
-  m_extensions.clear();
-  for (int i = 0; i < 2; i++)
-  {
-    CString path;
-    switch (i)
-    {
-    case 0:
-      path.Format("%s\\Internal\\Extensions\\*.*",(LPCSTR)GetAppDir());
-      break;
-    case 1:
-      path.Format("%s\\Inform\\Extensions\\*.*",(LPCSTR)GetHomeDir());
-      break;
-    default:
-      ASSERT(FALSE);
-      break;
-    }
+  // Don't start a new census if one is already running
+  if (m_census.process != INVALID_HANDLE_VALUE)
+    return;
 
-    CFileFind find;
-    BOOL finding = find.FindFile(path);
-    while (finding)
-    {
-      finding = find.FindNextFile();
-      if (!find.IsDots() && find.IsDirectory())
-      {
-        CString author = find.GetFileName();
-        if (author == "Reserved")
-          continue;
-        if ((author.GetLength() > 0) && (author.GetAt(0) == '.'))
-          continue;
+  // Create a pipe to read inbuild's output
+  SECURITY_ATTRIBUTES security;
+  ::ZeroMemory(&security,sizeof security);
+  security.nLength = sizeof security;
+  security.bInheritHandle = TRUE;
+  ::CreatePipe(&m_censusRead,&m_censusWrite,&security,0);
 
-        path.Format("%s\\*.*",(LPCSTR)find.GetFilePath());
-        CFileFind find;
-        BOOL finding = find.FindFile(path);
-        while (finding)
-        {
-          finding = find.FindNextFile();
-          if (!find.IsDirectory())
-          {
-            CString ext = ::PathFindExtension(find.GetFilePath());
-            if (ext.CompareNoCase(".i7x") == 0)
-              m_extensions.push_back(ExtLocation(author,find.GetFileTitle(),(i == 0),find.GetFilePath()));
-          }
-        }
-        find.Close();
-      }
-    }
-    find.Close();
-  }
-  std::sort(m_extensions.begin(),m_extensions.end());
+  CString appDir = theApp.GetAppDir();
+  CString command;
+  command.Format("\"%s\\Compilers\\inbuild\" -inspect -recursive -contents-of \"%s\\Inform\\Extensions\" -internal \"%s\\Internal\" -json -",
+    (LPCSTR)appDir,(LPCSTR)GetHomeDir(),(LPCSTR)appDir);
+
+  STARTUPINFO start;
+  ::ZeroMemory(&start,sizeof start);
+  start.cb = sizeof start;
+  start.hStdOutput = m_censusWrite;
+  start.hStdError = m_censusWrite;
+  start.wShowWindow = SW_HIDE;
+  start.dwFlags = STARTF_USESTDHANDLES|STARTF_USESHOWWINDOW;
+  m_census = CreateProcess(NULL,command,start,true);
+  m_censusOutput.Empty();
 }
 
-void InformApp::AddToExtensions(const char* author, const char* title, const char* path)
+void InformApp::HandleCensusEvent(void)
 {
-  for (std::vector<ExtLocation>::const_iterator it = m_extensions.begin(); it != m_extensions.end(); ++it)
+  if (m_census.process != INVALID_HANDLE_VALUE)
   {
-    if ((it->author == author) && (it->title == title) && !it->system)
-      return;
+    // Read any census output
+    CString output = ReadFromPipe(m_censusRead);
+    if (!output.IsEmpty())
+      m_censusOutput.Append(output);
+
+    // Is the census still running?
+    DWORD result = STILL_ACTIVE;
+    ::GetExitCodeProcess(m_census.process,&result);
+    if (result != STILL_ACTIVE)
+    {
+      // Wait for the process to end and read any final output
+      WaitForProcessEnd(m_census.process);
+      GetTraceForProcess(m_census.processId);
+      output = ReadFromPipe(m_censusRead);
+      if (!output.IsEmpty())
+        m_censusOutput.Append(output);
+
+      // Close all handles associated with the census process
+      m_census.close();
+      ::CloseHandle(m_censusRead);
+      m_censusRead = INVALID_HANDLE_VALUE;
+      ::CloseHandle(m_censusWrite);
+      m_censusWrite = INVALID_HANDLE_VALUE;
+
+      // If the census was successful, use the output
+      if (result == 0)
+      {
+        m_extensions.clear();
+
+        // Parse the JSON output from inbuild
+        try
+        {
+          auto json = nlohmann::json::parse((LPCSTR)m_censusOutput);
+          for (auto& inspect : json["inspection"])
+          {
+            auto& resource = inspect["resource"];
+            if ((resource["type"] == "extension") && inspect.contains("location-file"))
+            {
+              std::string title = resource["title"];
+              std::string author = resource["author"];
+              std::string location = inspect["location-file"];
+              if (!title.empty() && !author.empty() && !location.empty())
+                m_extensions.push_back(ExtLocation(author.c_str(),title.c_str(),location.c_str()));
+            }
+          }
+        }
+        catch (std::exception& ex)
+        {
+          TRACE("Error parsing inbuild JSON output: %s\n",ex.what());
+        }
+
+        std::sort(m_extensions.begin(),m_extensions.end());
+        SendAllFrames(Extensions,0);
+      }
+      m_censusOutput.Empty();
+    }
   }
-  m_extensions.push_back(ExtLocation(author,title,false,path));
-  std::sort(m_extensions.begin(),m_extensions.end());
 }
 
 const std::vector<InformApp::ExtLocation>& InformApp::GetExtensions(void)
 {
   return m_extensions;
-}
-
-const InformApp::ExtLocation* InformApp::GetExtension(const char* author, const char* title)
-{
-  for (std::vector<ExtLocation>::const_iterator it = m_extensions.begin(); it != m_extensions.end(); ++it)
-  {
-    if ((it->author == author) && (it->title == title))
-      return &(*it);
-  }
-  return NULL;
 }
 
 CString InformApp::PickDirectory(const char* title, const char* folderLabel, const char* okLabel,
@@ -1838,8 +1860,8 @@ endHook:
   ::FreeLibrary(callingDll);
 }
 
-InformApp::ExtLocation::ExtLocation(const char* a, const char* t, bool s, const char* p)
-  : author(a), title(t), system(s), path(p)
+InformApp::ExtLocation::ExtLocation(const char* a, const char* t, const char* p)
+  : author(a), title(t), path(p)
 {
 }
 
@@ -1847,8 +1869,6 @@ bool InformApp::ExtLocation::operator<(const ExtLocation& el) const
 {
   if (author != el.author)
     return author < el.author;
-  if (system != el.system)
-    return system > el.system;
   return title < el.title;
 }
 

@@ -88,6 +88,10 @@ Download version 103.0.11+gb1e93e1+chromium-103.0.5060.114 of the minimal distri
 Unpack the archive and copy the contents of it to "\<root>/Libraries/libcef".
 It should also be possible to use the latest stable build of CEF for Windows 64-bit, but the CEF project tends to change its header files fairly frequently, so you will probably need to adjust the project file to make the latest stable build of CEF work.
 
+#### JSON for Modern C++
+
+Download the latest release of JSON for Modern C++ from https://github.com/nlohmann/json/releases/. The file required is "include.zip". Unpack the archive and copy the contents of it to "\<root>/Libraries/json".
+
 ### Compiling the projects
 
 Start Visual Studio, open the solution "\<root>/Adv/Inform7/Inform7/Inform7.sln", then build and run the "Inform7" project.
