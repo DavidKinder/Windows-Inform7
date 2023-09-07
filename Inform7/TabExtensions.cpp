@@ -215,7 +215,7 @@ void TabExtensions::OnSize(UINT nType, int cx, int cy)
 
 LRESULT TabExtensions::OnPubLibError(WPARAM, LPARAM)
 {
-  Show(TextFormat::AnsiToUTF8(theApp.GetAppDir()+"\\Documentation\\windows\\pl404.html"));
+  Show(TextFormat::AnsiToUTF8(theApp.GetAppDir()+"\\Documentation\\sections\\NoPublicLibrary.html"));
   return 0;
 }
 
@@ -293,7 +293,7 @@ void TabExtensions::UpdateActiveTab(void)
       idx = ExtTab_Home;
     else if (TextFormat::EndsWith(url,"NoExtensions.html"))
       idx = ExtTab_Home;
-    else if (TextFormat::EndsWith(url,"pl404.html"))
+    else if (TextFormat::EndsWith(url,"NoPublicLibrary.html"))
       idx = ExtTab_Library;
   }
   if (idx != GetActiveTab())
