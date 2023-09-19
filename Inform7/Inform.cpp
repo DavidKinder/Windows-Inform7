@@ -1893,3 +1893,18 @@ void InformApp::CreatedProcess::close()
     processId = -1;
   }
 }
+
+void InformApp::SimpleSink::Output(const char* msg)
+{
+  m_output.Append(msg);
+}
+
+bool InformApp::SimpleSink::WantStop()
+{
+  return false;
+}
+
+CString InformApp::SimpleSink::GetOutput()
+{
+  return m_output;
+}

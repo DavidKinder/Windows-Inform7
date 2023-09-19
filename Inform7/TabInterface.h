@@ -62,7 +62,7 @@ public:
     RanInblorb,
     RanIntestSource,
     RanIntestReport,
-    RanInbuildExtension,
+    RanInstallExtension,
   };
 
   // Notification that a project is being opened

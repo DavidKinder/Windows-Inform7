@@ -36,7 +36,7 @@
 #define WM_PASTECODE      WM_APP+9
 
 // Sent to the window frame to indicate that the game display has caught the
-// run-time problem given by the number in wParam.
+// run-time problem given by the token and path in the string in wParam.
 #define WM_RUNTIMEPROB    WM_APP+10
 
 // Sent to the window frame to switch the focus to the side given by the

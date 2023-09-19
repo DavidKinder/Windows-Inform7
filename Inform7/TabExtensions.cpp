@@ -93,7 +93,7 @@ void TabExtensions::CompileProject(CompileStage stage, int code)
   switch (stage)
   {
   case RanInform7:
-  case RanInbuildExtension:
+  case RanInstallExtension:
     if (code == 0)
     {
       if (GetActiveTab() == ExtTab_Home)

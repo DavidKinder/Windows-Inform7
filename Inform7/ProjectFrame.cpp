@@ -677,10 +677,56 @@ LRESULT ProjectFrame::OnPasteCode(WPARAM code, LPARAM)
   return 0;
 }
 
-LRESULT ProjectFrame::OnRuntimeProblem(WPARAM problem, LPARAM)
+LRESULT ProjectFrame::OnRuntimeProblem(WPARAM wparam, LPARAM)
 {
-  ((TabResults*)GetPanel(1)->GetTab(Panel::Tab_Results))->ShowRuntimeProblem((int)problem);
-  GetPanel(1)->SetActiveTab(Panel::Tab_Results);
+  LPCSTR problem = (LPCSTR)wparam;
+
+  int num = 0;
+  if (sscanf(problem,"P%d:",&num) == 1)
+  {
+    // Old style RTPs from earlier versions of Inform 7 are not supported
+    return 0;
+  }
+
+  // Get the RTP token and path
+  LPCSTR split = strchr(problem,':');
+  if (split == NULL)
+    return 0;
+  CString token(problem,(int)(split-problem));
+  token.Trim();
+  CString path(split+1);
+  path.Trim();
+  if (token.IsEmpty() || path.IsEmpty())
+    return 0;
+
+  // Adjust the path as necessary
+  CString appDir = theApp.GetAppDir();
+  if (path.Left(9).CompareNoCase("INTERNAL/") == 0)
+    path.Format("%s\\Internal\\%s",appDir,path.Mid(9));
+  else if (path.Left(10).CompareNoCase("MATERIALS/") == 0)
+    path = GetMaterialsFolder()+path.Mid(9);
+
+  // Run inbuild to generate the RTP page
+  CString cmdLine;
+  cmdLine.Format(
+    "\"%s\\Compilers\\inbuild\" -markdown-from \"%s/%s.md\" -markdown-to \"%s\\Build\\RTP.html\" -internal \"%s\\Internal\"",
+    (LPCSTR)appDir,(LPCSTR)path,(LPCSTR)token,(LPCSTR)m_projectDir,(LPCSTR)appDir);
+  InformApp::SimpleSink sink;
+  int code = theApp.RunCommand(m_projectDir,cmdLine,sink);
+  if (code == 0)
+  {
+    CString rtpPath;
+    rtpPath.Format("%s\\Build\\RTP.html",(LPCSTR)m_projectDir);
+    for (int i = 0; i < 2; i++)
+      ((TabResults*)GetPanel(i)->GetTab(Panel::Tab_Results))->ShowPage(rtpPath);
+    GetPanel(1)->SetActiveTab(Panel::Tab_Results);
+  }
+  else
+  {
+    CString msg;
+    msg.Format("Failed to generate run-time problem page\nInbuild returned code %d\n\n%s",code,(LPCSTR)sink.GetOutput());
+    MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
+  }
   return 0;
 }
 
@@ -761,7 +807,21 @@ LRESULT ProjectFrame::OnAnimateSkein(WPARAM wparam, LPARAM lparam)
 
 LRESULT ProjectFrame::OnTerpFailed(WPARAM wparam, LPARAM lparam)
 {
-  ((TabResults*)GetPanel(1)->GetTab(Panel::Tab_Results))->ShowTerpFailed((int)wparam);
+  int code = (int)wparam;
+
+  CString path;
+  switch (code)
+  {
+  case 1: // Interpreter did not start
+    path.Format("%s\\Documentation\\windows\\NoTerp.html",theApp.GetAppDir());
+    break;
+  default:
+    path.Format("%s\\Documentation\\windows\\ErrorTerp.html",theApp.GetAppDir());
+    break;
+  }
+
+  for (int i = 0; i < 2; i++)
+    ((TabResults*)GetPanel(i)->GetTab(Panel::Tab_Results))->ShowPage(path);
   GetPanel(1)->SetActiveTab(Panel::Tab_Results);
   return 0;
 }
@@ -2902,7 +2962,7 @@ void ProjectFrame::RunInbuildForExtension(const char* cmd, bool confirm)
 
   CString executable, arguments;
   executable.Format("%s\\Compilers\\inbuild",(LPCSTR)theApp.GetAppDir());
-  arguments.Format("-project \"%s\" -%s \"%s\" -results \"%s\\Build\\Inbuild.html\" -internal \"%s\\Internal\"",
+  arguments.Format("-project \"%s\" -%s \"%s\" -results \"%s\\Build\\Install.html\" -internal \"%s\\Internal\"",
     (LPCSTR)m_projectDir,cmd,(LPCSTR)m_confirmArgument,(LPCSTR)m_projectDir,(LPCSTR)theApp.GetAppDir());
   if (confirm)
     arguments.Append(" -confirmed");
@@ -2917,8 +2977,8 @@ void ProjectFrame::RunInbuildForExtension(const char* cmd, bool confirm)
   CString cmdLine;
   cmdLine.Format("\"%s\" %s",(LPCSTR)executable,(LPCSTR)arguments);
   int code = theApp.RunCommand(m_projectDir,cmdLine,*this);
-  GetPanel(0)->CompileProject(TabInterface::RanInbuildExtension,code);
-  GetPanel(1)->CompileProject(TabInterface::RanInbuildExtension,code);
+  GetPanel(0)->CompileProject(TabInterface::RanInstallExtension,code);
+  GetPanel(1)->CompileProject(TabInterface::RanInstallExtension,code);
 
   // If the call to inbuild failed, tell the user
   GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);

@@ -37,8 +37,7 @@ public:
   void LinkDone(void);
 
   void SetLinkNotify(LinkNotify* notify);
-  void ShowRuntimeProblem(int problem);
-  void ShowTerpFailed(int failure);
+  void ShowPage(LPCSTR path);
 
 private:
   void Resize(void);

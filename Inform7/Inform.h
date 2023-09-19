@@ -151,6 +151,18 @@ public:
     virtual bool WantStop() = 0;
   };
 
+  class SimpleSink : public OutputSink
+  {
+  public:
+    void Output(const char* msg);
+    bool WantStop();
+
+    CString GetOutput();
+
+  protected:
+    CString m_output;
+  };
+
   struct CreatedProcess
   {
     HANDLE process;

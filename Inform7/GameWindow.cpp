@@ -7,6 +7,7 @@
 #include "GameText.h"
 #include "Inform.h"
 #include "Messages.h"
+#include "TextFormat.h"
 
 #include "GlkSound.h"
 
@@ -548,9 +549,12 @@ void GameWindow::CommandPrintOutput(int wndId, wchar_t* text, int textLength)
       m_transcript.Add(text[i]);
 
     // Has a run-time error occurred?
-    int problem = 0;
-    if (swscanf(str,L"*** Run-time problem P%d",&problem) == 1)
-      GetParentFrame()->SendMessage(WM_RUNTIMEPROB,(WPARAM)problem);
+    wchar_t* rtp = L"*** Run-time problem ";
+    if (TextFormat::StartsWith(str,rtp))
+    {
+      CString detail(str.Mid((int)wcslen(rtp)).Trim());
+      GetParentFrame()->SendMessage(WM_RUNTIMEPROB,(WPARAM)(LPCSTR)detail);
+    }
   }
 }
 
@@ -559,9 +563,12 @@ void GameWindow::CommandNullOutput(char* text, int textLength)
   CString str(text,textLength);
 
   // Has a run-time error occurred?
-  int problem = 0;
-  if (sscanf(str,"*** Run-time problem P%d",&problem) == 1)
-    GetParentFrame()->SendMessage(WM_RUNTIMEPROB,(WPARAM)problem);
+  char* rtp = "*** Run-time problem ";
+  if (TextFormat::StartsWith(str,rtp))
+  {
+    CString detail(str.Mid((int)strlen(rtp)).Trim());
+    GetParentFrame()->SendMessage(WM_RUNTIMEPROB,(WPARAM)(LPCSTR)detail);
+  }
 }
 
 void GameWindow::CommandSetStyle(int wndId, TerpTextStyle style, int size)

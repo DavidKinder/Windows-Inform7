@@ -222,12 +222,12 @@ void TabResults::CompileProject(CompileStage stage, int code)
     SetActiveTab(ResTab_Report,false);
     break;
 
-  case RanInbuildExtension:
-    // Show the inbuild report
+  case RanInstallExtension:
+    // Show the extension installation report
     if (code == 0)
     {
       CString reportPath;
-      reportPath.Format("%s\\Build\\Inbuild.html",(LPCSTR)m_projectDir);
+      reportPath.Format("%s\\Build\\Install.html",(LPCSTR)m_projectDir);
       m_report.Navigate(TextFormat::AnsiToUTF8(reportPath),false);
       SetActiveTab(ResTab_Report,false);
     }
@@ -305,27 +305,9 @@ void TabResults::SetLinkNotify(LinkNotify* notify)
   m_notify = notify;
 }
 
-void TabResults::ShowRuntimeProblem(int problem)
+void TabResults::ShowPage(LPCSTR path)
 {
-  CString runtime;
-  runtime.Format("%s\\Documentation\\sections\\RTP_P%d.html",theApp.GetAppDir(),problem);
-  m_report.Navigate(TextFormat::AnsiToUTF8(runtime),false);
-  SetActiveTab(ResTab_Report,false);
-}
-
-void TabResults::ShowTerpFailed(int failure)
-{
-  CString failed;
-  switch (failure)
-  {
-  case 1: // Interpreter did not start
-    failed.Format("%s\\Documentation\\windows\\NoTerp.html",theApp.GetAppDir());
-    break;
-  default:
-    failed.Format("%s\\Documentation\\windows\\ErrorTerp.html",theApp.GetAppDir());
-    break;
-  }
-  m_report.Navigate(TextFormat::AnsiToUTF8(failed),false);
+  m_report.Navigate(TextFormat::AnsiToUTF8(path),false);
   SetActiveTab(ResTab_Report,false);
 }
 
