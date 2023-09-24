@@ -203,7 +203,7 @@ void TabSource::SetActiveTab(SourceTabs tab, bool focus)
 
 LRESULT TabSource::OnSourceRange(WPARAM wp, LPARAM)
 {
-  std::auto_ptr<SourceRange> sr((SourceRange*)wp);
+  std::unique_ptr<SourceRange> sr((SourceRange*)wp);
   if (sr->full)
   {
     // Go to the selected heading

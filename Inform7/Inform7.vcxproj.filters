@@ -1482,6 +1482,27 @@
     <ClCompile Include="FormScrollArea.cpp">
       <Filter>Controls</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\preference_registrar_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\permission_handler_cpptoc.cc">
+      <Filter>Libraries\libcef\cpptoc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\run_quick_menu_callback_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\media_access_callback_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\permission_prompt_callback_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\shared_memory_region_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\shared_process_message_builder_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Inform7.ico">
