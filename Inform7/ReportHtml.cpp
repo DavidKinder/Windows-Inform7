@@ -64,7 +64,7 @@ public:
         {
           m_dataLen = status.m_size;
           m_data = new char[m_dataLen];
-          int64 read = reqFile.Read(m_data,(UINT)m_dataLen);
+          int64_t read = reqFile.Read(m_data,(UINT)m_dataLen);
           ASSERT(read == m_dataLen);
           reqFile.Close();
 
@@ -89,7 +89,7 @@ public:
 
   // Show the resource as ready and set the appropriate MIME type
   void GetResponseHeaders(
-    CefRefPtr<CefResponse> response, int64& response_length, CefString&)
+    CefRefPtr<CefResponse> response, int64_t& response_length, CefString&)
   {
     response->SetMimeType(m_dataType);
     response->SetStatus(200);
@@ -105,7 +105,7 @@ public:
   {
     if (m_dataOffset < m_dataLen)
     {
-      int64 transfer = m_dataLen - m_dataOffset;
+      int64_t transfer = m_dataLen - m_dataOffset;
       if (transfer > bytes_to_read)
         transfer = bytes_to_read;
 
@@ -207,8 +207,8 @@ private:
 
 private:
   char* m_data;
-  int64 m_dataLen;
-  int64 m_dataOffset;
+  int64_t m_dataLen;
+  int64_t m_dataOffset;
   std::string m_dataType;
 };
 
@@ -249,7 +249,7 @@ public:
       CefString title = GetStringArgument(arguments,1);
       CefString compare = GetStringArgument(arguments,2);
       CefString result = AskForLocalVersion(
-        author.ToString().c_str(),title.ToString().c_str(),compare.c_str());
+        author.ToString().c_str(),title.ToString().c_str(),(LPCWSTR)compare.c_str());
       retval = CefV8Value::CreateString(result);
     }
     else if (name == "askInterfaceForLocalVersionText")
@@ -901,8 +901,6 @@ static std::string GetUTF8Path(const char* root, const char* path)
 // Initialize CEF
 bool ReportHtml::InitWebBrowser(void)
 {
-  CefEnableHighDPISupport();
-
   // If this is a CEF sub-process, call CEF straight away
   CefMainArgs cefArgs(::GetModuleHandle(0));
   cefApp = new I7CefApp();

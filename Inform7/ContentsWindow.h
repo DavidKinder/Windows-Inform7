@@ -73,7 +73,7 @@ private:
   void CreateFonts(void);
 
   CArray<Item> m_items;
-  std::auto_ptr<Node> m_tree;
+  std::unique_ptr<Node> m_tree;
   Level m_smallest;
 
   CFont m_font, m_boldFont;

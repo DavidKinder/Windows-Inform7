@@ -61,5 +61,5 @@ private:
 
   CSize m_initialSize;
   CFont m_titleFont;
-  std::auto_ptr<CDibSection> m_bitmap;
+  std::unique_ptr<CDibSection> m_bitmap;
 };

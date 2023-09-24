@@ -75,7 +75,7 @@ void ContentsPane::OnLButtonUp(UINT nFlags, CPoint point)
   Node* node = NodeAtPoint(point);
   if ((node != NULL) && (node->item != NULL))
   {
-    std::auto_ptr<SourceRange> sr(new SourceRange());
+    std::unique_ptr<SourceRange> sr(new SourceRange());
     sr->startLine = node->item->line;
     sr->endLine = 0;
     sr->full = ((nFlags & MK_SHIFT) != 0);
