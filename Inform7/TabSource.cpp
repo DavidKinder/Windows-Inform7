@@ -421,13 +421,6 @@ void TabSource::ShowHeading(const CArray<SourceLexer::Heading>& headings, int id
   SetActiveTab(SrcTab_Source,false);
 }
 
-CString TabSource::GetSourcePath(const char* path)
-{
-  CString sourcePath;
-  sourcePath.Format("%s\\Source\\%s",path,m_sourceFile);
-  return sourcePath;
-}
-
 void TabSource::OpenProject(const char* path, bool primary)
 {
   // Show the whole of the source in the editor
@@ -579,6 +572,13 @@ int TabSource::GetTabHeight(void)
   return m_tab.GetDefaultHeight();
 }
 
+CString TabSource::GetSourcePath(const char* path)
+{
+  CString sourcePath;
+  sourcePath.Format("%s\\Source\\%s",path,m_sourceFile);
+  return sourcePath;
+}
+
 bool TabSource::CheckNeedReopen(const char* path)
 {
   // Only re-open if the source has not been edited
@@ -591,15 +591,6 @@ bool TabSource::CheckNeedReopen(const char* path)
       return status.m_mtime > m_source.GetEdit().GetFileTime();
   }
   return false;
-}
-
-CTime TabSource::GetFileTimestamp(const char* path)
-{
-  CString fileName(GetSourcePath(path));
-  CFileStatus status;
-  if (CFile::GetStatus(fileName,status))
-    return status.m_mtime;
-  return CTime(0);
 }
 
 void TabSource::UpdateElasticTabStops(void)

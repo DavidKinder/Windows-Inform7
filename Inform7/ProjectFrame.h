@@ -187,6 +187,7 @@ protected:
   void SetExampleListLocation(void);
   bool GetExtensionInfo(CString& path, CStringW& name, CStringW& author);
   CString GetMaterialsFolder(void);
+  CTime GetLatestTimestamp(void);
 
   struct Example
   {

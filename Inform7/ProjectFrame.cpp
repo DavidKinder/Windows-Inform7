@@ -2223,10 +2223,7 @@ bool ProjectFrame::CompileProject(bool release, bool test, bool force)
       CFileStatus outStatus;
       if (CFile::GetStatus(outPath,outStatus))
       {
-        TabSource* tab = (TabSource*)(GetPanel(0)->GetTab(Panel::Tab_Source));
-        if (tab->GetFileTimestamp(m_projectDir) > outStatus.m_mtime)
-          m_needCompile = true;
-        if (m_settings.GetFileTimestamp(m_projectDir) > outStatus.m_mtime)
+        if (GetLatestTimestamp() > outStatus.m_mtime)
           m_needCompile = true;
       }
     }
@@ -3445,6 +3442,79 @@ CString ProjectFrame::GetMaterialsFolder(void)
   CString path;
   path.Format("%s.materials",m_projectDir.Left(projectExt));
   return path;
+}
+
+CTime ProjectFrame::GetLatestTimestamp(void)
+{
+  std::vector<CString> paths;
+
+  // Add the settings file
+  paths.push_back(m_settings.GetSettingsPath(m_projectDir));
+
+  // Add the main source file
+  TabSource* tab = (TabSource*)(GetPanel(0)->GetTab(Panel::Tab_Source));
+  paths.push_back(tab->GetSourcePath(m_projectDir));
+
+  // Add any external source files
+  CString path = GetMaterialsFolder();
+  CFileFind findSource;
+  BOOL foundSource = findSource.FindFile(path+"\\Source\\*.i7");
+  while (foundSource)
+  {
+    foundSource = findSource.FindNextFile();
+    if (!findSource.IsDirectory())
+      paths.push_back(findSource.GetFilePath());
+  }
+
+  // Add any extension source files
+  CFileFind findAuthor;
+  BOOL foundAuthor = findAuthor.FindFile(path+"\\Extensions\\*.*");
+  while (foundAuthor)
+  {
+    foundAuthor = findAuthor.FindNextFile();
+    if (findAuthor.IsDirectory() && (findAuthor.GetFileName() != "Reserved"))
+    {
+      // Find single file extensions
+      CFileFind findExt;
+      BOOL foundExt = findExt.FindFile(findAuthor.GetFilePath()+"\\*.i7x");
+      while (foundExt)
+      {
+        foundExt = findExt.FindNextFile();
+        if (!findExt.IsDirectory())
+          paths.push_back(findExt.GetFilePath());
+      }
+
+      // Find multiple file extensions
+      foundExt = findExt.FindFile(findAuthor.GetFilePath()+"\\*.i7xd");
+      while (foundExt)
+      {
+        foundExt = findExt.FindNextFile();
+        if (findExt.IsDirectory())
+        {
+          foundSource = findSource.FindFile(findExt.GetFilePath()+"\\Source\\*.i7x");
+          while (foundSource)
+          {
+            foundSource = findSource.FindNextFile();
+            if (!findSource.IsDirectory())
+              paths.push_back(findSource.GetFilePath());
+          }
+        }
+      }
+    }
+  }
+
+  // Find the latest modification time of any of the above files
+  CTime latest(0);
+  CFileStatus status;
+  for (const CString& path : paths)
+  {
+    if (CFile::GetStatus(path,status))
+    {
+      if (latest < status.m_mtime)
+        latest = status.m_mtime;
+    }
+  }
+  return latest;
 }
 
 ProjectFrame::Example ProjectFrame::GetCurrentExample(void)

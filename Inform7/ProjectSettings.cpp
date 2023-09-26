@@ -137,15 +137,11 @@ bool ProjectSettings::Save(const char* path)
   return true;
 }
 
-CTime ProjectSettings::GetFileTimestamp(const char* path)
+CString ProjectSettings::GetSettingsPath(const char* path)
 {
-  CString fileName = path;
-  fileName += SETTINGS_FILE;
-
-  CFileStatus status;
-  if (CFile::GetStatus(fileName,status))
-    return status.m_mtime;
-  return CTime(0);
+  CString settingsPath = path;
+  settingsPath += SETTINGS_FILE;
+  return settingsPath;
 }
 
 CString ProjectSettings::GetInformSwitches(bool release, bool debugFile)

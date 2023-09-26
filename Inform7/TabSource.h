@@ -34,10 +34,10 @@ public:
   void PasteCode(const wchar_t* code);
   void UpdateSpellCheck(void);
   bool CheckNeedReopen(const char* path);
-  CTime GetFileTimestamp(const char* path);
   void UpdateElasticTabStops(void);
   CString GetSource(void);
   int GetTabHeight(void);
+  CString GetSourcePath(const char* path);
 
 protected:
   DECLARE_MESSAGE_MAP()
@@ -72,7 +72,6 @@ private:
   int FindNextHeading(const CArray<SourceLexer::Heading>& headings, bool next, int i);
   int FindCurrentHeading(const CArray<SourceLexer::Heading>& headings);
   void ShowHeading(const CArray<SourceLexer::Heading>& headings, int idx);
-  CString GetSourcePath(const char* path);
 
   PageTab m_tab;
 
