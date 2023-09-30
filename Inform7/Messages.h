@@ -222,3 +222,15 @@ enum FindCommand
 // CString instance pointed to by wParam. This CString is allocated on
 // the heap and is freed by the recipient.
 #define WM_UNINSTALLEXT   WM_APP+47
+
+struct ExtTestCase
+{
+  CString extPath;
+  CString command;
+  CString testCase;
+};
+
+// Sent to the window frame to use intest to run the extension test case
+// described by the ExtTestCase structure pointed to by wParam. This
+// structure is allocated on the heap and is freed by the recipient.
+#define WM_TESTEXTENSION  WM_APP+48

@@ -63,6 +63,8 @@ public:
     RanIntestSource,
     RanIntestReport,
     RanInstallExtension,
+    TestStart,
+    RanIntestTest
   };
 
   // Notification that a project is being opened

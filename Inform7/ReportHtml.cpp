@@ -226,6 +226,8 @@ public:
       SendMessage("I7.install",arguments);
     else if (name == "uninstall")
       SendMessage("I7.uninstall",arguments);
+    else if (name == "test")
+      SendMessage("I7.test",arguments);
     else if (name == "openUrl")
     {
       // We don't need anything from the browser process for this,
@@ -416,6 +418,7 @@ public:
     AddMethod(obj,"confirmAction",handler);
     AddMethod(obj,"install",handler);
     AddMethod(obj,"uninstall",handler);
+    AddMethod(obj,"test",handler);
 
     // Add our object as 'window.Project'
     CefRefPtr<CefV8Value> global = context->GetGlobal();
@@ -533,6 +536,16 @@ public:
           CStringW extPath =
             TextFormat::UTF8ToUnicode(TextFormat::Unescape(GetStringArgument(message,0).ToString().c_str()));
           m_object->GetParentFrame()->PostMessage(WM_UNINSTALLEXT,(WPARAM)(new CString(extPath)));
+        }
+        else if (name == "I7.test")
+        {
+          CStringW extPath =
+            TextFormat::UTF8ToUnicode(TextFormat::Unescape(GetStringArgument(message,0).ToString().c_str()));
+          ExtTestCase* test = new ExtTestCase();
+          test->extPath = extPath;
+          test->command = GetStringArgument(message,1).ToString().c_str();
+          test->testCase = GetStringArgument(message,2).ToString().c_str();
+          m_object->GetParentFrame()->PostMessage(WM_TESTEXTENSION,(WPARAM)test);
         }
         else if (name == "I7.downloadExts")
         {

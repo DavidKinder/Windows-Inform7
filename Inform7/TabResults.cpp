@@ -210,7 +210,7 @@ void TabResults::CompileProject(CompileStage stage, int code)
     break;
 
   case RanIntestReport:
-    // Show the intest report
+    // Show the test report
     if (code > 0)
     {
       CString reportPath;
@@ -233,6 +233,22 @@ void TabResults::CompileProject(CompileStage stage, int code)
     }
     else
       SetActiveTab(ResTab_Console,false);
+    break;
+
+  case TestStart:
+    m_console.ClearText();
+    SetActiveTab(ResTab_Console,false);
+    break;
+
+  case RanIntestTest:
+    // Show the test report
+    if (code == 0)
+    {
+      CString reportPath;
+      reportPath.Format("%s\\Build\\Test.html",(LPCSTR)m_projectDir);
+      m_report.Navigate(TextFormat::AnsiToUTF8(reportPath),false);
+      SetActiveTab(ResTab_Report,false);
+    }
     break;
   }
 }

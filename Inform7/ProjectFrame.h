@@ -82,6 +82,7 @@ protected:
   afx_msg LRESULT OnConfirmAction(WPARAM, LPARAM);
   afx_msg LRESULT OnInstallExt(WPARAM, LPARAM);
   afx_msg LRESULT OnUninstallExt(WPARAM, LPARAM);
+  afx_msg LRESULT OnTestExtension(WPARAM, LPARAM);
   afx_msg LRESULT OnProgress(WPARAM, LPARAM);
   afx_msg LRESULT OnCreateNewProject(WPARAM, LPARAM);
   afx_msg LRESULT OnProjectExt(WPARAM, LPARAM);

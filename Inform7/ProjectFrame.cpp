@@ -67,6 +67,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_CONFIRMACTION, OnConfirmAction)
   ON_MESSAGE(WM_INSTALLEXT, OnInstallExt)
   ON_MESSAGE(WM_UNINSTALLEXT, OnUninstallExt)
+  ON_MESSAGE(WM_TESTEXTENSION, OnTestExtension)
   ON_MESSAGE(WM_PROGRESS, OnProgress)
   ON_MESSAGE(WM_NEWPROJECT, OnCreateNewProject)
   ON_MESSAGE(WM_PROJECTEXT, OnProjectExt)
@@ -1152,6 +1153,57 @@ LRESULT ProjectFrame::OnUninstallExt(WPARAM wp, LPARAM)
   m_confirm = ActionUninstallExtension;
   m_confirmArgument = extPath;
   RunInbuildForExtension("uninstall",false);
+  return 0;
+}
+
+LRESULT ProjectFrame::OnTestExtension(WPARAM wp, LPARAM)
+{
+  ExtTestCase* test = (ExtTestCase*)wp;
+  BusyProject busy(this);
+
+  // Notify panels that testing is starting
+  GetPanel(0)->CompileProject(TabInterface::TestStart,0);
+  GetPanel(1)->CompileProject(TabInterface::TestStart,0);
+  GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
+
+  CString appDir = theApp.GetAppDir();
+  CString workDir;
+  workDir.Format("%s\\Build\\TestWorkspace",(LPCSTR)m_projectDir);
+  if (::GetFileAttributes(workDir) == INVALID_FILE_ATTRIBUTES)
+    ::SHCreateDirectoryEx(GetSafeHwnd(),workDir,NULL);
+
+  CString executable, arguments;
+  executable.Format("%s\\Compilers\\intest",(LPCSTR)appDir);
+  arguments.Format(
+    "\"%s\" -internal \"%s\\Internal\" -results \"%s\\Build\\Test.html\""
+    " -set \"I7COMPILER = %s\\Compilers\\inform7\" -set \"I6COMPILER = %s\\Compilers\\inform6\""
+    " -set \"GINTERPRETER = %s\\Compilers\\glulxe\" -set \"ZINTERPRETER = %s\\Compilers\\frotz\""
+    " -workspace \"%s\" %s %s",
+    (LPCSTR)(test->extPath),(LPCSTR)appDir,(LPCSTR)m_projectDir,
+    (LPCSTR)appDir,(LPCSTR)appDir,(LPCSTR)appDir,(LPCSTR)appDir,
+    (LPCSTR)workDir,(LPCSTR)(test->command),(LPCSTR)(test->testCase));
+
+  CString output;
+  output.Format("%s \\\n    %s\n",(LPCSTR)executable,(LPCSTR)arguments);
+  Output(output);
+
+  // Run intest
+  CString cmdLine;
+  cmdLine.Format("\"%s\" %s",(LPCSTR)executable,(LPCSTR)arguments);
+  int code = theApp.RunCommand(m_projectDir,cmdLine,*this);
+  GetPanel(0)->CompileProject(TabInterface::RanIntestTest,code);
+  GetPanel(1)->CompileProject(TabInterface::RanIntestTest,code);
+
+  if (code != 0)
+  {
+    CString msg;
+    msg.Format("Failed to test extension case %s\nIntest returned code %d",(LPCSTR)(test->testCase),code);
+    MessageBox(msg,INFORM_TITLE,MB_OK|MB_ICONERROR);
+  }
+
+  // Clean up
+  theApp.ShellDelete(workDir);
+  delete test;
   return 0;
 }
 
@@ -2441,13 +2493,7 @@ void ProjectFrame::CleanProject(void)
   }
 
   // Delete any build files
-  CFileFind find;
-  BOOL found = find.FindFile(m_projectDir+"\\Build\\*.*");
-  while (found)
-  {
-    found = find.FindNextFile();
-    ::DeleteFile(find.GetFilePath());
-  }
+  theApp.ShellDelete(m_projectDir+"\\Build\\*.*");
 
   bool indexes = true;
   if ((HKEY)m_registryKey != 0)
@@ -2459,21 +2505,7 @@ void ProjectFrame::CleanProject(void)
 
   // Delete any index files
   if (indexes)
-  {
-    found = find.FindFile(m_projectDir+"\\Index\\Details\\*.*");
-    while (found)
-    {
-      found = find.FindNextFile();
-      ::DeleteFile(find.GetFilePath());
-    }
-
-    found = find.FindFile(m_projectDir+"\\Index\\*.*");
-    while (found)
-    {
-      found = find.FindNextFile();
-      ::DeleteFile(find.GetFilePath());
-    }
-  }
+    theApp.ShellDelete(m_projectDir+"\\Index\\*.*");
 }
 
 bool ProjectFrame::IsProjectEdited(void)
@@ -2976,9 +3008,9 @@ void ProjectFrame::RunInbuildForExtension(const char* cmd, bool confirm)
   int code = theApp.RunCommand(m_projectDir,cmdLine,*this);
   GetPanel(0)->CompileProject(TabInterface::RanInstallExtension,code);
   GetPanel(1)->CompileProject(TabInterface::RanInstallExtension,code);
+  GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
 
   // If the call to inbuild failed, tell the user
-  GetPanel(ChoosePanel(Panel::Tab_Results))->SetActiveTab(Panel::Tab_Results);
   if (code != 0)
   {
     CString msg;
