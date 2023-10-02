@@ -47,6 +47,7 @@ public:
   static void StartExisting(const char* path, const ProjectSettings& settings);
   static bool StartHighlight(const char* url, COLORREF colour, const ProjectSettings& settings);
   static void StartSelect(const char* path, const CHARRANGE& range, const ProjectSettings& settings);
+  static void InstallLegacyExtension(CFrameWnd* parent);
 
   static CStringW ReadExtensionFirstLine(const char* path);
   static bool IsValidExtension(const CStringW& firstLine,

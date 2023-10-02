@@ -87,6 +87,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_COMMAND(ID_FILE_ADD_EXT_LIBRARY, OnFileAddExtLibrary)
   ON_COMMAND_RANGE(ID_FILE_ADD_EXT_FILE, ID_FILE_ADD_EXT_LEGACY, OnFileAddExtFile)
   ON_COMMAND(ID_FILE_INSTALL_FOLDER, OnFileInstallFolder)
+  ON_COMMAND(ID_FILE_INSTALL_LEGACY, OnFileInstallLegacy)
   ON_COMMAND_RANGE(ID_OPEN_EXTENSIONS_LIST, ID_OPEN_EXTENSIONS_LIST+MAX_MENU_EXTENSIONS-1, OnFileOpenExt)
   ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE, OnUpdateIfNotBusy)
   ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
@@ -1442,6 +1443,12 @@ void ProjectFrame::OnFileInstallFolder()
 
   // Open an Explorer window
   ::ShellExecute(0,"explore",path,NULL,NULL,SW_SHOWNORMAL);
+}
+
+void ProjectFrame::OnFileInstallLegacy()
+{
+  CWaitCursor wc;
+  ExtensionFrame::InstallLegacyExtension(this);
 }
 
 void ProjectFrame::OnFileOpenExt(UINT nID)

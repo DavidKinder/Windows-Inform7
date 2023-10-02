@@ -421,6 +421,72 @@ void ExtensionFrame::StartSelect(const char* path, const CHARRANGE& range, const
   }
 }
 
+void ExtensionFrame::InstallLegacyExtension(CFrameWnd* parent)
+{
+  // Ask the user for an extension
+  SimpleFileDialog dialog(TRUE,"i7x",NULL,OFN_HIDEREADONLY|OFN_ENABLESIZING,
+    "Inform extensions (*.i7x)|*.i7x|All Files (*.*)|*.*||",parent);
+  dialog.m_ofn.lpstrTitle = "Select the extension to install";
+  if (dialog.DoModal() != IDOK)
+    return;
+
+  // Get the first line of the extension
+  CString path = dialog.GetPathName();
+  CStringW extLine = ReadExtensionFirstLine(path);
+  if (extLine.IsEmpty())
+    return;
+
+  // Check for a valid extension
+  CStringW extName, extAuthor, extVersion;
+  if (!IsValidExtension(extLine,extName,extAuthor,extVersion))
+  {
+    CString msg;
+    msg.Format(
+      "The file \"%s\"\n"
+      "does not seem to be an extension. Extensions should be\n"
+      "saved as UTF-8 format text files, and should start with a\n"
+      "line of one of these forms:\n\n"
+      "<Extension> by <Author> begins here.\n"
+      "Version <Version> of <Extension> by <Author> begins here.",
+      (LPCSTR)path);
+    parent->MessageBox(msg,INFORM_TITLE,MB_ICONERROR|MB_OK);
+    return;
+  }
+
+  // Work out the path to copy the extension to
+  CString target;
+  target.Format("%s\\Inform\\Extensions\\%S",(LPCSTR)theApp.GetHomeDir(),(LPCWSTR)extAuthor);
+  ::CreateDirectory(target,NULL);
+  target.AppendFormat("\\%S.i7x",(LPCWSTR)extName);
+
+  // Check if the extension already exists
+  if (::GetFileAttributes(target) != INVALID_FILE_ATTRIBUTES)
+  {
+    CString msg;
+    msg.Format(
+      "A version of the extension %S by %S is already installed.\n"
+      "Do you want to overwrite the installed extension with this new one?",
+      (LPCWSTR)extName,(LPCWSTR)extAuthor);
+    if (parent->MessageBox(msg,INFORM_TITLE,MB_ICONWARNING|MB_YESNO) != IDYES)
+      return;
+  }
+
+  // Copy the extension
+  if (::CopyFile(path,target,FALSE) == 0)
+  {
+    parent->MessageBox("Failed to copy extension",INFORM_TITLE,MB_ICONERROR|MB_OK);
+    return;
+  }
+
+  // Update the extensions menu
+  theApp.RunLegacyExtensionCensus();
+
+  // Tell the user
+  CString msg;
+  msg.Format("\"%S\" by %S has been installed",(LPCWSTR)extName,(LPCWSTR)extAuthor);
+  parent->MessageBox(msg,INFORM_TITLE,MB_ICONINFORMATION|MB_OK);
+}
+
 CStringW ExtensionFrame::ReadExtensionFirstLine(const char* path)
 {
   // Get the first line of the file

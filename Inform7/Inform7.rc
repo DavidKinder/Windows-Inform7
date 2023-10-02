@@ -97,6 +97,7 @@ BEGIN
                 MENUITEM SEPARATOR
             END
             MENUITEM "&Show Legacy Installed Extensions Folder", ID_FILE_INSTALL_FOLDER
+            MENUITEM "&Install Legacy Extension...", ID_FILE_INSTALL_LEGACY
         END
         MENUITEM SEPARATOR
         MENUITEM "Import into S&kein...",       ID_FILE_IMPORT_SKEIN
@@ -1076,6 +1077,7 @@ IDC_DRAGMOVE            CURSOR                  "res\\DragMove.cur"
 
 STRINGTABLE
 BEGIN
+    AFX_IDS_APP_TITLE       "Inform"
     IDR_MAINFRAME           "Inform"
     IDR_EXTFRAME            "Inform"
     IDR_LAUNCHFRAME         "Welcome to Inform"
@@ -1083,148 +1085,18 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_FILE_INSTALL_FOLDER  "Open an Explorer window in the installed extensions folder"
-    ID_FILE_NEW_EXT         "Start a new extension"
-    ID_FILE_NEW_XP          "Start a new extension project"
-    ID_FILE_IMPORT_SKEIN    "Import story commands into the skein from a text file"
-    ID_EDIT_DELETE          "Delete the selected text"
-END
-
-STRINGTABLE
-BEGIN
-    ID_EDIT_SPELLING        "Spell check the source"
-    ID_EDIT_FIND_NEXT       "Find the next match for the last find action"
-    ID_EDIT_FIND_PREV       "Find the previous match for the last find action"
-    ID_EDIT_SCROLL          "Scroll to the currently selected text"
-    ID_EDIT_USE_SEL         "If checked, use the currently selected text to populate the find dialog"
-    ID_FORMAT_SHIFT_RIGHT   "Shift the selected lines one tab to the right"
-    ID_FORMAT_SHIFT_LEFT    "Shift the selected lines one tab to the left"
-    ID_FORMAT_COMMENT       "Comment out the selected lines"
-    ID_FORMAT_UNCOMMENT     "Uncomment the selected lines"
-    ID_FORMAT_RENUMBER      "Renumber all section headings in the source"
     ID_PLAY_GO              "Translate and run the story\nGo!"
     ID_PLAY_STOP            "Stop the story that is currently running\nStop"
     ID_PLAY_TEST            "Translate the story and run the ""test me"" command\nTest"
-    ID_PLAY_TEST_EXAMPLES   "Translate and test the examples\nTest"
-    ID_PLAY_REFRESH         "Translate the story and refresh the index\nRefresh"
-END
-
-STRINGTABLE
-BEGIN
-    ID_PLAY_LOAD            "Load and play a story"
     ID_PLAY_REPLAY          "Translate the story, and re-run through the skein to the previously active play point\nReplay"
-END
-
-STRINGTABLE
-BEGIN
     ID_RELEASE_GAME         "Translate the story ready for release (with all debugging features turned off) and save the result\nRelease"
-    ID_RELEASE_TEST         "Translate the story in debug mode and save the result"
-    ID_RELEASE_MATERIALS    "Open an Explorer window in the materials folder"
-    ID_RELEASE_IFICTION     "Export the iFiction record for this story"
 END
 
 STRINGTABLE
 BEGIN
-    ID_WINDOW_SWITCH        "Switch the input cursor to the pane on the other side"
-    ID_WINDOW_LEFTPANE      "Switch the input cursor to the left hand pane"
-    ID_WINDOW_RIGHTPANE     "Switch the input cursor to the right hand pane"
-    ID_HELP_LICENCE         "Show the licensing help page"
-    ID_HELP_WINDOWS         "Show notes specific to this Windows version of Inform"
-END
-
-STRINGTABLE
-BEGIN
-    ID_HELP_EXTENSIONS      "Show the page listing installed extensions"
-    ID_HELP_RECIPES         "Show the recipe book page, listing all the examples"
-    ID_APP_PREFS            "Change the application preferences"
-    ID_APP_WEBPAGE          "Go to the Inform web site"
-    ID_HEAD_SHOW            "Show the contents list of the headings in the source"
-    ID_HEAD_CURRENT         "Only show the section containing the cursor in the source"
-    ID_HEAD_INCREASE        "Show the section at the next lower heading level in the source"
-    ID_HEAD_REDUCE          "Show the section at the next higher heading level in the source"
-    ID_HEAD_ENTIRE          "Show the entire source"
-    ID_HEAD_PREVIOUS        "Show the previous section in the source"
-    ID_HEAD_NEXT            "Show the next section in the source"
-END
-
-STRINGTABLE
-BEGIN
-    AFX_IDS_APP_TITLE       "Inform"
-    AFX_IDS_IDLEMESSAGE     "Windows Inform build %s"
-END
-
-STRINGTABLE
-BEGIN
-    AFX_IDS_SCRESTORE       "Restore the window to normal size"
-END
-
-STRINGTABLE
-BEGIN
-    AFX_IDS_SCSIZE          "Change the window size"
-    AFX_IDS_SCMOVE          "Change the window position"
-    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
-    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
-    AFX_IDS_SCCLOSE         "Close the window"
-END
-
-STRINGTABLE
-BEGIN
-    ID_INDICATOR_CAPS       "CAP"
-    ID_INDICATOR_NUM        "NUM"
-END
-
-STRINGTABLE
-BEGIN
-    ID_FILE_NEW             "Start a new project"
-    ID_FILE_OPEN            "Open an existing project"
-    ID_FILE_CLOSE           "Close this project window"
-    ID_FILE_SAVE            "Save this project"
-    ID_FILE_SAVE_AS         "Save this project under a new name"
-END
-
-STRINGTABLE
-BEGIN
-    ID_APP_ABOUT            "Show the about dialog"
-    ID_APP_EXIT             "Close all windows and exit"
-    ID_HELP_INDEX           "Show the contents page of the documentation\nHelp"
-END
-
-STRINGTABLE
-BEGIN
-    ID_EDIT_COPY            "Copy the selected text to the clipboard"
-    ID_EDIT_CUT             "Cut the selected text to the clipboard"
-    ID_EDIT_FIND            "Open the find dialog"
-    ID_EDIT_PASTE           "Paste text from the clipboard"
-    ID_EDIT_REPLACE         "Open the replace dialog"
-    ID_EDIT_SELECT_ALL      "Select all text in the current panel"
-    ID_EDIT_UNDO            "Undo the last change"
-    ID_EDIT_REDO            "Redo the last undone change"
-END
-
-STRINGTABLE
-BEGIN
-    IDC_SEARCH_SOURCE       "Search the source code"
-    IDC_SEARCH_DOCS         "Search the documentation"
-END
-
-STRINGTABLE
-BEGIN
-    ID_SKEIN_PLAY           "Play the story to this command in the skein, restarting if necessary"
-    ID_SKEIN_EDIT           "Edit the text for this command"
-    ID_SKEIN_BLESS          "Bless this command"
-    ID_SKEIN_BLESS_ALL      "Bless this command and all commands before it"
-    ID_SKEIN_INSERT_NEXT    "Insert a new command after this one"
-    ID_SKEIN_SPLIT_THREAD   "Insert a new command after this one by splitting the thread"
-    ID_SKEIN_INSERT_PREVIOUS "Insert a new command before this one"
-    ID_SKEIN_DELETE         "Delete this command"
-    ID_SKEIN_DELETE_ALL     "Delete this command and all threads below it"
     ID_SKEIN_SAVE_TRANSCRIPT 
                             "Save the transcript of play for the selected thread"
     ID_SKEIN_PLAY_ALL       "Play all threads in the skein"
-    ID_SKEIN_LOCK           "Lock this command and all those that lead to it"
-    ID_SKEIN_UNLOCK         "Unlock this command and all those that come after it"
-    ID_SKEIN_TRIM           "Remove unlocked commands, starting from this command"
-    ID_SKEIN_SET_WINNING    "Set this command as the command that wins the story"
 END
 
 #endif    // English (United Kingdom) resources
