@@ -63,7 +63,8 @@ protected:
   void OpenFile(const char* path);
   void SetFromRegistryPath(const char* path);
   bool IsProjectEdited(void);
-  bool IsUserExtension(void);
+  bool IsBuiltInExtension(void);
+  bool IsLegacyExtension(void);
   COLORREF GetBackColour(SourceSettings& set);
 
   SourceEdit m_edit;

@@ -108,7 +108,7 @@ void ExtensionFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 
 void ExtensionFrame::OnClose()
 {
-  if (IsProjectEdited() && IsUserExtension())
+  if (IsProjectEdited() && !IsBuiltInExtension())
   {
     // Ask the user before discarding the extension
     CString msg;
@@ -160,8 +160,14 @@ BOOL ExtensionFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERI
 
 void ExtensionFrame::OnUpdateFrameTitle(BOOL)
 {
+  CString info;
+  if (IsBuiltInExtension())
+    info = " (built in)";
+  else if (IsLegacyExtension())
+    info = " (legacy folder)";
+
   CString title;
-  title.Format("%s - %s",(LPCSTR)GetDisplayName(true),m_strTitle);
+  title.Format("%s%s - %s",(LPCSTR)GetDisplayName(true),(LPCSTR)info,m_strTitle);
   AfxSetWindowText(GetSafeHwnd(),title);
 }
 
@@ -193,7 +199,7 @@ void ExtensionFrame::OnFileClose()
 
 void ExtensionFrame::OnUpdateFileSave(CCmdUI *pCmdUI)
 {
-  pCmdUI->Enable(IsUserExtension());
+  pCmdUI->Enable(!IsBuiltInExtension());
 }
 
 void ExtensionFrame::OnFileSave()
@@ -202,11 +208,10 @@ void ExtensionFrame::OnFileSave()
     return;
 
   // Check we are not saving under the program directory
-  if (!IsUserExtension())
+  if (IsBuiltInExtension())
   {
     MessageBox(
-      "Extensions should be saved in the \"Inform\\Extensions\" area\n"
-      "under \"My Documents\", and not where Inform has been installed.",
+      "Extensions should not be saved where Inform has been installed.",
       INFORM_TITLE,MB_ICONERROR|MB_OK);
     return;
   }
@@ -710,11 +715,19 @@ bool ExtensionFrame::IsProjectEdited(void)
   return m_edit.IsEdited();
 }
 
-bool ExtensionFrame::IsUserExtension(void)
+bool ExtensionFrame::IsBuiltInExtension(void)
 {
-  // Check we are not saving under the program directory
+  // Check if the extension is under the program directory
   CString appDir = theApp.GetAppDir();
-  return (strncmp(m_extension,appDir,appDir.GetLength()) != 0);
+  return (strncmp(m_extension,appDir,appDir.GetLength()) == 0);
+}
+
+bool ExtensionFrame::IsLegacyExtension(void)
+{
+  // Check if the extension is under the legacy extensions directory
+  CString legacyDir;
+  legacyDir.Format("%s\\Inform\\Extensions",(LPCSTR)theApp.GetHomeDir());
+  return (strncmp(m_extension,legacyDir,legacyDir.GetLength()) == 0);
 }
 
 COLORREF ExtensionFrame::GetBackColour(SourceSettings& set)
