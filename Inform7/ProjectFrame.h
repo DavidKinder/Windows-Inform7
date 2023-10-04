@@ -154,6 +154,7 @@ public:
   void SendChanged(InformApp::Changed changed, int value);
 
   CString GetSource(void);
+  void GetExternalSourceFiles(std::vector<CString>& paths);
   void SelectInSource(const CHARRANGE& range);
   void SelectInDocumentation(const char* link, LPCWSTR find);
 

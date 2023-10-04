@@ -634,7 +634,7 @@ void FindInFiles::OnFindAll()
   // How many files are to be searched?
   m_total = 0;
   if (m_lookSource)
-    m_total++;
+    m_total += CountSource();
   if (m_lookExts)
     m_total += CountExtensions();
   if (m_lookDocMain || m_lookDocPhrases || m_lookDocCode)
@@ -657,12 +657,7 @@ void FindInFiles::OnFindAll()
   try
   {
     if (m_lookSource)
-    {
-      UpdateProgress();
-      m_findHelper.Find(m_project->GetSource(),m_findText,m_ignoreCase,m_findRule,
-        m_project->GetDisplayName(false),"","","",FoundIn_Source);
-      m_current++;
-    }
+      FindInSource();
     if (m_lookExts)
       FindInExtensions();
     if (m_lookDocMain || m_lookDocPhrases || m_lookDocCode)
@@ -748,35 +743,58 @@ LRESULT FindInFiles::OnResultsResize(WPARAM, LPARAM)
   return 0;
 }
 
+void FindInFiles::FindInSource(void)
+{
+  UpdateProgress();
+
+  m_findHelper.Find(m_project->GetSource(),m_findText,m_ignoreCase,m_findRule,
+    m_project->GetDisplayName(false),"","","",FoundIn_Source);
+  theApp.RunMessagePump();
+  m_current++;
+
+  std::vector<CString> paths;
+  m_project->GetExternalSourceFiles(paths);
+  for (const CString& path : paths)
+  {
+    UpdateProgress();
+
+    CString sourceText = ReadUTF8File(path);
+    if (!sourceText.IsEmpty())
+    {
+      CString title = path;
+      int start = title.ReverseFind('\\');
+      if (start >= 0)
+        title = title.Mid(start+1);
+
+      m_findHelper.Find(sourceText,m_findText,m_ignoreCase,m_findRule,
+        title,"",path,"",FoundIn_Source);
+      theApp.RunMessagePump();
+    }
+    m_current++;
+  }
+}
+
+size_t FindInFiles::CountSource(void)
+{
+  std::vector<CString> paths;
+  m_project->GetExternalSourceFiles(paths);
+  return paths.size()+1;
+}
+
 void FindInFiles::FindInExtensions(void)
 {
   for (const auto& extension : theApp.GetExtensions())
   {
     UpdateProgress();
 
-    CFile extFile;
-    if (extFile.Open(extension.path.c_str(),CFile::modeRead))
+    CString extText = ReadUTF8File(extension.path.c_str());
+    if (!extText.IsEmpty())
     {
-      int utfLen = (int)extFile.GetLength();
-
-      // Read in the file as UTF-8
-      CString utfText;
-      LPSTR utfPtr = utfText.GetBufferSetLength(utfLen);
-      extFile.Read(utfPtr,utfLen);
-      utfText.ReleaseBuffer(utfLen);
-
-      // Check for a UTF-8 BOM
-      if (utfText.GetLength() >= 3)
-      {
-        if (utfText.Left(3) == "\xEF\xBB\xBF")
-          utfText = utfText.Mid(3);
-      }
-
-      m_findHelper.Find(utfText,m_findText,m_ignoreCase,m_findRule,
+      m_findHelper.Find(extText,m_findText,m_ignoreCase,m_findRule,
         extension.title.c_str(),"",extension.path.c_str(),"",FoundIn_Extension);
       theApp.RunMessagePump();
-      m_current++;
     }
+    m_current++;
   }
 }
 
@@ -852,6 +870,31 @@ size_t FindInFiles::CountDocumentation(void)
   return m_data->texts.GetSize();
 }
 
+CString FindInFiles::ReadUTF8File(const char* path)
+{
+  CFile textFile;
+  if (textFile.Open(path,CFile::modeRead))
+  {
+    int utfLen = (int)textFile.GetLength();
+
+    // Read in the file as UTF-8
+    CString utfText;
+    LPSTR utfPtr = utfText.GetBufferSetLength(utfLen);
+    textFile.Read(utfPtr,utfLen);
+    utfText.ReleaseBuffer(utfLen);
+
+    // Check for a UTF-8 BOM
+    if (utfText.GetLength() >= 3)
+    {
+      if (utfText.Left(3) == "\xEF\xBB\xBF")
+        utfText = utfText.Mid(3);
+    }
+
+    return utfText;
+  }
+  return "";
+}
+
 void FindInFiles::WaitForDocThread(void)
 {
   // Make sure that the background thread has decoded the documentation
@@ -902,7 +945,10 @@ void FindInFiles::ShowResult(const FindResult& result)
   switch (result.type)
   {
   case FoundIn_Source:
-    m_project->SelectInSource(result.loc);
+    if (result.path.IsEmpty())
+      m_project->SelectInSource(result.loc);
+    else
+      ExtensionFrame::StartSelect(result.path,result.loc,m_project->GetSettings());
     break;
   case FoundIn_Extension:
     ExtensionFrame::StartSelect(result.path,result.loc,m_project->GetSettings());

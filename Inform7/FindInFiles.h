@@ -49,10 +49,13 @@ protected:
   afx_msg LRESULT OnResultsResize(WPARAM, LPARAM);
 
 private:
+  void FindInSource(void);
+  size_t CountSource(void);
   void FindInExtensions(void);
   size_t CountExtensions(void);
   void FindInDocumentation(void);
   size_t CountDocumentation(void);
+  CString ReadUTF8File(const char* path);
   void WaitForDocThread(void);
   void UpdateProgress(void);
 

@@ -1362,6 +1362,19 @@ CString ProjectFrame::GetSource(void)
   return ((TabSource*)GetPanel(0)->GetTab(Panel::Tab_Source))->GetSource();
 }
 
+void ProjectFrame::GetExternalSourceFiles(std::vector<CString>& paths)
+{
+  CString path = GetMaterialsFolder();
+  CFileFind findSource;
+  BOOL foundSource = findSource.FindFile(path+"\\Source\\*.i7");
+  while (foundSource)
+  {
+    foundSource = findSource.FindNextFile();
+    if (!findSource.IsDirectory())
+      paths.push_back(findSource.GetFilePath());
+  }
+}
+
 void ProjectFrame::SelectInSource(const CHARRANGE& range)
 {
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Source));
@@ -3495,17 +3508,10 @@ CTime ProjectFrame::GetLatestTimestamp(void)
   paths.push_back(tab->GetSourcePath(m_projectDir));
 
   // Add any external source files
-  CString path = GetMaterialsFolder();
-  CFileFind findSource;
-  BOOL foundSource = findSource.FindFile(path+"\\Source\\*.i7");
-  while (foundSource)
-  {
-    foundSource = findSource.FindNextFile();
-    if (!findSource.IsDirectory())
-      paths.push_back(findSource.GetFilePath());
-  }
+  GetExternalSourceFiles(paths);
 
   // Add any extension source files
+  CString path = GetMaterialsFolder();
   CFileFind findAuthor;
   BOOL foundAuthor = findAuthor.FindFile(path+"\\Extensions\\*.*");
   while (foundAuthor)
@@ -3530,7 +3536,8 @@ CTime ProjectFrame::GetLatestTimestamp(void)
         foundExt = findExt.FindNextFile();
         if (findExt.IsDirectory())
         {
-          foundSource = findSource.FindFile(findExt.GetFilePath()+"\\Source\\*.i7x");
+          CFileFind findSource;
+          BOOL foundSource = findSource.FindFile(findExt.GetFilePath()+"\\Source\\*.i7x");
           while (foundSource)
           {
             foundSource = findSource.FindNextFile();
