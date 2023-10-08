@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BaseDialog.h"
+#include "Extension.h"
 #include "FindAllHelper.h"
 #include "UnicodeEdit.h"
 

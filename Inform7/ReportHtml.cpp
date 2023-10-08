@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ReportHtml.h"
-#include "ExtensionFrame.h"
+
+#include "Extension.h"
 #include "FindReplaceDialog.h"
 #include "FlatSplitter.h"
 #include "Inform.h"
@@ -316,29 +317,25 @@ private:
     path.Format("%s\\Inform\\Extensions\\%s\\%s.i7x",(LPCSTR)theApp.GetHomeDir(),author,title);
     if (FileExists(path))
     {
-      CStringW extLine = ExtensionFrame::ReadExtensionFirstLine(path);
-      if (!extLine.IsEmpty())
+      CStringW extName, extAuthor, extVersion;
+      if (Extension::Legacy::ReadFirstLine(path,extName,extAuthor,extVersion))
       {
-        CStringW extName, extAuthor, extVersion;
-        if (ExtensionFrame::IsValidExtension(extLine,extName,extAuthor,extVersion))
-        {
-          // Strip any leading "Version "
-          if (extVersion.Left(8) == L"Version ")
-            extVersion = extVersion.Mid(8);
-          if (wcsncmp(compare,L"Version ",8) == 0)
-            compare += 8;
+        // Strip any leading "Version "
+        if (extVersion.Left(8) == L"Version ")
+          extVersion = extVersion.Mid(8);
+        if (wcsncmp(compare,L"Version ",8) == 0)
+          compare += 8;
 
-          // Convert to semantic version numbers
-          SemanticVersion extSemVersion = SemanticVersion::FromText(extVersion);
-          SemanticVersion compSemVersion = SemanticVersion::FromText(compare);
-          int c = extSemVersion.Compare(compSemVersion);
-          if (c == 0)
-            return "=";
-          else if (c < 0)
-            return "<";
-          else
-            return ">";
-        }
+        // Convert to semantic version numbers
+        SemanticVersion extSemVersion = SemanticVersion::FromText(extVersion);
+        SemanticVersion compSemVersion = SemanticVersion::FromText(compare);
+        int c = extSemVersion.Compare(compSemVersion);
+        if (c == 0)
+          return "=";
+        else if (c < 0)
+          return "<";
+        else
+          return ">";
       }
     }
     return "";
@@ -357,13 +354,9 @@ private:
         return "";
     }
 
-    CStringW extLine = ExtensionFrame::ReadExtensionFirstLine(path);
-    if (!extLine.IsEmpty())
-    {
-      CStringW extName, extAuthor, extVersion;
-      if (ExtensionFrame::IsValidExtension(extLine,extName,extAuthor,extVersion))
-        return (LPCWSTR)extVersion;
-    }
+    CStringW extName, extAuthor, extVersion;
+    if (Extension::Legacy::ReadFirstLine(path,extName,extAuthor,extVersion))
+      return (LPCWSTR)extVersion;
     return "";
   }
 

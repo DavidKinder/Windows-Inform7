@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Extension.h"
 #include "FindInFiles.h"
 #include "FlatSplitter.h"
 #include "GameWindow.h"
@@ -145,7 +146,7 @@ protected:
 
 public:
   static bool StartNewProject(const char* dir, CWnd* parent);
-  static bool StartNewExtProject(const char* dir, CWnd* parent, const InformApp::ExtLocation* fromExt);
+  static bool StartNewExtProject(const char* dir, CWnd* parent, const Extension::Location* fromExt);
   static bool StartExistingProject(const char* dir, CWnd* parent);
   static bool StartNamedProject(const char* project);
   static ProjectType TypeFromDir(const CString& projectDir);
@@ -159,6 +160,7 @@ public:
   void SelectInDocumentation(const char* link, LPCWSTR find);
 
   const ProjectSettings& GetSettings(void);
+  CString GetMaterialsFolder(void);
 
 protected:
   // Implementation of InformApp::OutputSink
@@ -188,8 +190,6 @@ protected:
   void UpdateExtensionsMenu(void);
   bool UpdateExampleList(void);
   void SetExampleListLocation(void);
-  bool GetExtensionInfo(CString& path, CStringW& name, CStringW& author);
-  CString GetMaterialsFolder(void);
   CTime GetLatestTimestamp(void);
 
   struct Example
@@ -215,7 +215,6 @@ protected:
 
   bool CopyExtensionToMaterials(void);
   CString CreateTemporaryExtensionDir(void);
-  bool UnpackExtensionZipFile(const CString& zipPath, const CString& destPath, CString& extPath);
   void AddExtensionToProject(const CString& extPath);
   void RunInbuildForExtension(const char* cmd, bool confirm);
 

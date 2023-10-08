@@ -5,6 +5,7 @@
 #endif
 
 #include "BaseDialog.h"
+#include "Extension.h"
 #include "Resource.h"
 
 #include <map>
@@ -163,18 +164,8 @@ public:
     CString m_output;
   };
 
-  struct CreatedProcess
-  {
-    HANDLE process;
-    DWORD processId;
-
-    CreatedProcess();
-    void set(PROCESS_INFORMATION pi);
-    void close();
-  };
-
   void RunMessagePump(void);
-  CreatedProcess CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug);
+  Process CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug);
   void WaitForProcessEnd(HANDLE process);
   void AddProcessToJob(HANDLE process);
   int RunCommand(const char* dir, CString& command, OutputSink& output);
@@ -208,20 +199,7 @@ public:
 
   void FindCompilerVersions(void);
   const std::vector<CompilerVersion>& GetCompilerVersions(void);
-
-  struct ExtLocation
-  {
-    std::string author;
-    std::string title;
-    std::string path;
-
-    ExtLocation(const char* a, const char* t, const char* p);
-    bool operator<(const ExtLocation& el) const;
-  };
-
-  void RunLegacyExtensionCensus(void);
-  void HandleCensusEvent(void);
-  const std::vector<ExtLocation>& GetExtensions(void);
+  Extension::Legacy::Census& GetExtensionCensus(void);
 
   CString PickDirectory(const char* title, const char* folderLabel, const char* okLabel,
     const char* initialDir, CWnd* parent);
@@ -245,7 +223,6 @@ protected:
   CArray<CFrameWnd*> m_frames;
   std::set<CWnd*> m_modalDialogs;
   std::map<std::string,CDibSection*> m_bitmaps;
-  std::vector<ExtLocation> m_extensions;
 
   void HookApiFunction(const char* callingDllName, const char* calledDllName, const char* functionName, PROC newFunction);
 
@@ -262,12 +239,8 @@ protected:
   std::map<DWORD,DebugProcess> m_debugging;
   std::map<DWORD,CString> m_traces;
 
-  CreatedProcess m_census;
-  HANDLE m_censusRead = INVALID_HANDLE_VALUE;
-  HANDLE m_censusWrite = INVALID_HANDLE_VALUE;
-  CString m_censusOutput;
-
   std::vector<CompilerVersion> m_versions;
+  Extension::Legacy::Census m_extensionCensus;
 
   // Map of materials folder locations, accessible from any thread. The map keys are really pointers
   // to ProjectFrame instances, but cast to UINT_PTR to indicate that on any thread but the UI thread,

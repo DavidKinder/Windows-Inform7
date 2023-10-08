@@ -19,8 +19,6 @@
 #include "Platform.h"
 #include "Scintilla.h"
 
-#include "nlohmann/json.hpp"
-
 #include "png.h"
 extern "C" {
 #include "jpeglib.h"
@@ -137,7 +135,7 @@ BOOL InformApp::InitInstance()
     DarkMode::SetAppDarkMode();
 
   // Find extensions in the legacy extensions directory
-  RunLegacyExtensionCensus();
+  m_extensionCensus.Run();
 
   // Download the IFTF news file
   WelcomeLauncherFrame::DownloadNews();
@@ -249,7 +247,7 @@ BOOL InformApp::OnIdle(LONG lCount)
   if (lCount == 0)
   {
     HandleDebugEvents();
-    HandleCensusEvent();
+    m_extensionCensus.HandleEvent();
     ReportHtml::DoWebBrowserWork();
   }
   return CWinApp::OnIdle(lCount);
@@ -1158,7 +1156,7 @@ void InformApp::RunMessagePump(void)
     RestoreWaitCursor();
 }
 
-InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug)
+Process InformApp::CreateProcess(const char* dir, CString& command, STARTUPINFO& start, bool debug)
 {
   BOOL flags = CREATE_NO_WINDOW|CREATE_SUSPENDED;
   if (debug)
@@ -1172,10 +1170,10 @@ InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& com
   BOOL created = ::CreateProcess(NULL,cmdLine,NULL,NULL,TRUE,flags,NULL,dir,&start,&process);
   command.ReleaseBuffer();
 
-  CreatedProcess cp;
+  Process proc;
   if (created)
   {
-    cp.set(process);
+    proc.set(process);
     if (debug)
     {
       DebugProcess dp;
@@ -1191,7 +1189,7 @@ InformApp::CreatedProcess InformApp::CreateProcess(const char* dir, CString& com
     // Close the thread handle that is never used again
     ::CloseHandle(process.hThread);
   }
-  return cp;
+  return proc;
 }
 
 void InformApp::WaitForProcessEnd(HANDLE process)
@@ -1236,10 +1234,10 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
   start.dwFlags = STARTF_USESTDHANDLES|STARTF_USESHOWWINDOW;
 
   // Create the process for the command
-  CreatedProcess cp = CreateProcess(dir,command,start,true);
+  Process proc = CreateProcess(dir,command,start,true);
 
   DWORD result = 512;
-  if (cp.process != INVALID_HANDLE_VALUE)
+  if (proc.process != INVALID_HANDLE_VALUE)
   {
     // Wait for the process to complete
     result = STILL_ACTIVE;
@@ -1247,7 +1245,7 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
     {
       // Check if the process should be stopped
       if (output.WantStop())
-        ::TerminateProcess(cp.process,20);
+        ::TerminateProcess(proc.process,20);
 
       // Wait for a window message or 100ms to elapse
       ::MsgWaitForMultipleObjects(0,NULL,FALSE,100,QS_ALLINPUT);
@@ -1259,11 +1257,11 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
         output.Output(msg);
 
       // Get the exit code
-      ::GetExitCodeProcess(cp.process,&result);
+      ::GetExitCodeProcess(proc.process,&result);
     }
 
     // Wait for the process to end and read any final output
-    WaitForProcessEnd(cp.process);
+    WaitForProcessEnd(proc.process);
     CString msg = ReadFromPipe(pipeRead);
     if (!msg.IsEmpty())
       output.Output(msg);
@@ -1271,7 +1269,7 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
     // If the process failed, print any stack trace
     if (result != 0)
     {
-      std::string trace = GetTraceForProcess(cp.processId);
+      std::string trace = GetTraceForProcess(proc.processId);
       if (!trace.empty())
       {
         output.Output("\nProcess failed, stack backtrace:\n");
@@ -1280,7 +1278,7 @@ int InformApp::RunCommand(const char* dir, CString& command, OutputSink& output)
     }
 
     // Finally close the process handle
-    cp.close();
+    proc.close();
   }
 
   ::CloseHandle(pipeRead);
@@ -1442,101 +1440,9 @@ const std::vector<InformApp::CompilerVersion>& InformApp::GetCompilerVersions(vo
   return m_versions;
 }
 
-void InformApp::RunLegacyExtensionCensus(void)
+Extension::Legacy::Census& InformApp::GetExtensionCensus(void)
 {
-  // Don't start a new census if one is already running
-  if (m_census.process != INVALID_HANDLE_VALUE)
-    return;
-
-  // Create a pipe to read inbuild's output
-  SECURITY_ATTRIBUTES security;
-  ::ZeroMemory(&security,sizeof security);
-  security.nLength = sizeof security;
-  security.bInheritHandle = TRUE;
-  ::CreatePipe(&m_censusRead,&m_censusWrite,&security,0);
-
-  CString appDir = theApp.GetAppDir();
-  CString command;
-  command.Format("\"%s\\Compilers\\inbuild\" -inspect -recursive -contents-of \"%s\\Inform\\Extensions\" -internal \"%s\\Internal\" -json -",
-    (LPCSTR)appDir,(LPCSTR)GetHomeDir(),(LPCSTR)appDir);
-
-  STARTUPINFO start;
-  ::ZeroMemory(&start,sizeof start);
-  start.cb = sizeof start;
-  start.hStdOutput = m_censusWrite;
-  start.hStdError = m_censusWrite;
-  start.wShowWindow = SW_HIDE;
-  start.dwFlags = STARTF_USESTDHANDLES|STARTF_USESHOWWINDOW;
-  m_census = CreateProcess(NULL,command,start,true);
-  m_censusOutput.Empty();
-}
-
-void InformApp::HandleCensusEvent(void)
-{
-  if (m_census.process != INVALID_HANDLE_VALUE)
-  {
-    // Read any census output
-    CString output = ReadFromPipe(m_censusRead);
-    if (!output.IsEmpty())
-      m_censusOutput.Append(output);
-
-    // Is the census still running?
-    DWORD result = STILL_ACTIVE;
-    ::GetExitCodeProcess(m_census.process,&result);
-    if (result != STILL_ACTIVE)
-    {
-      // Wait for the process to end and read any final output
-      WaitForProcessEnd(m_census.process);
-      GetTraceForProcess(m_census.processId);
-      output = ReadFromPipe(m_censusRead);
-      if (!output.IsEmpty())
-        m_censusOutput.Append(output);
-
-      // Close all handles associated with the census process
-      m_census.close();
-      ::CloseHandle(m_censusRead);
-      m_censusRead = INVALID_HANDLE_VALUE;
-      ::CloseHandle(m_censusWrite);
-      m_censusWrite = INVALID_HANDLE_VALUE;
-
-      // If the census was successful, use the output
-      if (result == 0)
-      {
-        m_extensions.clear();
-
-        // Parse the JSON output from inbuild
-        try
-        {
-          auto json = nlohmann::json::parse((LPCSTR)m_censusOutput);
-          for (auto& inspect : json["inspection"])
-          {
-            auto& resource = inspect["resource"];
-            if ((resource["type"] == "extension") && inspect.contains("location-file"))
-            {
-              std::string title = resource["title"];
-              std::string author = resource["author"];
-              std::string location = inspect["location-file"];
-              if (!title.empty() && !author.empty() && !location.empty())
-                m_extensions.push_back(ExtLocation(author.c_str(),title.c_str(),location.c_str()));
-            }
-          }
-        }
-        catch (std::exception& ex)
-        {
-          TRACE("Error parsing inbuild JSON output: %s\n",ex.what());
-        }
-
-        std::sort(m_extensions.begin(),m_extensions.end());
-        SendAllFrames(Extensions,0);
-      }
-      m_censusOutput.Empty();
-    }
-  }
-}
-
-const std::vector<InformApp::ExtLocation>& InformApp::GetExtensions(void)
-{
-  return m_extensions;
+  return m_extensionCensus;
 }
 
 CString InformApp::PickDirectory(const char* title, const char* folderLabel, const char* okLabel,
@@ -1858,40 +1764,6 @@ void InformApp::HookApiFunction(const char* callingDllName, const char* calledDl
 endHook:
   ::FreeLibrary(calledDll);
   ::FreeLibrary(callingDll);
-}
-
-InformApp::ExtLocation::ExtLocation(const char* a, const char* t, const char* p)
-  : author(a), title(t), path(p)
-{
-}
-
-bool InformApp::ExtLocation::operator<(const ExtLocation& el) const
-{
-  if (author != el.author)
-    return author < el.author;
-  return title < el.title;
-}
-
-InformApp::CreatedProcess::CreatedProcess()
-{
-  process = INVALID_HANDLE_VALUE;
-  processId = -1;
-}
-
-void InformApp::CreatedProcess::set(PROCESS_INFORMATION pi)
-{
-  process = pi.hProcess;
-  processId = pi.dwProcessId;
-}
-
-void InformApp::CreatedProcess::close()
-{
-  if (process != INVALID_HANDLE_VALUE)
-  {
-    ::CloseHandle(process);
-    process = INVALID_HANDLE_VALUE;
-    processId = -1;
-  }
 }
 
 void InformApp::SimpleSink::Output(const char* msg)

@@ -20,8 +20,6 @@
 #include "TabStory.h"
 #include "TabTesting.h"
 
-#include "unzip.h" // zlib minizip
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -1103,7 +1101,7 @@ LRESULT ProjectFrame::OnExtDownload(WPARAM wparam, LPARAM)
   {
     // Unpack the zip file to the temporary location
     CString unpackedPath;
-    if (!UnpackExtensionZipFile(downPath,tempExtDir,unpackedPath))
+    if (!Extension::UnpackZip(downPath,tempExtDir,unpackedPath))
     {
       MessageBox("Failed to unpack the downloaded extension zip file.",
         INFORM_TITLE,MB_OK|MB_ICONERROR);
@@ -1394,6 +1392,17 @@ const ProjectSettings& ProjectFrame::GetSettings(void)
   return m_settings;
 }
 
+CString ProjectFrame::GetMaterialsFolder(void)
+{
+  // Get the path to the ".materials" directory
+  int projectExt = m_projectDir.Find(GetProjectFileExt());
+  if (projectExt == -1)
+    return "";
+  CString path;
+  path.Format("%s.materials",m_projectDir.Left(projectExt));
+  return path;
+}
+
 void ProjectFrame::OnFileNew()
 {
   SaveSettings();
@@ -1425,7 +1434,7 @@ void ProjectFrame::OnFileNewExtProject()
 void ProjectFrame::OnFileNewXPFromExt(UINT nID)
 {
   int index = nID-ID_NEW_EXTENSIONS_LIST;
-  const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
+  const auto& extensions = Extension::Legacy::Get();
   if ((index >= 0) && (index < (int)extensions.size()))
   {
     SaveSettings();
@@ -1461,13 +1470,13 @@ void ProjectFrame::OnFileInstallFolder()
 void ProjectFrame::OnFileInstallLegacy()
 {
   CWaitCursor wc;
-  ExtensionFrame::InstallLegacyExtension(this);
+  Extension::Legacy::Install(this);
 }
 
 void ProjectFrame::OnFileOpenExt(UINT nID)
 {
   int index = nID-ID_OPEN_EXTENSIONS_LIST;
-  const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
+  const auto& extensions = Extension::Legacy::Get();
   if ((index >= 0) && (index < (int)extensions.size()))
   {
     SaveSettings();
@@ -1524,9 +1533,9 @@ void ProjectFrame::OnFileExportExtProject()
     return;
   }
 
-  CString sourcePath;
-  CStringW extName, extAuthor;
-  if (!GetExtensionInfo(sourcePath,extName,extAuthor))
+  CString sourcePath = m_projectDir+"\\Source\\extension.i7x";
+  CStringW extName, extAuthor, extVersion;
+  if (!Extension::Legacy::ReadFirstLine(sourcePath,extName,extAuthor,extVersion))
     return;
 
   CString saveName(extName);
@@ -2153,7 +2162,7 @@ bool ProjectFrame::StartNewProject(const char* dir, CWnd* parent)
   return true;
 }
 
-bool ProjectFrame::StartNewExtProject(const char* dir, CWnd* parent, const InformApp::ExtLocation* fromExt)
+bool ProjectFrame::StartNewExtProject(const char* dir, CWnd* parent, const Extension::Location* fromExt)
 {
   NewProjectDialog dialog(Project_I7XP,dir,parent);
   if (fromExt != NULL)
@@ -2572,14 +2581,14 @@ void ProjectFrame::UpdateExtensionsMenu(void)
 
   int x = -1;
   HMENU newAuthorMenu = 0, openAuthorMenu = 0;
-  const std::vector<InformApp::ExtLocation>& extensions = theApp.GetExtensions();
+  const auto& extensions = Extension::Legacy::Get();
 
   newExtProjMenu->EnableMenuItem(NEW_I7X_FROM_EXT,MF_BYPOSITION|(extensions.empty() ? MF_DISABLED : MF_ENABLED));
   legacyMenu->EnableMenuItem(OPEN_LEGACY_EXT,MF_BYPOSITION|(extensions.empty() ? MF_DISABLED : MF_ENABLED));
 
   for (int i = 0; (i < MAX_MENU_EXTENSIONS) && (i < (int)extensions.size()); i++)
   {
-    const InformApp::ExtLocation& ext = extensions[i];
+    const auto& ext = extensions[i];
     if ((x == -1) || (ext.author != extensions[x].author))
     {
       newAuthorMenu = ::CreatePopupMenu();
@@ -2808,9 +2817,9 @@ bool ProjectFrame::CopyExtensionToMaterials(void)
 {
   m_materialsExtPath.Empty();
 
-  CString sourcePath;
-  CStringW extName, extAuthor;
-  if (!GetExtensionInfo(sourcePath,extName,extAuthor))
+  CString sourcePath = m_projectDir+"\\Source\\extension.i7x";
+  CStringW extName, extAuthor, extVersion;
+  if (!Extension::Legacy::ReadFirstLine(sourcePath,extName,extAuthor,extVersion))
     return false;
 
   CString destPath = GetMaterialsFolder();
@@ -2838,121 +2847,6 @@ CString ProjectFrame::CreateTemporaryExtensionDir(void)
   return tempPath;
 }
 
-bool ProjectFrame::UnpackExtensionZipFile(const CString& zipPath, const CString& destPath, CString& extPath)
-{
-  // Open the zip file
-  unzFile zipFile = unzOpen(zipPath);
-  if (zipFile == NULL)
-    return false;
-
-  // Start with the first file in the zip file
-  if (unzGoToFirstFile(zipFile) != UNZ_OK)
-  {
-    unzClose(zipFile);
-    return false;
-  }
-
-  // Iterate over the files in the zip file
-  while (true)
-  {
-    // Get the filename and size
-    unz_file_info info;
-    CString name;
-    int result = unzGetCurrentFileInfo(zipFile,&info,
-      name.GetBufferSetLength(_MAX_PATH),_MAX_PATH,NULL,0,NULL,0);
-    name.ReleaseBuffer();
-    if (result != UNZ_OK)
-    {
-      unzClose(zipFile);
-      return false;
-    }
-
-    if (!name.IsEmpty())
-    {
-      // Skip extraneous MacOS files
-      bool extract = true;
-      if (TextFormat::StartsWith(name,"__MACOSX/"))
-        extract = false;
-      if (TextFormat::EndsWith(name,"/.DS_Store"))
-        extract = false;
-
-      // Extract from the zip file
-      if (extract)
-      {
-        CString extractPath(destPath);
-        extractPath.AppendFormat("\\%s",(LPCSTR)name);
-
-        char end = name.GetAt(name.GetLength()-1);
-        if ((end == '/') || (end == '\\'))
-          ::SHCreateDirectoryEx(GetSafeHwnd(),extractPath,NULL);
-        else
-        {
-          if (unzOpenCurrentFile(zipFile) != UNZ_OK)
-          {
-            unzClose(zipFile);
-            return false;
-          }
-
-          int length = info.uncompressed_size;
-          void* buffer = alloca(length);
-          if (unzReadCurrentFile(zipFile,buffer,length) != length)
-          {
-            unzClose(zipFile);
-            return false;
-          }
-
-          if (unzCloseCurrentFile(zipFile) != UNZ_OK)
-          {
-            unzClose(zipFile);
-            return false;
-          }
-
-          FILE* extractFile = fopen(extractPath,"wb");
-          if (extractFile != NULL)
-          {
-            fwrite(buffer,1,length,extractFile);
-            fclose(extractFile);
-          }
-          else
-          {
-            unzClose(zipFile);
-            return false;
-          }
-
-          // If we've extracted a .i7x file, use it to work out the extension path
-          if (TextFormat::EndsWith(name,".i7x"))
-          {
-            extPath.Format("%s\\%s",(LPCSTR)destPath,(LPCSTR)name);
-
-            int sep = name.FindOneOf("/\\");
-            if (sep > 0)
-            {
-              CString dir = name.Left(sep);
-              if (TextFormat::EndsWith(dir,".i7xd"))
-                extPath.Format("%s\\%s",(LPCSTR)destPath,(LPCSTR)dir);
-            }
-          }
-        }
-      }
-    }
-
-    // Move to the next file in the zip file
-    switch (unzGoToNextFile(zipFile))
-    {
-    case UNZ_OK:
-      break;
-    case UNZ_END_OF_LIST_OF_FILE:
-      unzClose(zipFile);
-      return !(extPath.IsEmpty());
-    default:
-      unzClose(zipFile);
-      return false;
-    }
-  }
-
-  return false;
-}
-
 void ProjectFrame::AddExtensionToProject(const CString& extPath)
 {
   // Work out where to make a temporary copy of the extension
@@ -2971,7 +2865,7 @@ void ProjectFrame::AddExtensionToProject(const CString& extPath)
   {
     // Unpack the zip file to the temporary location
     CString unpackedPath;
-    if (!UnpackExtensionZipFile(extPath,installPath,unpackedPath))
+    if (!Extension::UnpackZip(extPath,installPath,unpackedPath))
     {
       MessageBox("Failed to install extension\nCould not unpack the extension zip file.",
         INFORM_TITLE,MB_OK|MB_ICONERROR);
@@ -3471,29 +3365,6 @@ void ProjectFrame::SetExampleListLocation(void)
   // Position and size the examples list control
   m_exampleList.MoveWindow(r1.left+4,(r1.bottom+r1.top-h)/2,r2.right-r1.left-8,
     DPI::getMonitorRect(this).Width()/2);
-}
-
-bool ProjectFrame::GetExtensionInfo(CString& path, CStringW& name, CStringW& author)
-{
-  path = m_projectDir+"\\Source\\extension.i7x";
-  CStringW firstLine = ExtensionFrame::ReadExtensionFirstLine(path);
-  if (!firstLine.IsEmpty())
-  {
-    CStringW version;
-    return ExtensionFrame::IsValidExtension(firstLine,name,author,version);
-  }
-  return false;
-}
-
-CString ProjectFrame::GetMaterialsFolder(void)
-{
-  // Get the path to the ".materials" directory
-  int projectExt = m_projectDir.Find(GetProjectFileExt());
-  if (projectExt == -1)
-    return "";
-  CString path;
-  path.Format("%s.materials",m_projectDir.Left(projectExt));
-  return path;
 }
 
 CTime ProjectFrame::GetLatestTimestamp(void)

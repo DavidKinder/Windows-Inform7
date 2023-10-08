@@ -2,10 +2,8 @@
 #include "ExtensionFrame.h"
 
 #include "Inform.h"
-#include "Messages.h"
 #include "NewDialogs.h"
 #include "ProjectFrame.h"
-#include "TextFormat.h"
 #include "WelcomeLauncher.h"
 
 #include "Dialogs.h"
@@ -108,7 +106,7 @@ void ExtensionFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 
 void ExtensionFrame::OnClose()
 {
-  if (IsProjectEdited() && !IsBuiltInExtension())
+  if (IsProjectEdited() && !Extension::IsBuiltIn(m_extension))
   {
     // Ask the user before discarding the extension
     CString msg;
@@ -161,9 +159,9 @@ BOOL ExtensionFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERI
 void ExtensionFrame::OnUpdateFrameTitle(BOOL)
 {
   CString info;
-  if (IsBuiltInExtension())
+  if (Extension::IsBuiltIn(m_extension))
     info = " (built in)";
-  else if (IsLegacyExtension())
+  else if (Extension::IsLegacy(m_extension))
     info = " (legacy folder)";
 
   CString title;
@@ -199,7 +197,7 @@ void ExtensionFrame::OnFileClose()
 
 void ExtensionFrame::OnUpdateFileSave(CCmdUI *pCmdUI)
 {
-  pCmdUI->Enable(!IsBuiltInExtension());
+  pCmdUI->Enable(!Extension::IsBuiltIn(m_extension));
 }
 
 void ExtensionFrame::OnFileSave()
@@ -208,7 +206,7 @@ void ExtensionFrame::OnFileSave()
     return;
 
   // Check we are not saving under the program directory
-  if (IsBuiltInExtension())
+  if (Extension::IsBuiltIn(m_extension))
   {
     MessageBox(
       "Extensions should not be saved where Inform has been installed.",
@@ -238,7 +236,7 @@ void ExtensionFrame::OnFileSave()
 
   ::DeleteFile(m_extension);
   if (::MoveFile(saveName,m_extension))
-    theApp.RunLegacyExtensionCensus();
+    theApp.GetExtensionCensus().Run();
 }
 
 void ExtensionFrame::OnFileSaveAs()
@@ -426,186 +424,6 @@ void ExtensionFrame::StartSelect(const char* path, const CHARRANGE& range, const
   }
 }
 
-void ExtensionFrame::InstallLegacyExtension(CFrameWnd* parent)
-{
-  // Ask the user for an extension
-  SimpleFileDialog dialog(TRUE,"i7x",NULL,OFN_HIDEREADONLY|OFN_ENABLESIZING,
-    "Inform extensions (*.i7x)|*.i7x|All Files (*.*)|*.*||",parent);
-  dialog.m_ofn.lpstrTitle = "Select the extension to install";
-  if (dialog.DoModal() != IDOK)
-    return;
-
-  // Get the first line of the extension
-  CString path = dialog.GetPathName();
-  CStringW extLine = ReadExtensionFirstLine(path);
-  if (extLine.IsEmpty())
-    return;
-
-  // Check for a valid extension
-  CStringW extName, extAuthor, extVersion;
-  if (!IsValidExtension(extLine,extName,extAuthor,extVersion))
-  {
-    CString msg;
-    msg.Format(
-      "The file \"%s\"\n"
-      "does not seem to be an extension. Extensions should be\n"
-      "saved as UTF-8 format text files, and should start with a\n"
-      "line of one of these forms:\n\n"
-      "<Extension> by <Author> begins here.\n"
-      "Version <Version> of <Extension> by <Author> begins here.",
-      (LPCSTR)path);
-    parent->MessageBox(msg,INFORM_TITLE,MB_ICONERROR|MB_OK);
-    return;
-  }
-
-  // Work out the path to copy the extension to
-  CString target;
-  target.Format("%s\\Inform\\Extensions\\%S",(LPCSTR)theApp.GetHomeDir(),(LPCWSTR)extAuthor);
-  ::CreateDirectory(target,NULL);
-  target.AppendFormat("\\%S.i7x",(LPCWSTR)extName);
-
-  // Check if the extension already exists
-  if (::GetFileAttributes(target) != INVALID_FILE_ATTRIBUTES)
-  {
-    CString msg;
-    msg.Format(
-      "A version of the extension %S by %S is already installed.\n"
-      "Do you want to overwrite the installed extension with this new one?",
-      (LPCWSTR)extName,(LPCWSTR)extAuthor);
-    if (parent->MessageBox(msg,INFORM_TITLE,MB_ICONWARNING|MB_YESNO) != IDYES)
-      return;
-  }
-
-  // Copy the extension
-  if (::CopyFile(path,target,FALSE) == 0)
-  {
-    parent->MessageBox("Failed to copy extension",INFORM_TITLE,MB_ICONERROR|MB_OK);
-    return;
-  }
-
-  // Update the extensions menu
-  theApp.RunLegacyExtensionCensus();
-
-  // Tell the user
-  CString msg;
-  msg.Format("\"%S\" by %S has been installed",(LPCWSTR)extName,(LPCWSTR)extAuthor);
-  parent->MessageBox(msg,INFORM_TITLE,MB_ICONINFORMATION|MB_OK);
-}
-
-CStringW ExtensionFrame::ReadExtensionFirstLine(const char* path)
-{
-  // Get the first line of the file
-  CStdioFile extFile;
-  if (!extFile.Open(path,CFile::modeRead|CFile::typeBinary))
-    return L"";
-  CString extLineUTF8;
-  if (!extFile.ReadString(extLineUTF8))
-    return L"";
-  extFile.Close();
-  extLineUTF8.Trim();
-
-  // Check for a line-end
-  int lfPos = extLineUTF8.FindOneOf("\r\n");
-  if (lfPos != -1)
-    extLineUTF8.Truncate(lfPos);
-
-  // Check for a Unicode line-end
-  int uniPos = extLineUTF8.Find("\xE2\x80\xA8");
-  if (uniPos != -1)
-    extLineUTF8.Truncate(uniPos);
-
-  // Check for a UTF-8 BOM
-  if (extLineUTF8.GetLength() >= 3)
-  {
-    if (extLineUTF8.Left(3) == "\xEF\xBB\xBF")
-      extLineUTF8 = extLineUTF8.Mid(3);
-  }
-
-  // Convert from UTF-8 to Unicode
-  return TextFormat::UTF8ToUnicode(extLineUTF8);
-}
-
-bool ExtensionFrame::IsValidExtension(const CStringW& firstLine,
-  CStringW& name, CStringW& author, CStringW& version)
-{
-  CArray<CStringW> tokens;
-  int pos = 0;
-
-  // Split the first line into tokens
-  CStringW token = firstLine.Tokenize(L" \t",pos);
-  while (token.IsEmpty() == FALSE)
-  {
-    tokens.Add(token);
-    token = firstLine.Tokenize(L" \t",pos);
-  }
-
-  // Remove leading "Version XYZ of", if present
-  if (tokens.GetSize() == 0)
-    return false;
-  if (tokens[0] == L"Version")
-  {
-    if (tokens.GetSize() < 3)
-      return false;
-    if (tokens[2] != L"of")
-      return false;
-    version.Format(L"%s %s",tokens[0],tokens[1]);
-    tokens.RemoveAt(0);
-    tokens.RemoveAt(0);
-    tokens.RemoveAt(0);
-  }
-  else
-    version = L"Version (none)";
-
-  // Remove trailing "begins here", if present
-  int size = (int)tokens.GetSize();
-  if (size < 2)
-    return false;
-  if (tokens[size-1] != L"here.")
-    return false;
-  if ((tokens[size-2] != L"begin") && (tokens[size-2] != L"begins"))
-    return false;
-  tokens.SetSize(size-2);
-
-  // Remove leading "the" from the name, if present
-  if (tokens.GetSize() == 0)
-    return false;
-  if ((tokens[0] == L"The") || (tokens[0] == L"the"))
-    tokens.RemoveAt(0);
-
-  // Extract the name and author
-  bool gotName = false;
-  bool gotBracket = false;
-  while (tokens.GetSize() > 0)
-  {
-    if (tokens[0] == L"by")
-    {
-      gotName = true;
-    }
-    else if (gotName)
-    {
-      if (author.GetLength() > 0)
-        author.AppendChar(L' ');
-      author.Append(tokens[0]);
-    }
-    else if (!gotBracket)
-    {
-      if (tokens[0].GetAt(0) == '(')
-        gotBracket = true;
-      else
-      {
-        if (name.GetLength() > 0)
-          name.AppendChar(L' ');
-        name.Append(tokens[0]);
-      }
-    }
-    tokens.RemoveAt(0);
-  }
-
-  if (name.IsEmpty() || author.IsEmpty() || version.IsEmpty())
-    return false;
-  return true;
-}
-
 ExtensionFrame* ExtensionFrame::NewFrame(const ProjectSettings& settings)
 {
   ExtensionFrame* frame = new ExtensionFrame;
@@ -618,31 +436,23 @@ ExtensionFrame* ExtensionFrame::NewFrame(const ProjectSettings& settings)
   return frame;
 }
 
-bool ExtensionFrame::RemoveI7X(CString& path)
-{
-  // Does the extension file name have an '.i7x' ending?
-  if (path.GetLength() > 4)
-  {
-    if (path.Right(4).CompareNoCase(".i7x") == 0)
-    {
-      path = path.Left(path.GetLength()-4);
-      return true;
-    }
-  }
-  return false;
-}
-
 CString ExtensionFrame::GetDisplayName(bool fullName)
 {
-  CString name;
-  if (m_extension.IsEmpty())
+  CString name(m_extension);
+  if (name.IsEmpty())
     name = "Untitled";
   else
   {
-    CString extName(m_extension);
-    RemoveI7X(extName);
-    int start = extName.ReverseFind('\\');
-    name = extName.Mid(start+1);
+    int idx = name.ReverseFind('\\');
+    if (idx >= 0)
+      name = name.Mid(idx+1);
+
+    // Does the extension file name have an '.i7x' ending?
+    if (name.GetLength() > 4)
+    {
+      if (name.Right(4).CompareNoCase(".i7x") == 0)
+        name = name.Left(name.GetLength()-4);
+    }
   }
   if (IsProjectEdited() && fullName)
     name += '*';
@@ -713,21 +523,6 @@ void ExtensionFrame::SetFromRegistryPath(const char* path)
 bool ExtensionFrame::IsProjectEdited(void)
 {
   return m_edit.IsEdited();
-}
-
-bool ExtensionFrame::IsBuiltInExtension(void)
-{
-  // Check if the extension is under the program directory
-  CString appDir = theApp.GetAppDir();
-  return (strncmp(m_extension,appDir,appDir.GetLength()) == 0);
-}
-
-bool ExtensionFrame::IsLegacyExtension(void)
-{
-  // Check if the extension is under the legacy extensions directory
-  CString legacyDir;
-  legacyDir.Format("%s\\Inform\\Extensions",(LPCSTR)theApp.GetHomeDir());
-  return (strncmp(m_extension,legacyDir,legacyDir.GetLength()) == 0);
 }
 
 COLORREF ExtensionFrame::GetBackColour(SourceSettings& set)

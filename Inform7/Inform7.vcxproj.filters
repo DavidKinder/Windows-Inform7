@@ -349,6 +349,12 @@
     <ClInclude Include="FormScrollArea.h">
       <Filter>Controls</Filter>
     </ClInclude>
+    <ClInclude Include="Extension.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Process.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1502,6 +1508,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\shared_process_message_builder_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="Extension.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Process.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

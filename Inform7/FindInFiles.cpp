@@ -783,7 +783,10 @@ size_t FindInFiles::CountSource(void)
 
 void FindInFiles::FindInExtensions(void)
 {
-  for (const auto& extension : theApp.GetExtensions())
+  Extension::Set extensions;
+  Extension::GetAll(extensions,m_project->GetMaterialsFolder());
+
+  for (const auto& extension : extensions)
   {
     UpdateProgress();
 
@@ -800,7 +803,9 @@ void FindInFiles::FindInExtensions(void)
 
 size_t FindInFiles::CountExtensions(void)
 {
-  return theApp.GetExtensions().size();
+  Extension::Set extensions;
+  Extension::GetAll(extensions,m_project->GetMaterialsFolder());
+  return extensions.size();
 }
 
 void FindInFiles::FindInDocumentation(void)
