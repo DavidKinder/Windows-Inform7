@@ -1,3 +1,5 @@
+#define _CRT_RAND_S // Get rand_s()
+
 #include <map>
 #include <math.h>
 #include <stdio.h>
@@ -124,4 +126,11 @@ int main(int argc, char** argv)
     CloseHandle(file);
 
   glk_exit();
+}
+
+glui32 native_random()
+{
+  unsigned int value;
+  rand_s(&value);
+  return value;
 }
