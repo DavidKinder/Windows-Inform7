@@ -134,6 +134,9 @@ BOOL InformApp::InitInstance()
   if (DarkMode::IsEnabled(REGISTRY_INFORM))
     DarkMode::SetAppDarkMode();
 
+  // Warn the user if there are components missing
+  CheckComponents();
+
   // Find extensions in the legacy extensions directory
   m_extensionCensus.Run();
 
@@ -1706,6 +1709,46 @@ void InformApp::SetFonts(void)
   int minPointSize = (DPI::getSystemDPI() > 96) ? 8 : 9;
   if (m_fontSizes[FontSmall] < minPointSize)
     m_fontSizes[FontSmall] = min(fontSize,minPointSize);
+}
+
+void InformApp::CheckComponents(void)
+{
+  const char* names[] =
+  {
+    "Compilers\\frotz.exe",
+    "Compilers\\glulxe.exe",
+    "Compilers\\inblorb.exe",
+    "Compilers\\inbuild.exe",
+    "Compilers\\inform6.exe",
+    "Compilers\\inform7.exe",
+    "Compilers\\intest.exe",
+    "Interpreters\\frotz.exe",
+    "Interpreters\\git.exe",
+    "Interpreters\\glulxe.exe"
+  };
+
+  CString appDir = GetAppDir();
+  std::set<std::string> missing;
+  for (auto& name : names)
+  {
+    CString path;
+    path.Format("%s\\%s",(LPCSTR)appDir,name);
+    if (::GetFileAttributes(path) == INVALID_FILE_ATTRIBUTES)
+      missing.insert(name);
+  }
+
+  if (!missing.empty())
+  {
+    CStringW msg("The following files are missing from the Inform 7 installation directory:\n\n");
+    for (auto& name : missing)
+      msg.AppendFormat(L"%S\n",name.c_str());
+    msg.Append(L"\n"
+      L"These files are required for Inform 7 to function correctly. There have been cases reported of anti-virus"
+      L" software incorrectly labelling some of these files as malware, or infected with a virus. You should check"
+      L" whether your anti-virus software has incorrectly quarantined any of these files.");
+
+    ::TaskDialog(0,0,L_INFORM_TITLE,L"Installation Problem",msg,TDCBF_OK_BUTTON,TD_WARNING_ICON,NULL);
+  }
 }
 
 void InformApp::HookApiFunction(const char* callingDllName, const char* calledDllName, const char* functionName, PROC newFunction)
