@@ -221,6 +221,7 @@ protected:
   void SetMyDocuments(bool showMsgs);
   bool CreateHomeDirs(void);
   void SetFonts(void);
+  void CheckComponents(void);
 
   CString m_fontNames[FONT_COUNT];
   int m_fontSizes[FONT_COUNT];
