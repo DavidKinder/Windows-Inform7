@@ -227,6 +227,8 @@ public:
       SendMessage("I7.install",arguments);
     else if (name == "uninstall")
       SendMessage("I7.uninstall",arguments);
+    else if (name == "modernise")
+      SendMessage("I7.modernise",arguments);
     else if (name == "test")
       SendMessage("I7.test",arguments);
     else if (name == "openUrl")
@@ -411,6 +413,7 @@ public:
     AddMethod(obj,"confirmAction",handler);
     AddMethod(obj,"install",handler);
     AddMethod(obj,"uninstall",handler);
+    AddMethod(obj,"modernise",handler);
     AddMethod(obj,"test",handler);
 
     // Add our object as 'window.Project'
@@ -529,6 +532,12 @@ public:
           CStringW extPath =
             TextFormat::UTF8ToUnicode(TextFormat::Unescape(GetStringArgument(message,0).ToString().c_str()));
           m_object->GetParentFrame()->PostMessage(WM_UNINSTALLEXT,(WPARAM)(new CString(extPath)));
+        }
+        else if (name == "I7.modernise")
+        {
+          CStringW extPath =
+            TextFormat::UTF8ToUnicode(TextFormat::Unescape(GetStringArgument(message,0).ToString().c_str()));
+          m_object->GetParentFrame()->PostMessage(WM_MODERNISEEXT,(WPARAM)(new CString(extPath)));
         }
         else if (name == "I7.test")
         {

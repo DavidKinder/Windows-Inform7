@@ -65,6 +65,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_CONFIRMACTION, OnConfirmAction)
   ON_MESSAGE(WM_INSTALLEXT, OnInstallExt)
   ON_MESSAGE(WM_UNINSTALLEXT, OnUninstallExt)
+  ON_MESSAGE(WM_MODERNISEEXT, OnModerniseExt)
   ON_MESSAGE(WM_TESTEXTENSION, OnTestExtension)
   ON_MESSAGE(WM_PROGRESS, OnProgress)
   ON_MESSAGE(WM_NEWPROJECT, OnCreateNewProject)
@@ -1127,6 +1128,9 @@ LRESULT ProjectFrame::OnConfirmAction(WPARAM, LPARAM)
   case ActionUninstallExtension:
     RunInbuildForExtension("uninstall",true);
     break;
+  case ActionModerniseExtension:
+    RunInbuildForExtension("run-moderniser",true);
+    break;
   }
   return 0;
 }
@@ -1152,6 +1156,18 @@ LRESULT ProjectFrame::OnUninstallExt(WPARAM wp, LPARAM)
   m_confirm = ActionUninstallExtension;
   m_confirmArgument = extPath;
   RunInbuildForExtension("uninstall",false);
+  return 0;
+}
+
+LRESULT ProjectFrame::OnModerniseExt(WPARAM wp, LPARAM)
+{
+  CString* pathPtr = (CString*)wp;
+  CString extPath(*pathPtr);
+  delete pathPtr;
+
+  m_confirm = ActionModerniseExtension;
+  m_confirmArgument = extPath;
+  RunInbuildForExtension("run-moderniser",false);
   return 0;
 }
 
