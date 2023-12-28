@@ -790,8 +790,9 @@ void InformApp::SendAllFrames(Changed changed, int value)
 
   if (changed == LightDarkMode)
   {
-    if (DarkMode::IsEnabled(REGISTRY_INFORM))
-      DarkMode::SetAppDarkMode();
+    DarkMode* dark = DarkMode::GetEnabled(REGISTRY_INFORM);
+    DarkMode::SetAppDarkMode(dark);
+    delete dark;
 
     for (CWnd* dialog : m_modalDialogs)
     {
