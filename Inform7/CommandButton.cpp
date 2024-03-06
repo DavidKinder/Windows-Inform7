@@ -2,6 +2,7 @@
 #include "CommandButton.h"
 #include "Inform.h"
 #include "Messages.h"
+#include "TextFormat.h"
 
 #include "DarkMode.h"
 #include "Dib.h"
@@ -273,21 +274,28 @@ void CommandListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
   dc->FillSolidRect(&rect,backColour);
   dc->SetTextColor(dark ? dark->GetColour(DarkMode::Fore) : ::GetSysColor(COLOR_BTNTEXT));
 
-  CString text;
-  GetText(lpDrawItemStruct->itemID,text);
+  // Interpret strings stored in the control as UTF-8 encoded
+  CStringW text;
+  {
+    CString textUTF8;
+    GetText(lpDrawItemStruct->itemID,textUTF8);
+    text = TextFormat::UTF8ToUnicode(textUTF8);
+  }
 
   CRect textRect(rect);
   textRect.left += theApp.MeasureFont(this,GetFont()).cx;
 
-  int tab = text.Find('\t');
+  int tab = text.Find(L'\t');
   if (tab > 0)
   {
-    dc->DrawText(text.Left(tab),textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER);
+    CStringW textLeft(text.Left(tab));
+    ::DrawTextW(dc->GetSafeHdc(),textLeft,textLeft.GetLength(),textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER);
     textRect.left = m_tabStop;
-    dc->DrawText(text.Mid(tab+1),textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER);
+    CStringW textRight(text.Mid(tab+1));
+    ::DrawTextW(dc->GetSafeHdc(),textRight,textRight.GetLength(),textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER);
   }
   else
-    dc->DrawText(text,textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER);
+    ::DrawTextW(dc->GetSafeHdc(),text,text.GetLength(),textRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER);
 
   if ((m_hotIndex >= 0) && (lpDrawItemStruct->itemID == m_hotIndex))
   {
