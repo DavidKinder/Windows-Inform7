@@ -13,7 +13,7 @@ INTEGRATION = TRUE
 BUILTINCOMPS = ../../Build/Compilers
 INTERNAL = ../../Build/Internal
 BUILTINHTML = ../../Build/Documentation
-BUILTINHTMLINNER = ../../Build/Documentation/sections
+BUILTINHTMLINNER = ../../Build/Documentation
 ADVICEHTML = ../../Build/Documentation/advice
 
 # Various executables are copied into the BUILTINCOMPS folder, but their

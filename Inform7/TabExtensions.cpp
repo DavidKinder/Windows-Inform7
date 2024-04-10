@@ -215,7 +215,7 @@ void TabExtensions::OnSize(UINT nType, int cx, int cy)
 
 LRESULT TabExtensions::OnPubLibError(WPARAM, LPARAM)
 {
-  Show(TextFormat::AnsiToUTF8(theApp.GetAppDir()+"\\Documentation\\sections\\NoPublicLibrary.html"));
+  Show(TextFormat::AnsiToUTF8(theApp.GetAppDir()+"\\Documentation\\NoPublicLibrary.html"));
   return 0;
 }
 
@@ -317,7 +317,7 @@ CString TabExtensions::GetUrlForTab(ExtTabs tab)
       {
         CString htmlFile = materials+m_files[tab];
         if (::GetFileAttributes(htmlFile) == INVALID_FILE_ATTRIBUTES)
-          htmlFile = theApp.GetAppDir()+"\\Documentation\\sections\\NoExtensions.html";
+          htmlFile = theApp.GetAppDir()+"\\Documentation\\NoExtensions.html";
         return TextFormat::AnsiToUTF8(htmlFile);
       }
     }

@@ -2036,7 +2036,7 @@ void ProjectFrame::OnHelpExtensions()
 
 void ProjectFrame::OnHelpRecipes()
 {
-  CString recipePath = theApp.GetAppDir()+"\\Documentation\\Rdoc1.html";
+  CString recipePath = theApp.GetAppDir()+"\\Documentation\\RB_1_1.html";
   Panel* panel = GetPanel(ChoosePanel(Panel::Tab_Doc));
   ((TabDoc*)panel->GetTab(Panel::Tab_Doc))->Show(TextFormat::AnsiToUTF8(recipePath));
   panel->SetActiveTab(Panel::Tab_Doc);

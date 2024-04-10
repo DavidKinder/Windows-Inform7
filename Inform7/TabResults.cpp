@@ -142,19 +142,19 @@ void TabResults::CompileProject(CompileStage stage, int code)
       break;
     case 2:
       m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
-        "\\Documentation\\sections\\Error2.html"),false);
+        "\\Documentation\\Error2.html"),false);
       break;
     case 10:
       m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
-        "\\Documentation\\sections\\Error10.html"),false);
+        "\\Documentation\\Error10.html"),false);
       break;
     case 11:
       m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
-        "\\Documentation\\sections\\Error11.html"),false);
+        "\\Documentation\\Error11.html"),false);
       break;
     default:
       m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
-        "\\Documentation\\sections\\Error0.html"),false);
+        "\\Documentation\\Error0.html"),false);
       break;
     }
 
@@ -170,19 +170,19 @@ void TabResults::CompileProject(CompileStage stage, int code)
       {
       case MemorySetting:
         m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
-          "\\Documentation\\sections\\ErrorI6MemorySetting.html"),false);
+          "\\Documentation\\ErrorI6MemorySetting.html"),false);
         break;
       case ReadableMemory:
         m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
-          "\\Documentation\\sections\\ErrorI6Readable.html"),false);
+          "\\Documentation\\ErrorI6Readable.html"),false);
         break;
       case StoryFileLimit:
         m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
-          "\\Documentation\\sections\\ErrorI6TooBig.html"),false);
+          "\\Documentation\\ErrorI6TooBig.html"),false);
         break;
       default:
         m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
-          "\\Documentation\\sections\\ErrorI6.html"),false);
+          "\\Documentation\\ErrorI6.html"),false);
         break;
       }
       SetActiveTab(ResTab_Report,false);
@@ -198,7 +198,7 @@ void TabResults::CompileProject(CompileStage stage, int code)
       else
       {
         m_report.Navigate(TextFormat::AnsiToUTF8(theApp.GetAppDir()+
-          "\\Documentation\\sections\\ErrorCblorb.html"),false);
+          "\\Documentation\\ErrorCblorb.html"),false);
       }
     }
     SetActiveTab(ResTab_Report,false);

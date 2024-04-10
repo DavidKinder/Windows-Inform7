@@ -986,19 +986,28 @@ static struct Tag tags[] =
   "b>",         2,false,false,
   "blockquote",10,false,false,
   "br",         2,false,true,
+  "code",       4,false,false,
+  "em",         2,false,false,
   "font",       4,false,false,
   "h",          1,false,false,
   "i>",         2,false,false,
   "img",        3,false,false,
+  "li",         2,false,false,
+  "ol",         2,false,false,
   "p>",         2,false,true,
   "p ",         2,false,true,
   "script",     6,true, false,
+  "strong",     6,false,false,
   "table",      5,false,false,
   "TABLE",      5,false,false,
+  "tbody",      5,false,false,
   "td",         2,false,false,
   "TD",         2,false,false,
+  "thead",      5,false,false,
+  "th>",        3,false,false,
   "tr",         2,false,false,
   "TR",         2,false,false,
+  "ul",         2,false,false,
   "div",        3,false,false,
   "pre",        3,false,false,
   "span",       4,true, false,
@@ -1018,6 +1027,7 @@ static struct Literal literals[] =
   "lt;",3,'<',
   "gt;",3,'>',
   "amp;",4,'&',
+  "bull;",5,' ',
   "#160;",5,' ',
 };
 
@@ -1094,10 +1104,8 @@ void FindInFiles::DecodeHTML(const char* filename, FoundIn docType)
       ASSERT(found);
 
       // Remove the markup
-      if (found && tags[i].remove)
+      if (found && !closing && tags[i].remove)
       {
-        ASSERT(!closing);
-
         // Remove everything until the closing element
         CString search;
         search.Format("</%s>",tags[i].name);
@@ -1231,11 +1239,11 @@ UINT FindInFiles::BackgroundDecodeThread(LPVOID)
     switch (i)
     {
     case 0:
-      findPath.Format("%s\\Documentation\\doc*.html",theApp.GetAppDir());
+      findPath.Format("%s\\Documentation\\WI_*_*.html",theApp.GetAppDir());
       docType = FoundIn_WritingWithInform;
       break;
     case 1:
-      findPath.Format("%s\\Documentation\\rdoc*.html",theApp.GetAppDir());
+      findPath.Format("%s\\Documentation\\RB_*_*.html",theApp.GetAppDir());
       docType = FoundIn_RecipeBook;
       break;
     }

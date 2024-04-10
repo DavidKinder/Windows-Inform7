@@ -145,7 +145,6 @@ public:
       "\\Documentation",
       "\\Documentation\\doc_images",
       "\\Documentation\\outcome_images",
-      "\\Documentation\\sections",
       "\\Documentation\\retrospective",
       "\\Images"
     };
@@ -180,7 +179,7 @@ public:
         }
       }
       if (TextFormat::EndsWith(fileName,L".html"))
-        return appDir+"\\Documentation\\sections\\NoExtensions.html";
+        return appDir+"\\Documentation\\NoExtensions.html";
     }
 
     ASSERT(FALSE);

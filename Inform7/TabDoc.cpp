@@ -22,7 +22,7 @@ END_MESSAGE_MAP()
 const char* TabDoc::m_files[TabDoc::Number_DocTabs] =
 {
   "\\Documentation\\index.html",
-  "\\Documentation\\examples_alphabetical.html",
+  "\\Documentation\\alphabetical_index.html",
   "\\Documentation\\general_index.html"
 };
 
