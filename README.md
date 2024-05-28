@@ -92,4 +92,4 @@ It should also be possible to use the latest stable build of CEF for Windows 64-
 
 Start Visual Studio, open the solution "\<root>/Adv/Inform7/Inform7/Inform7.sln", then build and run the "Inform7" project.
 
-To build the interpreters that drive the "Story" tab, in Visual Studio open the solution "\<root>/Adv/Inform7/Interpreters/Interpreters.sln", then build projects it contains.
+To build the interpreters that drive the "Story" tab, in Visual Studio open the solution "\<root>/Adv/Inform7/Interpreters/Interpreters.sln", then build the projects it contains.
