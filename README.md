@@ -12,9 +12,9 @@ Download and install Visual Studio 2019 Community edition from https://visualstu
 - C++ Clang Compiler for Windows
 - C++ MFC for latest build tools
 
-Install git. I use the version of git that is part of Cygwin, a Linux-like environment for Windows, but Git for Windows can be used from a Windows command prompt.
+Install git. I use the version of git that is part of MSYS2, a Linux-like environment for Windows, but Git for Windows can be used from a Windows command prompt.
 
-Open the environment that you are using git from (e.g. Cygwin), and switch to the root directory that the build environment will be created under (from here referred to as "\<root>"). Clone this and the other required repositories with git:
+Open the environment that you are using git from, and switch to the root directory that the build environment will be created under (from here referred to as "\<root>"). Clone this and the other required repositories with git:
 ```
 git clone https://github.com/DavidKinder/Windows-Inform7.git Adv/Inform7
 git clone https://github.com/DavidKinder/inform.git Adv/Inform7/Distribution/inform
