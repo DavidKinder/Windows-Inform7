@@ -988,9 +988,11 @@ static struct Tag tags[] =
   "br",         2,false,true,
   "code",       4,false,false,
   "em",         2,false,false,
+  "del",        3,false,false,
   "font",       4,false,false,
   "h",          1,false,false,
   "i>",         2,false,false,
+  "input",      5,false,false,
   "img",        3,false,false,
   "li",         2,false,false,
   "ol",         2,false,false,
@@ -1005,12 +1007,13 @@ static struct Tag tags[] =
   "TD",         2,false,false,
   "thead",      5,false,false,
   "th>",        3,false,false,
+  "th ",        3,false,false,
   "tr",         2,false,false,
   "TR",         2,false,false,
   "ul",         2,false,false,
   "div",        3,false,false,
   "pre",        3,false,false,
-  "span",       4,true, false,
+  "span",       4,false,false,
 };
 
 struct Literal
@@ -1044,14 +1047,14 @@ void FindInFiles::DecodeHTML(const char* filename, FoundIn docType)
   htmlFile.Read(html.GetBuffer(len),len);
   html.ReleaseBuffer(len);
 
-  // Get the body text
-  int body1 = html.Find("<body");
+  // Get the content
+  int body1 = html.Find("<!-- CONTENT BEGINS -->");
   if (body1 == -1)
     return;
   body1 = html.Find(">",body1);
   if (body1 == -1)
     return;
-  int body2 = html.Find("</body>");
+  int body2 = html.Find("<!-- CONTENT ENDS -->",body1);
   if (body2 <= body1)
     return;
   CString bodyHtml = html.Mid(body1+1,body2-body1-1);
@@ -1232,7 +1235,7 @@ void FindInFiles::DecodeHTML(const char* filename, FoundIn docType)
 UINT FindInFiles::BackgroundDecodeThread(LPVOID)
 {
   CFileFind findDoc;
-  for (int i = 0; i < 2; i++)
+  for (int i = 0; i < 3; i++)
   {
     CString findPath;
     FoundIn docType = FoundIn_Unknown;
@@ -1244,6 +1247,10 @@ UINT FindInFiles::BackgroundDecodeThread(LPVOID)
       break;
     case 1:
       findPath.Format("%s\\Documentation\\RB_*_*.html",theApp.GetAppDir());
+      docType = FoundIn_RecipeBook;
+      break;
+    case 2:
+      findPath.Format("%s\\Documentation\\eg_*.html",theApp.GetAppDir());
       docType = FoundIn_RecipeBook;
       break;
     }
