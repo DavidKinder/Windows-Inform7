@@ -376,7 +376,7 @@ void FindReplaceDialog::OnFindAll()
         docName = ((ExtensionFrame*)frame)->GetDisplayName(true);
 
       m_findHelper.Find(edit->GetSource(),m_findText,m_ignoreCase,m_findRule,
-        docName,"","","",FoundIn_Source);
+        docName,"","",FoundIn_Source);
     }
   }
   catch (std::regex_error& ex)

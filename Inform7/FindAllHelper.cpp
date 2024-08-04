@@ -292,23 +292,11 @@ void FindAllHelper::OnResultsDraw(FindResultsListCtrl* ctrl, NMLVCUSTOMDRAW* cus
       if (custom->iSubItem == 0)
       {
         // Get the text
-        const CStringW& prefix = results[item].prefix;
         const CStringW& text = results[item].context;
         int high1 = results[item].inContext.cpMin;
         int high2 = results[item].inContext.cpMax;
 
         // Draw the text
-        if (!prefix.IsEmpty())
-        {
-          LOGFONT logFont;
-          ctrl->GetFont()->GetLogFont(&logFont);
-          logFont.lfItalic = TRUE;
-          CFont italicFont;
-          italicFont.CreateFontIndirect(&logFont);
-          CFont* previousFont = dc->SelectObject(&italicFont);
-          DrawText(dc,prefix,prefix.GetLength(),textRect,DT_VCENTER|DT_NOPREFIX);
-          dc->SelectObject(previousFont);
-        }
         DrawText(dc,text.GetString(),high1,textRect,DT_VCENTER|DT_NOPREFIX);
         if (textRect.left < textRect.right)
         {
@@ -362,18 +350,12 @@ void FindAllHelper::OnResultsResize(FindResultsListCtrl* ctrl)
   for (int i = 0; i < (int)results.size(); i++)
   {
     // Get the text
-    const CStringW& prefix = results[i].prefix;
     const CStringW& text = results[i].context;
     int high1 = results[i].inContext.cpMin;
     int high2 = results[i].inContext.cpMax;
 
     // Measure the text
     int width = 0;
-    if (!prefix.IsEmpty())
-    {
-      dc->SelectObject(&italicFont);
-      width += MeasureText(dc,prefix.GetString(),prefix.GetLength());
-    }
     dc->SelectObject(ctrl->GetFont());
     width += MeasureText(dc,text.GetString(),high1);
     dc->SelectObject(&boldFont);
@@ -393,7 +375,7 @@ void FindAllHelper::OnResultsResize(FindResultsListCtrl* ctrl)
 }
 
 void FindAllHelper::Find(const CString& textUtf8, const CStringW& findText, bool ignoreCase, FindRule findRule,
-  const char* doc, const char* docSort, const char* path, const char* prefix, FoundIn type)
+  const char* doc, const char* docSort, const char* path, FoundIn type)
 {
   // Set up a regular expression
   CString findTextUtf8 = TextFormat::UnicodeToUTF8(findText);
@@ -453,7 +435,6 @@ void FindAllHelper::Find(const CString& textUtf8, const CStringW& findText, bool
 
     // Store the found result
     FindResult result;
-    result.prefix = TextFormat::UTF8ToUnicode(prefix);
     result.context = context;
     result.inContext.cpMin = leading.GetLength();
     result.inContext.cpMax = leading.GetLength() + match.GetLength();

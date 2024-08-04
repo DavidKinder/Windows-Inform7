@@ -123,7 +123,6 @@ private:
     CString section;
     CString title;
     CString sort;
-    CString prefix;
     CString body; // UTF-8
     CString link;
     FoundIn type;

@@ -748,7 +748,7 @@ void FindInFiles::FindInSource(void)
   UpdateProgress();
 
   m_findHelper.Find(m_project->GetSource(),m_findText,m_ignoreCase,m_findRule,
-    m_project->GetDisplayName(false),"","","",FoundIn_Source);
+    m_project->GetDisplayName(false),"","",FoundIn_Source);
   theApp.RunMessagePump();
   m_current++;
 
@@ -767,7 +767,7 @@ void FindInFiles::FindInSource(void)
         title = title.Mid(start+1);
 
       m_findHelper.Find(sourceText,m_findText,m_ignoreCase,m_findRule,
-        title,"",path,"",FoundIn_Source);
+        title,"",path,FoundIn_Source);
       theApp.RunMessagePump();
     }
     m_current++;
@@ -794,7 +794,7 @@ void FindInFiles::FindInExtensions(void)
     if (!extText.IsEmpty())
     {
       m_findHelper.Find(extText,m_findText,m_ignoreCase,m_findRule,
-        extension.title.c_str(),"",extension.path.c_str(),"",FoundIn_Extension);
+        extension.title.c_str(),"",extension.path.c_str(),FoundIn_Extension);
       theApp.RunMessagePump();
     }
     m_current++;
@@ -823,7 +823,7 @@ void FindInFiles::FindInDocumentation(void)
     title.Format("%s: %s",docText->section,docText->title);
     size_t resultsIndex = m_findHelper.results.size();
     m_findHelper.Find(docText->body,m_findText,m_ignoreCase,m_findRule,
-      title,docText->sort,docText->link,docText->prefix,docText->type);
+      title,docText->sort,docText->link,docText->type);
 
     // Check that any matches are in appropriate sections
     while (resultsIndex < m_findHelper.results.size())
@@ -981,39 +981,10 @@ struct Tag
 
 static struct Tag tags[] =
 {
-  "a",          1,false,false,
-  "B>",         2,false,false,
-  "b>",         2,false,false,
-  "blockquote",10,false,false,
-  "br",         2,false,true,
-  "code",       4,false,false,
-  "em",         2,false,false,
-  "del",        3,false,false,
-  "font",       4,false,false,
-  "h",          1,false,false,
-  "i>",         2,false,false,
-  "input",      5,false,false,
-  "img",        3,false,false,
-  "li",         2,false,false,
-  "ol",         2,false,false,
-  "p>",         2,false,true,
-  "p ",         2,false,true,
-  "script",     6,true, false,
-  "strong",     6,false,false,
-  "table",      5,false,false,
-  "TABLE",      5,false,false,
-  "tbody",      5,false,false,
-  "td",         2,false,false,
-  "TD",         2,false,false,
-  "thead",      5,false,false,
-  "th>",        3,false,false,
-  "th ",        3,false,false,
-  "tr",         2,false,false,
-  "TR",         2,false,false,
-  "ul",         2,false,false,
-  "div",        3,false,false,
-  "pre",        3,false,false,
-  "span",       4,false,false,
+  "br",    2,false,true,
+  "p>",    2,false,true,
+  "p ",    2,false,true,
+  "script",6,true,false,
 };
 
 struct Literal
@@ -1060,19 +1031,18 @@ void FindInFiles::DecodeHTML(const char* filename, FoundIn docType)
   CString bodyHtml = html.Mid(body1+1,body2-body1-1);
 
   // Create a DocText instance for this file
-  DocText* mainDocText = new DocText(docType);
-  mainDocText->link = filename;
+  DocText* docText = new DocText(docType);
+  docText->link = filename;
   {
     CSingleLock lock(&(m_data->lock),TRUE);
-    m_data->texts.Add(mainDocText);
+    m_data->texts.Add(docText);
   }
 
   // Reserve space for the main text
   len = bodyHtml.GetLength();
-  mainDocText->body.Preallocate(len);
+  docText->body.Preallocate(len);
 
   // Scan the text, removing markup
-  DocText* docText = mainDocText;
   bool ignore = false;
   bool white = false;
   int codeStart = 0;
@@ -1104,7 +1074,6 @@ void FindInFiles::DecodeHTML(const char* filename, FoundIn docType)
         if (!found)
           i++;
       }
-      ASSERT(found);
 
       // Remove the markup
       if (found && !closing && tags[i].remove)
@@ -1134,47 +1103,31 @@ void FindInFiles::DecodeHTML(const char* filename, FoundIn docType)
     else if ((*p1 == '<') && (*(p1+1) == '!'))
     {
       // Extract metadata from comments
-      char meta1[256], meta2[256];
-      if (sscanf(p1,"<!-- SEARCH TITLE \"%[^\"]",meta1) == 1)
-        docText->title = meta1;
-      else if (sscanf(p1,"<!-- SEARCH SECTION \"%[^\"]",meta1) == 1)
-        docText->section = meta1;
-      else if (sscanf(p1,"<!-- SEARCH SORT \"%[^\"]",meta1) == 1)
-        docText->sort = meta1;
-      else if (sscanf(p1,"<!-- START EXAMPLE \"%[^\"]\" \"%[^\"]",meta1,meta2) == 2)
-      {
-        docText = new DocText(mainDocText->type);
-        docText->link.Format("%s#%s",mainDocText->link,meta2);
-        docText->prefix.Format("(Example %s) ",meta1);
-        docText->title = mainDocText->title;
-        docText->section = mainDocText->section;
-        docText->sort = mainDocText->sort;
-        docText->body.Preallocate(len/2);
-        {
-          CSingleLock lock(&(m_data->lock),TRUE);
-          m_data->texts.Add(docText);
-        }
-      }
-      else if (strncmp(p1,"<!-- END EXAMPLE -->",20) == 0)
-        docText = mainDocText;
+      char meta[256];
+      if (sscanf(p1,"<!-- SEARCH TITLE \"%[^\"]",meta) == 1)
+        docText->title = meta;
+      else if (sscanf(p1,"<!-- SEARCH SECTION \"%[^\"]",meta) == 1)
+        docText->section = meta;
+      else if (sscanf(p1,"<!-- SEARCH SORT \"%[^\"]",meta) == 1)
+        docText->sort = meta;
       else if (strncmp(p1,"<!-- START IGNORE ",18) == 0)
         ignore = true;
       else if (strncmp(p1,"<!-- END IGNORE -->",19) == 0)
         ignore = false;
-      else if (sscanf(p1,"<!-- START CODE \"%[^\"]",meta1) == 1)
+      else if (sscanf(p1,"<!-- START CODE \"%[^\"]",meta) == 1)
       {
         codeStart = docText->body.GetLength();
-        codeAnchor = meta1;
+        codeAnchor = meta;
       }
       else if (strncmp(p1,"<!-- END CODE -->",17) == 0)
       {
         int codeEnd = docText->body.GetLength();
         docText->codeSections.push_back(DocSection(codeStart,codeEnd,codeAnchor));
       }
-      else if (sscanf(p1,"<!-- START PHRASE \"%[^\"]",meta1) == 1)
+      else if (sscanf(p1,"<!-- START PHRASE \"%[^\"]",meta) == 1)
       {
         phraseStart = docText->body.GetLength();
-        phraseAnchor = meta1;
+        phraseAnchor = meta;
       }
       else if (strncmp(p1,"<!-- END PHRASE -->",19) == 0)
       {

@@ -31,7 +31,6 @@ struct FindResult
   CString TypeName(void);
   COLORREF Colour(DarkMode* dark, bool darker);
 
-  CStringW prefix;
   CStringW context;
   CHARRANGE inContext;
 
@@ -74,7 +73,7 @@ public:
 
   // Find results in the given text
   void Find(const CString& textUtf8, const CStringW& findText, bool ignoreCase, FindRule findRule,
-    const char* doc, const char* docSort, const char* path, const char* prefix, FoundIn type);
+    const char* doc, const char* docSort, const char* path, FoundIn type);
 
   std::vector<FindResult> results;
 
