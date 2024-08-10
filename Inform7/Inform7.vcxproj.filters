@@ -1515,6 +1515,12 @@
     <ClCompile Include="Process.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\unresponsive_process_callback_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\wrapper\cef_message_router_utils.cc">
+      <Filter>Libraries\libcef\wrapper</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Inform7.ico">
