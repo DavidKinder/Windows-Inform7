@@ -411,7 +411,7 @@ CAPTION "Inform for Windows"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_CREDITS,"RichEdit50W",WS_VSCROLL | WS_TABSTOP | 0x804,4,53,202,120
-    CTEXT           "Copyright 2006-2022 David Kinder (front end), Graham Nelson et al (compiler).",IDC_COPYRIGHT,25,182,156,17
+    CTEXT           "Copyright 2006-2024 David Kinder (front end), Graham Nelson et al (compiler).",IDC_COPYRIGHT,25,182,156,17
     CTEXT           "Inform",IDC_TITLE,23,22,159,15,SS_CENTERIMAGE
     CONTROL         "",IDC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,79,1,48,18
     CTEXT           "Inform for Windows %s.%s",IDC_VERSION,1,42,203,9
@@ -734,12 +734,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Inform for Windows"
             VALUE "FileDescription", "Inform for Windows"
-            VALUE "FileVersion", "7.10.1"
+            VALUE "FileVersion", "10.2.0"
             VALUE "InternalName", "Inform"
-            VALUE "LegalCopyright", "(c) 2006-2022 David Kinder"
+            VALUE "LegalCopyright", "(c) 2006-2024 David Kinder"
             VALUE "OriginalFilename", "Inform.exe"
             VALUE "ProductName", "Inform"
-            VALUE "ProductVersion", "7.10.1"
+            VALUE "ProductVersion", "10.2.0"
         END
     END
     BLOCK "VarFileInfo"
