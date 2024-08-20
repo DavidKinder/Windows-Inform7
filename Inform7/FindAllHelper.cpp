@@ -186,7 +186,7 @@ void FindAllHelper::InitResultsCtrl(FindResultsListCtrl* ctrl, bool details)
   if (details)
   {
     ctrl->InsertColumn(1,"Document");
-    ctrl->InsertColumn(2,"Type");
+    ctrl->InsertColumn(2,"Found In");
   }
 }
 
