@@ -240,72 +240,10 @@ void FindInFiles::InitInstance(void)
     m_pThread->m_bAutoDelete = FALSE;
     m_pThread->ResumeThread();
   }
-
-  try
-  {
-    // Read the serialized auto complete history from the registry
-    CRegKey registryKey;
-    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_READ) == ERROR_SUCCESS)
-    {
-      ULONG historyLen = 0;
-      if (registryKey.QueryBinaryValue("Find in Files History",NULL,&historyLen) == ERROR_SUCCESS)
-      {
-        BYTE* historyPtr = new BYTE[historyLen];
-        if (registryKey.QueryBinaryValue("Find in Files History",historyPtr,&historyLen) == ERROR_SUCCESS)
-        {
-          CMemFile historyFile(historyPtr,historyLen);
-          CArchive historyArchive(&historyFile,CArchive::load);
-          INT_PTR historyCount = 0;
-          historyArchive >> historyCount;
-          for (INT_PTR i = 0; i < historyCount; i++)
-          {
-            CStringW historyItem;
-            historyArchive >> historyItem;
-            m_findHistory.AddTail(historyItem);
-          }
-        }
-        delete[] historyPtr;
-      }
-    }
-  }
-  catch (CException* ex)
-  {
-    ex->Delete();
-  }
 }
 
 void FindInFiles::ExitInstance(void)
 {
-  // Save the auto complete history
-  try
-  {
-    CRegKey registryKey;
-    if (registryKey.Open(HKEY_CURRENT_USER,REGISTRY_INFORM_WINDOW,KEY_WRITE) == ERROR_SUCCESS)
-    {
-      if (m_findHistory.GetCount() > 0)
-      {
-        // Write the list of the auto complete history to a memory file
-        CMemFile historyFile;
-        CArchive historyArchive(&historyFile,CArchive::store);
-        historyArchive << m_findHistory.GetCount();
-        POSITION pos = m_findHistory.GetHeadPosition();
-        for (INT_PTR i = 0; i < m_findHistory.GetCount(); i++)
-          historyArchive << m_findHistory.GetNext(pos);
-        historyArchive.Close();
- 
-        // Write the above buffer to the registry
-        ULONG historyLen = (ULONG)historyFile.GetLength();
-        void* historyPtr = historyFile.Detach();
-        registryKey.SetBinaryValue("Find in Files History",historyPtr,historyLen);
-        free(historyPtr);
-      }
-    }
-  }
-  catch (CException* ex)
-  {
-    ex->Delete();
-  }
-
   if (m_data)
   {
     if (m_pThread)
