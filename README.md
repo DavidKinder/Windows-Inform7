@@ -97,3 +97,7 @@ Download the latest release of JSON for Modern C++ from https://github.com/nlohm
 Start Visual Studio, open the solution "\<root>/Adv/Inform7/Inform7/Inform7.sln", then build and run the "Inform7" project.
 
 To build the interpreters that drive the "Story" tab, in Visual Studio open the solution "\<root>/Adv/Inform7/Interpreters/Interpreters.sln", then build the projects it contains.
+
+### Chocolatey package
+
+If you prefer to install via the command line, a package for Windows Inform 7 has been created for the Chocolatey package manager, at https://community.chocolatey.org/packages/inform7/.
