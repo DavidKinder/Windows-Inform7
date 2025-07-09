@@ -11,7 +11,7 @@ Array args buffer 28;
 
   while (1)
   {
-    win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+    win1 = glk_window_open(0,0,0,wintype_TextBuffer,1);
     glk_set_window(win1);
 
     print "I7 Glulx interpreter test^^";
@@ -23,8 +23,9 @@ Array args buffer 28;
     print "6) File output^";
     print "7) Sound^";
     print "8) Errors^";
+    print "9) Image scaling^";
     key = waitForKey(win1);
-    glk_window_close(win1,GLK_NULL);
+    glk_window_close(win1,0);
 
     switch (key)
     {
@@ -36,6 +37,7 @@ Array args buffer 28;
       54: fileOutput();
       55: sound();
       56: errors();
+      57: imageScale();
     }
   }
 ];
@@ -59,7 +61,7 @@ Array args buffer 28;
   glk_stylehint_set(wintype_TextGrid,style_User1,stylehint_BackColor,$000000FF);
   glk_stylehint_set(wintype_TextGrid,style_User1,stylehint_ReverseColor,1);
 
-  win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  win1 = glk_window_open(0,0,0,wintype_TextBuffer,1);
   win2 = glk_window_open(win1,winmethod_Above|winmethod_Fixed,3,wintype_TextGrid,2);
 
   glk_set_window(win2);
@@ -80,12 +82,12 @@ Array args buffer 28;
 
   print "^Press any key... ";
   waitForKey(win1);
-  glk_window_close(glk_window_get_root(),GLK_NULL);
+  glk_window_close(glk_window_get_root(),0);
 ];
 
 [ windows win1 win2 win3 win4 win5;
 
-  win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  win1 = glk_window_open(0,0,0,wintype_TextBuffer,1);
   win2 = glk_window_open(win1,winmethod_Below|winmethod_Fixed,1,wintype_TextGrid,2);
   win3 = glk_window_open(win1,winmethod_Left|winmethod_Fixed,2,wintype_TextGrid,3);
   win4 = glk_window_open(win1,winmethod_Right|winmethod_Fixed,2,wintype_TextGrid,4);
@@ -102,7 +104,7 @@ Array args buffer 28;
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_close(win4,GLK_NULL);
+  glk_window_close(win4,0);
   win4 = glk_window_open(win1,winmethod_Right|winmethod_Proportional,20,wintype_TextGrid,4);
   glk_set_window(win4);
   glk_set_style(style_User1);
@@ -112,7 +114,7 @@ Array args buffer 28;
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_close(win4,GLK_NULL);
+  glk_window_close(win4,0);
   win4 = glk_window_open(win1,winmethod_Left|winmethod_Proportional,20,wintype_TextGrid,4);
   glk_set_window(win4);
   glk_set_style(style_User1);
@@ -122,7 +124,7 @@ Array args buffer 28;
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_close(win4,GLK_NULL);
+  glk_window_close(win4,0);
   win4 = glk_window_open(win1,winmethod_Above|winmethod_Proportional,20,wintype_TextGrid,4);
   glk_set_window(win4);
   glk_set_style(style_User1);
@@ -132,7 +134,7 @@ Array args buffer 28;
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_close(win4,GLK_NULL);
+  glk_window_close(win4,0);
   win4 = glk_window_open(win1,winmethod_Below|winmethod_Proportional,20,wintype_TextGrid,4);
   glk_set_window(win4);
   glk_set_style(style_User1);
@@ -142,7 +144,7 @@ Array args buffer 28;
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_close(win4,GLK_NULL);
+  glk_window_close(win4,0);
   glk_window_clear(win1);
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
@@ -160,7 +162,7 @@ Array args buffer 28;
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_close(glk_window_get_parent(win4),GLK_NULL);
+  glk_window_close(glk_window_get_parent(win4),0);
   glk_window_clear(win1);
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
@@ -178,13 +180,13 @@ Array args buffer 28;
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_close(win4,GLK_NULL);
+  glk_window_close(win4,0);
   glk_window_clear(win1);
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_close(glk_window_get_root(),GLK_NULL);
-  win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  glk_window_close(glk_window_get_root(),0);
+  win1 = glk_window_open(0,0,0,wintype_TextBuffer,1);
   win2 = glk_window_open(win1,winmethod_Above|winmethod_Fixed,1,wintype_TextGrid,2);
   glk_set_window(win2);
   glk_set_style(style_User1);
@@ -194,17 +196,17 @@ Array args buffer 28;
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Left|winmethod_Fixed,1,GLK_NULL);
+  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Left|winmethod_Fixed,1,0);
   glk_window_clear(win1);
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Below|winmethod_Proportional,80,GLK_NULL);
+  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Below|winmethod_Proportional,80,0);
   glk_window_clear(win1);
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_close(win2,GLK_NULL);
+  glk_window_close(win2,0);
   win2 = glk_window_open(win1,winmethod_Left|winmethod_Fixed,1,wintype_TextGrid,2);
   glk_set_window(win2);
   glk_set_style(style_User1);
@@ -214,12 +216,12 @@ Array args buffer 28;
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Above|winmethod_Fixed,1,GLK_NULL);
+  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Above|winmethod_Fixed,1,0);
   glk_window_clear(win1);
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
 
-  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Right|winmethod_Proportional,80,GLK_NULL);
+  glk_window_set_arrangement(glk_window_get_parent(win2),winmethod_Right|winmethod_Proportional,80,0);
   glk_window_clear(win1);
   printWindowTree(glk_window_get_root());
   waitForKey(win1);
@@ -235,7 +237,7 @@ Array args buffer 28;
 
   print "^Press any key... ";
   waitForKey(win1);
-  glk_window_close(glk_window_get_root(),GLK_NULL);
+  glk_window_close(glk_window_get_root(),0);
 ];
 
 [ printWindowTree win depth lines i win1 child1 child2;
@@ -286,7 +288,7 @@ Array args buffer 28;
 
   if (glk_window_get_type(win) == wintype_Pair)
   {
-    win1 = glk_window_iterate(GLK_NULL,GLK_NULL);
+    win1 = glk_window_iterate(0,0);
     while (win1)
     {
       if (glk_window_get_parent(win1) == win)
@@ -296,7 +298,7 @@ Array args buffer 28;
         else
           child2 = win1;
       }
-      win1 = glk_window_iterate(win1,GLK_NULL);
+      win1 = glk_window_iterate(win1,0);
     }
     lines = lines + printWindowTree(child1,depth+1);
     lines = lines + printWindowTree(child2,depth+1);
@@ -309,7 +311,7 @@ Array args buffer 28;
 
 [ textInput win1 i;
 
-  win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  win1 = glk_window_open(0,0,0,wintype_TextBuffer,1);
   glk_set_window(win1);
 
   print "^Input single key: ";
@@ -349,12 +351,12 @@ Array args buffer 28;
 
   print "^Press any key... ";
   waitForKey(win1);
-  glk_window_close(glk_window_get_root(),GLK_NULL);
+  glk_window_close(glk_window_get_root(),0);
 ];
 
 [ mouseInput win1 win2 win3;
 
-  win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  win1 = glk_window_open(0,0,0,wintype_TextBuffer,1);
   win2 = glk_window_open(win1,winmethod_Above|winmethod_Proportional,50,wintype_TextGrid,2);
   win3 = glk_window_open(win2,winmethod_Left|winmethod_Proportional,50,wintype_Graphics,3);
 
@@ -372,7 +374,7 @@ Array args buffer 28;
     glk_select(event);
     if (event-->0 == evtype_CharInput && event-->1 == win1)
     {
-      glk_window_close(glk_window_get_root(),GLK_NULL);
+      glk_window_close(glk_window_get_root(),0);
       return;
     }
     else if (event-->0 == evtype_MouseInput && event-->1 == win2)
@@ -394,7 +396,7 @@ Array args buffer 28;
 
 [ linkInput win1 win2;
 
-  win1 = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  win1 = glk_window_open(0,0,0,wintype_TextBuffer,1);
   win2 = glk_window_open(win1,winmethod_Above|winmethod_Proportional,30,wintype_TextGrid,2);
   glk_set_window(win1);
 
@@ -443,7 +445,7 @@ Array args buffer 28;
     glk_select(event);
     if (event-->0 == evtype_CharInput && event-->1 == win1)
     {
-      glk_window_close(glk_window_get_root(),GLK_NULL);
+      glk_window_close(glk_window_get_root(),0);
       return;
     }
     else if (event-->0 == evtype_Hyperlink && event-->1 == win1)
@@ -469,7 +471,7 @@ Array args buffer 28;
   fstr = glk_stream_open_file(fref,filemode_Write,0);
   glk_stream_set_current(fstr);
   print "Hello!";
-  glk_stream_close(fstr,GLK_NULL);
+  glk_stream_close(fstr,0);
   glk_fileref_destroy(fref);
 ];
 
@@ -478,7 +480,7 @@ Array multiSounds --> 3;
 
 [ sound win channel1 channel2 channel3 channel result;
 
-  win = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  win = glk_window_open(0,0,0,wintype_TextBuffer,1);
   glk_set_window(win);
   channel1 = glk_schannel_create(1);
   channel2 = glk_schannel_create(2);
@@ -504,13 +506,13 @@ Array multiSounds --> 3;
         break;
       else if (event-->0 == evtype_SoundNotify)
       {
-        glk_cancel_line_event(win,GLK_NULL);
+        glk_cancel_line_event(win,0);
         print "Sound notification: sound=",event-->2,", notification=",event-->3,"^";
         glk_request_line_event(win,input,100,0);
       }
       else if (event-->0 == evtype_VolumeNotify)
       {
-        glk_cancel_line_event(win,GLK_NULL);
+        glk_cancel_line_event(win,0);
         print "Volume notification: notification=",event-->3,"^";
         glk_request_line_event(win,input,100,0);
       }
@@ -521,7 +523,7 @@ Array multiSounds --> 3;
       glk_schannel_destroy(channel1);
       glk_schannel_destroy(channel2);
       glk_schannel_destroy(channel3);
-      glk_window_close(win,GLK_NULL);
+      glk_window_close(win,0);
       return;
     }
 
@@ -615,7 +617,7 @@ Array numbers --> 16;
 
 [ errors win;
 
-  win = glk_window_open(GLK_NULL,0,0,wintype_TextBuffer,1);
+  win = glk_window_open(0,0,0,wintype_TextBuffer,1);
   glk_set_window(win);
 
   print "^Errors:^";
@@ -634,7 +636,69 @@ Array numbers --> 16;
       @quit;
   }
 
-  glk_window_close(glk_window_get_root(),GLK_NULL);
+  glk_window_close(glk_window_get_root(),0);
+];
+
+[ imageScale win1 win2 test;
+
+  win1 = glk_window_open(0,0,0,wintype_TextBuffer,1);
+  glk_set_window(win1);
+
+  if (~~glk_gestalt(gestalt_DrawImageScale, wintype_Graphics))
+  {
+    print "DrawImageScale not supported!^";
+    waitForKey(win1);
+    glk_window_close(glk_window_get_root(),0);
+    return;
+  }
+
+  win2 = glk_window_open(win1,winmethod_Above|winmethod_Proportional,50,wintype_Graphics,2);
+
+  glk_set_window(win1);
+  print "^Press a key to move to the next... ";
+
+  test = 0;
+  glk_image_draw(win2,1,0,0);
+
+  glk_request_char_event(win1);
+  while (true)
+  {
+    glk_select(event);
+    if (event-->0 == evtype_CharInput && event-->1 == win1)
+    {
+      glk_window_clear(win2);
+
+      test = test+1;
+      switch (test)
+      {
+        1:
+          glk_image_draw_scaled(win2,1,0,0,100,50);
+          print "^scaled 100,50";
+        2:
+          glk_image_draw_scaled_ext(win2,1,0,0,0,200,imagerule_WidthOrig|imagerule_HeightFixed,0);
+          print "^scaled_ext 0,200,imagerule_WidthOrig|imagerule_HeightFixed";
+        3:
+          glk_image_draw_scaled_ext(win2,1,0,0,200,0,imagerule_WidthFixed|imagerule_HeightOrig,0);
+          print "^scaled_ext 200,0,imagerule_WidthFixed|imagerule_HeightOrig";
+        4:
+          glk_image_draw_scaled_ext(win2,1,0,0,$8000,0,imagerule_WidthRatio|imagerule_HeightOrig,0);
+          print "^scaled_ext $8000,0,imagerule_WidthRatio|imagerule_HeightOrig";
+        5:
+          glk_image_draw_scaled_ext(win2,1,0,0,$8000,$10000,imagerule_WidthRatio|imagerule_AspectRatio,0);
+          print "^scaled_ext $8000,$10000,imagerule_WidthRatio|imagerule_AspectRatio";
+        6:
+          glk_image_draw_scaled_ext(win2,1,0,0,$8000,$20000,imagerule_WidthRatio|imagerule_AspectRatio,0);
+          print "^scaled_ext $8000,$20000,imagerule_WidthRatio|imagerule_AspectRatio";
+        7:
+          glk_image_draw_scaled_ext(win2,1,0,0,$8000,$8000,imagerule_WidthRatio|imagerule_AspectRatio,0);
+          print "^scaled_ext $8000,$8000,imagerule_WidthRatio|imagerule_AspectRatio";
+        default:
+          glk_window_close(glk_window_get_root(),0);
+          return;
+      }
+      glk_request_char_event(win1);
+    }
+  }
 ];
 
 [ waitForKey win;
