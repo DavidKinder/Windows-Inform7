@@ -174,7 +174,7 @@ void GamePair::MoveToEnd(void)
 {
 }
 
-void GamePair::Draw(CDibSection* image, int val1, int val2, int width, int height)
+void GamePair::Draw(CDibSection* image, int val1, int val2, int width, int height, int imagerule, int maxwidth)
 {
 }
 

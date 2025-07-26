@@ -20,15 +20,17 @@ void I7GlkGfxWindow::clear(void)
   fillRect(r,m_backColour);
 }
 
-glui32 I7GlkGfxWindow::draw(glui32 image, glsi32 val1, glsi32 val2, glui32 width, glui32 height)
+glui32 I7GlkGfxWindow::draw(glui32 image, glsi32 val1, glsi32 val2, glui32 width, glui32 height, glui32 imagerule, glui32 maxwidth)
 {
-  int data[6];
+  int data[8];
   data[0] = m_id;
   data[1] = image;
   data[2] = val1;
   data[3] = val2;
   data[4] = width;
   data[5] = height;
+  data[6] = imagerule;
+  data[7] = maxwidth;
   sendCommand(Command_Draw,sizeof data,data);
   return 1;
 }

@@ -26,7 +26,7 @@ public:
   void SetColours(COLORREF fore, COLORREF back);
   void SetCursor(int x, int y);
   void MoveToEnd(void);
-  void Draw(CDibSection* image, int val1, int val2, int width, int height);
+  void Draw(CDibSection* image, int val1, int val2, int width, int height, int imagerule, int maxwidth);
   COLORREF GetAlphaColour(void);
   void SetLink(int link);
   void SetParagraph(Justify justify);

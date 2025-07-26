@@ -242,7 +242,7 @@ void I7GlkTextWindow::clear(void)
   sendCommand(Command_Clear,sizeof data,data);
 }
 
-glui32 I7GlkTextWindow::draw(glui32 image, glsi32 val1, glsi32 val2, glui32 width, glui32 height)
+glui32 I7GlkTextWindow::draw(glui32 image, glsi32 val1, glsi32 val2, glui32 width, glui32 height, glui32 imagerule, glui32 maxwidth)
 {
   m_stream->flush();
 
@@ -252,13 +252,15 @@ glui32 I7GlkTextWindow::draw(glui32 image, glsi32 val1, glsi32 val2, glui32 widt
   case imagealign_InlineDown:
   case imagealign_InlineCenter:
     {
-      int data[6];
+      int data[8];
       data[0] = m_id;
       data[1] = image;
       data[2] = val1;
       data[3] = val2;
       data[4] = width;
       data[5] = height;
+      data[6] = imagerule;
+      data[7] = maxwidth;
       sendCommand(Command_Draw,sizeof data,data);
     }
     return 1;

@@ -81,7 +81,7 @@ private:
   void CommandReadLine(int wndId, int initial, bool restart, bool echo);
   void CommandReadKey(bool restart);
   void CommandClear(int wndId, int reverse, int* fore, int* back);
-  void CommandDraw(int wndId, int image, int val1, int val2, int width, int height);
+  void CommandDraw(int wndId, int image, int val1, int val2, int width, int height, int imagerule, int maxwidth);
   void CommandArrange(int wndId, int method, int size, int keyId, bool swap);
   void CommandPlaySound(int channelId, int sound, int repeats);
   void CommandPlaySounds(int* sounds, int numSounds);

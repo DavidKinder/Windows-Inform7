@@ -80,7 +80,7 @@ void GameBlank::MoveToEnd(void)
 {
 }
 
-void GameBlank::Draw(CDibSection* image, int val1, int val2, int width, int height)
+void GameBlank::Draw(CDibSection* image, int val1, int val2, int width, int height, int imagerule, int maxwidth)
 {
 }
 

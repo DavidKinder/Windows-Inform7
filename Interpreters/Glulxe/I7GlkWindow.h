@@ -82,7 +82,8 @@ public:
 
   virtual void moveCursor(int x, int y) {}
   virtual void clear(void) {}
-  virtual glui32 draw(glui32 image, glsi32 val1, glsi32 val2, glui32 width, glui32 height)
+  virtual glui32 draw(glui32 image, glsi32 val1, glsi32 val2,
+    glui32 width, glui32 height, glui32 imagerule, glui32 maxwidth)
     { return 0; }
 
   virtual void layout(const I7Rect& r) = 0;

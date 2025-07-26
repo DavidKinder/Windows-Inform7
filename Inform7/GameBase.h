@@ -45,7 +45,7 @@ public:
   virtual void SetColours(COLORREF fore, COLORREF back) = 0;
   virtual void SetCursor(int x, int y) = 0;
   virtual void MoveToEnd(void) = 0;
-  virtual void Draw(CDibSection* image, int val1, int val2, int width, int height) = 0;
+  virtual void Draw(CDibSection* image, int val1, int val2, int width, int height, int imagerule, int maxwidth) = 0;
   virtual COLORREF GetAlphaColour(void) = 0;
   virtual void SetLink(int link) = 0;
   virtual void SetParagraph(Justify justify) = 0;
