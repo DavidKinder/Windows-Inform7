@@ -137,7 +137,7 @@ extern "C" glui32 glk_gestalt_ext(glui32 sel, glui32 val, glui32 *arr, glui32 ar
   switch (sel)
   {
   case gestalt_Version:
-    return 0x00000705; // Glk 0.7.5
+    return 0x00000706; // Glk 0.7.6
 
   case gestalt_LineInput:
     if ((val >= 32 && val <= 126) || (val >= 160 && val <= 0xFFFF))
@@ -228,6 +228,9 @@ extern "C" glui32 glk_gestalt_ext(glui32 sel, glui32 val, glui32 *arr, glui32 ar
 
   case gestalt_GraphicsCharInput:
     return 0;
+
+  case gestalt_DrawImageScale:
+    return 1;
 
   case gestalt_GarglkText:
     return 1;
@@ -1234,7 +1237,7 @@ extern "C" glui32 glk_image_draw(winid_t win, glui32 image, glsi32 val1, glsi32 
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
     fatalError("glk_image_draw() was called for an invalid window.");
 
-  return ((I7GlkWindow*)win)->draw(image,val1,val2,(glui32)-1,(glui32)-1);
+  return ((I7GlkWindow*)win)->draw(image,val1,val2,(glui32)-1,(glui32)-1,imagerule_WidthOrig|imagerule_HeightOrig,0x10000);
 }
 
 extern "C" glui32 glk_image_draw_scaled(winid_t win, glui32 image, glsi32 val1, glsi32 val2, glui32 width, glui32 height)
@@ -1242,7 +1245,15 @@ extern "C" glui32 glk_image_draw_scaled(winid_t win, glui32 image, glsi32 val1, 
   if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
     fatalError("glk_image_draw_scaled() was called for an invalid window.");
 
-  return ((I7GlkWindow*)win)->draw(image,val1,val2,width,height);
+  return ((I7GlkWindow*)win)->draw(image,val1,val2,width,height,imagerule_WidthFixed|imagerule_HeightFixed,0x10000);
+}
+
+extern "C" glui32 glk_image_draw_scaled_ext(winid_t win, glui32 image, glsi32 val1, glsi32 val2, glui32 width, glui32 height, glui32 imagerule, glui32 maxwidth)
+{
+  if (glkWindows.find((I7GlkWindow*)win) == glkWindows.end())
+    fatalError("glk_image_draw_scaled_ext() was called for an invalid window.");
+
+  return ((I7GlkWindow*)win)->draw(image,val1,val2,width,height,imagerule,maxwidth);
 }
 
 extern "C" glui32 glk_image_get_info(glui32 image, glui32 *width, glui32 *height)

@@ -381,7 +381,7 @@ void GameWindow::RunInterpreterCommand(void)
     CommandClear(idata[0],idata[1],idata+2,idata+5);
     break;
   case Command_Draw:
-    CommandDraw(idata[0],idata[1],idata[2],idata[3],idata[4],idata[5]);
+    CommandDraw(idata[0],idata[1],idata[2],idata[3],idata[4],idata[5],idata[6],idata[7]);
     break;
   case Command_PlaySound:
     CommandPlaySound(idata[0],idata[1],idata[2]);
@@ -687,7 +687,7 @@ void GameWindow::CommandClear(int wndId, int reverse, int* fore, int* back)
     m_transcript.Add('\n');
 }
 
-void GameWindow::CommandDraw(int wndId, int image, int val1, int val2, int width, int height)
+void GameWindow::CommandDraw(int wndId, int image, int val1, int val2, int width, int height, int imagerule, int maxwidth)
 {
   GameBase* wnd = NULL;
   if (m_windows.Lookup(wndId,wnd) == FALSE)
@@ -698,7 +698,7 @@ void GameWindow::CommandDraw(int wndId, int image, int val1, int val2, int width
 
   CDibSection* bitmap = GetImage(image,wnd->GetAlphaColour());
   if (bitmap != NULL)
-    wnd->Draw(bitmap,val1,val2,width,height);
+    wnd->Draw(bitmap,val1,val2,width,height,imagerule,maxwidth);
 }
 
 void GameWindow::CommandArrange(int wndId, int method, int size, int keyId, bool swap)

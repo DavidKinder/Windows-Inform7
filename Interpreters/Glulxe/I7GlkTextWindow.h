@@ -17,7 +17,8 @@ public:
   void setNextEchoInput(bool echo);
 
   void clear(void);
-  glui32 draw(glui32 image, glsi32 val1, glsi32 val2, glui32 width, glui32 height);
+  glui32 draw(glui32 image, glsi32 val1, glsi32 val2,
+    glui32 width, glui32 height, glui32 imagerule, glui32 maxwidth);
 
   void layout(const I7Rect& r);
   void getNeededSize(int size, int& w, int& h, const I7Rect& r);

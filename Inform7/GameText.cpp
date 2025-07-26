@@ -269,7 +269,7 @@ void GameText::MoveToEnd(void)
   SendMessage(EM_SCROLLCARET);
 }
 
-void GameText::Draw(CDibSection* image, int val1, int val2, int width, int height)
+void GameText::Draw(CDibSection* image, int val1, int val2, int width, int height, int imagerule, int maxwidth)
 {
   // Get the edit control's IRichEditOle interface
   CComPtr<IRichEditOle> reo;

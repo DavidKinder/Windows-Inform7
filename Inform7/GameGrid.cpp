@@ -162,7 +162,7 @@ void GameGrid::MoveToEnd(void)
 {
 }
 
-void GameGrid::Draw(CDibSection* image, int val1, int val2, int width, int height)
+void GameGrid::Draw(CDibSection* image, int val1, int val2, int width, int height, int imagerule, int maxwidth)
 {
 }
 

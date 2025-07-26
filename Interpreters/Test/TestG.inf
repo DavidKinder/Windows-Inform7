@@ -658,7 +658,7 @@ Array numbers --> 16;
   print "^Press a key to move to the next... ";
 
   test = 0;
-  glk_image_draw(win2,1,0,0);
+  glk_image_draw(win2,5,0,0);
 
   glk_request_char_event(win1);
   while (true)
@@ -672,25 +672,25 @@ Array numbers --> 16;
       switch (test)
       {
         1:
-          glk_image_draw_scaled(win2,1,0,0,100,50);
+          glk_image_draw_scaled(win2,5,0,0,100,50);
           print "^scaled 100,50";
         2:
-          glk_image_draw_scaled_ext(win2,1,0,0,0,200,imagerule_WidthOrig|imagerule_HeightFixed,0);
+          glk_image_draw_scaled_ext(win2,5,0,0,0,200,imagerule_WidthOrig|imagerule_HeightFixed,0);
           print "^scaled_ext 0,200,imagerule_WidthOrig|imagerule_HeightFixed";
         3:
-          glk_image_draw_scaled_ext(win2,1,0,0,200,0,imagerule_WidthFixed|imagerule_HeightOrig,0);
+          glk_image_draw_scaled_ext(win2,5,0,0,200,0,imagerule_WidthFixed|imagerule_HeightOrig,0);
           print "^scaled_ext 200,0,imagerule_WidthFixed|imagerule_HeightOrig";
         4:
-          glk_image_draw_scaled_ext(win2,1,0,0,$8000,0,imagerule_WidthRatio|imagerule_HeightOrig,0);
+          glk_image_draw_scaled_ext(win2,5,0,0,$8000,0,imagerule_WidthRatio|imagerule_HeightOrig,0);
           print "^scaled_ext $8000,0,imagerule_WidthRatio|imagerule_HeightOrig";
         5:
-          glk_image_draw_scaled_ext(win2,1,0,0,$8000,$10000,imagerule_WidthRatio|imagerule_AspectRatio,0);
+          glk_image_draw_scaled_ext(win2,5,0,0,$8000,$10000,imagerule_WidthRatio|imagerule_AspectRatio,0);
           print "^scaled_ext $8000,$10000,imagerule_WidthRatio|imagerule_AspectRatio";
         6:
-          glk_image_draw_scaled_ext(win2,1,0,0,$8000,$20000,imagerule_WidthRatio|imagerule_AspectRatio,0);
+          glk_image_draw_scaled_ext(win2,5,0,0,$8000,$20000,imagerule_WidthRatio|imagerule_AspectRatio,0);
           print "^scaled_ext $8000,$20000,imagerule_WidthRatio|imagerule_AspectRatio";
         7:
-          glk_image_draw_scaled_ext(win2,1,0,0,$8000,$8000,imagerule_WidthRatio|imagerule_AspectRatio,0);
+          glk_image_draw_scaled_ext(win2,5,0,0,$8000,$8000,imagerule_WidthRatio|imagerule_AspectRatio,0);
           print "^scaled_ext $8000,$8000,imagerule_WidthRatio|imagerule_AspectRatio";
         default:
           glk_window_close(glk_window_get_root(),0);

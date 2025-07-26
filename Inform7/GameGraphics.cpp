@@ -5,6 +5,11 @@
 #include "Dib.h"
 #include "ScaleGfx.h"
 
+extern "C"
+{
+#include "glk.h"
+}
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -128,25 +133,61 @@ void GameGraphics::MoveToEnd(void)
 {
 }
 
-void GameGraphics::Draw(CDibSection* image, int val1, int val2, int width, int height)
+void GameGraphics::Draw(CDibSection* image, int val1, int val2, int width, int height, int imagerule, int maxwidth)
 {
   if (m_bitmap != NULL)
   {
     CSize bmpSize = m_bitmap->GetSize();
     CSize imgSize = image->GetSize();
 
-    // Apply scaling, if needed
+    // Get the width and height and whether or not the graphic
+    // is to be scaled.
     bool scale = false;
-    if ((width >= 0) && (width != imgSize.cx))
+    switch (imagerule & imagerule_WidthMask)
     {
-      imgSize.cx = width;
-      scale = true;
+    case imagerule_WidthOrig:
+      break;
+    case imagerule_WidthFixed:
+      if (imgSize.cx != width)
+      {
+        imgSize.cx = width;
+        scale = true;
+      }
+      break;
+    case imagerule_WidthRatio:
+      {
+        double wscale = ((double)width) / 0x10000;
+        imgSize.cx = (int)(wscale * bmpSize.cx);
+        scale = true;
+      }
+      break;
+    default:
+      return;
     }
-    if ((height >= 0) && (height != imgSize.cy))
+    switch (imagerule & imagerule_HeightMask)
     {
-      imgSize.cy = height;
-      scale = true;
+    case imagerule_HeightOrig:
+      break;
+    case imagerule_HeightFixed:
+      if (imgSize.cy != height)
+      {
+        imgSize.cy = height;
+        scale = true;
+      }
+      break;
+    case imagerule_AspectRatio:
+      {
+        double aspect = ((double)imgSize.cy) / imgSize.cx;
+        double hscale = ((double)height) / 0x10000;
+        imgSize.cy = (int)(aspect * hscale * imgSize.cx);
+        scale = true;
+      }
+      break;
+    default:
+      return;
     }
+    if ((imgSize.cx <= 0) || (imgSize.cy <= 0))
+      return;
 
     // Work out clipping if the image is only partially in the bitmap
     int x1 = 0, x2 = imgSize.cx, y1 = 0, y2 = imgSize.cy;
