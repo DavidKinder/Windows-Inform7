@@ -246,26 +246,26 @@ glui32 I7GlkTextWindow::draw(glui32 image, glsi32 val1, glsi32 val2, glui32 widt
 {
   m_stream->flush();
 
-  switch (val1)
-  {
-  case imagealign_InlineUp:
-  case imagealign_InlineDown:
-  case imagealign_InlineCenter:
-    {
-      int data[8];
-      data[0] = m_id;
-      data[1] = image;
-      data[2] = val1;
-      data[3] = val2;
-      data[4] = width;
-      data[5] = height;
-      data[6] = imagerule;
-      data[7] = maxwidth;
-      sendCommand(Command_Draw,sizeof data,data);
-    }
-    return 1;
-  }
-  return 0;
+  if ((val1 != imagealign_InlineUp) && (val1 != imagealign_InlineCenter))
+    return 0;
+  if ((imagerule & imagerule_WidthMask) != imagerule_WidthOrig)
+    return 0;
+  if ((imagerule & imagerule_HeightMask) != imagerule_HeightOrig)
+    return 0;
+  if ((maxwidth != 0) && (maxwidth != 0x10000))
+    return 0;
+
+  int data[8];
+  data[0] = m_id;
+  data[1] = image;
+  data[2] = val1;
+  data[3] = val2;
+  data[4] = width;
+  data[5] = height;
+  data[6] = imagerule;
+  data[7] = maxwidth;
+  sendCommand(Command_Draw,sizeof data,data);
+  return 1;
 }
 
 void I7GlkTextWindow::layout(const I7Rect& r)
