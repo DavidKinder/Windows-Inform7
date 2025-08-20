@@ -135,15 +135,20 @@ void GameText::AddText(const CStringW& text)
     m_textDoc->GetSelection(&select);
     range->Select();
 
-    // Set the link effect field for the newly added text, and store the link
-    // number in the language ID field
+    // Set the link effect field for the newly added text
     CHARFORMAT2 format;
     ::ZeroMemory(&format,sizeof format);
     format.cbSize = sizeof format;
-    format.dwMask = CFM_LINK|CFM_LCID;
+    format.dwMask = CFM_LINK;
     format.dwEffects = CFE_LINK;
-    format.lcid = m_link;
     SendMessage(EM_SETCHARFORMAT,SCF_SELECTION,(LPARAM)&format);
+
+    // Store the link value and its range
+    LinkRange lr;
+    range->GetStart(&(lr.start));
+    range->GetEnd(&(lr.end));
+    lr.link = m_link;
+    m_links.push_back(lr);
 
     // Put back the old selection
     select->Select();
@@ -194,6 +199,9 @@ void GameText::ClearText(bool styles, bool reverse, COLORREF fore, COLORREF back
   // Clear the text
   range->SetText(CComBSTR());
   m_allowEdit = false;
+
+  // Clear any links
+  m_links.clear();
 
   // Let the display update
   m_textDoc->Unfreeze(&freeze);
@@ -549,18 +557,17 @@ void GameText::OnEnLink(NMHDR *pNMHDR, LRESULT *pResult)
     int cp = CharFromPos(p);
     if ((cp < link->chrg.cpMin) || (cp > link->chrg.cpMax))
       cp = link->chrg.cpMin;
-    if (cp > link->chrg.cpMin)
-      cp--;
-    CComPtr<ITextRange> range;
-    m_textDoc->Range(cp,cp+1,&range);
 
-    // Get the link number from the language ID field of the font
-    CComPtr<ITextFont> font;
-    range->GetFont(&font);
-    long linkValue = 0;
-    font->GetLanguageID(&linkValue);
-    if (linkValue != 0)
-      m_main->GameLinkEvent(this,linkValue);
+    // Find the link and generate an event
+    for (auto it = m_links.rbegin(); it != m_links.rend(); ++it)
+    {
+      if ((cp >= it->start) && (cp <= it->end))
+      {
+        if (it->link != 0)
+          m_main->GameLinkEvent(this,it->link);
+        break;
+      }
+    }
   }
 }
 
