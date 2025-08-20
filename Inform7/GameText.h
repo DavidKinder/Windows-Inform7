@@ -72,6 +72,14 @@ private:
 
   CDibSection* m_drawing;
 
+  struct LinkRange
+  {
+    long start = 0;
+    long end = 0;
+    int link = 0;
+  };
+  std::vector<LinkRange> m_links;
+
 // IRichEditOleCallback implementation
 public:
   DECLARE_INTERFACE_MAP()
