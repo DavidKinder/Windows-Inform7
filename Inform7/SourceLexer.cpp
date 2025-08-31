@@ -100,51 +100,29 @@ void SourceLexer::Process(int startPos, int endPos, bool includeExt)
     else
     {
       // Check for a title?
-      if ((pos == 0) && IsQuote(c,pos,false))
-      {
-        // Get the first line
-        CString line;
-        int endPos = (int)CallEdit(SCI_GETLINEENDPOSITION,0);
-        TextRange range;
-        range.chrg.cpMin = 0;
-        range.chrg.cpMax = endPos;
-        range.lpstrText = line.GetBuffer(endPos+1);
-        CallEdit(SCI_GETTEXTRANGE,0,(sptr_t)&range);
-        line.ReleaseBuffer();
-
-        // Replace any Unicode quotes with normal ones (see the comments in IsQuote())
-        line.Replace("\xe2\x80\x9c","\"");
-        line.Replace("\xe2\x80\x9d","\"");
-
-        // Look for an opening quote
-        if (line.GetAt(0) == '\"')
-        {
-          bool title = false;
-          if (line.Find("\" by ") > 0)
-          {
-            // Found a title followed by the author name
-            title = true;
-          }
-          else if (line.GetAt(line.GetLength()-1) == '\"')
-          {
-            // Found a title on its own
-            title = true;
-          }
-
-          if (title)
-          {
-            ApplyStyle(startPos,pos,style,STYLE_HEADING,StyleMask);
-            pos = endPos;
-            c = (unsigned char)CallEdit(SCI_GETCHARAT,pos);
-            AddHeading(Title,range.lpstrText,startPos);
-            ApplyStyle(startPos,pos,style,STYLE_TEXT,StyleMask);
-            pos++;
-            continue;
-          }
-        }
-      }
       if (pos == 0)
-        AddHeading(Title,"The Whole Source Text",0);
+      {
+        if (IsQuote(c,pos,false))
+        {
+          // Get the first line
+          CString line;
+          int endPos = (int)CallEdit(SCI_GETLINEENDPOSITION,0);
+          TextRange range;
+          range.chrg.cpMin = 0;
+          range.chrg.cpMax = endPos;
+          range.lpstrText = line.GetBuffer(endPos+1);
+          CallEdit(SCI_GETTEXTRANGE,0,(sptr_t)&range);
+          line.ReleaseBuffer();
+
+          // Replace any Unicode quotes with normal ones (see the comments in IsQuote())
+          line.Replace("\xe2\x80\x9c","\"");
+          line.Replace("\xe2\x80\x9d","\"");
+
+          AddHeading(Title,range.lpstrText,startPos);
+        }
+        else
+          AddHeading(Title,"The Whole Source Text",0);
+      }
 
       // Check for a heading?
       if (newLine && (isalpha(c) || (c == '-')))
