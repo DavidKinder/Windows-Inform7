@@ -497,9 +497,9 @@ const char* FindAllHelper::RegexError(const std::regex_error& ex)
     return "The complexity of an attempted match against a regular expression was too much.";
   case std::regex_constants::error_stack:
     return "There was insufficient memory to determine whether the regular expression could match the specified character sequence.";
-  case std::regex_constants::error_parse:
+  case std::regex_constants::_Error_parse:
     return "Failed to parse find expression.";
-  case std::regex_constants::error_syntax:
+  case std::regex_constants::_Error_syntax:
     return "Syntax error in find expression.";
   default:
     return "Error in find expression.";
