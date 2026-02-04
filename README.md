@@ -52,7 +52,7 @@ Download the latest release of hunspell from https://github.com/hunspell/hunspel
 
 #### Chromium Embedded Framework
 
-Download version 127.3.4 of the minimal distribution for Windows 64-bit from https://cef-builds.spotifycdn.com/index.html.
+Download version 144.0.12 of the minimal distribution for Windows 64-bit from https://cef-builds.spotifycdn.com/index.html.
 Unpack the archive and copy the contents of it to "\<root>/Libraries/libcef".
 It should also be possible to use the latest stable build of CEF for Windows 64-bit, but the CEF project tends to change its header files fairly frequently, so you will probably need to adjust the project file to make the latest stable build of CEF work.
 
