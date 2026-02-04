@@ -85,6 +85,15 @@ extern "C" void fatalError(const char* s)
   exit(0);
 }
 
+extern "C" void fatalErrorI(const char* s, int i)
+{
+  const char* fmt = "%s (%X)";
+  int l = _scprintf(fmt, s, i);
+  char* msg = (char*)_alloca(l + 1);
+  sprintf(msg, fmt, s, i);
+  fatalError(msg);
+}
+
 #define CACHE_SIZE (256 * 1024)
 #define UNDO_SIZE (2 * 1024 * 1024)
 
