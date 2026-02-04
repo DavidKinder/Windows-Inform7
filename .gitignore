@@ -1,5 +1,4 @@
 Build/*.*
-Build/Chrome/
 Build/Compilers/
 Build/Documentation/*.*
 Build/Documentation/advice/*.html
@@ -11,6 +10,7 @@ Build/Documentation/scene_icons
 Build/Documentation/sections
 Build/Internal/
 Build/Interpreters/
+Build/Locales/
 Build/Retrospective/
 Build/Symbols/
 Build/Web/

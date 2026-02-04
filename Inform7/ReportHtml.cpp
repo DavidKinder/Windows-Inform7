@@ -914,11 +914,19 @@ bool ReportHtml::InitWebBrowser(void)
   cefSettings.no_sandbox = true;
   cefSettings.command_line_args_disabled = true;
   CString dir = theApp.GetAppDir();
-  CefString(&cefSettings.resources_dir_path).FromString(GetUTF8Path(dir,"\\Chrome"));
-  CefString(&cefSettings.locales_dir_path).FromString(GetUTF8Path(dir,"\\Chrome\\locales"));
   dir = theApp.GetHomeDir() + "\\Inform\\ceflog.txt";
   ::DeleteFile(dir);
   CefString(&cefSettings.log_file).FromString(GetUTF8Path(dir,""));
+#ifndef _DEBUG
+  cefSettings.log_severity = LOGSEVERITY_ERROR;
+#endif
+  char localAppData[MAX_PATH];
+  if (SUCCEEDED(::SHGetFolderPath(0,CSIDL_LOCAL_APPDATA,NULL,SHGFP_TYPE_CURRENT,localAppData)))
+  {
+    CString cachePath(localAppData);
+    cachePath.Append("\\Inform\\CEF\\User Data");
+    CefString(&cefSettings.root_cache_path).FromString(cachePath);
+  }
 
   // Initialize CEF
   if (!CefInitialize(cefArgs,cefSettings,cefApp,NULL))
@@ -1038,7 +1046,6 @@ BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
   CefRect windowRect(rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top);
   windowInfo.SetAsChild(parentWnd->GetSafeHwnd(),windowRect);
   windowInfo.style = style;
-  windowInfo.menu = (HMENU)(UINT_PTR)id;
 
   CefBrowserSettings browserSettings;
   CefRefPtr<I7CefClient> client(new I7CefClient());
@@ -1051,6 +1058,7 @@ BOOL ReportHtml::Create(LPCSTR, LPCSTR, DWORD style,
   client->SetObject(this);
   m_private->browser = browser;
   Attach(browser->GetHost()->GetWindowHandle());
+  SetDlgCtrlID(id);
   return TRUE;
 }
 

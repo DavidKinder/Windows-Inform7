@@ -921,9 +921,6 @@
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\end_tracing_callback_cpptoc.cc">
       <Filter>Libraries\libcef\cpptoc</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\extension_handler_cpptoc.cc">
-      <Filter>Libraries\libcef\cpptoc</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\find_handler_cpptoc.cc">
       <Filter>Libraries\libcef\cpptoc</Filter>
     </ClCompile>
@@ -1005,18 +1002,6 @@
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\urlrequest_client_cpptoc.cc">
       <Filter>Libraries\libcef\cpptoc</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\v8accessor_cpptoc.cc">
-      <Filter>Libraries\libcef\cpptoc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\v8array_buffer_release_callback_cpptoc.cc">
-      <Filter>Libraries\libcef\cpptoc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\v8handler_cpptoc.cc">
-      <Filter>Libraries\libcef\cpptoc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\v8interceptor_cpptoc.cc">
-      <Filter>Libraries\libcef\cpptoc</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\write_handler_cpptoc.cc">
       <Filter>Libraries\libcef\cpptoc</Filter>
     </ClCompile>
@@ -1086,16 +1071,10 @@
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\drag_data_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\extension_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\file_dialog_callback_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\frame_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\get_extension_resource_callback_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\image_ctocpp.cc">
@@ -1182,31 +1161,10 @@
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\urlrequest_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\v8context_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\v8exception_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\v8stack_frame_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\v8stack_trace_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\v8value_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\value_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\waitable_event_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\x509cert_principal_ctocpp.cc">
-      <Filter>Libraries\libcef\ctocpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\x509certificate_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\xml_reader_ctocpp.cc">
@@ -1406,6 +1364,45 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\wrapper\cef_message_router_utils.cc">
       <Filter>Libraries\libcef\wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\preference_observer_cpptoc.cc">
+      <Filter>Libraries\libcef\cpptoc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\setting_observer_cpptoc.cc">
+      <Filter>Libraries\libcef\cpptoc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\v8_accessor_cpptoc.cc">
+      <Filter>Libraries\libcef\cpptoc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\v8_array_buffer_release_callback_cpptoc.cc">
+      <Filter>Libraries\libcef\cpptoc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\v8_handler_cpptoc.cc">
+      <Filter>Libraries\libcef\cpptoc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\cpptoc\v8_interceptor_cpptoc.cc">
+      <Filter>Libraries\libcef\cpptoc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\x509_certificate_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\x509_cert_principal_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\v8_value_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\v8_stack_trace_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\v8_stack_frame_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\v8_exception_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\v8_context_ctocpp.cc">
+      <Filter>Libraries\libcef\ctocpp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
