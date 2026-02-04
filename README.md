@@ -8,6 +8,7 @@
 
 Download and install Visual Studio 2026 Community edition from https://visualstudio.microsoft.com/. In the installer, under "Workloads", make sure that "Desktop development with C++" is selected. In the list under "Individual Components" make sure that the following are selected:
 - C++ MFC for x64/x86 (Latest MSVC)
+- MSBuild support for LLVM (clang-cl) toolset
 - C++ Clang Compiler for Windows
 
 Install git. I use the version of git that is part of MSYS2, a Linux-like environment for Windows, but Git for Windows can be used from a Windows command prompt.
