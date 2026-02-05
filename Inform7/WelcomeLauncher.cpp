@@ -55,6 +55,7 @@ BOOL WelcomeLauncherView::Create(DWORD dwRequestedStyle, const RECT& rect, CWnd*
     return FALSE;
   }
   m_html.SetWindowText("Advice");
+  m_html.ShowWindow(SW_HIDE);
 
   // Subclass command buttons
   ASSERT((sizeof m_cmds / sizeof m_cmds[0]) == (IDC_SAMPLE_DISENCHANTMENT - IDC_ADVICE_NEW + 1));
