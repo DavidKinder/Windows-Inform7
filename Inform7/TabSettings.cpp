@@ -50,7 +50,8 @@ void TabSettings::OnChangedVersion()
   else
     m_labelTexts[3] = "";
 
-  InvalidateRect(m_labelRects[3]);
+  CPoint pos = GetDeviceScrollPosition();
+  InvalidateRect(m_labelRects[3]-pos);
 }
 
 void TabSettings::PostNcDestroy()
@@ -423,4 +424,17 @@ void TabSettings::Layout(void)
 
   dc->SelectObject(oldFont);
   ReleaseDC(dc);
+}
+
+void TabSettings::DrawLabels(CDC& dc, const CPoint& p)
+{
+  DarkMode* dark = DarkMode::GetActive(this);
+  dc.SetTextColor(dark ?
+    dark->GetColour(DarkMode::Fore) : ::GetSysColor(COLOR_BTNTEXT));
+
+  dc.SetBkMode(TRANSPARENT);
+  CFont* oldFont = dc.SelectObject(&m_labelFont);
+  for (int i = 0; i < 5; i++)
+    dc.DrawText(m_labelTexts[i],m_labelRects[i]-p,DT_WORDBREAK);
+  dc.SelectObject(oldFont);
 }

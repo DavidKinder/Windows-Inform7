@@ -1771,10 +1771,7 @@ void InformApp::CheckComponents(void)
 {
   const char* names[] =
   {
-    "Compilers\\frotz.exe",
-    "Compilers\\glulxe.exe",
     "Compilers\\inblorb.exe",
-    "Compilers\\inbuild.exe",
     "Compilers\\inform6.exe",
     "Compilers\\inform7.exe",
     "Compilers\\intest.exe",

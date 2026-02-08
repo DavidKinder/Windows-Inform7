@@ -58,9 +58,11 @@ protected:
   virtual void OnDraw(CDC* pDC);
   afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+  afx_msg LRESULT OnPrintClient(CDC* pDC, UINT nFlags);
 
   void AddVersions(void);
   void Layout(void);
+  void DrawLabels(CDC& dc, const CPoint& p);
 
 private:
   DarkModeGroupBox m_boxStory, m_boxRandom, m_boxVersion, m_boxBasic;
