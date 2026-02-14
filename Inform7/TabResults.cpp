@@ -340,6 +340,8 @@ bool TabResults::DocLink(const char* url)
 
 void TabResults::LinkDone(void)
 {
+  if (DarkMode::GetActive(this))
+    m_report.ModifyHTMLForDarkMode();
 }
 
 void TabResults::LinkError(const char* url)

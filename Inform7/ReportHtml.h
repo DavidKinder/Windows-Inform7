@@ -28,6 +28,7 @@ public:
 
   void Refresh(void);
   void RunJavaScript(const char* code);
+  void ModifyHTMLForDarkMode(void);
 
   void SetFocusFlag(bool focus);
   bool OnSetFocus(void);

@@ -159,6 +159,13 @@ bool TabExtensions::DocLink(const char* url)
 
 void TabExtensions::LinkDone(void)
 {
+  if (DarkMode::GetActive(this))
+  {
+    // Don't modify the Public Library page
+    CString plUrl = GetUrlForTab(ExtTab_Library);
+    if (strncmp(m_html.GetURL(),plUrl,plUrl.GetLength()) != 0)
+      m_html.ModifyHTMLForDarkMode();
+  }
 }
 
 void TabExtensions::LinkError(const char* url)

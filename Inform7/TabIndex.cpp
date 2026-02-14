@@ -168,6 +168,8 @@ bool TabIndex::DocLink(const char* url)
 
 void TabIndex::LinkDone(void)
 {
+  if (DarkMode::GetActive(this))
+    m_index.ModifyHTMLForDarkMode();
 }
 
 void TabIndex::LinkError(const char* url)
