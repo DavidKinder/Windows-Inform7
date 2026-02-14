@@ -722,6 +722,11 @@ INT_PTR WelcomeLauncherView::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
   return result;
 }
 
+void WelcomeLauncherView::SetDarkMode(DarkMode* dark)
+{
+  m_news.SetDarkMode(dark);
+}
+
 void WelcomeLauncherView::GetRegions(CArray<CRect>& regions)
 {
   CRect client;
@@ -1085,6 +1090,7 @@ void WelcomeLauncherFrame::SetDarkMode(DarkMode* dark)
   m_dark = dark;
 
   DarkMode::Set(this,dark);
+  m_view.SetDarkMode(dark);
 }
 
 void WelcomeLauncherFrame::SendChanged(InformApp::Changed changed, int value)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DarkMode.h"
 #include "Dib.h"
 
 class CommandButton : public CButton
@@ -31,7 +32,7 @@ protected:
   bool m_mouseOver = false;
 };
 
-class CommandListBox : public CListBox
+class CommandListBox : public DarkModeListBox
 {
   DECLARE_DYNAMIC(CommandListBox)
 
