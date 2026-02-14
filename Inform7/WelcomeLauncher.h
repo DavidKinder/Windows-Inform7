@@ -26,6 +26,7 @@ public:
   void UpdateRecent(void);
   void UpdateNews(void);
   void SetBannerBitmap(void);
+  void SetDarkMode(DarkMode* dark);
 
   virtual INT_PTR OnToolHitTest(CPoint point, TOOLINFO* pTI) const;
 

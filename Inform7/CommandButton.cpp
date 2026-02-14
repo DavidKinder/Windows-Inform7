@@ -215,9 +215,9 @@ void CommandButton::GetScaledIcon(void)
   ScaleGfx(original->GetBits(),originalSize.cx,originalSize.cy,m_icon.GetBits(),w,h);
 }
 
-IMPLEMENT_DYNAMIC(CommandListBox, CListBox)
+IMPLEMENT_DYNAMIC(CommandListBox, DarkModeListBox)
 
-BEGIN_MESSAGE_MAP(CommandListBox, CListBox)
+BEGIN_MESSAGE_MAP(CommandListBox, DarkModeListBox)
   ON_WM_ERASEBKGND()
   ON_WM_KEYUP()
   ON_WM_LBUTTONDOWN()
@@ -341,7 +341,7 @@ BOOL CommandListBox::OnEraseBkgnd(CDC* pDC)
 
 void CommandListBox::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-  CListBox::OnKeyUp(nChar,nRepCnt,nFlags);
+  DarkModeListBox::OnKeyUp(nChar,nRepCnt,nFlags);
 
   if ((nChar == VK_RETURN) || (nChar == VK_SPACE))
   {
@@ -353,7 +353,7 @@ void CommandListBox::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void CommandListBox::OnLButtonDown(UINT nFlags, CPoint point)
 {
-  CListBox::OnLButtonUp(nFlags,point);
+  DarkModeListBox::OnLButtonUp(nFlags,point);
 
   m_hotSelect = true;
   Invalidate();
@@ -361,7 +361,7 @@ void CommandListBox::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CommandListBox::OnLButtonUp(UINT nFlags, CPoint point)
 {
-  CListBox::OnLButtonUp(nFlags,point);
+  DarkModeListBox::OnLButtonUp(nFlags,point);
 
   BOOL outside = TRUE;
   int index = ItemFromPoint(point,outside);
@@ -408,7 +408,7 @@ void CommandListBox::OnMouseMove(UINT nFlags, CPoint point)
     tme.hwndTrack = GetSafeHwnd();
     ::TrackMouseEvent(&tme);
   }
-  CListBox::OnMouseMove(nFlags,point);
+  DarkModeListBox::OnMouseMove(nFlags,point);
 }
 
 LRESULT CommandListBox::OnMouseLeave(WPARAM, LPARAM)
