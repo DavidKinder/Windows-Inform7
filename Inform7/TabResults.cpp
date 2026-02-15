@@ -109,6 +109,7 @@ void TabResults::OpenProject(const char* path, bool primary)
   CString blankPath = theApp.GetAppDir()+"\\Documentation\\windows\\Blank.html";
   m_report.Navigate(blankPath,false);
   m_console.ClearText();
+  m_inform6 = NoError;
 }
 
 bool TabResults::SaveProject(const char* path, bool primary)
@@ -352,6 +353,8 @@ bool TabResults::DocLink(const char* url)
 
 void TabResults::LinkDone(void)
 {
+  if (DarkMode::GetActive(this))
+    m_report.ModifyHTMLForDarkMode();
 }
 
 void TabResults::LinkError(const char* url)
