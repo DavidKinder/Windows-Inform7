@@ -77,6 +77,7 @@ BEGIN_MESSAGE_MAP(ProjectFrame, MenuBarFrameWnd)
   ON_MESSAGE(WM_REPLAYALL, OnReplayAll)
   ON_MESSAGE(WM_TESTINGTABSHOWN, OnTestingTabShown)
   ON_MESSAGE(WM_ISBUILDFILE, OnIsBuildFile)
+  ON_MESSAGE(WM_NEWEXTENSIONS, OnNewExtensions)
 
   ON_COMMAND(ID_FILE_NEW, OnFileNew)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -1777,6 +1778,17 @@ LRESULT ProjectFrame::OnIsBuildFile(WPARAM wparam, LPARAM)
   if (CFile::GetStatus((LPCSTR)wparam,status))
     return (status.m_mtime >= m_startTime);
   return 0;
+}
+
+LRESULT ProjectFrame::OnNewExtensions(WPARAM, LPARAM)
+{
+  // Check if the compiler version uses the old extension location
+  CString version = m_settings.GetCompilerVersion();
+  if ((version == "10.1") || (version[0] == '6'))
+    return 0;
+
+  // Otherwise, use the new extension location
+  return 1;
 }
 
 void ProjectFrame::OnUpdateReleaseGame(CCmdUI *pCmdUI)

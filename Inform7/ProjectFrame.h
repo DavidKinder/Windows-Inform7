@@ -95,6 +95,7 @@ protected:
   afx_msg LRESULT OnReplayAll(WPARAM, LPARAM);
   afx_msg LRESULT OnTestingTabShown(WPARAM, LPARAM);
   afx_msg LRESULT OnIsBuildFile(WPARAM, LPARAM);
+  afx_msg LRESULT OnNewExtensions(WPARAM, LPARAM);
 
   afx_msg void OnFileNew();
   afx_msg void OnFileOpen();

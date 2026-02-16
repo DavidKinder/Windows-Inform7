@@ -58,12 +58,11 @@ private:
     No_ExtTab = -1
   };
 
-  static const char* m_files[TabExtensions::Number_ExtTabs];
-
   ExtTabs GetActiveTab(void);
   void UpdateActiveTab(void);
   void GetTabState(TabState& state);
   CString GetUrlForTab(ExtTabs tab);
+  bool CheckURL(const CString& url, CString check);
 
   PageTab m_tab;
   ReportHtml m_html;

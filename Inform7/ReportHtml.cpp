@@ -166,6 +166,7 @@ public:
         CString materials = theApp.GetMaterialsFolder(token);
         if (!materials.IsEmpty())
         {
+          // Look in the new extension documentation location in the project directory
           CString path;
           path.Format("%s\\Extensions%S",materials.GetString(),fileName.GetString());
           if (FileExists(path))
@@ -173,7 +174,14 @@ public:
           path.Format("%s\\Extensions\\Reserved\\Documentation%S",materials.GetString(),fileName.GetString());
           if (FileExists(path))
             return path;
+
+          // Look in the application documentation location
           path.Format("%s\\Documentation%S",appDir.GetString(),fileName.GetString());
+          if (FileExists(path))
+            return path;
+
+          // Lastly, look in the old extension documentation location
+          path.Format("%s\\Inform\\Documentation%S",theApp.GetHomeDir().GetString(),fileName.GetString());
           if (FileExists(path))
             return path;
         }

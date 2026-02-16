@@ -20,11 +20,9 @@ BEGIN_MESSAGE_MAP(TabExtensions, TabBase)
   ON_MESSAGE(WM_USERNAVIGATE, OnUserNavigate)
 END_MESSAGE_MAP()
 
-const char* TabExtensions::m_files[TabExtensions::Number_ExtTabs] =
-{
-  "\\Extensions\\Reserved\\Documentation\\Extensions.html",
-  PUBLIC_LIBRARY_URL "/index-windows.html"
-};
+#define HTML_PROJECT_EXTENSIONS "\\Extensions\\Reserved\\Documentation\\Extensions.html"
+#define HTML_OLD_EXTENSIONS "\\Inform\\Documentation\\Extensions.html"
+#define HTML_PUBLIC_LIBRARY PUBLIC_LIBRARY_URL "/index-windows.html"
 
 TabExtensions::TabExtensions() : m_initialised(false), m_notify(NULL)
 {
@@ -174,6 +172,8 @@ bool TabExtensions::DocLink(const char* url)
 
 void TabExtensions::LinkDone(void)
 {
+  if (DarkMode::GetActive(this))
+    m_html.ModifyHTMLForDarkMode();
 }
 
 void TabExtensions::LinkError(const char* url)
@@ -278,24 +278,20 @@ void TabExtensions::UpdateActiveTab(void)
 {
   CString url = m_html.GetURL();
   int idx = No_ExtTab;
-  for (int i = 0; i < sizeof m_files / sizeof m_files[0]; i++)
-  {
-    CString check(m_files[i]);
-    if (url.Find(check) >= 0)
-      idx = i;
-    check.Replace('\\','/');
-    if (url.Find(check) >= 0)
-      idx = i;
-  }
-  if (idx == No_ExtTab)
-  {
-    if (url.CompareNoCase("inform://Extensions/Extensions.html") == 0)
-      idx = ExtTab_Home;
-    else if (TextFormat::EndsWith(url,"NoExtensions.html"))
-      idx = ExtTab_Home;
-    else if (TextFormat::EndsWith(url,"NoPublicLibrary.html"))
-      idx = ExtTab_Library;
-  }
+
+  if (CheckURL(url,HTML_PROJECT_EXTENSIONS))
+    idx = ExtTab_Home;
+  else if (CheckURL(url,HTML_PUBLIC_LIBRARY))
+    idx = ExtTab_Library;
+  else if (url.CompareNoCase("inform://Extensions/Extensions.html") == 0)
+    idx = ExtTab_Home;
+  else if (TextFormat::EndsWith(url,"NoExtensions.html"))
+    idx = ExtTab_Home;
+  else if (TextFormat::EndsWith(url,"NoPublicLibrary.html"))
+    idx = ExtTab_Library;
+  else if (CheckURL(url,HTML_OLD_EXTENSIONS))
+    idx = ExtTab_Home;
+
   if (idx != GetActiveTab())
     m_tab.SetCurSel(idx);
 }
@@ -312,20 +308,44 @@ CString TabExtensions::GetUrlForTab(ExtTabs tab)
   {
   case ExtTab_Home:
     {
-      CString materials = theApp.GetMaterialsFolder((UINT_PTR)GetParentFrame());
-      if (!materials.IsEmpty())
+      CString htmlFile;
+
+      if (GetParentFrame()->SendMessage(WM_NEWEXTENSIONS))
       {
-        CString htmlFile = materials+m_files[tab];
-        if (::GetFileAttributes(htmlFile) == INVALID_FILE_ATTRIBUTES)
-          htmlFile = theApp.GetAppDir()+"\\Documentation\\NoExtensions.html";
-        return TextFormat::AnsiToUTF8(htmlFile);
+        CString materials = theApp.GetMaterialsFolder((UINT_PTR)GetParentFrame());
+        if (!materials.IsEmpty())
+        {
+          htmlFile = materials+HTML_PROJECT_EXTENSIONS;
+          if (::GetFileAttributes(htmlFile) != INVALID_FILE_ATTRIBUTES)
+            return TextFormat::AnsiToUTF8(htmlFile);
+        }
       }
+      else
+      {
+        htmlFile = theApp.GetHomeDir()+HTML_OLD_EXTENSIONS;
+        if (::GetFileAttributes(htmlFile) != INVALID_FILE_ATTRIBUTES)
+          return TextFormat::AnsiToUTF8(htmlFile);
+      }
+
+      htmlFile = theApp.GetAppDir()+"\\Documentation\\NoExtensions.html";
+      return TextFormat::AnsiToUTF8(htmlFile);
     }
     break;
+
   case ExtTab_Library:
-    return m_files[tab];
+    return HTML_PUBLIC_LIBRARY;
   }
 
   ASSERT(FALSE);
   return "";
+}
+
+bool TabExtensions::CheckURL(const CString& url, CString check)
+{
+  if (url.Find(check) >= 0)
+    return true;
+  check.Replace('\\','/');
+  if (url.Find(check) >= 0)
+    return true;
+  return false;
 }

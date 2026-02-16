@@ -239,3 +239,7 @@ struct ExtTestCase
 // described by the ExtTestCase structure pointed to by wParam. This
 // structure is allocated on the heap and is freed by the recipient.
 #define WM_TESTEXTENSION  WM_APP+49
+
+// Sent to the window frame to check if the project should use the
+// new (Inform 10.2) extension location in the project directory.
+#define WM_NEWEXTENSIONS  WM_APP+50
