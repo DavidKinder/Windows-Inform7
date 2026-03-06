@@ -67,7 +67,7 @@ BOOL AboutDialog::OnInitDialog()
     "\\tab Toby Nelson\\par"
     "\\par"
     "\\b Contributions to Inform 6\\b0\\par"
-    "\\tab Jesse McGrew\\par";
+    "\\tab Tara McGrew\\par";
   const char* text2 =
     "\\tab Andrew Plotkin\\par"
     "\\tab David Kinder\\par"
