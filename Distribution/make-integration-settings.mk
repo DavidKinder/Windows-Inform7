@@ -24,7 +24,7 @@ INFORM6NAME = inform6
 INFORM7NAME = inform7
 INTESTNAME = intest
 INBUILDNAME = inbuild
+FROTZNAME = frotz
+GLULXENAME = glulxe
 
-INDOCOPTS = windows_app
 HTMLPLATFORM = windows
-

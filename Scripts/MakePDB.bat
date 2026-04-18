@@ -9,3 +9,9 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 if %errorlevel% neq 0 exit /b %errorlevel%
 ..\Tools\cv2pdb\cv2pdb ..\Build\Compilers\inbuild.exe ..\Build\Compilers\inbuild.exe ..\Build\Compilers\inbuild.pdb
 if %errorlevel% neq 0 exit /b %errorlevel%
+..\Tools\cv2pdb\cv2pdb ..\Build\Compilers\frotz.exe ..\Build\Compilers\frotz.exe ..\Build\Compilers\frotz.pdb
+if %errorlevel% neq 0 exit /b %errorlevel%
+del ..\Build\Compilers\frotz.pdb
+..\Tools\cv2pdb\cv2pdb ..\Build\Compilers\glulxe.exe ..\Build\Compilers\glulxe.exe ..\Build\Compilers\glulxe.pdb
+if %errorlevel% neq 0 exit /b %errorlevel%
+del ..\Build\Compilers\glulxe.pdb
