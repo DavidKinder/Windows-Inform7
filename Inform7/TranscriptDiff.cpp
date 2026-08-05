@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "TranscriptDiff.h"
 
-#include <regex>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -73,11 +71,83 @@ LPCWSTR TranscriptDiff::GetIdeal(void) const
   return m_ideal;
 }
 
-static TranscriptDiff::Range MatchRegEx(std::wregex& regexp, LPCWSTR str, TranscriptDiff::Range inRange)
+static bool MatchString(LPCWSTR& str, LPCWSTR compare)
 {
-  std::wcregex_iterator it(str+inRange.location,str+inRange.location+inRange.length,regexp);
-  if (it != std::wcregex_iterator())
-    return TranscriptDiff::Range(inRange.location+it->position(),it->length());
+  size_t len = wcslen(compare);
+  if (wcsncmp(str,compare,len) == 0)
+  {
+    str += len;
+    return true;
+  }
+  return false;
+}
+
+static bool MatchNumber(LPCWSTR& str)
+{
+  size_t i = 0;
+  while (isdigit(str[i]))
+    i++;
+  if (i > 0)
+  {
+    str += i;
+    return true;
+  }
+  return false;
+}
+
+// Match Inform banners of the form
+//  Release N / Serial number N / Inform 7 v...
+//  Release N / Serial number N / Inform 7 build ...
+static bool MatchInformBanner(LPCWSTR str)
+{
+  if (!MatchString(str,L"Release "))
+    return false;
+  if (!MatchNumber(str))
+    return false;
+  if (!MatchString(str,L" / Serial number "))
+    return false;
+  if (!MatchNumber(str))
+    return false;
+  if (!MatchString(str,L" / Inform 7 "))
+    return false;
+  if (!MatchString(str,L"build ") && !MatchString(str,L"v"))
+    return false;
+  return true;
+}
+
+static size_t LineLength(LPCWSTR str)
+{
+  size_t i = 0;
+  while (true)
+  {
+    wchar_t c = str[i];
+    if ((c == L'\0') || (c == L'\n') || (c == L'\r'))
+      return i;
+    i++;
+  }
+}
+
+static TranscriptDiff::Range FindInformBanner(LPCWSTR str, TranscriptDiff::Range inRange)
+{
+  size_t pos = inRange.location;
+  while ((pos != -1) && (pos < inRange.location+inRange.length))
+  {
+    LPCWSTR candidate = wcsstr(str+pos, L"Release");
+    if (candidate)
+    {
+      size_t len = LineLength(candidate);
+      pos += len;
+
+      if (MatchInformBanner(candidate))
+      {
+        TranscriptDiff::Range foundRange(candidate-str,len);
+        if (foundRange.location+foundRange.length <= inRange.location+inRange.length)
+          return foundRange;
+      }
+    }
+    else
+      pos = -1;
+  }
   return TranscriptDiff::Range();
 }
 
@@ -93,39 +163,32 @@ static TranscriptDiff::Range MatchRegEx(std::wregex& regexp, LPCWSTR str, Transc
 */
 void TranscriptDiff::DiffOuterRange(Range rangeA, Range rangeB)
 {
-  // Performance optimisation: Don't bother checking for the complex RegEx expression below
-  // unless both strings are a good candidate, i.e. each string contains the words "Serial number".
-  if ((m_ideal.Find(L"Serial number") > 0) && (m_actual.Find(L"Serial number") > 0))
+  Range matchRangeA2 = FindInformBanner(m_ideal,rangeA);
+  if (matchRangeA2.location != -1)
   {
-    std::wregex regexp;
-    regexp.assign(L"(.*?)(Release \\d+ \\/ Serial number \\d+ \\/ Inform 7 (build .... .I6.+?lib .+?SD|v.+? \\/ D)).*");
-    Range matchRangeA2 = MatchRegEx(regexp,m_ideal,rangeA);
-    if (matchRangeA2.location != -1)
+    ASSERT (matchRangeA2.location >= rangeA.location);
+    Range matchRangeA1(rangeA.location,matchRangeA2.location - rangeA.location);
+
+    int A_pre_len  = (int) matchRangeA1.length;
+    int A_ver_len  = (int) matchRangeA2.length;
+    int A_post_len = (int) rangeA.length - A_pre_len - A_ver_len;
+
+    Range matchRangeB2 = FindInformBanner(m_actual,rangeB);
+    if (matchRangeB2.location != -1)
     {
-      ASSERT (matchRangeA2.location >= rangeA.location);
-      Range matchRangeA1(rangeA.location,matchRangeA2.location - rangeA.location);
+      ASSERT (matchRangeB2.location >= rangeB.location);
+      Range matchRangeB1(rangeB.location,matchRangeB2.location - rangeB.location);
 
-      int A_pre_len  = (int) matchRangeA1.length;
-      int A_ver_len  = (int) matchRangeA2.length;
-      int A_post_len = (int) rangeA.length - A_pre_len - A_ver_len;
+      int B_pre_len  = (int) matchRangeB1.length;
+      int B_ver_len  = (int) matchRangeB2.length;
+      int B_post_len = (int) rangeB.length - B_pre_len - B_ver_len;
 
-      Range matchRangeB2 = MatchRegEx(regexp,m_actual,rangeB);
-      if (matchRangeB2.location != -1)
-      {
-        ASSERT (matchRangeB2.location >= rangeB.location);
-        Range matchRangeB1(rangeB.location,matchRangeB2.location - rangeB.location);
-
-        int B_pre_len  = (int) matchRangeB1.length;
-        int B_ver_len  = (int) matchRangeB2.length;
-        int B_post_len = (int) rangeB.length - B_pre_len - B_ver_len;
-
-        DiffInnerRange(matchRangeA1,matchRangeB1);
-        m_diffs.emplace_back(matchRangeB2,PRESERVE_ACTUAL_EDIT);
-        DiffInnerRange(
-          Range(rangeA.location + A_pre_len + A_ver_len,A_post_len),
-          Range(rangeB.location + B_pre_len + B_ver_len,B_post_len));
-        return;
-      }
+      DiffInnerRange(matchRangeA1,matchRangeB1);
+      m_diffs.emplace_back(matchRangeB2,PRESERVE_ACTUAL_EDIT);
+      DiffInnerRange(
+        Range(rangeA.location + A_pre_len + A_ver_len,A_post_len),
+        Range(rangeB.location + B_pre_len + B_ver_len,B_post_len));
+      return;
     }
   }
   DiffInnerRange(rangeA,rangeB);
