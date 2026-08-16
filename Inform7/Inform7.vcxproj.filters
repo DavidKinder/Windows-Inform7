@@ -352,6 +352,9 @@
     <ClInclude Include="Process.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Glk\GlkDll\GlkSoundMP3.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionFrame.cpp">
@@ -1430,6 +1433,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Libraries\libcef\libcef_dll\ctocpp\v8_context_ctocpp.cc">
       <Filter>Libraries\libcef\ctocpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Glk\GlkDll\GlkSoundMP3.cpp">
+      <Filter>Sound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

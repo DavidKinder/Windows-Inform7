@@ -46,6 +46,10 @@ Unpack the archive and copy the contents of the top-level directory directory to
 
 Download the latest stable versions of libogg and libvorbis from https://xiph.org/downloads/. Unpack the libogg archive and copy the contents of the top-level directory to "\<root>/Libraries/libogg". Unpack the libvorbis archive and copy the contents of the top-level directory to "\<root>/Libraries/libvorbis".
 
+#### minimp3
+
+Download the source code of minimp3 from https://github.com/lieff/minimp3/. Copy the source code to "\<root>/Libraries/minimp3".
+
 #### hunspell
 
 Download the latest release of hunspell from https://github.com/hunspell/hunspell/releases/. Unpack the archive and copy the contents of the "src/hunspell" directory to "\<root>/Libraries/hunspell".
